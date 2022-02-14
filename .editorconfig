@@ -1,0 +1,58 @@
+Skip to content
+Search or jump to…
+Pull requests
+Issues
+Marketplace
+Explore
+
+@diegolagospagopa
+moltin
+/
+terraform-stack
+Public
+Code
+Issues
+Pull requests
+Actions
+Wiki
+Security
+Insights
+terraform-stack/.editorconfig
+@zot24
+zot24 fix: editorconfig file Makefile rule
+Latest commit 98298e2 on 10 Jun 2017
+ History
+ 1 contributor
+31 lines (25 sloc)  597 Bytes
+
+# EditorConfig is awesome: http://EditorConfig.org
+# Uses editorconfig to maintain consistent coding styles
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+max_line_length = 80
+trim_trailing_whitespace = true
+
+[*.{tf,tfvars}]
+indent_size = 2
+indent_style = space
+
+[*.md]
+max_line_length = 0
+trim_trailing_whitespace = false
+
+# Tab indentation (no size specified)
+[Makefile]
+tab_width = 2
+indent_style = tab
+
+[COMMIT_EDITMSG]
+max_line_length = 0
