@@ -1,7 +1,7 @@
 resource "azurerm_policy_set_definition" "uat_set" {
-  name         = "pagopa_uat_set"
-  policy_type  = "Custom"
-  display_name = "PagoPA policy set/initiatives for uat management group"
+  name                  = "pagopa_uat_set"
+  policy_type           = "Custom"
+  display_name          = "PagoPA policy set/initiatives for uat management group"
   management_group_name = data.azurerm_management_group.uat_sl_pagamenti_servizi.name
 
   metadata = <<METADATA
@@ -56,5 +56,5 @@ PARAMETERS
     }
     VALUE
   }
-  
+
 }

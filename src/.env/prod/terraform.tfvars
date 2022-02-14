@@ -1,5 +1,5 @@
 # general
-location="northeurope"
+location               = "northeurope"
 metadata_category_name = "PagoPA"
 
 tags_subscription = [

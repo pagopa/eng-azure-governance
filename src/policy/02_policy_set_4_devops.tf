@@ -1,7 +1,7 @@
 resource "azurerm_policy_set_definition" "devops_set" {
-  name         = "pagopa_devops_set"
-  policy_type  = "Custom"
-  display_name = "PagoPA policy set/initiatives for devops management group"
+  name                  = "pagopa_devops_set"
+  policy_type           = "Custom"
+  display_name          = "PagoPA policy set/initiatives for devops management group"
   management_group_name = data.azurerm_management_group.devops_sl_pagamenti_servizi.name
 
   metadata = <<METADATA

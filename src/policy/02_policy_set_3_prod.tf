@@ -1,7 +1,7 @@
 resource "azurerm_policy_set_definition" "prod_set" {
-  name         = "pagopa_prod_set"
-  policy_type  = "Custom"
-  display_name = "PagoPA policy set/initiatives for prod management group"
+  name                  = "pagopa_prod_set"
+  policy_type           = "Custom"
+  display_name          = "PagoPA policy set/initiatives for prod management group"
   management_group_name = data.azurerm_management_group.prod_sl_pagamenti_servizi.name
 
   metadata = <<METADATA
