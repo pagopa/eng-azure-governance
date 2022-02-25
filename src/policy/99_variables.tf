@@ -11,7 +11,7 @@ variable "metadata_category_name" {
 #
 # Parameters values
 #
-variable "tags_subscription" {
+variable "tags_subscription_to_inherith" {
   type        = list(string)
   description = "Tag that must be inherith by the subscription"
 }

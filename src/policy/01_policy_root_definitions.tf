@@ -1,6 +1,6 @@
 resource "azurerm_policy_definition" "tags_inherit_from_subscription" {
 
-  for_each = toset(var.tags_subscription)
+  for_each = toset(var.tags_subscription_to_inherith)
 
   name                  = "pagopa_tag_${lower(each.key)}_inherit_from_subscription"
   policy_type           = "Custom"

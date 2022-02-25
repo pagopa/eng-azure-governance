@@ -2,7 +2,7 @@
 location               = "northeurope"
 metadata_category_name = "PagoPA"
 
-tags_subscription = [
+tags_subscription_to_inherith = [
   "CreatedBy",
   "Environment",
   "Owner",
