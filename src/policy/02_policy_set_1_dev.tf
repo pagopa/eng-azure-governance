@@ -1,7 +1,47 @@
-resource "azurerm_policy_set_definition" "dev_set" {
-  name                  = "pagopa_dev_set"
+resource "azurerm_policy_set_definition" "dev_set_enforced" {
+  name                  = "pagopa_dev_set_enforced"
   policy_type           = "Custom"
-  display_name          = "PagoPA policy set/initiatives for dev management group"
+  display_name          = "PagoPA policy enforced set/initiatives for dev management group"
+  management_group_name = data.azurerm_management_group.dev_sl_pagamenti_servizi.name
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+METADATA
+
+  parameters = <<PARAMETERS
+  {
+    "listOfAllowedLocations": {
+      "type": "Array",
+      "metadata": {
+        "description": "The list of locations that can be specified when deploying resources.",
+        "strongType": "location",
+        "displayName": "Allowed locations"
+      },
+      "defaultValue" : [""]
+    }
+  }
+PARAMETERS
+
+  # Allowed Locations
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c"
+    parameter_values     = <<VALUE
+    {
+      "listOfAllowedLocations": {
+        "value": "[parameters('listOfAllowedLocations')]"
+      }
+    }
+    VALUE
+  }
+}
+
+resource "azurerm_policy_set_definition" "dev_set_advice" {
+  name                  = "pagopa_dev_set_advice"
+  policy_type           = "Custom"
+  display_name          = "PagoPA policy advice set/initiatives for dev management group"
   management_group_name = data.azurerm_management_group.dev_sl_pagamenti_servizi.name
 
   metadata = <<METADATA
@@ -21,15 +61,6 @@ METADATA
         "strongType": "VMSKUs"
       },
       "defaultValue" : [""]
-    },
-    "listOfAllowedLocations": {
-      "type": "Array",
-      "metadata": {
-        "description": "The list of locations that can be specified when deploying resources.",
-        "strongType": "location",
-        "displayName": "Allowed locations"
-      },
-      "defaultValue" : [""]
     }
   }
 PARAMETERS
@@ -41,18 +72,6 @@ PARAMETERS
     {
       "listOfAllowedSKUs": {
         "value": "[parameters('listOfAllowedSKUs')]"
-      }
-    }
-    VALUE
-  }
-
-  # Allowed Locations
-  policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c"
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedLocations": {
-        "value": "[parameters('listOfAllowedLocations')]"
       }
     }
     VALUE
