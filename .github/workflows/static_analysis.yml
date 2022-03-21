@@ -15,7 +15,7 @@ jobs:
           FOLDERS: policy
         run: |
           TAG=$(cat .terraform-version)
-          for f in FOLDERS; do
+          for f in $FOLDERS; do
             cd src/$f
             sed -i -e 's/  backend "azurerm" {}//g' 99_main.tf # use local backend
             docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
