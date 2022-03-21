@@ -39,8 +39,8 @@ METADATA
 #
 
 resource "azurerm_management_group_policy_assignment" "security_https_only" {
-  name                 = "panopubconnadv2root"
-  display_name         = "PagoPA/SEC policy not allow public endpoint for storage or internal resources"
+  name                 = "pahttpsonlyadv2root"
+  display_name         = "PagoPA/SEC policy allow only https communication"
   policy_definition_id = azurerm_policy_set_definition.security_https_only.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
