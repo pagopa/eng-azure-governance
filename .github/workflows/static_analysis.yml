@@ -11,11 +11,15 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: init_src_policy
+        env:
+          FOLDERS: policy
         run: |
           TAG=$(cat .terraform-version)
-          cd src/policy
-          sed -i -e 's/  backend "azurerm" {}//g' 99_main.tf # use local backend
-          docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
+          for f in FOLDERS; do
+            cd src/$f
+            sed -i -e 's/  backend "azurerm" {}//g' 99_main.tf # use local backend
+            docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
+          done
 
       - name: run_test
         run: |
