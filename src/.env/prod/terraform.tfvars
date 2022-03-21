@@ -83,3 +83,5 @@ prod_allowed_locations = [
   "northeurope",
   "westeurope",
 ]
+
+certificate_authority_cn = "C=US, O=Let's Encrypt, CN=R3"
