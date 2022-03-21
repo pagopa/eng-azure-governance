@@ -10,9 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: run_init
+      - name: init_src_policy
         run: |
-          bash terraform_run_all.sh init
+          TAG=$(cat .terraform-version)
+          cd src/policy
+          sed -i -e 's/  backend "azurerm" {}//g' main.tf # use local backend
+          docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
 
       - name: run_test
         run: |
