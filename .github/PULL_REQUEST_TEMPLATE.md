@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 <!--- Please always add a PR description as if nobody knows anything about the context these changes come from. -->
 <!--- Even if we are all from our internal team, we may not be on the same page. -->
 <!--- Write this PR as you were contributing to a public OSS project, where nobody knows you and you have to earn their trust. -->
@@ -13,9 +14,9 @@
 
 ### Type of changes
 
-- [ ] Add new module
-- [ ] Update existing module
-- [ ] Remove existing module
+- [ ] Add new governance rule
+- [ ] Update existing governance rule
+- [ ] Remove existing governance rule
 
 ### Does this introduce a breaking change?
 
