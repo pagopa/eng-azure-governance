@@ -55,7 +55,7 @@ No modules.
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | n/a | yes |
 | <a name="input_prod_allowed_locations"></a> [prod\_allowed\_locations](#input\_prod\_allowed\_locations) | List of allowed locations for prod | `list(string)` | n/a | yes |
 | <a name="input_prod_vm_skus_allowed"></a> [prod\_vm\_skus\_allowed](#input\_prod\_vm\_skus\_allowed) | list of skus allowed into management group prod | `list(string)` | n/a | yes |
-| <a name="input_tags_subscription_to_inherith"></a> [tags\_subscription](#input\_tags\_subscription) | Tag that must be inherith by the subscription | `list(string)` | n/a | yes |
+| <a name="input_tags_subscription_to_inherith"></a> [tags\_subscription\_to\_inherith](#input\_tags\_subscription\_to\_inherith) | Tag that must be inherith by the subscription | `list(string)` | n/a | yes |
 | <a name="input_uat_allowed_locations"></a> [uat\_allowed\_locations](#input\_uat\_allowed\_locations) | List of allowed locations for uat | `list(string)` | n/a | yes |
 | <a name="input_uat_vm_skus_allowed"></a> [uat\_vm\_skus\_allowed](#input\_uat\_vm\_skus\_allowed) | list of skus allowed into management group uat | `list(string)` | n/a | yes |
 
