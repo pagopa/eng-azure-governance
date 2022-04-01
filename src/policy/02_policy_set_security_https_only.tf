@@ -1,4 +1,3 @@
-# Enforced
 resource "azurerm_policy_set_definition" "security_https_only" {
   name                  = "pagopa_security_https_only"
   policy_type           = "Custom"
@@ -10,7 +9,7 @@ resource "azurerm_policy_set_definition" "security_https_only" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   # Web Application should only be accessible over HTTPS
   policy_definition_reference {
@@ -39,8 +38,8 @@ METADATA
 #
 
 resource "azurerm_management_group_policy_assignment" "security_https_only" {
-  name                 = "pahttpsonlyadv2root"
-  display_name         = "PagoPA/SEC policy allow only https communication"
+  name                 = "pagohttpsonlyadv2root"
+  display_name         = "PagoPA/SEC/PROD/ADVICE policy allow only https communication"
   policy_definition_id = azurerm_policy_set_definition.security_https_only.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 

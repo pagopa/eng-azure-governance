@@ -10,7 +10,7 @@ resource "azurerm_policy_set_definition" "security_tls_1_2" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   # Azure SQL Database should be running TLS version 1.2 or newer
   policy_definition_reference {
@@ -42,7 +42,7 @@ METADATA
 
 resource "azurerm_management_group_policy_assignment" "security_tls_1_2" {
   name                 = "patls12conn2root"
-  display_name         = "PagoPA/SEC policy resources must use TLS 1.2 "
+  display_name         = "PagoPA/SEC/PROD/ADVICE policy resources must use TLS 1.2 "
   policy_definition_id = azurerm_policy_set_definition.security_tls_1_2.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
@@ -54,7 +54,7 @@ resource "azurerm_management_group_policy_assignment" "security_tls_1_2" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   identity {
     type = "SystemAssigned"

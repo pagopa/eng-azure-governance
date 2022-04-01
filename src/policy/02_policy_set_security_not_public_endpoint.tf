@@ -1,4 +1,3 @@
-# Enforced
 resource "azurerm_policy_set_definition" "security_no_public_endpoint" {
   name                  = "pagopa_security_no_public_endpoint"
   policy_type           = "Custom"
@@ -10,7 +9,7 @@ resource "azurerm_policy_set_definition" "security_no_public_endpoint" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   # Public network access should be disabled for Container registries
   policy_definition_reference {
@@ -50,7 +49,7 @@ METADATA
 
 resource "azurerm_management_group_policy_assignment" "security_no_public_endpoint" {
   name                 = "panopubconnadv2root"
-  display_name         = "PagoPA/SEC policy not allow public endpoint for storage or internal resources"
+  display_name         = "PagoPA/SEC/PROD/ADVICE policy not allow public endpoint for storage or internal resources"
   policy_definition_id = azurerm_policy_set_definition.security_no_public_endpoint.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
@@ -62,7 +61,7 @@ resource "azurerm_management_group_policy_assignment" "security_no_public_endpoi
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   identity {
     type = "SystemAssigned"

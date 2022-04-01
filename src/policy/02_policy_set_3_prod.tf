@@ -10,7 +10,7 @@ resource "azurerm_policy_set_definition" "prod_set_enforced" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   parameters = <<PARAMETERS
   {
@@ -24,7 +24,7 @@ METADATA
       "defaultValue" : [""]
     }
   }
-PARAMETERS
+  PARAMETERS
 
   # Allowed Locations
   policy_definition_reference {
@@ -51,7 +51,7 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   parameters = <<PARAMETERS
   {
@@ -65,7 +65,7 @@ METADATA
       "defaultValue" : [""]
     }
   }
-PARAMETERS
+  PARAMETERS
 
   # allowed skus
   policy_definition_reference {
@@ -91,7 +91,7 @@ locals {
 
 resource "azurerm_management_group_policy_assignment" "prod_set_enforced_2_root_sl_pay" {
   name                 = "pa_prodsetenf2rootslpay"
-  display_name         = "PagoPA/PROD set enforce 2 Mgmt root sl servizi e pagamenti"
+  display_name         = "PagoPA/PROD/SET/ENFORCED 2 Mgmt root sl servizi e pagamenti"
   policy_definition_id = azurerm_policy_set_definition.prod_set_enforced.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
@@ -103,7 +103,7 @@ resource "azurerm_management_group_policy_assignment" "prod_set_enforced_2_root_
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   parameters = <<PARAMS
   {
@@ -111,7 +111,7 @@ METADATA
           "value": ${local.list_allowed_locations_prod}
       }
   }
-PARAMS
+  PARAMS
 
   identity {
     type = "SystemAssigned"
@@ -120,7 +120,7 @@ PARAMS
 
 resource "azurerm_management_group_policy_assignment" "prod_set_advice_2_root_sl_pay" {
   name                 = "pa_prodsetadv2rootslpay"
-  display_name         = "PagoPA/PROD set advice 2 Mgmt root sl servizi e pagamenti"
+  display_name         = "PagoPA/PROD/SET/ADVICE 2 Mgmt root sl servizi e pagamenti"
   policy_definition_id = azurerm_policy_set_definition.prod_set_advice.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
@@ -132,7 +132,7 @@ resource "azurerm_management_group_policy_assignment" "prod_set_advice_2_root_sl
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   parameters = <<PARAMS
   {
@@ -140,7 +140,7 @@ METADATA
           "value": ${local.list_allow_skus_raw_prod}
       }
   }
-PARAMS
+  PARAMS
 
   identity {
     type = "SystemAssigned"

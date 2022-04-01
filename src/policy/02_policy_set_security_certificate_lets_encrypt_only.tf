@@ -46,7 +46,7 @@ locals {
 
 resource "azurerm_management_group_policy_assignment" "security_certificate_lets_encrypt_only_2_root_sl_pay" {
   name                 = "pacertletsencr2root"
-  display_name         = "PagoPA/SEC to discover certificates that don't use let's encrypt as CA"
+  display_name         = "PagoPA/SEC/PROD/ADVICE to discover certificates that don't use let's encrypt as CA"
   policy_definition_id = azurerm_policy_set_definition.security_certificate_lets_encrypt_only.id
   management_group_id  = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
@@ -58,7 +58,7 @@ resource "azurerm_management_group_policy_assignment" "security_certificate_lets
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0"
     }
-METADATA
+  METADATA
 
   parameters = <<PARAMS
   {
@@ -66,7 +66,7 @@ METADATA
           "value": ${local.cn_name}
       }
   }
-PARAMS
+  PARAMS
 
   identity {
     type = "SystemAssigned"

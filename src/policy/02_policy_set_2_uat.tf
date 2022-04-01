@@ -95,7 +95,7 @@ locals {
 #
 resource "azurerm_management_group_policy_assignment" "uat_set_enforced_2_root_sl_pay" {
   name                 = "pa_uatsetenf2rootslpay"
-  display_name         = "PagoPA/UAT set enforced 2 Mgmt root sl servizi e pagamenti"
+  display_name         = "PagoPA/UAT/SET/ENFORCED 2 Mgmt root sl servizi e pagamenti"
   policy_definition_id = azurerm_policy_set_definition.uat_set_enforced.id
   management_group_id  = data.azurerm_management_group.uat_sl_pagamenti_servizi.id
 
@@ -127,7 +127,7 @@ PARAMS
 #
 resource "azurerm_management_group_policy_assignment" "uat_set_advice_2_root_sl_pay" {
   name                 = "pa_uatsetadv2rootslpay"
-  display_name         = "PagoPA/UAT set advice 2 Mgmt root sl servizi e pagamenti"
+  display_name         = "PagoPA/UAT/SET/ADVICE 2 Mgmt root sl servizi e pagamenti"
   policy_definition_id = azurerm_policy_set_definition.uat_set_advice.id
   management_group_id  = data.azurerm_management_group.uat_sl_pagamenti_servizi.id
 
