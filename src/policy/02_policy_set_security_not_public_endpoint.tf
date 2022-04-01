@@ -2,7 +2,7 @@ resource "azurerm_policy_set_definition" "security_no_public_endpoint" {
   name                  = "pagopa_security_no_public_endpoint"
   policy_type           = "Custom"
   display_name          = "PagoPA policy not allow public endpoint for storage or internal resources"
-  management_group_name = data.azurerm_management_group.prod_sl_pagamenti_servizi.name
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
@@ -39,6 +39,11 @@ resource "azurerm_policy_set_definition" "security_no_public_endpoint" {
   # App Services should disable public network access
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/63a0ac64-5d5f-4569-8a3d-df67cc1ce9d7"
+  }
+
+  # API Management services should disable public network access
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/df73bd95-24da-4a4f-96b9-4e8b94b402bd"
   }
 
 } # end
