@@ -1,9 +1,9 @@
 # Enforced
 resource "azurerm_policy_set_definition" "prod_set_enforced" {
-  name                  = "pagopa_prod_set_enforced"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy enforced set/initiatives for prod management group"
-  management_group_name = data.azurerm_management_group.prod_sl_pagamenti_servizi.name
+  name                = "pagopa_prod_set_enforced"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy enforced set/initiatives for prod management group"
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
@@ -41,10 +41,10 @@ resource "azurerm_policy_set_definition" "prod_set_enforced" {
 
 # Advices
 resource "azurerm_policy_set_definition" "prod_set_advice" {
-  name                  = "pagopa_prod_set_advice"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy advice set/initiatives for prod management group"
-  management_group_name = data.azurerm_management_group.prod_sl_pagamenti_servizi.name
+  name                = "pagopa_prod_set_advice"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy advice set/initiatives for prod management group"
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {

@@ -1,8 +1,8 @@
 resource "azurerm_policy_set_definition" "devops_set_enforced" {
-  name                  = "pagopa_devops_set_enforced"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy set/initiatives enforced for devops management group"
-  management_group_name = data.azurerm_management_group.devops_sl_pagamenti_servizi.name
+  name                = "pagopa_devops_set_enforced"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy set/initiatives enforced for devops management group"
+  management_group_id = data.azurerm_management_group.devops_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
@@ -39,10 +39,10 @@ PARAMETERS
 }
 
 resource "azurerm_policy_set_definition" "devops_set_advice" {
-  name                  = "pagopa_devops_set_advice"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy set/initiatives advice for devops management group"
-  management_group_name = data.azurerm_management_group.devops_sl_pagamenti_servizi.name
+  name                = "pagopa_devops_set_advice"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy set/initiatives advice for devops management group"
+  management_group_id = data.azurerm_management_group.devops_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {

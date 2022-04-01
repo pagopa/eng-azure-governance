@@ -6,7 +6,7 @@
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.1.0 |
 | <a name="requirement_azuread"></a> [azuread](#requirement\_azuread) | = 2.10.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.90.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.99.0 |
 
 ## Modules
 
@@ -16,40 +16,40 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_management_group_policy_assignment.dev_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.dev_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.devops_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.devops_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.prod_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.root_set_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.security_certificate_lets_encrypt_only_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.security_https_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.security_no_public_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.security_tls_1_2](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.uat_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.uat_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_policy_definition.tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_set_definition.dev_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.dev_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.devops_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.devops_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.prod_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.prod_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.root_set](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.security_certificate_lets_encrypt_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.security_https_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.security_no_public_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.security_tls_1_2](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.uat_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.uat_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.dev_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/management_group) | data source |
-| [azurerm_management_group.devops_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/management_group) | data source |
-| [azurerm_management_group.prod_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/management_group) | data source |
-| [azurerm_management_group.root_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/management_group) | data source |
-| [azurerm_management_group.uat_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/management_group) | data source |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/subscription) | data source |
+| [azurerm_management_group_policy_assignment.dev_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.dev_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.devops_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.devops_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.prod_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.root_set_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_certificate_lets_encrypt_only_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_https_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_no_public_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_tls_1_2](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.uat_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.uat_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_policy_definition.tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_set_definition.dev_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.dev_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.devops_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.devops_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.prod_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.prod_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.root_set](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_certificate_lets_encrypt_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_https_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_no_public_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_tls_1_2](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.uat_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.uat_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/client_config) | data source |
+| [azurerm_management_group.dev_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.devops_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.prod_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.root_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.uat_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/management_group) | data source |
+| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/2.99.0/docs/data-sources/subscription) | data source |
 
 ## Inputs
 

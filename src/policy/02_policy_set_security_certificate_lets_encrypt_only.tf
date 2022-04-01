@@ -1,8 +1,8 @@
 resource "azurerm_policy_set_definition" "security_certificate_lets_encrypt_only" {
-  name                  = "pagopa_security_certificate_lets_encrypt_only"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy to discover certificates that don't use let's encrypt as CA"
-  management_group_name = data.azurerm_management_group.prod_sl_pagamenti_servizi.name
+  name                = "pagopa_security_certificate_lets_encrypt_only"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy to discover certificates that don't use let's encrypt as CA"
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
