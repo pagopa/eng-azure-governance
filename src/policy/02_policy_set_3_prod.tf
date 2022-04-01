@@ -78,6 +78,11 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
     }
     VALUE
   }
+
+  # Web Application Firewall (WAF) should be enabled for Application Gateway
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/564feb30-bf6a-4854-b4bb-0d2d2d1e6c66"
+  }
 }
 
 #
