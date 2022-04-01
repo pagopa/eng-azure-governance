@@ -23,6 +23,10 @@ No modules.
 | [azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.root_set_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_certificate_lets_encrypt_only_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_https_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_no_public_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_tls_1_2](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.uat_set_advice_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.uat_set_enforced_2_root_sl_pay](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_policy_definition.tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_definition) | resource |
@@ -33,6 +37,10 @@ No modules.
 | [azurerm_policy_set_definition.prod_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.prod_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.root_set](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_certificate_lets_encrypt_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_https_only](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_no_public_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.security_tls_1_2](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.uat_set_advice](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.uat_set_enforced](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/2.90.0/docs/data-sources/client_config) | data source |
@@ -47,6 +55,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_certificate_authority_cn"></a> [certificate\_authority\_cn](#input\_certificate\_authority\_cn) | The common name that the certificates must use | `string` | n/a | yes |
 | <a name="input_dev_allowed_locations"></a> [dev\_allowed\_locations](#input\_dev\_allowed\_locations) | List of allowed locations for dev | `list(string)` | n/a | yes |
 | <a name="input_dev_vm_skus_allowed"></a> [dev\_vm\_skus\_allowed](#input\_dev\_vm\_skus\_allowed) | list of skus allowed into management group dev | `list(string)` | n/a | yes |
 | <a name="input_devops_allowed_locations"></a> [devops\_allowed\_locations](#input\_devops\_allowed\_locations) | List of allowed locations for devops | `list(string)` | n/a | yes |

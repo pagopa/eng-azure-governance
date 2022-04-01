@@ -63,6 +63,6 @@ variable "prod_allowed_locations" {
 }
 
 variable "certificate_authority_cn" {
-  type = string
+  type        = string
   description = "The common name that the certificates must use"
 }
