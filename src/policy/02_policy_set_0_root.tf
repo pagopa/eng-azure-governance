@@ -3,7 +3,7 @@ resource "azurerm_policy_set_definition" "root_set" {
   name                = "pagopa_root_set"
   policy_type         = "Custom"
   display_name        = "PagoPA policy set/initiatives for all the resources under root sl pagamenti e servizi"
-  management_group_id = data.azurerm_management_group.root_sl_pagamenti_servizi.id
+  management_group_id = data.azurerm_management_group.root_sl_pagamenti_servizi.group_id
 
   metadata = <<METADATA
     {

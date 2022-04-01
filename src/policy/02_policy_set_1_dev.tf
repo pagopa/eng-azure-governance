@@ -2,7 +2,7 @@ resource "azurerm_policy_set_definition" "dev_set_enforced" {
   name                = "pagopa_dev_set_enforced"
   policy_type         = "Custom"
   display_name        = "PagoPA policy enforced set/initiatives for dev management group"
-  management_group_id = data.azurerm_management_group.dev_sl_pagamenti_servizi.id
+  management_group_id = data.azurerm_management_group.dev_sl_pagamenti_servizi.group_id
 
   metadata = <<METADATA
     {
@@ -42,7 +42,7 @@ resource "azurerm_policy_set_definition" "dev_set_advice" {
   name                = "pagopa_dev_set_advice"
   policy_type         = "Custom"
   display_name        = "PagoPA policy advice set/initiatives for dev management group"
-  management_group_id = data.azurerm_management_group.dev_sl_pagamenti_servizi.id
+  management_group_id = data.azurerm_management_group.dev_sl_pagamenti_servizi.group_id
 
   metadata = <<METADATA
     {
