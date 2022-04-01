@@ -3,7 +3,7 @@ resource "azurerm_policy_set_definition" "security_tls_1_2" {
   name                  = "pagopa_security_tls_1_2"
   policy_type           = "Custom"
   display_name          = "PagoPA policy resources must use TLS 1.2"
-  management_group_name = data.azurerm_management_group.prod_sl_pagamenti_servizi.name
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
@@ -31,8 +31,6 @@ resource "azurerm_policy_set_definition" "security_tls_1_2" {
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f0e6e85b-9b9f-4a4b-b67b-f730d42f1b0b"
   }
-
-
 
 } # end
 
