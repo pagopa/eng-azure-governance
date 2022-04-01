@@ -1,7 +1,7 @@
 resource "azurerm_policy_set_definition" "security_no_public_endpoint" {
-  name                  = "pagopa_security_no_public_endpoint"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy not allow public endpoint for storage or internal resources"
+  name                = "pagopa_security_no_public_endpoint"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy not allow public endpoint for storage or internal resources"
   management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA

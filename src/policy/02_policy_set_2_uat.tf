@@ -1,8 +1,8 @@
 # Enforced
 resource "azurerm_policy_set_definition" "uat_set_enforced" {
-  name                  = "pagopa_uat_set_enforced"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy enforced set/initiatives for uat management group"
+  name                = "pagopa_uat_set_enforced"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy enforced set/initiatives for uat management group"
   management_group_id = data.azurerm_management_group.uat_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
@@ -42,9 +42,9 @@ PARAMETERS
 
 # Advice
 resource "azurerm_policy_set_definition" "uat_set_advice" {
-  name                  = "pagopa_uat_set_advice"
-  policy_type           = "Custom"
-  display_name          = "PagoPA policy advice set/initiatives for uat management group"
+  name                = "pagopa_uat_set_advice"
+  policy_type         = "Custom"
+  display_name        = "PagoPA policy advice set/initiatives for uat management group"
   management_group_id = data.azurerm_management_group.uat_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
