@@ -61,3 +61,8 @@ variable "prod_allowed_locations" {
   type        = list(string)
   description = "List of allowed locations for prod"
 }
+
+variable "certificate_authority_cn" {
+  type = string
+  description = "The common name that the certificates must use"
+}
