@@ -5,12 +5,9 @@ on:
 
 jobs:
   static_analysis:
-    runs-on: ubuntu-20.04
+    runs-on: latest
 
     steps:
-      - name: Set up GCC
-        uses: egor-tensin/setup-gcc@v1
-
       - uses: actions/checkout@v2
 
       - name: init_src_policy
