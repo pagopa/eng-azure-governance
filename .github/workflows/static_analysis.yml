@@ -8,6 +8,12 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: v1.2
+          platform: x64
+
       - uses: actions/checkout@v2
 
       - name: init_src_policy
