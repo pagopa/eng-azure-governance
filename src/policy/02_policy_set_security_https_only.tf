@@ -2,7 +2,7 @@ resource "azurerm_policy_set_definition" "security_https_only" {
   name                = "pagopa_security_https_only"
   policy_type         = "Custom"
   display_name        = "PagoPA policy not allow public endpoint for storage or internal resources"
-  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.group_id
 
   metadata = <<METADATA
     {

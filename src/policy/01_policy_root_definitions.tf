@@ -6,7 +6,7 @@ resource "azurerm_policy_definition" "tags_inherit_from_subscription" {
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA: Tag ${each.key} inherith from subscription"
-  management_group_id = data.azurerm_management_group.root_sl_pagamenti_servizi.id
+  management_group_id = data.azurerm_management_group.root_sl_pagamenti_servizi.group_id
 
   metadata = <<METADATA
     {

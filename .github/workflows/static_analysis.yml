@@ -5,7 +5,7 @@ on:
 
 jobs:
   static_analysis:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -23,5 +23,5 @@ jobs:
 
       - name: run_test
         run: |
-          TAG=nigthly
+          TAG=v1.64.1
           docker run -v $(pwd):/lint -w /lint ghcr.io/antonbabenko/pre-commit-terraform:$TAG run -a
