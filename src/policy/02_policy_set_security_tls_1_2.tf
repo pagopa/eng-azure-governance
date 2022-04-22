@@ -12,11 +12,6 @@ resource "azurerm_policy_set_definition" "security_tls_1_2" {
     }
   METADATA
 
-  # Azure SQL Database should be running TLS version 1.2 or newer
-  policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/32e6bbec-16b6-44c2-be37-c5b672d103cf"
-  }
-
   # App Service Environment should disable TLS 1.0 and 1.1
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/d6545c6b-dd9d-4265-91e6-0b451e2f1c50"

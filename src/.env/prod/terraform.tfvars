@@ -3,11 +3,9 @@ location               = "northeurope"
 metadata_category_name = "PagoPA"
 
 tags_subscription_to_inherith = [
-  "CreatedBy",
+  "CostCenter",
   "Environment",
   "Owner",
-  "Source",
-  "CostCenter",
   "BusinessUnit",
 ]
 
