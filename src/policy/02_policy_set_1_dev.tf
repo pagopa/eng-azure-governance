@@ -102,7 +102,7 @@ locals {
 # Enforce
 resource "azurerm_management_group_policy_assignment" "dev_set_enforced_2_root_sl_pay" {
   name                 = "pa_devsetenf2rootslpay"
-  display_name         = "PagoPA/DEVOPS/DEV/SET/ENFORCE 2 Mgmt root sl servizi e pagamenti"
+  display_name         = "PagoPA/DEV/SET/ENFORCE 2 Mgmt root sl servizi e pagamenti"
   policy_definition_id = azurerm_policy_set_definition.dev_set_enforced.id
   management_group_id  = data.azurerm_management_group.dev_sl_pagamenti_servizi.id
 
@@ -132,7 +132,7 @@ PARAMS
 # Advice
 resource "azurerm_management_group_policy_assignment" "dev_set_advice_2_root_sl_pay" {
   name                 = "pa_devsetadv2rootslpay"
-  display_name         = "PagoPA/DEVOPS/DEV/SET/ADVICE 2 Mgmt root sl servizi e pagamenti"
+  display_name         = "PagoPA/DEV/SET/ADVICE 2 Mgmt root sl servizi e pagamenti"
   policy_definition_id = azurerm_policy_set_definition.dev_set_advice.id
   management_group_id  = data.azurerm_management_group.dev_sl_pagamenti_servizi.id
 
