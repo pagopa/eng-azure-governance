@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "= 2.99.0"
+      version = "= 3.4.0"
     }
     azuread = {
       source  = "hashicorp/azuread"
@@ -21,6 +21,28 @@ provider "azurerm" {
       purge_soft_delete_on_destroy = false
     }
   }
+}
+
+### cstar_prod
+provider "azurerm" {
+  features {
+    key_vault {
+      purge_soft_delete_on_destroy = false
+    }
+  }
+  alias           = "cstar_prod"
+  subscription_id = local.cstar_prod_subscription_id
+}
+
+### io_prod
+provider "azurerm" {
+  features {
+    key_vault {
+      purge_soft_delete_on_destroy = false
+    }
+  }
+  alias           = "io_prod"
+  subscription_id = local.io_prod_subscription_id
 }
 
 data "azurerm_subscription" "current" {}

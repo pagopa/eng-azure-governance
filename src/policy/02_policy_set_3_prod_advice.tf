@@ -3,7 +3,7 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
   name                = "pagopa_prod_set_advice"
   policy_type         = "Custom"
   display_name        = "PagoPA/PROD/set/advice@prod management group"
-  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.group_id
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
@@ -159,4 +159,28 @@ resource "azurerm_management_group_policy_assignment" "prod_set_advice_2_root_sl
   identity {
     type = "SystemAssigned"
   }
+}
+
+#
+# Exemption
+#
+resource "azurerm_resource_policy_exemption" "cstar_p_postgresql" {
+  name                 = "cstar_p_postgresql"
+  resource_id          = data.azurerm_postgresql_server.cstar_p_postgresql.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay.id
+  exemption_category   = "Waiver"
+}
+
+resource "azurerm_resource_policy_exemption" "io_p_redis_common" {
+  name                 = "io_p_redis_common"
+  resource_id          = data.azurerm_redis_cache.io_p_redis_common.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay.id
+  exemption_category   = "Waiver"
+}
+
+resource "azurerm_resource_policy_exemption" "io_p_cosmos_api" {
+  name                 = "io_p_redis_common"
+  resource_id          = data.azurerm_cosmosdb_account.io_p_cosmos_api.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay.id
+  exemption_category   = "Waiver"
 }

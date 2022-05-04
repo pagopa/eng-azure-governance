@@ -66,3 +66,8 @@ variable "certificate_authority_cn" {
   type        = string
   description = "The common name that the certificates must use"
 }
+
+locals {
+  cstar_prod_subscription_id = "88c709b0-11cf-4450-856e-f9bf54051c1d"
+  io_prod_subscription_id = "ec285037-c673-4f58-b594-d7c480da4e8b"
+}

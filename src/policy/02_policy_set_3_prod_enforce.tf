@@ -3,7 +3,7 @@ resource "azurerm_policy_set_definition" "prod_set_enforced" {
   name                = "pagopa_prod_set_enforced"
   policy_type         = "Custom"
   display_name        = "PagoPA/PROD/set/enforce@prod management group"
-  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.group_id
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
