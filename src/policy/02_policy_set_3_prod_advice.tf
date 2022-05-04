@@ -3,7 +3,7 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
   name                = "pagopa_prod_set_advice"
   policy_type         = "Custom"
   display_name        = "PagoPA/PROD/set/advice@prod management group"
-  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.group_id
+  management_group_id = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
 
   metadata = <<METADATA
     {
@@ -43,9 +43,9 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/564feb30-bf6a-4854-b4bb-0d2d2d1e6c66"
   }
 
-#
-# HTTPS Only
-#
+  #
+  # HTTPS Only
+  #
 
   # Web Application should only be accessible over HTTPS
   policy_definition_reference {
@@ -67,9 +67,9 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/1a5b4dca-0b6f-4cf5-907c-56316bc1bf3d"
   }
 
-#
-# Not public endpoint
-#
+  #
+  # Not public endpoint
+  #
   # Public network access should be disabled for Container registries
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/0fdf0491-d080-4575-b627-ad0e843cba0f"
@@ -105,9 +105,9 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/df73bd95-24da-4a4f-96b9-4e8b94b402bd"
   }
 
-#
-# TLS >= 1.2
-#
+  #
+  # TLS >= 1.2
+  #
   # App Service Environment should disable TLS 1.0 and 1.1
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/d6545c6b-dd9d-4265-91e6-0b451e2f1c50"
@@ -129,7 +129,7 @@ resource "azurerm_policy_set_definition" "prod_set_advice" {
 #
 
 locals {
-  list_allow_skus_raw_prod    = jsonencode(var.prod_vm_skus_allowed)
+  list_allow_skus_raw_prod = jsonencode(var.prod_vm_skus_allowed)
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_set_advice_2_root_sl_pay" {
@@ -159,4 +159,28 @@ resource "azurerm_management_group_policy_assignment" "prod_set_advice_2_root_sl
   identity {
     type = "SystemAssigned"
   }
+}
+
+#
+# Exemption
+#
+resource "azurerm_resource_policy_exemption" "cstar_p_postgresql" {
+  name                 = "cstar_p_postgresql"
+  resource_id          = data.azurerm_postgresql_server.cstar_p_postgresql.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay.id
+  exemption_category   = "Waiver"
+}
+
+resource "azurerm_resource_policy_exemption" "io_p_redis_common" {
+  name                 = "io_p_redis_common"
+  resource_id          = data.azurerm_redis_cache.io_p_redis_common.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay.id
+  exemption_category   = "Waiver"
+}
+
+resource "azurerm_resource_policy_exemption" "io_p_cosmos_api" {
+  name                 = "io_p_redis_common"
+  resource_id          = data.azurerm_cosmosdb_account.io_p_cosmos_api.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.prod_set_advice_2_root_sl_pay.id
+  exemption_category   = "Waiver"
 }
