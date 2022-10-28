@@ -19,8 +19,9 @@ jobs:
             policy_assignments
         run: |
           TAG=$(cat .terraform-version)
+          cd src/
           for f in $FOLDERS; do
-            cd src/$f
+            cd $f
             rm -rf 99_terraform.tf
             mv 99_terraform.tf.ci 99_terraform.tf
             docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
