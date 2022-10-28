@@ -9,3 +9,9 @@ variable "policy_type" {
   description = "policy type"
   default     = "Custom"
 }
+
+variable "location" {
+  type        = string
+  description = "location"
+  default     = "westeurope"
+}
