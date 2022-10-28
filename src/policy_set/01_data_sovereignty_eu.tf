@@ -1,10 +1,10 @@
-variable allowed_locations {
+variable "allowed_locations" {
   type        = list(string)
   default     = ["northeurope", "westeurope", "europe", "global"]
   description = "description"
 }
 
-variable allowed_locations_resource_groups {
+variable "allowed_locations_resource_groups" {
   type        = list(string)
   default     = ["northeurope", "westeurope"]
   description = "description"
@@ -12,7 +12,7 @@ variable allowed_locations_resource_groups {
 
 locals {
   data_sovereignty_eu = {
-    allowed_locations_policy_definition_reference_id = "Allowed locations"
+    allowed_locations_policy_definition_reference_id                 = "Allowed locations"
     allowed_locations_resource_groups_policy_definition_reference_id = "Allowed locations for resource groups"
   }
 }
@@ -37,7 +37,7 @@ METADATA
   # Allowed locations
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c"
-    reference_id         = "${local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id}"
+    reference_id         = local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id
     parameter_values     = <<VALUE
     {
       "listOfAllowedLocations": {
@@ -50,7 +50,7 @@ METADATA
   # Allowed locations for resource groups
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e765b5de-1225-4ba3-bd56-1ac6695af988"
-    reference_id         = "${local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id}"
+    reference_id         = local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id
     parameter_values     = <<VALUE
     {
       "listOfAllowedLocations": {
