@@ -14,10 +14,8 @@ variable "resource_lock" {
   ]
 }
 
-variable "resource_lock_role_id" {
-  type        = string
-  description = "Resource lock role for managed identity https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles"
-  default     = "18d7d88d-d35e-4fb5-a5c3-7773c20a72d9" # User Access Administrator
+data "azurerm_role_definition" "resource_lock_contributor" {
+  name = "PagoPA Resource Lock Contributor"
 }
 
 resource "azurerm_policy_definition" "resource_lock" {
@@ -26,7 +24,7 @@ resource "azurerm_policy_definition" "resource_lock" {
   name                = "pagopa_resource_lock_${replace(each.key, "/", "_")}"
   policy_type         = var.policy_type
   mode                = "Indexed"
-  display_name        = "PagoPA: Resource lock ${replace(each.key, "/", "_")}"
+  display_name        = "PagoPA Resource lock ${replace(each.key, "/", "_")}"
   management_group_id = data.azurerm_management_group.root_pagopa.id
 
   metadata = <<METADATA
@@ -47,7 +45,7 @@ METADATA
         "details": {
           "type": "Microsoft.Authorization/locks",
           "roleDefinitionIds": [
-            "/providers/Microsoft.Authorization/roleDefinitions/${var.resource_lock_role_id}"
+            "${data.azurerm_role_definition.resource_lock_contributor.id}"
           ],
           "existenceCondition": {
             "field": "Microsoft.Authorization/locks/level",
