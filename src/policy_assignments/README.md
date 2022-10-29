@@ -18,7 +18,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_management_group_policy_assignment.engineering_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_role_assignment.engineering_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.engineering_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.root_pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/subscription) | data source |

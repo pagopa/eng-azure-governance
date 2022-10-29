@@ -1,5 +1,5 @@
 resource "azurerm_management_group_policy_assignment" "engineering_prod_resource_lock" {
-  name                 = "eng_prod_reslock"
+  name                 = "engpresourcelock"
   display_name         = "Engineering Prod Resource lock"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.resource_lock_id
   management_group_id  = data.azurerm_management_group.root_pagopa.id
@@ -18,8 +18,8 @@ resource "azurerm_management_group_policy_assignment" "engineering_prod_resource
   METADATA
 }
 
-resource "azurerm_role_assignment" "engineering_prod_resource_lock" {
+resource "azurerm_role_assignment" "engineering_prod_resource_lock_contributor" {
   scope                = data.azurerm_management_group.root_pagopa.id
-  role_definition_name = "User Access Administrator"
+  role_definition_name = "PagoPA Resource Lock Contributor"
   principal_id         = azurerm_management_group_policy_assignment.engineering_prod_resource_lock.identity[0].principal_id
 }

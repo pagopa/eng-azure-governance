@@ -66,3 +66,12 @@ sh terraform.sh apply prod
 ## Azure policy docs
 
 [Policy structure definition](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/definition-structure?WT.mc_id=Portal-Microsoft_Azure_Policy)
+
+## How to force to run policy evaluation
+
+```bash
+# current subscription
+az policy state trigger-scan --no-wait
+# resource group in current subscription
+az policy state trigger-scan -g "my-rg" --no-wait
+```
