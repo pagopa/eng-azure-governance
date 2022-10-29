@@ -10,7 +10,22 @@ variable "resource_lock" {
     "Microsoft.DBforPostgreSQL/flexibleServers",
     "Microsoft.DataProtection/backupVaults",
     "Microsoft.Network/applicationGateways",
+    "Microsoft.Network/natGateways",
+    "Microsoft.Network/virtualNetworkGateways",
     "Microsoft.OperationalInsights/workspaces",
+    "microsoft.insights/components",
+    "Microsoft.ContainerService/ManagedClusters",
+    "Microsoft.Cdn/profiles/endpoints",
+    "Microsoft.KeyVault/vaults",
+    "Microsoft.EventHub/Namespaces",
+    "Microsoft.EventHub/namespaces/eventhubs",
+    "Microsoft.DataFactory/factories",
+    "Microsoft.Kusto/Clusters",
+    "Microsoft.ManagedIdentity/userAssignedIdentities",
+    # "Microsoft.NotificationHubs/namespaces", to verify
+    # "Microsoft.NotificationHubs/namespaces/notificationHubs", to verify
+    # "Microsoft.Network/dnszones", to verify, cannot delete records
+    # "Microsoft.Network/privateDnsZones", to verify, cannot delete records
   ]
 }
 
@@ -21,10 +36,10 @@ data "azurerm_role_definition" "resource_lock_contributor" {
 resource "azurerm_policy_definition" "resource_lock" {
   for_each = toset(var.resource_lock)
 
-  name                = "pagopa_resource_lock_${replace(each.key, "/", "_")}"
+  name                = "pagopa_resource_lock_${replace(replace(each.key, "/", "_"), "Microsoft.", "")}"
   policy_type         = var.policy_type
   mode                = "Indexed"
-  display_name        = "PagoPA Resource lock ${replace(each.key, "/", "_")}"
+  display_name        = "PagoPA Resource lock ${replace(replace(each.key, "/", "_"), "Microsoft.", "")}"
   management_group_id = data.azurerm_management_group.root_pagopa.id
 
   metadata = <<METADATA
