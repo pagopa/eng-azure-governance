@@ -14,10 +14,10 @@ jobs:
       - name: init_src
         env:
           FOLDERS: >
-            custom_roles
-            policy
-            policy_set
-            policy_assignments
+            01_custom_roles
+            02_policy
+            03_policy_set
+            04_policy_assignments
         run: |
           TAG=$(cat .terraform-version)
           cd src/
