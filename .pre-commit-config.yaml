@@ -11,3 +11,6 @@ repos:
           - --args=--hide providers
       - id: terraform_tfsec
       - id: terraform_validate
+        args:
+          - --args=-json
+          - --args=-no-color
