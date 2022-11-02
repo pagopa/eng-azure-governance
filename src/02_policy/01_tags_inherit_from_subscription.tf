@@ -13,7 +13,7 @@ resource "azurerm_policy_definition" "tags_inherit_from_subscription" {
   for_each = toset(var.tags_inherit_from_subscription)
 
   name                = "pagopa_tag_${lower(each.key)}_inherit_from_subscription"
-  policy_type         = var.policy_type
+  policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Tag ${each.key} inherith from subscription"
   management_group_id = data.azurerm_management_group.root_pagopa.id

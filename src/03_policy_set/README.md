@@ -28,7 +28,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_allowed_locations"></a> [allowed\_locations](#input\_allowed\_locations) | description | `list(string)` | <pre>[<br>  "northeurope",<br>  "westeurope",<br>  "europe",<br>  "global"<br>]</pre> | no |
+| <a name="input_allowed_locations"></a> [allowed\_locations](#input\_allowed\_locations) | description | `list(string)` | <pre>[<br>  "northeurope",<br>  "westeurope",<br>  "global"<br>]</pre> | no |
 | <a name="input_allowed_locations_resource_groups"></a> [allowed\_locations\_resource\_groups](#input\_allowed\_locations\_resource\_groups) | description | `list(string)` | <pre>[<br>  "northeurope",<br>  "westeurope"<br>]</pre> | no |
 | <a name="input_location"></a> [location](#input\_location) | location | `string` | `"westeurope"` | no |
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |

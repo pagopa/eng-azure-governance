@@ -22,8 +22,8 @@ variable "resource_lock" {
     "Microsoft.DataFactory/factories",
     "Microsoft.Kusto/Clusters",
     "Microsoft.ManagedIdentity/userAssignedIdentities",
-    # "Microsoft.NotificationHubs/namespaces", to verify
-    # "Microsoft.NotificationHubs/namespaces/notificationHubs", to verify
+    # "Microsoft.NotificationHubs/namespaces",
+    # "Microsoft.NotificationHubs/namespaces/notificationHubs",
     # "Microsoft.Network/dnszones", to verify, cannot delete records
     # "Microsoft.Network/privateDnsZones", to verify, cannot delete records
   ]
@@ -37,7 +37,7 @@ resource "azurerm_policy_definition" "resource_lock" {
   for_each = toset(var.resource_lock)
 
   name                = "pagopa_resource_lock_${replace(replace(each.key, "/", "_"), "Microsoft.", "")}"
-  policy_type         = var.policy_type
+  policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Resource lock ${replace(replace(each.key, "/", "_"), "Microsoft.", "")}"
   management_group_id = data.azurerm_management_group.root_pagopa.id
@@ -45,7 +45,11 @@ resource "azurerm_policy_definition" "resource_lock" {
   metadata = <<METADATA
     {
         "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
+        "version": "v1.0.0",
+        "securityCenter": {
+		      "RemediationDescription": "Add resourse lock to ${each.key} resource types",
+		      "Severity": "High"
+        }
     }
 METADATA
 
