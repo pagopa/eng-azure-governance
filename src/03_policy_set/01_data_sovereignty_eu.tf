@@ -1,6 +1,6 @@
 variable "allowed_locations" {
   type        = list(string)
-  default     = ["northeurope", "westeurope", "europe", "global"]
+  default     = ["northeurope", "westeurope", "global"]
   description = "description"
 }
 
