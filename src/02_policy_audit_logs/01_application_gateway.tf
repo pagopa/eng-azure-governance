@@ -1,8 +1,8 @@
-resource "azurerm_policy_definition" "audit_logs_keyvault_log_analytics" {
-  name                = "audit_logs_keyvault_log_analytics"
+resource "azurerm_policy_definition" "audit_logs_application_gateway_log_analytics" {
+  name                = "audit_logs_application_gateway_log_analytics"
   policy_type         = "Custom"
   mode                = "Indexed"
-  display_name        = "PagoPA Add Diagnostic Settings for audit logs for KeyVault to Log Analytics workspace"
+  display_name        = "PagoPA Add Diagnostic Settings for audit logs for Application Gateway to Log Analytics workspace"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
@@ -10,7 +10,7 @@ resource "azurerm_policy_definition" "audit_logs_keyvault_log_analytics" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0",
         "securityCenter": {
-		      "RemediationDescription": "Add Diagnostic Settings for audit logs for KeyVault to Log Analytics workspace",
+		      "RemediationDescription": "Add Diagnostic Settings for audit logs for Application Gateway to Log Analytics workspace",
 		      "Severity": "High"
         }
     }
@@ -38,15 +38,15 @@ METADATA
   }
 PARAMETERS
 
-  policy_rule = file("./policy_rules/keyvault_log_analytics.json")
+  policy_rule = file("./policy_rules/application_gateway_log_analytics.json")
 
 }
 
-resource "azurerm_policy_definition" "audit_logs_keyvault_storage_account" {
-  name                = "audit_logs_keyvault_storage_account"
+resource "azurerm_policy_definition" "audit_logs_application_gateway_storage_account" {
+  name                = "audit_logs_application_gateway_storage_account"
   policy_type         = "Custom"
   mode                = "Indexed"
-  display_name        = "PagoPA Add Diagnostic Settings for audit logs for KeyVault to Storage Account"
+  display_name        = "PagoPA Add Diagnostic Settings for audit logs for Application Gateway to Storage Account"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
@@ -54,7 +54,7 @@ resource "azurerm_policy_definition" "audit_logs_keyvault_storage_account" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0",
         "securityCenter": {
-		      "RemediationDescription": "Add Diagnostic Settings for audit logs for KeyVault to Storage Account",
+		      "RemediationDescription": "Add Diagnostic Settings for audit logs for Application Gateway to Storage Account",
 		      "Severity": "High"
         }
     }
@@ -89,6 +89,6 @@ METADATA
   }
 PARAMETERS
 
-  policy_rule = file("./policy_rules/keyvault_storage_account.json")
+  policy_rule = file("./policy_rules/application_gateway_storage_account.json")
 
 }
