@@ -30,7 +30,7 @@ locals {
 resource "azurerm_policy_set_definition" "audit_logs" {
   name                = "audit_logs"
   policy_type         = var.policy_type
-  display_name        = "PagoPA Audit logs to security"
+  display_name        = "PagoPA Audit logs"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
