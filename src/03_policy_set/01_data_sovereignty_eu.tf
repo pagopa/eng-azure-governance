@@ -1,13 +1,13 @@
 variable "allowed_locations" {
   type        = list(string)
   default     = ["northeurope", "westeurope", "global"]
-  description = "description"
+  description = "List of allowed locations for resources"
 }
 
 variable "allowed_locations_resource_groups" {
   type        = list(string)
   default     = ["northeurope", "westeurope"]
-  description = "description"
+  description = "List of allowed locations for resource groups"
 }
 
 locals {
@@ -21,15 +21,15 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
   name                = "data_sovereignty_eu"
   policy_type         = var.policy_type
   display_name        = "PagoPA Data sovereignty in EU"
-  management_group_id = data.azurerm_management_group.root_pagopa.id
+  management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0",
         "parameterScopes": {
-          "listOfAllowedLocations : ${local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id}": "${data.azurerm_management_group.root_pagopa.id}",
-          "listOfAllowedLocations : ${local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id}": "${data.azurerm_management_group.root_pagopa.id}"
+          "listOfAllowedLocations : ${local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "listOfAllowedLocations : ${local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -59,4 +59,8 @@ METADATA
     }
     VALUE
   }
+}
+
+output "data_sovereignty_eu_id" {
+  value = azurerm_policy_set_definition.data_sovereignty_eu.id
 }

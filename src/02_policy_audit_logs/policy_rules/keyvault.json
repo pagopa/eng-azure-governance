@@ -1,0 +1,120 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.KeyVault/vaults"
+  },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "evaluationDelay": "AfterProvisioning",
+      "name": "[parameters('diagnosticsSettingNameToUse')]",
+      "roleDefinitionIds": [
+        "/providers/microsoft.authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa",
+        "/providers/microsoft.authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293"
+      ],
+      "existenceCondition": {
+        "allOf": [
+          {
+            "anyof": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                        "equals": "true"
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
+                        "equals": "Audit"
+                      }
+                    ]
+                  }
+                },
+                "greaterOrEquals": 1
+              }
+            ]
+          },
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
+            "equals": "[parameters('logAnalytics')]"
+          },
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
+            "equals": "[parameters('storageAccount')]"
+          }
+        ]
+      },
+      "deployment": {
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingNameToUse": {
+                "type": "string"
+              },
+              "resourceName": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "logAnalytics": {
+                "type": "string"
+              },
+              "storageAccount": {
+                "type": "string"
+              }
+            },
+            "variables": {},
+            "resources": [
+              {
+                "type": "Microsoft.KeyVault/vaults/providers/diagnosticSettings",
+                "apiVersion": "2021-05-01-preview",
+                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingNameToUse'))]",
+                "location": "[parameters('location')]",
+                "dependsOn": [],
+                "properties": {
+                  "workspaceId": "[parameters('logAnalytics')]",
+                  "storageAccountId": "[parameters('storageAccount')]",
+                  "logs": [
+                    {
+                      "categoryGroup": "Audit",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "outputs": {}
+          },
+          "parameters": {
+            "diagnosticsSettingNameToUse": {
+              "value": "[parameters('diagnosticsSettingNameToUse')]"
+            },
+            "resourceName": {
+              "value": "[field('name')]"
+            },
+            "location": {
+              "value": "[field('location')]"
+            },
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
+            },
+            "storageAccount": {
+              "value": "[parameters('storageAccount')]"
+            }
+          }
+        }
+      }
+    }
+  }
+}
