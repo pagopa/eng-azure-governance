@@ -1,16 +1,16 @@
-variable "audit_logs_workspaceid" {
+variable "audit_logs_workspace_id" {
   type        = string
   default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"
   description = "description"
 }
 
-variable "audit_logs_storageid_westeurope" {
+variable "audit_logs_storage_id_westeurope" {
   type        = string
   default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
   description = "description"
 }
 
-variable "audit_logs_storageid_northeurope" {
+variable "audit_logs_storage_id_northeurope" {
   type        = string
   default     = "novalue"
   description = "description"
@@ -50,7 +50,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspaceid}"
+        "value": "${var.audit_logs_workspace_id}"
       }
     }
     VALUE
@@ -62,7 +62,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storageid_westeurope}"
+        "value": "${var.audit_logs_storage_id_westeurope}"
       },
       "location": {
         "value": "westeurope"
@@ -77,7 +77,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storageid_northeurope}"
+        "value": "${var.audit_logs_storage_id_northeurope}"
       },
       "location": {
         "value": "northeurope"
@@ -90,4 +90,16 @@ METADATA
 
 output "audit_logs_id" {
   value = azurerm_policy_set_definition.audit_logs.id
+}
+
+output "audit_logs_workspace_id" {
+  value = var.audit_logs_workspace_id
+}
+
+output "audit_logs_storage_id_westeurope" {
+  value = var.audit_logs_storage_id_westeurope
+}
+
+output "audit_logs_storage_id_northeurope" {
+  value = var.audit_logs_storage_id_northeurope
 }

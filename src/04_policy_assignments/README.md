@@ -17,8 +17,12 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagopa_data_sovereignty_eu](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_prod_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.pagamenti_servizi_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.dev_sl_pagamenti_servizi](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/management_group) | data source |
