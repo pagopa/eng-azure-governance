@@ -18,9 +18,8 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_policy_definition.resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.root_pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/management_group) | data source |
 | [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/role_definition) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/subscription) | data source |
 
@@ -28,14 +27,12 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
-| <a name="input_resource_lock"></a> [resource\_lock](#input\_resource\_lock) | Resource lock types | `list(string)` | <pre>[<br>  "Microsoft.DocumentDB/databaseAccounts",<br>  "Microsoft.Storage/storageAccounts",<br>  "Microsoft.Cache/Redis",<br>  "Microsoft.Network/publicIPAddresses",<br>  "Microsoft.DBforPostgreSQL/servers",<br>  "Microsoft.DBforPostgreSQL/flexibleServers",<br>  "Microsoft.DataProtection/backupVaults",<br>  "Microsoft.Network/applicationGateways",<br>  "Microsoft.Network/natGateways",<br>  "Microsoft.Network/virtualNetworkGateways",<br>  "Microsoft.OperationalInsights/workspaces",<br>  "microsoft.insights/components",<br>  "Microsoft.ContainerService/ManagedClusters",<br>  "Microsoft.Cdn/profiles/endpoints",<br>  "Microsoft.KeyVault/vaults",<br>  "Microsoft.EventHub/Namespaces",<br>  "Microsoft.EventHub/namespaces/eventhubs",<br>  "Microsoft.DataFactory/factories",<br>  "Microsoft.Kusto/Clusters",<br>  "Microsoft.ManagedIdentity/userAssignedIdentities"<br>]</pre> | no |
-| <a name="input_tags_inherit_from_subscription"></a> [tags\_inherit\_from\_subscription](#input\_tags\_inherit\_from\_subscription) | Tag that must be inherith from the subscription | `list(string)` | <pre>[<br>  "CostCenter",<br>  "Environment",<br>  "Owner",<br>  "BusinessUnit"<br>]</pre> | no |
+| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA Compliance"` | no |
+| <a name="input_resource_lock_types"></a> [resource\_lock\_types](#input\_resource\_lock\_types) | Resource lock types | `list(string)` | <pre>[<br>  "Microsoft.DocumentDB/databaseAccounts",<br>  "Microsoft.Storage/storageAccounts",<br>  "Microsoft.Cache/Redis",<br>  "Microsoft.Network/publicIPAddresses",<br>  "Microsoft.DBforPostgreSQL/servers",<br>  "Microsoft.DBforPostgreSQL/flexibleServers",<br>  "Microsoft.DataProtection/backupVaults",<br>  "Microsoft.Network/applicationGateways",<br>  "Microsoft.Network/natGateways",<br>  "Microsoft.Network/virtualNetworkGateways",<br>  "Microsoft.OperationalInsights/workspaces",<br>  "microsoft.insights/components",<br>  "Microsoft.ContainerService/ManagedClusters",<br>  "Microsoft.Cdn/profiles/endpoints",<br>  "Microsoft.KeyVault/vaults",<br>  "Microsoft.EventHub/Namespaces",<br>  "Microsoft.EventHub/namespaces/eventhubs",<br>  "Microsoft.DataFactory/factories",<br>  "Microsoft.Kusto/Clusters",<br>  "Microsoft.ManagedIdentity/userAssignedIdentities",<br>  "Microsoft.NotificationHubs/namespaces",<br>  "Microsoft.NotificationHubs/namespaces/notificationHubs"<br>]</pre> | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_resource_lock_ids"></a> [resource\_lock\_ids](#output\_resource\_lock\_ids) | n/a |
-| <a name="output_tags_inherit_from_subscription_ids"></a> [tags\_inherit\_from\_subscription\_ids](#output\_tags\_inherit\_from\_subscription\_ids) | n/a |
+| <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

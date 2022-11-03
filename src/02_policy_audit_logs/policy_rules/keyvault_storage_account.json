@@ -1,14 +1,22 @@
 {
   "if": {
-    "field": "type",
-    "equals": "Microsoft.KeyVault/vaults"
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.KeyVault/vaults"
+      },
+      {
+        "field": "location",
+        "equals": "[parameters('location')]"
+      }
+    ]
   },
   "then": {
     "effect": "deployIfNotExists",
     "details": {
       "type": "Microsoft.Insights/diagnosticSettings",
       "evaluationDelay": "AfterProvisioning",
-      "name": "[parameters('diagnosticsSettingNameToUse')]",
+      "name": "[parameters('diagnosticsSettingName')]",
       "roleDefinitionIds": [
         "/providers/microsoft.authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa",
         "/providers/microsoft.authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293"
@@ -38,10 +46,6 @@
             ]
           },
           {
-            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
-            "equals": "[parameters('logAnalytics')]"
-          },
-          {
             "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
             "equals": "[parameters('storageAccount')]"
           }
@@ -54,16 +58,13 @@
             "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
-              "diagnosticsSettingNameToUse": {
+              "diagnosticsSettingName": {
                 "type": "string"
               },
               "resourceName": {
                 "type": "string"
               },
               "location": {
-                "type": "string"
-              },
-              "logAnalytics": {
                 "type": "string"
               },
               "storageAccount": {
@@ -75,11 +76,10 @@
               {
                 "type": "Microsoft.KeyVault/vaults/providers/diagnosticSettings",
                 "apiVersion": "2021-05-01-preview",
-                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingNameToUse'))]",
+                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
                 "location": "[parameters('location')]",
                 "dependsOn": [],
                 "properties": {
-                  "workspaceId": "[parameters('logAnalytics')]",
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
@@ -97,17 +97,14 @@
             "outputs": {}
           },
           "parameters": {
-            "diagnosticsSettingNameToUse": {
-              "value": "[parameters('diagnosticsSettingNameToUse')]"
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
             },
             "resourceName": {
               "value": "[field('name')]"
             },
             "location": {
               "value": "[field('location')]"
-            },
-            "logAnalytics": {
-              "value": "[parameters('logAnalytics')]"
             },
             "storageAccount": {
               "value": "[parameters('storageAccount')]"
