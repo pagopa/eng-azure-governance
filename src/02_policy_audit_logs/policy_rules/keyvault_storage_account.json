@@ -18,8 +18,8 @@
       "evaluationDelay": "AfterProvisioning",
       "name": "[parameters('diagnosticsSettingName')]",
       "roleDefinitionIds": [
-        "/providers/microsoft.authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa",
-        "/providers/microsoft.authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293"
+        "${roleDefinitionIds_audit_logs_contributor}",
+        "${roleDefinitionIds_log_analytics_contributor}"
       ],
       "existenceCondition": {
         "allOf": [
@@ -41,7 +41,7 @@
                     ]
                   }
                 },
-                "greaterOrEquals": 1
+                "equals": 1
               }
             ]
           },
