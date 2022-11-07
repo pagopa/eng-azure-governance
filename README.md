@@ -1,68 +1,89 @@
-# devops-azure-governance
+# azure-governance
 
-scripts to manage azure: subscription, policy, policy initiatives
+This project contains all PagoPA policies and assignments to governance Azure workloads.
 
 ## Project structure
 
-* `src/.env/prod`
-  * contiene variabili di ambiente
-* `src/policty` contiene i file terraform per poter creare e gestire le policy
+* `src/01_custom_roles` contains custom roles created with least privileges principle
+* `src/02_policy_*` contains custom policies grouped by type definition
+* `src/03_policy_set` contains custom policy initiatives (alias policy set)
+* `src/04_policy_assignments` contains policy initiatives assignments to management groups or subscriptions.
 
-## Glossario
+## Policy overview
 
-* Policy set = Policy initiatives
+### audit_logs
 
-## Policy Logica e struttura
+`Type`: Compliance
 
-Le policy sono state cosi divise:
+`Scope`: Audit all resources that missing to send audit logs to security environment
 
-## Policy trasversali Root SL Pagamenti e servizi
+`Assignment`: All production management groups or subscriptions
 
-Attualmente viene applicata la policy `Inherith tag from Subscription if not exist`,
-per semplificare l'utilizzo della regola visto che doveva essere applicata più volta sia è scelto
-di creare delle regole custom che avessero già dentro di se il tag da controllare.
+`Automatic remediation`: Yes
 
-Attulamente i tags scelti sono:
+`Required roles by Managed Identity`:
+- `Monitoring Contributor` on management groups or subscriptions
+- `Log Analytics Contributor` on security Log Analitics Workspace and Storage Account
 
-```js
-tags_subscription_to_inherith = [
-  "CreatedBy",
-  "Environment",
-  "Owner",
-  "Source",
-  "CostCenter",
-  "BusinessUnit",
-]
-```
+### resource_lock
 
-## Policy per ambiente
+`Type`: Compliance
 
-Visto l'utilizzo dei management groups con la logica di raggruppamento per ambiente, si è scelto la logica di creare due tipologie di policy set:
+`Scope`: Audit all resources that missing Resource Lock
 
-* **enforced**: raccoglitore di policy che avranno un effetto di tipo imperativo sulle risorse associate, vietando la creazione o l'aggiornamento di tutte quelle risorse che non rispettino le regole indicate
-* **advice**: raccoglitore di policy che servono solo come consultazione, questo si è reso necessario nel caso in cui si voglia introdurre una nuova policy ma non si voglia forzare la mano per la sua attuazione
+`Assignment`: All production management groups or subscriptions
 
-## Policy attivate di tipo Enforced
+`Automatic remediation`: Yes
 
-* `allowed locations`:`/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c`
-  * Verifica se la risorsa viene creata nella region definita
+`Required roles by Managed Identity`:
+- `PagoPA Resource Lock Contributor` on management groups or subscriptions
 
-## Policy attivate di tipo Advice
+### data_sovereignty_eu
 
-* `allowed sku vm`:`/providers/Microsoft.Authorization/policyDefinitions/cccc23c7-8427-4f53-ad12-b6a63eb452b3`
-  * Verifica che le VM o scale set abbiano lo sku impostato
+`Type`: Compliance
 
-* `tag inherith form subscription`:`/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c`
-  * Tutte le risorse contenute all'interno della subscription ereditano un determinato tag.
+`Scope`: Deny to create resources outside EU regions. Allowed regions are: westeurope, northeurope, global
+
+`Automatic remediation`: No
+
+`Assignment`: Root PagoPA management group and child management groups or subscriptions
+
+`Required roles by Managed Identity`: N/A
+
+### tags_inherit_from_subscription
+
+`Type`: Management
+
+`Scope`: Assign standard tags to all resources inherited from subscription
+
+`Automatic remediation`: Yes
+
+`Assignment`: Root PagoPA management group and child management groups or subscriptions
+
+`Required roles by Managed Identity`:
+- `TODO` on management groups or subscriptions
 
 ## Terraform
+
+Apply order is made by folders number.
 
 ### How to use it
 
 ```bash
-sh terraform.sh apply prod
+terraform init
+terraform plan
+terraform apply
 ```
 
 ## Azure policy docs
 
 [Policy structure definition](https://docs.microsoft.com/en-us/azure/governance/policy/concepts/definition-structure?WT.mc_id=Portal-Microsoft_Azure_Policy)
+
+## How to force to rerun policy evaluation
+
+```bash
+# current subscription
+az policy state trigger-scan --no-wait
+# resource group in current subscription
+az policy state trigger-scan -g "my-rg" --no-wait
+```

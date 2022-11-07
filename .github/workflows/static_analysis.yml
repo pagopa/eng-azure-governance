@@ -5,23 +5,37 @@ on:
 
 jobs:
   static_analysis:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v2
+      # from https://github.com/actions/checkout/commits/main
+      - uses: actions/checkout@1f9a0c22da41e6ebfa534300ef656657ea2c6707
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
-      - name: init_src_policy
+      - name: init_src
         env:
-          FOLDERS: policy
+          FOLDERS: >
+            01_custom_roles
+            02_policy_audit_logs
+            02_policy_resource_lock
+            02_policy_tags_inherit_from_subscription
+            03_policy_set
+            04_policy_assignments
         run: |
           TAG=$(cat .terraform-version)
+          cd src/
           for f in $FOLDERS; do
-            cd src/$f
-            sed -i -e 's/  backend "azurerm" {}//g' 99_main.tf # use local backend
+            cd $f
+            rm -rf 99_terraform.tf
+            mv 99_terraform.tf.ci 99_terraform.tf
             docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
+            cd ..
           done
 
       - name: run_test
         run: |
-          TAG=v1.64.1
+          # from https://github.com/antonbabenko/pre-commit-terraform/pkgs/container/pre-commit-terraform
+          TAG=v1.76.0@sha256:50ed39dc67b6a5b198e45fa7b06aa73b50ccc20613bc795f1a7841fd41b2c838
           docker run -v $(pwd):/lint -w /lint ghcr.io/antonbabenko/pre-commit-terraform:$TAG run -a
