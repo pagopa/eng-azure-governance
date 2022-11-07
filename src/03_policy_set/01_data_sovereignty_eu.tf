@@ -12,6 +12,7 @@ variable "allowed_locations_resource_groups" {
 
 locals {
   data_sovereignty_eu = {
+    metadata_category_name                                           = "pagopa_global"
     allowed_locations_policy_definition_reference_id                 = "Allowed locations"
     allowed_locations_resource_groups_policy_definition_reference_id = "Allowed locations for resource groups"
   }
@@ -19,14 +20,15 @@ locals {
 
 resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
   name                = "data_sovereignty_eu"
-  policy_type         = var.policy_type
+  policy_type         = "Custom"
   display_name        = "PagoPA Data sovereignty in EU"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
-        "category": "${var.metadata_category_name}",
+        "category": "${local.data_sovereignty_eu.metadata_category_name}",
         "version": "v1.0.0",
+        "ASC": "true",
         "parameterScopes": {
           "listOfAllowedLocations : ${local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "listOfAllowedLocations : ${local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id}": "${data.azurerm_management_group.pagopa.id}"

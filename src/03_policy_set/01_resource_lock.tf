@@ -1,13 +1,20 @@
+locals {
+  resource_lock = {
+    metadata_category_name = "pagopa_env_prod"
+  }
+}
+
 resource "azurerm_policy_set_definition" "resource_lock" {
   name                = "resource_lock"
-  policy_type         = var.policy_type
+  policy_type         = "Custom"
   display_name        = "PagoPA Resource lock"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
+        "category": "${local.resource_lock.metadata_category_name}",
+        "version": "v1.0.0",
+        "ASC": "true"
     }
 METADATA
 
