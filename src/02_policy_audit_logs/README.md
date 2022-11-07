@@ -17,6 +17,8 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azurerm_policy_definition.audit_logs_api_management_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_api_management_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_container_registry_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
@@ -41,6 +43,8 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_audit_logs_api_management_log_analytics_id"></a> [audit\_logs\_api\_management\_log\_analytics\_id](#output\_audit\_logs\_api\_management\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_api_management_storage_account_id"></a> [audit\_logs\_api\_management\_storage\_account\_id](#output\_audit\_logs\_api\_management\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_log_analytics_id"></a> [audit\_logs\_application\_gateway\_log\_analytics\_id](#output\_audit\_logs\_application\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_storage_account_id"></a> [audit\_logs\_application\_gateway\_storage\_account\_id](#output\_audit\_logs\_application\_gateway\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_container_registry_log_analytics_id"></a> [audit\_logs\_container\_registry\_log\_analytics\_id](#output\_audit\_logs\_container\_registry\_log\_analytics\_id) | n/a |
