@@ -46,7 +46,7 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_au
 
 resource "azurerm_role_assignment" "pagamenti_servizi_prod_audit_logs_monitoring_contributor" {
   scope                = data.azurerm_management_group.prod_sl_pagamenti_servizi.id
-  role_definition_name = "Monitoring Contributor"
+  role_definition_name = "PagoPA Audit Logs Contributor"
   principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_audit_logs.identity[0].principal_id
 }
 

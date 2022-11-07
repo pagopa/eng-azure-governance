@@ -38,7 +38,10 @@ METADATA
   }
 PARAMETERS
 
-  policy_rule = file("./policy_rules/keyvault_log_analytics.json")
+  policy_rule = templatefile("./policy_rules/keyvault_log_analytics.json", {
+    roleDefinitionIds_audit_logs_contributor    = data.azurerm_role_definition.audit_logs_contributor.id,
+    roleDefinitionIds_log_analytics_contributor = data.azurerm_role_definition.log_analytics_contributor.id,
+  })
 
 }
 
@@ -89,6 +92,9 @@ METADATA
   }
 PARAMETERS
 
-  policy_rule = file("./policy_rules/keyvault_storage_account.json")
+  policy_rule = templatefile("./policy_rules/keyvault_storage_account.json", {
+    roleDefinitionIds_audit_logs_contributor    = data.azurerm_role_definition.audit_logs_contributor.id,
+    roleDefinitionIds_log_analytics_contributor = data.azurerm_role_definition.log_analytics_contributor.id,
+  })
 
 }
