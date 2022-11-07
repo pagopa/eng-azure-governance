@@ -18,6 +18,7 @@ variable "audit_logs_storage_id_northeurope" {
 
 locals {
   audit_logs = {
+    metadata_category_name                                 = "pagopa_env_prod"
     keyvault_workspaceid_reference_id                      = "keyvault_workspaceid"
     keyvault_storageid_westeurope_reference_id             = "keyvault_storageid_westeurope"
     keyvault_storageid_northeurope_reference_id            = "keyvault_storageid_northeurope"
@@ -29,14 +30,15 @@ locals {
 
 resource "azurerm_policy_set_definition" "audit_logs" {
   name                = "audit_logs"
-  policy_type         = var.policy_type
+  policy_type         = "Custom"
   display_name        = "PagoPA Audit logs"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
-        "category": "${var.metadata_category_name}",
+        "category": "${local.audit_logs.metadata_category_name}",
         "version": "v1.0.0",
+        "ASC": "true",
         "parameterScopes": {
           "${local.audit_logs.keyvault_workspaceid_reference_id} : ${local.audit_logs.keyvault_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.keyvault_storageid_westeurope_reference_id} : ${local.audit_logs.keyvault_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
