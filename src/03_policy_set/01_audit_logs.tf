@@ -28,6 +28,9 @@ locals {
     container_registry_workspaceid_reference_id            = "container_registry_workspaceid"
     container_registry_storageid_westeurope_reference_id   = "container_registry_storageid_westeurope"
     container_registry_storageid_northeurope_reference_id  = "container_registry_storageid_northeurope"
+    kubernetes_cluster_workspaceid_reference_id            = "kubernetes_cluster_workspaceid"
+    kubernetes_cluster_storageid_westeurope_reference_id   = "kubernetes_cluster_storageid_westeurope"
+    kubernetes_cluster_storageid_northeurope_reference_id  = "kubernetes_cluster_storageid_northeurope"
   }
 }
 
@@ -51,7 +54,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.application_gateway_storageid_northeurope_reference_id} : ${local.audit_logs.application_gateway_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.container_registry_workspaceid_reference_id} : ${local.audit_logs.container_registry_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.container_registry_storageid_westeurope_reference_id} : ${local.audit_logs.container_registry_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.container_registry_storageid_northeurope_reference_id} : ${local.audit_logs.container_registry_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.container_registry_storageid_northeurope_reference_id} : ${local.audit_logs.container_registry_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.kubernetes_cluster_workspaceid_reference_id} : ${local.audit_logs.kubernetes_cluster_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id} : ${local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id} : ${local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -176,6 +182,50 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
     reference_id         = local.audit_logs.container_registry_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Kubernetes Cluster
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
+    reference_id         = local.audit_logs.kubernetes_cluster_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+    reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+    reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id
     parameter_values     = <<VALUE
     {
       "storageAccount": {
