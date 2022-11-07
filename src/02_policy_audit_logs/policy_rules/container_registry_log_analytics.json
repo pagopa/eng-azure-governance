@@ -71,7 +71,7 @@
                   "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     {
-                      "categoryGroup": "Audit",
+                      "categoryGroup": "audit",
                       "enabled": true
                     }
                   ]

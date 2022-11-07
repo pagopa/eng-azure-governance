@@ -83,7 +83,7 @@
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
-                      "categoryGroup": "Audit",
+                      "categoryGroup": "audit",
                       "enabled": true,
                       "retentionPolicy": {
                         "enabled": true,
