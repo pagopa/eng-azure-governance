@@ -10,6 +10,8 @@ output "policy_ids" {
     azurerm_policy_definition.audit_logs_kubernetes_cluster_storage_account.id,
     azurerm_policy_definition.audit_logs_api_management_log_analytics.id,
     azurerm_policy_definition.audit_logs_api_management_storage_account.id,
+    azurerm_policy_definition.audit_logs_postgresql_flexible_log_analytics.id,
+    azurerm_policy_definition.audit_logs_postgresql_flexible_storage_account.id,
   ]
 }
 
@@ -51,4 +53,12 @@ output "audit_logs_api_management_log_analytics_id" {
 
 output "audit_logs_api_management_storage_account_id" {
   value = azurerm_policy_definition.audit_logs_api_management_storage_account.id
+}
+
+output "audit_logs_postgresql_flexible_log_analytics_id" {
+  value = azurerm_policy_definition.audit_logs_postgresql_flexible_log_analytics.id
+}
+
+output "audit_logs_postgresql_flexible_storage_account_id" {
+  value = azurerm_policy_definition.audit_logs_postgresql_flexible_storage_account.id
 }

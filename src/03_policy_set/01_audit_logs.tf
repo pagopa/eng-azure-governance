@@ -34,6 +34,9 @@ locals {
     api_management_workspaceid_reference_id                = "api_management_workspaceid"
     api_management_storageid_westeurope_reference_id       = "api_management_storageid_westeurope"
     api_management_storageid_northeurope_reference_id      = "api_management_storageid_northeurope"
+    postgresql_flexible_workspaceid_reference_id           = "postgresql_flexible_workspaceid"
+    postgresql_flexible_storageid_westeurope_reference_id  = "postgresql_flexible_storageid_westeurope"
+    postgresql_flexible_storageid_northeurope_reference_id = "postgresql_flexible_storageid_northeurope"
   }
 }
 
@@ -63,7 +66,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id} : ${local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.api_management_workspaceid_reference_id} : ${local.audit_logs.api_management_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.api_management_storageid_westeurope_reference_id} : ${local.audit_logs.api_management_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.api_management_storageid_northeurope_reference_id} : ${local.audit_logs.api_management_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.api_management_storageid_northeurope_reference_id} : ${local.audit_logs.api_management_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.postgresql_flexible_workspaceid_reference_id} : ${local.audit_logs.postgresql_flexible_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.postgresql_flexible_storageid_westeurope_reference_id} : ${local.audit_logs.postgresql_flexible_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.postgresql_flexible_storageid_northeurope_reference_id} : ${local.audit_logs.postgresql_flexible_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -276,6 +282,50 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
     reference_id         = local.audit_logs.api_management_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Postgresql Flexible
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_log_analytics_id
+    reference_id         = local.audit_logs.postgresql_flexible_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+    reference_id         = local.audit_logs.postgresql_flexible_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+    reference_id         = local.audit_logs.postgresql_flexible_storageid_northeurope_reference_id
     parameter_values     = <<VALUE
     {
       "storageAccount": {
