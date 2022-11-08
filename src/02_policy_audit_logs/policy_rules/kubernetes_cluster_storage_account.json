@@ -38,13 +38,14 @@
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
                         "in": [
                           "kube-audit",
-                          "kube-audit-admin"
+                          "kube-audit-admin",
+                          "guard"
                         ]
                       }
                     ]
                   }
                 },
-                "equals": 2
+                "equals": 3
               }
             ]
           },
@@ -95,6 +96,14 @@
                     },
                     {
                       "category": "kube-audit-admin",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "guard",
                       "enabled": true,
                       "retentionPolicy": {
                         "enabled": true,
