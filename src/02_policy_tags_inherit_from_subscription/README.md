@@ -26,7 +26,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA Management"` | no |
+| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 | <a name="input_tags_inherit_from_subscription"></a> [tags\_inherit\_from\_subscription](#input\_tags\_inherit\_from\_subscription) | Tag that must be inherith from the subscription | `list(string)` | <pre>[<br>  "CostCenter",<br>  "Environment",<br>  "Owner",<br>  "BusinessUnit"<br>]</pre> | no |
 
 ## Outputs
