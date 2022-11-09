@@ -1,0 +1,115 @@
+{
+  "if": {
+    "allOf": [
+      { "field": "type", "equals": "Microsoft.OperationalInsights/workspaces" },
+      {
+        "field": "location",
+        "equals": "[parameters('location')]"
+      },
+      { "field": "name", "notLike": "DefaultWorkspace-*" }
+    ]
+  },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "evaluationDelay": "AfterProvisioning",
+      "name": "[parameters('diagnosticsSettingName')]",
+      "roleDefinitionIds": [
+        "${roleDefinitionIds_audit_logs_contributor}",
+        "${roleDefinitionIds_log_analytics_contributor}"
+      ],
+      "existenceCondition": {
+        "allOf": [
+          {
+            "anyof": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                        "equals": "true"
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
+                        "equals": "audit"
+                      }
+                    ]
+                  }
+                },
+                "equals": 1
+              }
+            ]
+          },
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
+            "equals": "[parameters('storageAccount')]"
+          }
+        ]
+      },
+      "deployment": {
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "resourceName": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "storageAccount": {
+                "type": "string"
+              }
+            },
+            "variables": {},
+            "resources": [
+              {
+                "type": "Microsoft.OperationalInsights/workspaces/providers/diagnosticSettings",
+                "apiVersion": "2021-05-01-preview",
+                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
+                "location": "[parameters('location')]",
+                "dependsOn": [],
+                "properties": {
+                  "storageAccountId": "[parameters('storageAccount')]",
+                  "logs": [
+                    {
+                      "categoryGroup": "audit",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "outputs": {}
+          },
+          "parameters": {
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "resourceName": {
+              "value": "[field('name')]"
+            },
+            "location": {
+              "value": "[field('location')]"
+            },
+            "storageAccount": {
+              "value": "[parameters('storageAccount')]"
+            }
+          }
+        }
+      }
+    }
+  }
+}
