@@ -27,6 +27,8 @@ No modules.
 | [azurerm_policy_definition.audit_logs_keyvault_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_kubernetes_cluster_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_kubernetes_cluster_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_log_analytics_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_log_analytics_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_postgresql_flexible_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_postgresql_flexible_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_postgresql_single_server_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
@@ -57,6 +59,8 @@ No modules.
 | <a name="output_audit_logs_keyvault_storage_account_id"></a> [audit\_logs\_keyvault\_storage\_account\_id](#output\_audit\_logs\_keyvault\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_kubernetes_cluster_log_analytics_id"></a> [audit\_logs\_kubernetes\_cluster\_log\_analytics\_id](#output\_audit\_logs\_kubernetes\_cluster\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_kubernetes_cluster_storage_account_id"></a> [audit\_logs\_kubernetes\_cluster\_storage\_account\_id](#output\_audit\_logs\_kubernetes\_cluster\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_log_analytics_log_analytics_id"></a> [audit\_logs\_log\_analytics\_log\_analytics\_id](#output\_audit\_logs\_log\_analytics\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_log_analytics_storage_account_id"></a> [audit\_logs\_log\_analytics\_storage\_account\_id](#output\_audit\_logs\_log\_analytics\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_postgresql_flexible_log_analytics_id"></a> [audit\_logs\_postgresql\_flexible\_log\_analytics\_id](#output\_audit\_logs\_postgresql\_flexible\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_postgresql_flexible_storage_account_id"></a> [audit\_logs\_postgresql\_flexible\_storage\_account\_id](#output\_audit\_logs\_postgresql\_flexible\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_postgresql_single_server_log_analytics_id"></a> [audit\_logs\_postgresql\_single\_server\_log\_analytics\_id](#output\_audit\_logs\_postgresql\_single\_server\_log\_analytics\_id) | n/a |
