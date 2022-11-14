@@ -1,3 +1,7 @@
+data "azurerm_management_group" "pagopa" {
+  name = "pagopa"
+}
+
 resource "azurerm_management_group_policy_assignment" "pagopa_data_sovereignty_eu" {
   name                 = "pagopadatasovereigntyeu"
   display_name         = "PagoPA Data sovereignty in EU"
