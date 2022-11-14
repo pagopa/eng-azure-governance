@@ -15,7 +15,7 @@ variable "resource_lock_types" {
     "Microsoft.OperationalInsights/workspaces",
     "microsoft.insights/components",
     "Microsoft.ContainerService/ManagedClusters",
-    "Microsoft.Cdn/profiles/endpoints",
+    "Microsoft.Cdn/profiles",
     "Microsoft.KeyVault/vaults",
     "Microsoft.EventHub/Namespaces",
     "Microsoft.EventHub/namespaces/eventhubs",
@@ -57,56 +57,4 @@ METADATA
     resource_lock_types                         = each.key,
     roleDefinitionIds_resource_lock_contributor = data.azurerm_role_definition.resource_lock_contributor.id,
   })
-
-  #   policy_rule = <<POLICY_RULE
-  #     {
-  #       "if": {
-  #         "field": "type",
-  #         "equals": "${each.key}"
-  #       },
-  #       "then": {
-  #         "effect": "deployIfNotExists",
-  #         "details": {
-  #           "type": "Microsoft.Authorization/locks",
-  #           "roleDefinitionIds": [
-  #             "${data.azurerm_role_definition.resource_lock_contributor.id}"
-  #           ],
-  #           "existenceCondition": {
-  #             "field": "Microsoft.Authorization/locks/level",
-  #             "equals": "CanNotDelete"
-  #           },
-  #           "deployment": {
-  #             "properties": {
-  #               "mode": "Incremental",
-  #               "parameters": {
-  #                 "resourceName": {
-  #                   "value": "[field('name')]"
-  #                 }
-  #               },
-  #               "template": {
-  #                 "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  #                 "contentVersion": "1.0.0.0",
-  #                 "parameters": {
-  #                   "resourceName": {
-  #                     "type": "string"
-  #                   }
-  #                 },
-  #                 "resources": [
-  #                   {
-  #                     "type": "Microsoft.Authorization/locks",
-  #                     "apiVersion": "2016-09-01",
-  #                     "name": "[parameters('resourceName')]",
-  #                     "scope": "[format('${each.key}/{0}', parameters('resourceName'))]",
-  #                     "properties": {
-  #                       "level": "CanNotDelete"
-  #                     }
-  #                   }
-  #                 ]
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }
-  #     }
-  # POLICY_RULE
 }
