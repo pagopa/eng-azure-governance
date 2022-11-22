@@ -2,6 +2,19 @@ data "azurerm_management_group" "strategic_innovation_prod" {
   name = "strategic_innovation_prod"
 }
 
+resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_iso_27001_2013" {
+  name                 = "sipiso270012013"
+  display_name         = "ISO 27001:2013"
+  policy_definition_id = local.intiative_ids.iso_27001_2013
+  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
+
+  location = var.location
+  enforce  = false
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
 resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_resource_lock" {
   name                 = "sipresourcelock"
   display_name         = "PagoPA Resource lock"
