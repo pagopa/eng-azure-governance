@@ -3,7 +3,7 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.DocumentDb/databaseAccounts"
+        "equals": "Microsoft.Web/sites"
       },
       {
         "field": "location",
@@ -37,13 +37,16 @@
                       {
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
                         "in": [
-                          "ControlPlaneRequests"
+                          "AppServiceAntivirusScanAuditLogs",
+                          "AppServiceFileAuditLogs",
+                          "AppServiceAuditLogs",
+                          "AppServiceIPSecAuditLogs"
                         ]
                       }
                     ]
                   }
                 },
-                "equals": 1
+                "equals": 4
               }
             ]
           },
@@ -76,7 +79,7 @@
             "variables": {},
             "resources": [
               {
-                "type": "Microsoft.DocumentDb/databaseAccounts/providers/diagnosticSettings",
+                "type": "Microsoft.Web/sites/providers/diagnosticSettings",
                 "apiVersion": "2021-05-01-preview",
                 "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
                 "location": "[parameters('location')]",
@@ -85,7 +88,31 @@
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
-                      "category": "ControlPlaneRequests",
+                      "category": "AppServiceAntivirusScanAuditLogs",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "AppServiceFileAuditLogs",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "AppServiceAuditLogs",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "AppServiceIPSecAuditLogs",
                       "enabled": true,
                       "retentionPolicy": {
                         "enabled": true,
