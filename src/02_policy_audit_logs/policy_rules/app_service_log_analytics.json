@@ -36,14 +36,13 @@
                         "in": [
                           "AppServiceAntivirusScanAuditLogs",
                           "AppServiceFileAuditLogs",
-                          "AppServiceAuditLogs",
-                          "AppServiceIPSecAuditLogs"
+                          "AppServiceAuditLogs"
                         ]
                       }
                     ]
                   }
                 },
-                "equals": 4
+                "equals": 3
               }
             ]
           },
@@ -90,10 +89,6 @@
                     },
                     {
                       "category": "AppServiceAuditLogs",
-                      "enabled": true
-                    },
-                    {
-                      "category": "AppServiceIPSecAuditLogs",
                       "enabled": true
                     }
                   ]
