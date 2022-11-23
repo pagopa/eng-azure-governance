@@ -23,6 +23,7 @@ jobs:
             02_policy_tags_inherit_from_subscription
             03_policy_set
             04_policy_assignments
+            governance
         run: |
           TAG=$(cat .terraform-version)
           cd src/
