@@ -80,3 +80,19 @@ output "audit_logs_log_analytics_log_analytics_id" {
 output "audit_logs_log_analytics_storage_account_id" {
   value = azurerm_policy_definition.audit_logs_log_analytics_storage_account.id
 }
+
+output "audit_logs_cosmos_db_log_analytics_id" {
+  value = azurerm_policy_definition.audit_logs_cosmos_db_log_analytics.id
+}
+
+output "audit_logs_cosmos_db_storage_account_id" {
+  value = azurerm_policy_definition.audit_logs_cosmos_db_storage_account.id
+}
+
+output "audit_logs_app_service_log_analytics_id" {
+  value = azurerm_policy_definition.audit_logs_app_service_log_analytics.id
+}
+
+output "audit_logs_app_service_storage_account_id" {
+  value = azurerm_policy_definition.audit_logs_app_service_storage_account.id
+}

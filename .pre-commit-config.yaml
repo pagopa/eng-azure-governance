@@ -12,5 +12,6 @@ repos:
       - id: terraform_tfsec
       - id: terraform_validate
         args:
+          - --init-args=-lockfile=readonly
           - --args=-json
           - --args=-no-color

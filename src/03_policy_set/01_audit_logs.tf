@@ -43,6 +43,12 @@ locals {
     log_analytics_workspaceid_reference_id                      = "log_analytics_server_workspaceid"
     log_analytics_storageid_westeurope_reference_id             = "log_analytics_server_storageid_westeurope"
     log_analytics_storageid_northeurope_reference_id            = "log_analytics_server_storageid_northeurope"
+    cosmos_db_workspaceid_reference_id                          = "cosmos_db_workspaceid"
+    cosmos_db_storageid_westeurope_reference_id                 = "cosmos_db_storageid_westeurope"
+    cosmos_db_storageid_northeurope_reference_id                = "cosmos_db_storageid_northeurope"
+    app_service_workspaceid_reference_id                        = "app_service_workspaceid"
+    app_service_storageid_westeurope_reference_id               = "app_service_storageid_westeurope"
+    app_service_storageid_northeurope_reference_id              = "app_service_storageid_northeurope"
   }
 }
 
@@ -81,7 +87,13 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.postgresql_single_server_storageid_northeurope_reference_id} : ${local.audit_logs.postgresql_single_server_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.log_analytics_workspaceid_reference_id} : ${local.audit_logs.log_analytics_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.log_analytics_storageid_westeurope_reference_id} : ${local.audit_logs.log_analytics_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.log_analytics_storageid_northeurope_reference_id} : ${local.audit_logs.log_analytics_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.log_analytics_storageid_northeurope_reference_id} : ${local.audit_logs.log_analytics_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.cosmos_db_workspaceid_reference_id} : ${local.audit_logs.cosmos_db_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.cosmos_db_storageid_westeurope_reference_id} : ${local.audit_logs.cosmos_db_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.cosmos_db_storageid_northeurope_reference_id} : ${local.audit_logs.cosmos_db_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.app_service_workspaceid_reference_id} : ${local.audit_logs.app_service_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.app_service_storageid_westeurope_reference_id} : ${local.audit_logs.app_service_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.app_service_storageid_northeurope_reference_id} : ${local.audit_logs.app_service_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -426,6 +438,94 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
     reference_id         = local.audit_logs.log_analytics_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Cosmos DB
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_log_analytics_id
+    reference_id         = local.audit_logs.cosmos_db_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+    reference_id         = local.audit_logs.cosmos_db_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+    reference_id         = local.audit_logs.cosmos_db_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## App Service
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_log_analytics_id
+    reference_id         = local.audit_logs.app_service_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+    reference_id         = local.audit_logs.app_service_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+    reference_id         = local.audit_logs.app_service_storageid_northeurope_reference_id
     parameter_values     = <<VALUE
     {
       "storageAccount": {

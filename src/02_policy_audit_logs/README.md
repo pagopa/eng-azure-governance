@@ -19,10 +19,14 @@ No modules.
 |------|------|
 | [azurerm_policy_definition.audit_logs_api_management_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_api_management_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_app_service_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_app_service_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_container_registry_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_container_registry_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_cosmos_db_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_cosmos_db_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_keyvault_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_keyvault_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_kubernetes_cluster_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
@@ -51,10 +55,14 @@ No modules.
 |------|-------------|
 | <a name="output_audit_logs_api_management_log_analytics_id"></a> [audit\_logs\_api\_management\_log\_analytics\_id](#output\_audit\_logs\_api\_management\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_api_management_storage_account_id"></a> [audit\_logs\_api\_management\_storage\_account\_id](#output\_audit\_logs\_api\_management\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_app_service_log_analytics_id"></a> [audit\_logs\_app\_service\_log\_analytics\_id](#output\_audit\_logs\_app\_service\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_app_service_storage_account_id"></a> [audit\_logs\_app\_service\_storage\_account\_id](#output\_audit\_logs\_app\_service\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_log_analytics_id"></a> [audit\_logs\_application\_gateway\_log\_analytics\_id](#output\_audit\_logs\_application\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_storage_account_id"></a> [audit\_logs\_application\_gateway\_storage\_account\_id](#output\_audit\_logs\_application\_gateway\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_container_registry_log_analytics_id"></a> [audit\_logs\_container\_registry\_log\_analytics\_id](#output\_audit\_logs\_container\_registry\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_container_registry_storage_account_id"></a> [audit\_logs\_container\_registry\_storage\_account\_id](#output\_audit\_logs\_container\_registry\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_cosmos_db_log_analytics_id"></a> [audit\_logs\_cosmos\_db\_log\_analytics\_id](#output\_audit\_logs\_cosmos\_db\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_cosmos_db_storage_account_id"></a> [audit\_logs\_cosmos\_db\_storage\_account\_id](#output\_audit\_logs\_cosmos\_db\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_keyvault_log_analytics_id"></a> [audit\_logs\_keyvault\_log\_analytics\_id](#output\_audit\_logs\_keyvault\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_keyvault_storage_account_id"></a> [audit\_logs\_keyvault\_storage\_account\_id](#output\_audit\_logs\_keyvault\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_kubernetes_cluster_log_analytics_id"></a> [audit\_logs\_kubernetes\_cluster\_log\_analytics\_id](#output\_audit\_logs\_kubernetes\_cluster\_log\_analytics\_id) | n/a |
