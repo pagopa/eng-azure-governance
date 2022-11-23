@@ -39,20 +39,38 @@ variable "subscription_foundation" {
 #
 # 💰 Budget
 #
-variable "budget_subscription" {
-  type = object({
-    amount     = number
-    time_grain = string
-    notifications = list(
-      object({
-        enabled        = bool
-        threshold      = number
-        operator       = string
-        threshold_type = string
-      })
-    )
-  })
+variable "monitoring_resource_group" {
+  type = string
+  description = "Resource group where the monitoring is saved"
+}
 
-  default     = null
-  description = "Budgets rules for subscription"
+variable "action_group_budget_resource_group" {
+type = string
+description = "Action group resource group"
+}
+
+variable "action_group_budget_name" {
+type = string
+description = "Action group for Budget name"
+}
+
+variable "budget_subscription_time_grain" {
+  type = string
+  description = "(Required) The time covered by a budget. Tracking of the amount will be reset based on the time grain. Must be one of BillingAnnual, BillingMonth, BillingQuarter, Annually, Monthly and Quarterly. Defaults to Monthly."
+}
+
+variable "budget_subscription_amount" {
+  type = string
+  description = "(Required) The total amount of cost to track with the budget."
+}
+
+variable "budget_subscription_notifications" {
+  type = list(
+    object({
+      enabled        = bool # (Optional) Should the notification be enabled?
+      threshold      = number #(Required) Threshold value associated with a notification. Notification is sent when the cost exceeded the threshold. It is always percent and has to be between 0 and 1000.
+      operator       = string # (Required) The comparison operator for the notification. Must be one of EqualTo, GreaterThan, or GreaterThanOrEqualTo.
+      threshold_type = string # (Optional) The type of threshold for the notification. This determines whether the notification is triggered by forecasted costs or actual costs. The allowed values are Actual and Forecasted. Default is Actual.
+    })
+  )
 }
