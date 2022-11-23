@@ -14,6 +14,14 @@ output "policy_ids" {
     azurerm_policy_definition.audit_logs_postgresql_flexible_storage_account.id,
     azurerm_policy_definition.audit_logs_postgresql_single_server_log_analytics.id,
     azurerm_policy_definition.audit_logs_postgresql_single_server_storage_account.id,
+    azurerm_policy_definition.audit_logs_log_analytics_log_analytics.id,
+    azurerm_policy_definition.audit_logs_log_analytics_storage_account.id,
+    azurerm_policy_definition.audit_logs_cosmos_db_log_analytics.id,
+    azurerm_policy_definition.audit_logs_cosmos_db_storage_account.id,
+    azurerm_policy_definition.audit_logs_app_service_log_analytics.id,
+    azurerm_policy_definition.audit_logs_app_service_storage_account.id,
+    azurerm_policy_definition.audit_logs_event_hub_log_analytics.id,
+    azurerm_policy_definition.audit_logs_event_hub_storage_account.id,
   ]
 }
 
