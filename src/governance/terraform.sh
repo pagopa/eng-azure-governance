@@ -53,7 +53,7 @@ fi
 if echo "init plan apply refresh import output state taint destroy" | grep -w "$ACTION" > /dev/null; then
   if [ "$ACTION" = "init" ]; then
     echo "[INFO] 🎬 init tf on DIR_SUBSCRIPTION: ${DIR_SUBSCRIPTION}"
-    terraform "$ACTION" -backend-config="storage_account_name=${storage_account_name}" "$other"
+    terraform "$ACTION" -backend-config="storage_account_name=${storage_account_name}" $other
   elif [ "$ACTION" = "output" ] || [ "$ACTION" = "state" ] || [ "$ACTION" = "taint" ]; then
     # init terraform backend
     terraform init -reconfigure -backend-config="storage_account_name=${storage_account_name}"
