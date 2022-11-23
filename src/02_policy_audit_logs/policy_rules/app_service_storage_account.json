@@ -6,6 +6,10 @@
         "equals": "Microsoft.Web/sites"
       },
       {
+        "field": "kind",
+        "notLike": "functionapp*"
+      },
+      {
         "field": "location",
         "equals": "[parameters('location')]"
       }

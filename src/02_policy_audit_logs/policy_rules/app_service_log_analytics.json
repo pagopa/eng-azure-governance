@@ -1,7 +1,12 @@
 {
   "if": {
-    "field": "type",
-    "equals": "Microsoft.Web/sites"
+    "allOf": [
+      { "field": "type", "equals": "Microsoft.Web/sites" },
+      {
+        "field": "kind",
+        "notLike": "functionapp*"
+      }
+    ]
   },
   "then": {
     "effect": "deployIfNotExists",
