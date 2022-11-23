@@ -15,10 +15,13 @@ pids=()
 ACTION="$1"
 
 array=(
-    'src/core::dev'
-    'src/aks-platform::dev01'
-    'src/domains/diego-app::dev'
-    'src/domains/diego-common::dev'
+  'src/01_custom_roles'
+  'src/02_policy_audit_logs'
+  'src/02_policy_resource_lock'
+  'src/02_policy_tags_inherit_from_subscription'
+  'src/03_policy_set'
+  'src/04_policy_assignments'
+  'src/governance'
 )
 
 function rm_terraform {
@@ -29,13 +32,12 @@ echo "[INFO] 🪚  Delete all .terraform folders"
 rm_terraform
 
 echo "[INFO] 🏁 Init all terraform repos"
-for index in "${array[@]}" ; do
-    FOLDER="${index%%::*}"
-    COMMAND="${index##*::}"
-    pushd "$(pwd)/${FOLDER}"
-        echo "$FOLDER - $COMMAND"
+for folder in "${array[@]}" ; do
+    echo "${folder}"
+    pushd "$(pwd)/${folder}"
+        echo "$folder"
         echo "🔬 folder: $(pwd) in under terraform: $ACTION action"
-        sh terraform.sh "$ACTION" "$COMMAND" &
+        sh terraform "$ACTION" &
 
         pids+=($!)
     popd

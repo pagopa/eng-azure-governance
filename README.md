@@ -40,7 +40,8 @@ This project contains all PagoPA policies and assignments to governance Azure wo
 `Automatic remediation`: Yes
 
 `Required roles by Managed Identity`:
-- `PagoPA Resource Lock Contributor` on management groups or subscriptions
+
+* `PagoPA Resource Lock Contributor` on management groups or subscriptions
 
 ### data_sovereignty_eu
 
@@ -65,7 +66,8 @@ This project contains all PagoPA policies and assignments to governance Azure wo
 `Assignment`: Root PagoPA management group and child management groups or subscriptions
 
 `Required roles by Managed Identity`:
-- `TODO` on management groups or subscriptions
+
+* `TODO` on management groups or subscriptions
 
 ## Terraform
 
