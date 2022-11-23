@@ -23,13 +23,6 @@ policy_folders=(
   'src/04_policy_assignments'
 )
 
-function rm_terraform {
-    find . \( -iname ".terraform*" ! -iname ".terraform-docs*" ! -iname ".terraform-version" \) -print0 | xargs -0 rm -rf
-}
-
-echo "[INFO] 🪚  Delete all .terraform folders"
-rm_terraform
-
 echo "[INFO] 🏁 Init all policy terraform repos"
 az account set -s common
 
@@ -57,6 +50,8 @@ for pid in "${pids[@]}"; do
   #
   wait "$pid"
 done
+
+pids=()
 
 echo "[INFO] Init governance"
 pushd "$(pwd)/src/governance"
