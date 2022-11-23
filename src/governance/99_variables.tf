@@ -40,7 +40,12 @@ variable "subscription_foundation" {
 #
 # 💰 Budget
 #
-variable "monitoring_resource_group" {
+variable "budget_subscription_enabled" {
+  type = bool
+  description = "Enabled or not budget for this subscription"
+  default = false
+}
+variable "budget_subscription_resource_group" {
   type        = string
   description = "Resource group where the monitoring is saved"
 }

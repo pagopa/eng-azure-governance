@@ -1,5 +1,5 @@
 data "azurerm_resource_group" "monitoring_rg" {
-  name = var.monitoring_resource_group
+  name = var.budget_subscription_resource_group
 }
 
 data "azurerm_monitor_action_group" "budget_ag" {
@@ -11,6 +11,8 @@ data "azurerm_monitor_action_group" "budget_ag" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/consumption_budget_resource_group
 resource "azurerm_consumption_budget_subscription" "governance_budget" {
+  count = var.budget_subscription_enabled ? 1: 0
+
   name            = "${var.prefix}-governance-budget"
   subscription_id = data.azurerm_subscription.current.id
 
