@@ -3,7 +3,6 @@
 [![release](https://img.shields.io/github/v/release/pagopa/azure-governance)](https://github.com/pagopa/azure-governance/releases)
 [![Static Analysis](https://github.com/pagopa/azure-governance/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/pagopa/azure-governance/actions/workflows/static_analysis.yml)
 
-
 This project contains all PagoPA policies and assignments to governance Azure workloads.
 
 ## Project structure
@@ -26,8 +25,9 @@ This project contains all PagoPA policies and assignments to governance Azure wo
 `Automatic remediation`: Yes
 
 `Required roles by Managed Identity`:
-- `Monitoring Contributor` on management groups or subscriptions
-- `Log Analytics Contributor` on security Log Analitics Workspace and Storage Account
+
+* `Monitoring Contributor` on management groups or subscriptions
+* `Log Analytics Contributor` on security Log Analitics Workspace and Storage Account
 
 ### resource_lock
 
@@ -40,7 +40,8 @@ This project contains all PagoPA policies and assignments to governance Azure wo
 `Automatic remediation`: Yes
 
 `Required roles by Managed Identity`:
-- `PagoPA Resource Lock Contributor` on management groups or subscriptions
+
+* `PagoPA Resource Lock Contributor` on management groups or subscriptions
 
 ### data_sovereignty_eu
 
@@ -65,7 +66,8 @@ This project contains all PagoPA policies and assignments to governance Azure wo
 `Assignment`: Root PagoPA management group and child management groups or subscriptions
 
 `Required roles by Managed Identity`:
-- `TODO` on management groups or subscriptions
+
+* `TODO` on management groups or subscriptions
 
 ## Terraform
 
@@ -74,6 +76,8 @@ Apply order is made by folders number.
 ### How to use it
 
 ```bash
+az account set -s common
+
 terraform init
 terraform plan
 terraform apply
