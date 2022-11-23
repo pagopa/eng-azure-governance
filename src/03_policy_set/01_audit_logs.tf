@@ -49,6 +49,9 @@ locals {
     app_service_workspaceid_reference_id                        = "app_service_workspaceid"
     app_service_storageid_westeurope_reference_id               = "app_service_storageid_westeurope"
     app_service_storageid_northeurope_reference_id              = "app_service_storageid_northeurope"
+    event_hub_workspaceid_reference_id                          = "event_hub_workspaceid"
+    event_hub_storageid_westeurope_reference_id                 = "event_hub_storageid_westeurope"
+    event_hub_storageid_northeurope_reference_id                = "event_hub_storageid_northeurope"
   }
 }
 
@@ -93,7 +96,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.cosmos_db_storageid_northeurope_reference_id} : ${local.audit_logs.cosmos_db_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.app_service_workspaceid_reference_id} : ${local.audit_logs.app_service_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.app_service_storageid_westeurope_reference_id} : ${local.audit_logs.app_service_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.app_service_storageid_northeurope_reference_id} : ${local.audit_logs.app_service_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.app_service_storageid_northeurope_reference_id} : ${local.audit_logs.app_service_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.event_hub_workspaceid_reference_id} : ${local.audit_logs.event_hub_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.event_hub_storageid_westeurope_reference_id} : ${local.audit_logs.event_hub_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.event_hub_storageid_northeurope_reference_id} : ${local.audit_logs.event_hub_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -537,6 +543,51 @@ METADATA
     }
     VALUE
   }
+
+  ## Event Hub
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_log_analytics_id
+    reference_id         = local.audit_logs.event_hub_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    reference_id         = local.audit_logs.event_hub_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    reference_id         = local.audit_logs.event_hub_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
 
 }
 
