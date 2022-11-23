@@ -13,10 +13,11 @@ tags_subscription = {
 #
 # 💰 BUDGET
 #
-monitoring_resource_group          = "dvopla-d-monitor-rg"
 action_group_budget_resource_group = "dvopla-d-monitor-rg"
 action_group_budget_name           = "dvopladerror"
 
+budget_subscription_enabled = true
+budget_subscription_resource_group          = "dvopla-d-monitor-rg"
 budget_subscription_amount     = 250
 budget_subscription_time_grain = "Monthly"
 
