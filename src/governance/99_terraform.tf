@@ -1,6 +1,5 @@
 terraform {
   required_version = ">= 1.3.0"
-
   backend "azurerm" {
     resource_group_name = "io-infra-rg"
     container_name      = "azurermstate"
@@ -24,17 +23,3 @@ terraform {
     }
   }
 }
-
-provider "azurerm" {
-  features {
-    key_vault {
-      purge_soft_delete_on_destroy = false
-    }
-  }
-
-  skip_provider_registration = true
-}
-
-data "azurerm_subscription" "current" {}
-
-data "azurerm_client_config" "current" {}
