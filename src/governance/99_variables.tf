@@ -17,7 +17,7 @@ variable "env_short" {
 variable "location" {
   type        = string
   description = "(Required) Region choosed to deploy the resources"
-  default = "West Europe"
+  default     = "West Europe"
 }
 
 variable "location_short" {

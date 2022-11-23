@@ -36,7 +36,7 @@ No modules.
 | <a name="input_budget_subscription_time_grain"></a> [budget\_subscription\_time\_grain](#input\_budget\_subscription\_time\_grain) | (Required) The time covered by a budget. Tracking of the amount will be reset based on the time grain. Must be one of BillingAnnual, BillingMonth, BillingQuarter, Annually, Monthly and Quarterly. Defaults to Monthly. | `string` | n/a | yes |
 | <a name="input_env"></a> [env](#input\_env) | Environment name | `string` | `""` | no |
 | <a name="input_env_short"></a> [env\_short](#input\_env\_short) | (Required) | `string` | n/a | yes |
-| <a name="input_location"></a> [location](#input\_location) | (Required) Region choosed to deploy the resources | `string` | n/a | yes |
+| <a name="input_location"></a> [location](#input\_location) | (Required) Region choosed to deploy the resources | `string` | `"West Europe"` | no |
 | <a name="input_location_short"></a> [location\_short](#input\_location\_short) | Short location form to avoid names to much larger | `string` | `"weu"` | no |
 | <a name="input_monitoring_resource_group"></a> [monitoring\_resource\_group](#input\_monitoring\_resource\_group) | Resource group where the monitoring is saved | `string` | n/a | yes |
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | Project prefix | `string` | n/a | yes |
