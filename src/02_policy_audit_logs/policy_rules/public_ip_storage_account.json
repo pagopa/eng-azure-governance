@@ -36,12 +36,15 @@
                       },
                       {
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "equals": "audit"
+                        "in": [
+                          "allLogs",
+                          "audit"
+                        ]
                       }
                     ]
                   }
                 },
-                "equals": 1
+                "equals": 2
               }
             ]
           },
@@ -82,6 +85,14 @@
                 "properties": {
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
+                    {
+                      "categoryGroup": "allLogs",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
                     {
                       "categoryGroup": "audit",
                       "enabled": true,
