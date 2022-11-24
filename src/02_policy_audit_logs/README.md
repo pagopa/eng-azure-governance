@@ -29,6 +29,8 @@ No modules.
 | [azurerm_policy_definition.audit_logs_cosmos_db_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_event_hub_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_event_hub_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_grafana_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_grafana_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_keyvault_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_keyvault_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_kubernetes_cluster_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
@@ -71,6 +73,8 @@ No modules.
 | <a name="output_audit_logs_cosmos_db_storage_account_id"></a> [audit\_logs\_cosmos\_db\_storage\_account\_id](#output\_audit\_logs\_cosmos\_db\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_event_hub_log_analytics_id"></a> [audit\_logs\_event\_hub\_log\_analytics\_id](#output\_audit\_logs\_event\_hub\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_event_hub_storage_account_id"></a> [audit\_logs\_event\_hub\_storage\_account\_id](#output\_audit\_logs\_event\_hub\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_grafana_log_analytics_id"></a> [audit\_logs\_grafana\_log\_analytics\_id](#output\_audit\_logs\_grafana\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_grafana_storage_account_id"></a> [audit\_logs\_grafana\_storage\_account\_id](#output\_audit\_logs\_grafana\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_keyvault_log_analytics_id"></a> [audit\_logs\_keyvault\_log\_analytics\_id](#output\_audit\_logs\_keyvault\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_keyvault_storage_account_id"></a> [audit\_logs\_keyvault\_storage\_account\_id](#output\_audit\_logs\_keyvault\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_kubernetes_cluster_log_analytics_id"></a> [audit\_logs\_kubernetes\_cluster\_log\_analytics\_id](#output\_audit\_logs\_kubernetes\_cluster\_log\_analytics\_id) | n/a |
