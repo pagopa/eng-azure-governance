@@ -24,6 +24,8 @@ output "policy_ids" {
     azurerm_policy_definition.audit_logs_event_hub_storage_account.id,
     azurerm_policy_definition.audit_logs_public_ip_log_analytics.id,
     azurerm_policy_definition.audit_logs_public_ip_storage_account.id,
+    azurerm_policy_definition.audit_logs_virtual_network_gateway_log_analytics.id,
+    azurerm_policy_definition.audit_logs_virtual_network_gateway_storage_account.id,
   ]
 }
 
@@ -121,4 +123,12 @@ output "audit_logs_public_ip_log_analytics_id" {
 
 output "audit_logs_public_ip_storage_account_id" {
   value = azurerm_policy_definition.audit_logs_public_ip_storage_account.id
+}
+
+output "audit_logs_virtual_network_gateway_log_analytics_id" {
+  value = azurerm_policy_definition.audit_logs_virtual_network_gateway_log_analytics.id
+}
+
+output "audit_logs_virtual_network_gateway_storage_account_id" {
+  value = azurerm_policy_definition.audit_logs_virtual_network_gateway_storage_account.id
 }
