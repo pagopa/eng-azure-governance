@@ -19,7 +19,7 @@ action_group_budget_name           = "commonperror"
 
 budget_subscription_enabled = true
 budget_subscription_resource_group          = "common-p-monitor-rg"
-budget_subscription_amount     = 10
+budget_subscription_amount     = 240
 budget_subscription_time_grain = "Monthly"
 
 budget_subscription_notifications = [

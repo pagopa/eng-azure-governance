@@ -13,11 +13,12 @@ tags_subscription = {
 #
 # 💰 BUDGET
 #
-action_group_budget_resource_group = "dvopla-d-monitor-rg"
-action_group_budget_name           = "dvopladerror"
+action_group_budget_resource_group = "dvopau-p-monitor-rg"
+action_group_budget_name           = "dvopauperror"
 
-budget_subscription_resource_group          = "dvopla-d-monitor-rg"
-budget_subscription_amount     = 250
+budget_subscription_enabled = true
+budget_subscription_resource_group          = "dvopau-p-monitor-rg"
+budget_subscription_amount     = 10
 budget_subscription_time_grain = "Monthly"
 
 budget_subscription_notifications = [
@@ -46,3 +47,4 @@ budget_subscription_notifications = [
     threshold_type = "Forecasted"
   },
 ]
+

@@ -38,7 +38,7 @@ No modules.
 | <a name="input_env_short"></a> [env\_short](#input\_env\_short) | (Required) | `string` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | (Required) Region choosed to deploy the resources | `string` | `"West Europe"` | no |
 | <a name="input_location_short"></a> [location\_short](#input\_location\_short) | Short location form to avoid names to much larger | `string` | `"weu"` | no |
-| <a name="input_monitoring_resource_group"></a> [monitoring\_resource\_group](#input\_monitoring\_resource\_group) | Resource group where the monitoring is saved | `string` | n/a | yes |
+| <a name="input_budget_subscription_resource_group"></a> [monitoring\_resource\_group](#input\_monitoring\_resource\_group) | Resource group where the monitoring is saved | `string` | n/a | yes |
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | Project prefix | `string` | n/a | yes |
 | <a name="input_subscription_foundation"></a> [subscription\_foundation](#input\_subscription\_foundation) | Allows you to enable the creation of vault, AD permissions and other configurations for the subscription if not present | `bool` | `false` | no |
 
