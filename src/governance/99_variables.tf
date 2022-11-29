@@ -37,6 +37,12 @@ variable "subscription_foundation" {
   description = "Allows you to enable the creation of vault, AD permissions and other configurations for the subscription if not present"
 }
 
+variable "tags_subscription" {
+  type        = map(any)
+  default     = {}
+  description = "Tags that will be used by subscriptions"
+}
+
 #
 # 💰 Budget
 #
