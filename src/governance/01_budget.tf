@@ -9,7 +9,7 @@ data "azurerm_monitor_action_group" "budget_ag" {
 
 # ----------------------------------------------------------------------
 
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/consumption_budget_resource_group
+#https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/consumption_budget_subscription
 resource "azurerm_consumption_budget_subscription" "governance_budget" {
   count = var.budget_subscription_enabled ? 1: 0
 
@@ -18,6 +18,17 @@ resource "azurerm_consumption_budget_subscription" "governance_budget" {
 
   amount     = var.budget_subscription_amount
   time_grain = var.budget_subscription_time_grain
+
+  #https://learn.microsoft.com/en-us/azure/cost-management-billing/understand/understand-usage#list-of-terms-and-descriptions
+  filter {
+    dimension {
+      #https://learn.microsoft.com/en-us/azure/cost-management-billing/understand/understand-usage#list-of-terms-and-descriptions
+      name = "ChargeType"
+      values = [
+        "Usage"
+      ]
+    }
+  }
 
   time_period {
     start_date = formatdate("YYYY-MM-01'T'00:00:00Z", timestamp())
