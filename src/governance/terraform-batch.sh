@@ -50,7 +50,7 @@ do
     if [ -f "$SCRIPT_PATH/subscriptions/${dir}/terraform.tfvars" ]; then
 
         # shellcheck disable=SC2028
-        echo "🟨 started: Terraform $ACTION on ${dir} \n"
+        echo "🚀 started: Terraform $ACTION on ${dir} \n"
 
         if [[ "${ACTION}" == "apply" ]]; then
           sh terraform.sh "${ACTION}" "${dir}" -auto-approve -compact-warnings
