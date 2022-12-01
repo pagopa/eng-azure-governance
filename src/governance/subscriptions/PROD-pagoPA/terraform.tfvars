@@ -16,10 +16,10 @@ tags_subscription = {
 action_group_budget_resource_group = "pagopa-p-monitor-rg"
 action_group_budget_name           = "pagopaperror"
 
-budget_subscription_enabled = true
-budget_subscription_resource_group          = "pagopa-p-monitor-rg"
-budget_subscription_amount     = 35000
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = true
+budget_subscription_resource_group = "pagopa-p-monitor-rg"
+budget_subscription_amount         = 35000
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {

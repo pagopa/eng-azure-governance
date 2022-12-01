@@ -16,10 +16,10 @@ tags_subscription = {
 action_group_budget_resource_group = "selc-d-monitor-rg"
 action_group_budget_name           = "selcderror"
 
-budget_subscription_enabled = true
-budget_subscription_resource_group          = "selc-d-monitor-rg"
-budget_subscription_amount     = 750
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = true
+budget_subscription_resource_group = "selc-d-monitor-rg"
+budget_subscription_amount         = 750
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {

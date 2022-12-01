@@ -15,10 +15,10 @@ tags_subscription = {
 action_group_budget_resource_group = "io-p-rg-common"
 action_group_budget_name           = "ioperror"
 
-budget_subscription_enabled = true
-budget_subscription_resource_group          = "io-p-rg-common"
-budget_subscription_amount     = 33000
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = true
+budget_subscription_resource_group = "io-p-rg-common"
+budget_subscription_amount         = 33000
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {

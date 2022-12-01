@@ -17,10 +17,10 @@ tags_subscription = {
 action_group_budget_resource_group = "sec-p-monitor"
 action_group_budget_name           = "secperror"
 
-budget_subscription_enabled = false
-budget_subscription_resource_group          = "sec-p-monitor"
-budget_subscription_amount     = 12000
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = false
+budget_subscription_resource_group = "sec-p-monitor"
+budget_subscription_amount         = 12000
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {

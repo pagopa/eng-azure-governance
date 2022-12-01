@@ -15,10 +15,10 @@ tags_subscription = {
 action_group_budget_resource_group = "io-d-monitoring"
 action_group_budget_name           = "ioderror"
 
-budget_subscription_enabled = true
-budget_subscription_resource_group          = "io-d-monitoring"
-budget_subscription_amount     = 500
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = true
+budget_subscription_resource_group = "io-d-monitoring"
+budget_subscription_amount         = 500
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {

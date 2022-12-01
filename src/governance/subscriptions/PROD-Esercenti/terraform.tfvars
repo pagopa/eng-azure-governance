@@ -15,10 +15,10 @@ tags_subscription = {
 action_group_budget_resource_group = "cgnonboardingportal-p-monitor-rg"
 action_group_budget_name           = "cgnperror"
 
-budget_subscription_enabled = true
-budget_subscription_resource_group          = "cgnonboardingportal-p-monitor-rg"
-budget_subscription_amount     = 1500
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = true
+budget_subscription_resource_group = "cgnonboardingportal-p-monitor-rg"
+budget_subscription_amount         = 1500
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {

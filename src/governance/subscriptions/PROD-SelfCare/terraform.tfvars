@@ -15,10 +15,10 @@ tags_subscription = {
 action_group_budget_resource_group = "selc-p-monitor-rg"
 action_group_budget_name           = "selcperror"
 
-budget_subscription_enabled = true
-budget_subscription_resource_group          = "selc-p-monitor-rg"
-budget_subscription_amount     = 3500
-budget_subscription_time_grain = "Monthly"
+budget_subscription_enabled        = true
+budget_subscription_resource_group = "selc-p-monitor-rg"
+budget_subscription_amount         = 3500
+budget_subscription_time_grain     = "Monthly"
 
 budget_subscription_notifications = [
   {
