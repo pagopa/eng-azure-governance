@@ -2,6 +2,10 @@
 
 set -e
 
+# sh terraform-batch.sh changes time <number of days> -> show the folder changed that was made in days between main and current branch
+
+# sh terraform-batch.sh <ACTION> time <number of days> -> launch the action at the folders changed in days between main and current branch
+
 SCRIPT_PATH="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 CURRENT_DIRECTORY="$(basename "$SCRIPT_PATH")"
 ACTION=$1
