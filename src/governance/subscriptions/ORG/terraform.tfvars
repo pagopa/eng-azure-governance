@@ -1,5 +1,13 @@
-env_short = ""
+env_short = "p"
 prefix    = "org"
+
+tags_subscription = {
+  CostCenter   = "TS310 - PAGAMENTI & SERVIZI"
+  Environment  = "PROD"
+  Owner        = "DevOps team"
+  BusinessUnit = "DevOps team"
+  Renew        = "v1"
+}
 
 #
 # 💰 BUDGET

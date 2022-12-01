@@ -3,6 +3,14 @@ env                     = "prod"
 prefix                  = "sec"
 subscription_foundation = false
 
+tags_subscription = {
+  CostCenter   = "Security"
+  Environment  = "PROD"
+  Owner        = "Security"
+  BusinessUnit = "Security"
+  Renew        = "v1"
+}
+
 #
 # 💰 BUDGET
 #

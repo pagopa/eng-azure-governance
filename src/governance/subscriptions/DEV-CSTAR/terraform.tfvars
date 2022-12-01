@@ -1,6 +1,14 @@
 env_short = "d"
 prefix    = "cstar"
 
+tags_subscription = {
+  CostCenter   = "TS310 - PAGAMENTI & SERVIZI"
+  Environment  = "DEV"
+  Owner        = "CSTAR"
+  BusinessUnit = "CentroStella"
+  Renew        = "v1"
+}
+
 #
 # 💰 BUDGET
 #

@@ -14,7 +14,7 @@ tags_subscription = {
 # 💰 BUDGET
 #
 action_group_budget_resource_group = "pagopa-p-monitor-rg"
-action_group_budget_name           = "ioperror"
+action_group_budget_name           = "pagopaperror"
 
 budget_subscription_enabled = true
 budget_subscription_resource_group          = "pagopa-p-monitor-rg"
