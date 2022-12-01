@@ -13,7 +13,7 @@ data "azurerm_monitor_action_group" "budget_ag" {
 resource "azurerm_consumption_budget_subscription" "governance_budget" {
   count = var.budget_subscription_enabled ? 1: 0
 
-  name            = "${var.prefix}-governance-budget"
+  name            = "${var.prefix}-${var.env_short}-governance-budget-${var.tags_subscription.Renew}"
   subscription_id = data.azurerm_subscription.current.id
 
   amount     = var.budget_subscription_amount
