@@ -3,11 +3,7 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.Web/sites"
-      },
-      {
-        "field": "kind",
-        "notLike": "functionapp*"
+        "equals": "Microsoft.Network/virtualNetworkGateways"
       },
       {
         "field": "location",
@@ -39,17 +35,16 @@
                         "equals": "true"
                       },
                       {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
                         "in": [
-                          "AppServiceAntivirusScanAuditLogs",
-                          "AppServiceFileAuditLogs",
-                          "AppServiceAuditLogs"
+                          "allLogs",
+                          "Audit"
                         ]
                       }
                     ]
                   }
                 },
-                "equals": 3
+                "equals": 2
               }
             ]
           },
@@ -82,7 +77,7 @@
             "variables": {},
             "resources": [
               {
-                "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+                "type": "Microsoft.Network/virtualNetworkGateways/providers/diagnosticSettings",
                 "apiVersion": "2021-05-01-preview",
                 "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
                 "location": "[parameters('location')]",
@@ -91,7 +86,7 @@
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
-                      "category": "AppServiceAntivirusScanAuditLogs",
+                      "categoryGroup": "allLogs",
                       "enabled": true,
                       "retentionPolicy": {
                         "enabled": true,
@@ -99,15 +94,7 @@
                       }
                     },
                     {
-                      "category": "AppServiceFileAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
-                    },
-                    {
-                      "category": "AppServiceAuditLogs",
+                      "categoryGroup": "Audit",
                       "enabled": true,
                       "retentionPolicy": {
                         "enabled": true,

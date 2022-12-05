@@ -1,19 +1,7 @@
 {
   "if": {
-    "allOf": [
-      {
-        "field": "type",
-        "equals": "Microsoft.Web/sites"
-      },
-      {
-        "field": "kind",
-        "notLike": "functionapp*"
-      },
-      {
-        "field": "location",
-        "equals": "[parameters('location')]"
-      }
-    ]
+    "field": "type",
+    "equals": "Microsoft.EventHub/namespaces"
   },
   "then": {
     "effect": "deployIfNotExists",
@@ -39,23 +27,19 @@
                         "equals": "true"
                       },
                       {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
-                        "in": [
-                          "AppServiceAntivirusScanAuditLogs",
-                          "AppServiceFileAuditLogs",
-                          "AppServiceAuditLogs"
-                        ]
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
+                        "equals": "audit"
                       }
                     ]
                   }
                 },
-                "equals": 3
+                "equals": 1
               }
             ]
           },
           {
-            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
-            "equals": "[parameters('storageAccount')]"
+            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
+            "equals": "[parameters('logAnalytics')]"
           }
         ]
       },
@@ -72,47 +56,23 @@
               "resourceName": {
                 "type": "string"
               },
-              "location": {
-                "type": "string"
-              },
-              "storageAccount": {
+              "logAnalytics": {
                 "type": "string"
               }
             },
             "variables": {},
             "resources": [
               {
-                "type": "Microsoft.Web/sites/providers/diagnosticSettings",
+                "type": "Microsoft.EventHub/namespaces/providers/diagnosticSettings",
                 "apiVersion": "2021-05-01-preview",
                 "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
-                "location": "[parameters('location')]",
                 "dependsOn": [],
                 "properties": {
-                  "storageAccountId": "[parameters('storageAccount')]",
+                  "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     {
-                      "category": "AppServiceAntivirusScanAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
-                    },
-                    {
-                      "category": "AppServiceFileAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
-                    },
-                    {
-                      "category": "AppServiceAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "categoryGroup": "audit",
+                      "enabled": true
                     }
                   ]
                 }
@@ -127,11 +87,8 @@
             "resourceName": {
               "value": "[field('name')]"
             },
-            "location": {
-              "value": "[field('location')]"
-            },
-            "storageAccount": {
-              "value": "[parameters('storageAccount')]"
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
             }
           }
         }

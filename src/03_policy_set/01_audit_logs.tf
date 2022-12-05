@@ -49,6 +49,18 @@ locals {
     app_service_workspaceid_reference_id                        = "app_service_workspaceid"
     app_service_storageid_westeurope_reference_id               = "app_service_storageid_westeurope"
     app_service_storageid_northeurope_reference_id              = "app_service_storageid_northeurope"
+    event_hub_workspaceid_reference_id                          = "event_hub_workspaceid"
+    event_hub_storageid_westeurope_reference_id                 = "event_hub_storageid_westeurope"
+    event_hub_storageid_northeurope_reference_id                = "event_hub_storageid_northeurope"
+    public_ip_workspaceid_reference_id                          = "public_ip_workspaceid"
+    public_ip_storageid_westeurope_reference_id                 = "public_ip_storageid_westeurope"
+    public_ip_storageid_northeurope_reference_id                = "public_ip_storageid_northeurope"
+    virtual_network_gateway_workspaceid_reference_id            = "virtual_network_gateway_workspaceid"
+    virtual_network_gateway_storageid_westeurope_reference_id   = "virtual_network_gateway_storageid_westeurope"
+    virtual_network_gateway_storageid_northeurope_reference_id  = "virtual_network_gateway_storageid_northeurope"
+    grafana_workspaceid_reference_id                            = "grafana_workspaceid"
+    grafana_storageid_westeurope_reference_id                   = "grafana_storageid_westeurope"
+    grafana_storageid_northeurope_reference_id                  = "grafana_storageid_northeurope"
   }
 }
 
@@ -93,7 +105,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.cosmos_db_storageid_northeurope_reference_id} : ${local.audit_logs.cosmos_db_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.app_service_workspaceid_reference_id} : ${local.audit_logs.app_service_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.app_service_storageid_westeurope_reference_id} : ${local.audit_logs.app_service_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.app_service_storageid_northeurope_reference_id} : ${local.audit_logs.app_service_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.app_service_storageid_northeurope_reference_id} : ${local.audit_logs.app_service_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.event_hub_workspaceid_reference_id} : ${local.audit_logs.event_hub_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.event_hub_storageid_westeurope_reference_id} : ${local.audit_logs.event_hub_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.event_hub_storageid_northeurope_reference_id} : ${local.audit_logs.event_hub_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.public_ip_workspaceid_reference_id} : ${local.audit_logs.public_ip_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.public_ip_storageid_westeurope_reference_id} : ${local.audit_logs.public_ip_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.public_ip_storageid_northeurope_reference_id} : ${local.audit_logs.public_ip_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.virtual_network_gateway_workspaceid_reference_id} : ${local.audit_logs.virtual_network_gateway_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.virtual_network_gateway_storageid_westeurope_reference_id} : ${local.audit_logs.virtual_network_gateway_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id} : ${local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.grafana_workspaceid_reference_id} : ${local.audit_logs.grafana_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.grafana_storageid_westeurope_reference_id} : ${local.audit_logs.grafana_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.grafana_storageid_northeurope_reference_id} : ${local.audit_logs.grafana_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -526,6 +550,182 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
     reference_id         = local.audit_logs.app_service_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Event Hub
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_log_analytics_id
+    reference_id         = local.audit_logs.event_hub_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    reference_id         = local.audit_logs.event_hub_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    reference_id         = local.audit_logs.event_hub_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Public IP
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_log_analytics_id
+    reference_id         = local.audit_logs.public_ip_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+    reference_id         = local.audit_logs.public_ip_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+    reference_id         = local.audit_logs.public_ip_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Virtual Network Gateway
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_log_analytics_id
+    reference_id         = local.audit_logs.virtual_network_gateway_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+    reference_id         = local.audit_logs.virtual_network_gateway_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+    reference_id         = local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_northeurope}"
+      },
+      "location": {
+        "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Grafana
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_log_analytics_id
+    reference_id         = local.audit_logs.grafana_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+    reference_id         = local.audit_logs.grafana_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
+      },
+      "location": {
+        "value": "westeurope"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+    reference_id         = local.audit_logs.grafana_storageid_northeurope_reference_id
     parameter_values     = <<VALUE
     {
       "storageAccount": {
