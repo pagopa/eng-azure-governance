@@ -2,8 +2,12 @@ data "azurerm_management_group" "pagamenti_servizi_prod" {
   name = "pagamenti_servizi_prod"
 }
 
+locals {
+  pagamenti_servizi_prod_prefix = "psp"
+}
+
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_iso_27001_2013" {
-  name                 = "pspiso270012013"
+  name                 = "${local.pagamenti_servizi_prod_prefix}iso270012013"
   display_name         = "ISO 27001:2013"
   policy_definition_id = local.intiative_ids.iso_27001_2013
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
@@ -16,7 +20,7 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_is
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_resource_lock" {
-  name                 = "pspresourcelock"
+  name                 = "${local.pagamenti_servizi_prod_prefix}resourcelock"
   display_name         = "PagoPA Resource lock"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.resource_lock_id
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
@@ -42,7 +46,7 @@ resource "azurerm_role_assignment" "pagamenti_servizi_prod_resource_lock_contrib
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_audit_logs" {
-  name                 = "pspauditlogs"
+  name                 = "${local.pagamenti_servizi_prod_prefix}auditlogs"
   display_name         = "PagoPA Audit logs"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.audit_logs_id
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
@@ -77,4 +81,20 @@ resource "azurerm_role_assignment" "pagamenti_servizi_prod_audit_logs_contributo
   scope                = data.terraform_remote_state.policy_set.outputs.audit_logs_storage_id_westeurope
   role_definition_name = "Log Analytics Contributor"
   principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_audit_logs.identity[0].principal_id
+}
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_storage_account" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}stac"
+  display_name         = "PagoPA Storage Account"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.storage_account_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
 }
