@@ -18,6 +18,6 @@ METADATA
 
   parameters = file("./policy_rules/allowed_sku_parameters.json")
 
-  policy_rule = file("./policy_rules/allowed_sku.json")
+  policy_rule = file("./policy_rules/allowed_sku_policy.json")
 
 }
