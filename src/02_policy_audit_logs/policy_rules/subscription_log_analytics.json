@@ -1,0 +1,70 @@
+{
+  "if": { "field": "type", "equals": "Microsoft.Resources/subscriptions" },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "microsoft.insights/diagnosticSettings",
+      "existenceCondition": {
+        "allOf": [
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
+            "equals": "[parameters('logAnalytics')]"
+          }
+        ]
+      },
+      "roleDefinitionIds": [
+        "${roleDefinitionIds_audit_logs_contributor}",
+        "${roleDefinitionIds_log_analytics_contributor}"
+      ],
+      "deployment": {
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "logAnalytics": {
+                "type": "string"
+              }
+            },
+            "variables": {},
+            "resources": [
+              {
+                "type": "microsoft.insights/diagnosticSettings",
+                "apiVersion": "2017-05-01-preview",
+                "name": "[parameters('diagnosticsSettingName')]",
+                "properties": {
+                  "workspaceId": "[parameters('logAnalytics')]",
+                  "logs": [
+                    { "category": "Administrative", "enabled": true },
+                    { "category": "Security", "enabled": true },
+                    { "category": "ServiceHealth", "enabled": true },
+                    { "category": "Alert", "enabled": true },
+                    { "category": "Recommendation", "enabled": true },
+                    { "category": "Policy", "enabled": true },
+                    { "category": "Autoscale", "enabled": true },
+                    { "category": "ResourceHealth", "enabled": true }
+                  ]
+                }
+              }
+            ],
+            "outputs": {}
+          },
+          "parameters": {
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
+            }
+          }
+        },
+        "location": "westeurope"
+      },
+      "deploymentScope": "subscription"
+    }
+  }
+}

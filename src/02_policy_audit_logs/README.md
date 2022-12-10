@@ -43,6 +43,8 @@ No modules.
 | [azurerm_policy_definition.audit_logs_postgresql_single_server_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_public_ip_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_public_ip_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_subscription_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_subscription_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_virtual_network_gateway_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_virtual_network_gateway_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/client_config) | data source |
@@ -87,6 +89,8 @@ No modules.
 | <a name="output_audit_logs_postgresql_single_server_storage_account_id"></a> [audit\_logs\_postgresql\_single\_server\_storage\_account\_id](#output\_audit\_logs\_postgresql\_single\_server\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_public_ip_log_analytics_id"></a> [audit\_logs\_public\_ip\_log\_analytics\_id](#output\_audit\_logs\_public\_ip\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_public_ip_storage_account_id"></a> [audit\_logs\_public\_ip\_storage\_account\_id](#output\_audit\_logs\_public\_ip\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_subscription_log_analytics_id"></a> [audit\_logs\_subscription\_log\_analytics\_id](#output\_audit\_logs\_subscription\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_subscription_storage_account_id"></a> [audit\_logs\_subscription\_storage\_account\_id](#output\_audit\_logs\_subscription\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_virtual_network_gateway_log_analytics_id"></a> [audit\_logs\_virtual\_network\_gateway\_log\_analytics\_id](#output\_audit\_logs\_virtual\_network\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_virtual_network_gateway_storage_account_id"></a> [audit\_logs\_virtual\_network\_gateway\_storage\_account\_id](#output\_audit\_logs\_virtual\_network\_gateway\_storage\_account\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
