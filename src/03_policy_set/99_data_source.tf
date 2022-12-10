@@ -34,3 +34,14 @@ data "terraform_remote_state" "policy_audit_logs" {
     key                  = "policy_audit_logs.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_application_gateway" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_application_gateway.terraform.tfstate"
+  }
+}

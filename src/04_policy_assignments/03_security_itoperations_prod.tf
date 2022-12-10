@@ -98,3 +98,19 @@ resource "azurerm_management_group_policy_assignment" "security_itoperations_pro
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "security_itoperations_prod_application_gateway" {
+  name                 = "${local.security_itoperations_prod_prefix}appgw"
+  display_name         = "PagoPA Application Gateway"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.application_gateway_prod_id
+  management_group_id  = data.azurerm_management_group.security_itoperations_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}

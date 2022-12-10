@@ -83,10 +83,26 @@ resource "azurerm_role_assignment" "assistenza_operations_prod_audit_logs_contri
   principal_id         = azurerm_management_group_policy_assignment.assistenza_operations_prod_audit_logs.identity[0].principal_id
 }
 
-resource "azurerm_management_group_policy_assignment" "assistenza_operations_prod_account_prod" {
+resource "azurerm_management_group_policy_assignment" "assistenza_operations_prod_storage_account" {
   name                 = "${local.assistenza_operations_prod_prefix}stac"
   display_name         = "PagoPA Storage Account"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.storage_account_prod_id
+  management_group_id  = data.azurerm_management_group.assistenza_operations_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "assistenza_operations_prod_application_gateway" {
+  name                 = "${local.assistenza_operations_prod_prefix}appgw"
+  display_name         = "PagoPA Application Gateway"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.application_gateway_prod_id
   management_group_id  = data.azurerm_management_group.assistenza_operations_prod.id
 
   enforce = true

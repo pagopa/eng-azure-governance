@@ -18,6 +18,7 @@ jobs:
         env:
           FOLDERS: >
             01_custom_roles
+            02_policy_application_gateway
             02_policy_audit_logs
             02_policy_resource_lock
             02_policy_tags_inherit_from_subscription

@@ -98,3 +98,19 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_cloud_p
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_cloud_prod_application_gateway" {
+  name                 = "${local.pagamenti_servizi_cloud_prod_prefix}appgw"
+  display_name         = "PagoPA Application Gateway"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.application_gateway_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_cloud_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
