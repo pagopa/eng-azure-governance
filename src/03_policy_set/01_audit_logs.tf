@@ -121,7 +121,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.grafana_storageid_westeurope_reference_id} : ${local.audit_logs.grafana_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.grafana_storageid_northeurope_reference_id} : ${local.audit_logs.grafana_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.subscription_workspaceid_reference_id} : ${local.audit_logs.subscription_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.subscription_storageid_westeurope_reference_id} : ${local.audit_logs.subscription_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.subscription_storageid_westeurope_reference_id} : ${local.audit_logs.subscription_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -749,7 +749,7 @@ METADATA
     reference_id         = local.audit_logs.subscription_workspaceid_reference_id
     parameter_values     = <<VALUE
     {
-      "logAnalytics": {
+      "workspaceId": {
         "value": "${var.audit_logs_workspace_id}"
       }
     }

@@ -1,14 +1,14 @@
 {
   "if": { "field": "type", "equals": "Microsoft.Resources/subscriptions" },
   "then": {
-    "effect": "DeployIfNotExists",
+    "effect": "deployIfNotExists",
     "details": {
       "type": "microsoft.insights/diagnosticSettings",
       "existenceCondition": {
         "allOf": [
           {
             "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
-            "equals": "[parameters('workspaceId')]"
+            "equals": "[parameters('logAnalytics')]"
           }
         ]
       },
@@ -23,17 +23,21 @@
             "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
             "contentVersion": "1.0.0.0",
             "parameters": {
-              "profileName": { "type": "string" },
-              "workspaceId": { "type": "string" }
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "logAnalytics": {
+                "type": "string"
+              }
             },
             "variables": {},
             "resources": [
               {
                 "type": "microsoft.insights/diagnosticSettings",
                 "apiVersion": "2017-05-01-preview",
-                "name": "[parameters('profileName')]",
+                "name": "[parameters('diagnosticsSettingName')]",
                 "properties": {
-                  "workspaceId": "[parameters('workspaceId')]",
+                  "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     { "category": "Administrative", "enabled": true },
                     { "category": "Security", "enabled": true },
@@ -50,8 +54,12 @@
             "outputs": {}
           },
           "parameters": {
-            "workspaceId": { "value": "[parameters('workspaceId')]" },
-            "profileName": { "value": "[parameters('profileName')]" }
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
+            }
           }
         },
         "location": "westeurope"

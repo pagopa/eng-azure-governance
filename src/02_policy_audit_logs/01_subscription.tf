@@ -18,7 +18,7 @@ METADATA
 
   parameters = <<PARAMETERS
   {
-    "diagnosticsSettingName": {
+    "profileName": {
       "type": "String",
       "metadata": {
         "displayName": "Setting name",
@@ -26,7 +26,7 @@ METADATA
       },
       "defaultValue": "AuditLogs_LogAnalytics"
     },
-    "logAnalytics": {
+    "workspaceId": {
       "type": "String",
       "metadata": {
         "displayName": "Log Analytics workspace",
