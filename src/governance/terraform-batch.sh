@@ -2,6 +2,10 @@
 
 set -e
 
+# sh terraform-batch.sh changes time <number of days> -> show the folder changed that was made in days between main and current branch
+
+# sh terraform-batch.sh <ACTION> time <number of days> -> launch the action at the folders changed in days between main and current branch
+
 SCRIPT_PATH="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 CURRENT_DIRECTORY="$(basename "$SCRIPT_PATH")"
 ACTION=$1
@@ -46,7 +50,7 @@ do
     if [ -f "$SCRIPT_PATH/subscriptions/${dir}/terraform.tfvars" ]; then
 
         # shellcheck disable=SC2028
-        echo "🟨 started: Terraform $ACTION on ${dir} \n"
+        echo "🚀 started: Terraform $ACTION on ${dir} \n"
 
         if [[ "${ACTION}" == "apply" ]]; then
           sh terraform.sh "${ACTION}" "${dir}" -auto-approve -compact-warnings
