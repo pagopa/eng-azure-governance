@@ -18,7 +18,7 @@ variable "audit_logs_storage_id_northeurope" {
 
 locals {
   audit_logs = {
-    metadata_category_name                                      = "pagopa_env_prod"
+    metadata_category_name                                      = "pagopa_prod"
     keyvault_workspaceid_reference_id                           = "keyvault_workspaceid"
     keyvault_storageid_westeurope_reference_id                  = "keyvault_storageid_westeurope"
     keyvault_storageid_northeurope_reference_id                 = "keyvault_storageid_northeurope"
