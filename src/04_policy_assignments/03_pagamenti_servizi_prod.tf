@@ -19,6 +19,20 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_is
   }
 }
 
+resource "azurerm_management_group_policy_exemption" "pagamenti_servizi_prod_iso_27001_2013" {
+  name                 = "${azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.name}"
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.id
+  exemption_category   = "Mitigated"
+  description          = "Mitigated with Google MFA"
+  policy_definition_reference_ids = [
+    "/providers/Microsoft.Authorization/policyDefinitions/e3576e28-8b17-4677-84c3-db2990658d64", # MFA should be enabled on accounts with read permissions on your subscription
+    "/providers/Microsoft.Authorization/policyDefinitions/9297c21d-2ed6-4474-b48f-163f75654ce3", # MFA should be enabled for accounts with write permissions on your subscription
+    "/providers/Microsoft.Authorization/policyDefinitions/aa633080-8b72-40c4-a2d7-d00c03e80bed", # MFA should be enabled on accounts with owner permissions on your subscription
+    "/providers/Microsoft.Authorization/policyDefinitions/4f11b553-d42e-4e3a-89be-32ca364cad4c", # A maximum of 3 owners should be designated for your subscription
+  ]
+}
+
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_resource_lock" {
   name                 = "${local.pagamenti_servizi_prod_prefix}resourcelock"
   display_name         = "PagoPA Resource lock"
