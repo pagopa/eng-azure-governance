@@ -21,3 +21,44 @@ resource "azurerm_management_group_policy_assignment" "pagopa_data_sovereignty_e
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "pagopa_azure_security_benchmark" {
+  name                 = "${local.pagopa_prefix}asc"
+  display_name         = "Azure Security Benchmark"
+  policy_definition_id = local.intiative_ids.azure_security_benchmark
+  management_group_id  = data.azurerm_management_group.pagopa.id
+
+  location = var.location
+  enforce  = false
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benchmark_mitigated" {
+  name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-mitigated"
+  management_group_id  = data.azurerm_management_group.pagopa.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
+  exemption_category   = "Mitigated"
+  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = [
+    "identityEnableMFAForOwnerPermissionsMonitoring",
+    "identityEnableMFAForOwnerPermissionsMonitoringNew",
+    "identityEnableMFAForWritePermissionsMonitoring",
+    "identityEnableMFAForWritePermissionsMonitoringEffect",
+    "identityEnableMFAForReadPermissionsMonitoring",
+    "identityEnableMFAForReadPermissionsMonitoringNew",
+  ]
+}
+
+resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benchmark_waiver" {
+  name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-waiver"
+  management_group_id  = data.azurerm_management_group.pagopa.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
+  exemption_category   = "Waiver"
+  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = [
+    "ensureWEBAppHasClientCertificatesIncomingClientCertificatesSetToOnMonitoringEffect",
+    "functionAppsShouldHaveClientCertificatesEnabledMonitoringEffect",
+  ]
+}
