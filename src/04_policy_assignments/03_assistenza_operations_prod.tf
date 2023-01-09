@@ -19,6 +19,30 @@ resource "azurerm_management_group_policy_assignment" "assistenza_operations_pro
   }
 }
 
+resource "azurerm_management_group_policy_exemption" "assistenza_operations_prod_iso_27001_2013_mitigated" {
+  name                 = "${azurerm_management_group_policy_assignment.assistenza_operations_prod_iso_27001_2013.name}-mitigated"
+  management_group_id  = data.azurerm_management_group.assistenza_operations_prod.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.assistenza_operations_prod_iso_27001_2013.id
+  exemption_category   = "Mitigated"
+  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = [
+    "PreviewAuditAccountsWithOwnerPermissionsWhoAreNotMfaEnabledOnASubscription", # MFA should be enabled on accounts with read permissions on your subscription
+    "PreviewAuditAccountsWithWritePermissionsWhoAreNotMfaEnabledOnASubscription", # MFA should be enabled for accounts with write permissions on your subscription
+    "PreviewAuditAccountsWithReadPermissionsWhoAreNotMfaEnabledOnASubscription",  # MFA should be enabled on accounts with owner permissions on your subscription
+  ]
+}
+
+resource "azurerm_management_group_policy_exemption" "assistenza_operations_prod_iso_27001_2013_waiver" {
+  name                 = "${azurerm_management_group_policy_assignment.assistenza_operations_prod_iso_27001_2013.name}-waiver"
+  management_group_id  = data.azurerm_management_group.assistenza_operations_prod.id
+  policy_assignment_id = azurerm_management_group_policy_assignment.assistenza_operations_prod_iso_27001_2013.id
+  exemption_category   = "Waiver"
+  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = [
+    "PreviewAuditMaximumNumberOfOwnersForASubscription", # A maximum of 3 owners should be designated for your subscription
+  ]
+}
+
 resource "azurerm_management_group_policy_assignment" "assistenza_operations_prod_resource_lock" {
   name                 = "${local.assistenza_operations_prod_prefix}resourcelock"
   display_name         = "PagoPA Resource lock"
