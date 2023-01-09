@@ -12,6 +12,14 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_is
   policy_definition_id = local.intiative_ids.iso_27001_2013
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
 
+  parameters = jsonencode(
+    {
+      metricsEnabled-7f89b1eb-583c-429a-8828-af049802c1d9 = {
+        value = false
+      }
+    }
+  )
+
   location = var.location
   enforce  = false
   identity {
