@@ -42,16 +42,22 @@ No modules.
 | [azurerm_management_group_policy_assignment.strategic_innovation_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.strategic_innovation_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_exemption.assistenza_operations_dev_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.assistenza_operations_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.assistenza_operations_prod_iso_27001_2013_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
+| [azurerm_management_group_policy_exemption.assistenza_operations_uat_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
+| [azurerm_management_group_policy_exemption.pagamenti_servizi_cloud_dev_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.pagamenti_servizi_cloud_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.pagamenti_servizi_cloud_prod_iso_27001_2013_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
+| [azurerm_management_group_policy_exemption.pagamenti_servizi_dev_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.pagamenti_servizi_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.pagamenti_servizi_prod_iso_27001_2013_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
+| [azurerm_management_group_policy_exemption.pagamenti_servizi_uat_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.pagopa_azure_security_benchmark_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.pagopa_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.security_itoperations_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.security_itoperations_prod_iso_27001_2013_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
+| [azurerm_management_group_policy_exemption.strategic_innovation_dev_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.strategic_innovation_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.strategic_innovation_prod_iso_27001_2013_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_role_assignment.assistenza_operations_prod_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
@@ -75,12 +81,17 @@ No modules.
 | [azurerm_role_assignment.strategic_innovation_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.strategic_innovation_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
+| [azurerm_management_group.assistenza_operations_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.assistenza_operations_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.assistenza_operations_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_cloud_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_cloud_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.pagamenti_servizi_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.pagamenti_servizi_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.security_itoperations_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.strategic_innovation_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.strategic_innovation_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
 | [terraform_remote_state.policy_set](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
