@@ -37,6 +37,7 @@ locals {
       "diagnosticsLogsInEventHubMonitoring",
       "identityDesignateLessThanOwnersMonitoring",
       "kubernetesServiceAuthorizedIPRangesEnabledMonitoring",
+      "vnetEnableDDoSProtectionMonitoring",
     ]
     policy_dev_mitigated_ids = [
 
@@ -49,6 +50,7 @@ locals {
       "diagnosticsLogsInKubernetesMonitoring",
       "diagnosticsLogsInEventHubMonitoring",
       "identityDesignateLessThanOwnersMonitoring",
+      "vnetEnableDDoSProtectionMonitoring",
     ]
     policy_uat_mitigated_ids = [
 
