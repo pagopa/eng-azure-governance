@@ -36,6 +36,7 @@ locals {
       "diagnosticsLogsInKubernetesMonitoring",
       "diagnosticsLogsInEventHubMonitoring",
       "identityDesignateLessThanOwnersMonitoring",
+      "kubernetesServiceAuthorizedIPRangesEnabledMonitoring",
     ]
     policy_dev_mitigated_ids = [
 
