@@ -35,6 +35,7 @@ locals {
       "diagnosticLogsInAppServicesShouldBeEnabledMonitoringEffect",
       "diagnosticsLogsInKubernetesMonitoring",
       "diagnosticsLogsInEventHubMonitoring",
+      "identityDesignateLessThanOwnersMonitoring",
     ]
     policy_dev_mitigated_ids = [
 
@@ -46,12 +47,14 @@ locals {
       "diagnosticLogsInAppServicesShouldBeEnabledMonitoringEffect",
       "diagnosticsLogsInKubernetesMonitoring",
       "diagnosticsLogsInEventHubMonitoring",
+      "identityDesignateLessThanOwnersMonitoring",
     ]
     policy_uat_mitigated_ids = [
 
     ]
     policy_prod_waiver_ids = [
       "diagnosticsLogsInKubernetesMonitoring",
+      "identityDesignateLessThanOwnersMonitoring",
     ]
     policy_prod_mitigated_ids = [
 
