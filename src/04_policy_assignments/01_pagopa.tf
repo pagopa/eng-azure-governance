@@ -25,7 +25,7 @@ resource "azurerm_management_group_policy_assignment" "pagopa_data_sovereignty_e
 resource "azurerm_management_group_policy_assignment" "pagopa_azure_security_benchmark" {
   name                 = "${local.pagopa_prefix}asc"
   display_name         = "Azure Security Benchmark"
-  policy_definition_id = local.intiative_ids.azure_security_benchmark
+  policy_definition_id = local.azure_security_benchmark.id
   management_group_id  = data.azurerm_management_group.pagopa.id
 
   location = var.location
