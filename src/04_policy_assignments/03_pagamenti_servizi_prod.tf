@@ -9,7 +9,7 @@ locals {
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_iso_27001_2013" {
   name                 = "${local.pagamenti_servizi_prod_prefix}iso270012013"
   display_name         = "ISO 27001:2013"
-  policy_definition_id = local.intiative_ids.iso_27001_2013
+  policy_definition_id = local.iso_27001_2013.id
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
 
   parameters = jsonencode(
@@ -28,27 +28,30 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_is
 }
 
 resource "azurerm_management_group_policy_exemption" "pagamenti_servizi_prod_iso_27001_2013_mitigated" {
-  name                 = "${azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.name}-mitigated"
-  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
-  policy_assignment_id = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.id
-  exemption_category   = "Mitigated"
-  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
-  policy_definition_reference_ids = [
-    "PreviewAuditAccountsWithOwnerPermissionsWhoAreNotMfaEnabledOnASubscription", # MFA should be enabled on accounts with read permissions on your subscription
-    "PreviewAuditAccountsWithWritePermissionsWhoAreNotMfaEnabledOnASubscription", # MFA should be enabled for accounts with write permissions on your subscription
-    "PreviewAuditAccountsWithReadPermissionsWhoAreNotMfaEnabledOnASubscription",  # MFA should be enabled on accounts with owner permissions on your subscription
-  ]
+  name                            = "${azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.name}-mitigated"
+  management_group_id             = data.azurerm_management_group.pagamenti_servizi_prod.id
+  policy_assignment_id            = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.id
+  exemption_category              = "Mitigated"
+  description                     = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = local.iso_27001_2013.policy_prod_mitigated_ids
 }
 
 resource "azurerm_management_group_policy_exemption" "pagamenti_servizi_prod_iso_27001_2013_waiver" {
-  name                 = "${azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.name}-waiver"
-  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
-  policy_assignment_id = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.id
-  exemption_category   = "Waiver"
-  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
-  policy_definition_reference_ids = [
-    "PreviewAuditMaximumNumberOfOwnersForASubscription", # A maximum of 3 owners should be designated for your subscription
-  ]
+  name                            = "${azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.name}-waiver"
+  management_group_id             = data.azurerm_management_group.pagamenti_servizi_prod.id
+  policy_assignment_id            = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013.id
+  exemption_category              = "Waiver"
+  description                     = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = local.iso_27001_2013.policy_prod_waiver_ids
+}
+
+resource "azurerm_management_group_policy_exemption" "pagamenti_servizi_prod_azure_security_benchmark_waiver" {
+  name                            = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}${local.pagamenti_servizi_prod_prefix}-waiver"
+  management_group_id             = data.azurerm_management_group.pagamenti_servizi_dev.id
+  policy_assignment_id            = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
+  exemption_category              = "Waiver"
+  description                     = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
+  policy_definition_reference_ids = local.azure_security_benchmark.policy_prod_waiver_ids
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_resource_lock" {

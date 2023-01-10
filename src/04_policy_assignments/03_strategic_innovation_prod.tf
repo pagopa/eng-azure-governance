@@ -2,10 +2,14 @@ data "azurerm_management_group" "strategic_innovation_prod" {
   name = "strategic_innovation_prod"
 }
 
+locals {
+  strategic_innovation_prod_prefix = "sip"
+}
+
 resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_iso_27001_2013" {
-  name                 = "sipiso270012013"
+  name                 = "${local.strategic_innovation_prod_prefix}iso270012013"
   display_name         = "ISO 27001:2013"
-  policy_definition_id = local.intiative_ids.iso_27001_2013
+  policy_definition_id = local.iso_27001_2013.id
   management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
 
   parameters = jsonencode(
@@ -24,31 +28,34 @@ resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod
 }
 
 resource "azurerm_management_group_policy_exemption" "strategic_innovation_prod_iso_27001_2013_mitigated" {
-  name                 = "${azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.name}-mitigated"
-  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
-  policy_assignment_id = azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.id
-  exemption_category   = "Mitigated"
-  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
-  policy_definition_reference_ids = [
-    "PreviewAuditAccountsWithOwnerPermissionsWhoAreNotMfaEnabledOnASubscription", # MFA should be enabled on accounts with read permissions on your subscription
-    "PreviewAuditAccountsWithWritePermissionsWhoAreNotMfaEnabledOnASubscription", # MFA should be enabled for accounts with write permissions on your subscription
-    "PreviewAuditAccountsWithReadPermissionsWhoAreNotMfaEnabledOnASubscription",  # MFA should be enabled on accounts with owner permissions on your subscription
-  ]
+  name                            = "${azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.name}-mitigated"
+  management_group_id             = data.azurerm_management_group.strategic_innovation_prod.id
+  policy_assignment_id            = azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.id
+  exemption_category              = "Mitigated"
+  description                     = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = local.iso_27001_2013.policy_prod_mitigated_ids
 }
 
 resource "azurerm_management_group_policy_exemption" "strategic_innovation_prod_iso_27001_2013_waiver" {
-  name                 = "${azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.name}-waiver"
-  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
-  policy_assignment_id = azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.id
-  exemption_category   = "Waiver"
-  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
-  policy_definition_reference_ids = [
-    "PreviewAuditMaximumNumberOfOwnersForASubscription", # A maximum of 3 owners should be designated for your subscription
-  ]
+  name                            = "${azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.name}-waiver"
+  management_group_id             = data.azurerm_management_group.strategic_innovation_prod.id
+  policy_assignment_id            = azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013.id
+  exemption_category              = "Waiver"
+  description                     = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960596/Azure+Policy+-+ISO+27001+2013"
+  policy_definition_reference_ids = local.iso_27001_2013.policy_prod_waiver_ids
+}
+
+resource "azurerm_management_group_policy_exemption" "strategic_innovation_prod_azure_security_benchmark_waiver" {
+  name                            = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}${local.strategic_innovation_prod_prefix}-waiver"
+  management_group_id             = data.azurerm_management_group.strategic_innovation_dev.id
+  policy_assignment_id            = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
+  exemption_category              = "Waiver"
+  description                     = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
+  policy_definition_reference_ids = local.azure_security_benchmark.policy_prod_waiver_ids
 }
 
 resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_resource_lock" {
-  name                 = "sipresourcelock"
+  name                 = "${local.strategic_innovation_prod_prefix}resourcelock"
   display_name         = "PagoPA Resource lock"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.resource_lock_id
   management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
@@ -74,7 +81,7 @@ resource "azurerm_role_assignment" "strategic_innovation_prod_resource_lock_cont
 }
 
 resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_audit_logs" {
-  name                 = "sipauditlogs"
+  name                 = "${local.strategic_innovation_prod_prefix}auditlogs"
   display_name         = "PagoPA Audit logs"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.audit_logs_id
   management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
