@@ -1,4 +1,4 @@
-# azure-governance
+# eng-azure-governance
 
 [![release](https://img.shields.io/github/v/release/pagopa/eng-azure-governance)](https://github.com/pagopa/eng-azure-governance/releases)
 [![Static Analysis](https://github.com/pagopa/eng-azure-governance/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/pagopa/eng-azure-governance/actions/workflows/static_analysis.yml)
