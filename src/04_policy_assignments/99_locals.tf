@@ -38,6 +38,16 @@ locals {
       "identityDesignateLessThanOwnersMonitoring",
       "kubernetesServiceAuthorizedIPRangesEnabledMonitoring",
       "vnetEnableDDoSProtectionMonitoring",
+      "aPIManagementServicesShouldUseAVirtualNetworkMonitoringEffect",
+      "azureCacheForRedisShouldUsePrivateEndpointMonitoringEffect",
+      "azureCosmosDBAccountsShouldHaveFirewallRulesMonitoringEffect",
+      "disableUnrestrictedNetworkToStorageAccountMonitoring",
+      "storageAccountsShouldRestrictNetworkAccessUsingVirtualNetworkRulesMonitoringEffect",
+      "storageAccountShouldUseAPrivateLinkConnectionMonitoringEffect",
+      "firewallShouldBeEnabledOnKeyVaultMonitoringEffect",
+      "privateEndpointShouldBeConfiguredForKeyVaultMonitoringEffect",
+      "containerRegistriesShouldNotAllowUnrestrictedNetworkAccessMonitoringEffect",
+      "containerRegistriesShouldUsePrivateLinkMonitoringEffect",
     ]
     policy_dev_mitigated_ids = [
 
@@ -51,6 +61,8 @@ locals {
       "diagnosticsLogsInEventHubMonitoring",
       "identityDesignateLessThanOwnersMonitoring",
       "vnetEnableDDoSProtectionMonitoring",
+      "containerRegistriesShouldNotAllowUnrestrictedNetworkAccessMonitoringEffect",
+      "containerRegistriesShouldUsePrivateLinkMonitoringEffect",
     ]
     policy_uat_mitigated_ids = [
 
@@ -58,6 +70,8 @@ locals {
     policy_prod_waiver_ids = [
       "diagnosticsLogsInKubernetesMonitoring",
       "identityDesignateLessThanOwnersMonitoring",
+      "containerRegistriesShouldNotAllowUnrestrictedNetworkAccessMonitoringEffect",
+      "containerRegistriesShouldUsePrivateLinkMonitoringEffect",
     ]
     policy_prod_mitigated_ids = [
 
