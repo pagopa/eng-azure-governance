@@ -1,7 +1,7 @@
-# azure-governance
+# eng-azure-governance
 
-[![release](https://img.shields.io/github/v/release/pagopa/azure-governance)](https://github.com/pagopa/azure-governance/releases)
-[![Static Analysis](https://github.com/pagopa/azure-governance/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/pagopa/azure-governance/actions/workflows/static_analysis.yml)
+[![release](https://img.shields.io/github/v/release/pagopa/eng-azure-governance)](https://github.com/pagopa/eng-azure-governance/releases)
+[![Static Analysis](https://github.com/pagopa/eng-azure-governance/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/pagopa/eng-azure-governance/actions/workflows/static_analysis.yml)
 
 This project contains all PagoPA policies and assignments to governance Azure workloads.
 

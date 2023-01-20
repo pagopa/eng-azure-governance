@@ -18,7 +18,7 @@ variable "audit_logs_storage_id_northeurope" {
 
 locals {
   audit_logs = {
-    metadata_category_name                                      = "pagopa_env_prod"
+    metadata_category_name                                      = "pagopa_prod"
     keyvault_workspaceid_reference_id                           = "keyvault_workspaceid"
     keyvault_storageid_westeurope_reference_id                  = "keyvault_storageid_westeurope"
     keyvault_storageid_northeurope_reference_id                 = "keyvault_storageid_northeurope"
@@ -260,47 +260,47 @@ METADATA
 
   ## Kubernetes Cluster
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
-    reference_id         = local.audit_logs.kubernetes_cluster_workspaceid_reference_id
-    parameter_values     = <<VALUE
-    {
-      "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
-      }
-    }
-    VALUE
-  }
+  # policy_definition_reference {
+  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
+  #   reference_id         = local.audit_logs.kubernetes_cluster_workspaceid_reference_id
+  #   parameter_values     = <<VALUE
+  #   {
+  #     "logAnalytics": {
+  #       "value": "${var.audit_logs_workspace_id}"
+  #     }
+  #   }
+  #   VALUE
+  # }
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-    reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id
-    parameter_values     = <<VALUE
-    {
-      "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
-      },
-      "location": {
-        "value": "westeurope"
-      }
-    }
-    VALUE
-  }
+  # policy_definition_reference {
+  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+  #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id
+  #   parameter_values     = <<VALUE
+  #   {
+  #     "storageAccount": {
+  #       "value": "${var.audit_logs_storage_id_westeurope}"
+  #     },
+  #     "location": {
+  #       "value": "westeurope"
+  #     }
+  #   }
+  #   VALUE
+  # }
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-    reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id
-    parameter_values     = <<VALUE
-    {
-      "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
-      },
-      "location": {
-        "value": "northeurope"
-      }
-    }
-    VALUE
-  }
+  # policy_definition_reference {
+  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+  #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id
+  #   parameter_values     = <<VALUE
+  #   {
+  #     "storageAccount": {
+  #       "value": "${var.audit_logs_storage_id_northeurope}"
+  #     },
+  #     "location": {
+  #       "value": "northeurope"
+  #     }
+  #   }
+  #   VALUE
+  # }
 
   ## Api Management
 

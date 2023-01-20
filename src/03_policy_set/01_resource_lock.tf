@@ -1,6 +1,6 @@
 locals {
   resource_lock = {
-    metadata_category_name = "pagopa_env_prod"
+    metadata_category_name = "pagopa_prod"
   }
 }
 

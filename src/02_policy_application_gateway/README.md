@@ -17,7 +17,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.application_gateway_allowed_ciphersuites](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.application_gateway_allowed_sku](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -27,11 +28,12 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
-| <a name="input_tags_inherit_from_subscription"></a> [tags\_inherit\_from\_subscription](#input\_tags\_inherit\_from\_subscription) | Tag that must be inherith from the subscription | `list(string)` | <pre>[<br>  "CostCenter",<br>  "Environment",<br>  "Owner",<br>  "BusinessUnit"<br>]</pre> | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| <a name="output_application_gateway_allowed_ciphersuites_id"></a> [application\_gateway\_allowed\_ciphersuites\_id](#output\_application\_gateway\_allowed\_ciphersuites\_id) | n/a |
+| <a name="output_application_gateway_allowed_sku_id"></a> [application\_gateway\_allowed\_sku\_id](#output\_application\_gateway\_allowed\_sku\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

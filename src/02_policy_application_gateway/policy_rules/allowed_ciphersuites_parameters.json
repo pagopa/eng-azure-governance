@@ -1,0 +1,39 @@
+{
+  "listOfAllowedCipherSuites": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of Cipher Suites that can be specified for Application Gateways.",
+      "displayName": "Allowed Cipher Suites"
+    },
+    "allowedValues": [
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_AES_256_GCM_SHA384"
+    ],
+    "defaultValue": [
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_AES_128_GCM_SHA256",
+      "TLS_AES_256_GCM_SHA384"
+    ]
+  },
+  "listOfAllowedMinProtocolVersion": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of accepted TLS version",
+      "displayName": "The list of accepted TLS version"
+    },
+    "allowedValues": ["TLSv1_2", "TLSv1_3"],
+    "defaultValue": ["TLSv1_2", "TLSv1_3"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}

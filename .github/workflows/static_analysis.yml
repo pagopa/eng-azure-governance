@@ -18,6 +18,7 @@ jobs:
         env:
           FOLDERS: >
             01_custom_roles
+            02_policy_application_gateway
             02_policy_audit_logs
             02_policy_resource_lock
             02_policy_tags_inherit_from_subscription
@@ -38,5 +39,5 @@ jobs:
       - name: run_test
         run: |
           # from https://github.com/antonbabenko/pre-commit-terraform/pkgs/container/pre-commit-terraform
-          TAG=v1.76.0@sha256:50ed39dc67b6a5b198e45fa7b06aa73b50ccc20613bc795f1a7841fd41b2c838
+          TAG="v1.77.0@sha256:64ce1e4b99d85497fe646db0724669039b079b45fa8cd503b4dc23dbdca490ae"
           docker run -v $(pwd):/lint -w /lint ghcr.io/antonbabenko/pre-commit-terraform:$TAG run -a
