@@ -17,12 +17,6 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.authorization_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/resources/role_definition) | resource |
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/management_group) | data source |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.28.0/docs/data-sources/subscription) | data source |
 | [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.authorization_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.export_deployments_template](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_definition) | resource |
