@@ -744,32 +744,32 @@ METADATA
 
   ## Subscription
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_log_analytics_id
-    reference_id         = local.audit_logs.subscription_workspaceid_reference_id
-    parameter_values     = <<VALUE
-    {
-      "workspaceId": {
-        "value": "${var.audit_logs_workspace_id}"
-      }
-    }
-    VALUE
-  }
+  # policy_definition_reference {
+  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_log_analytics_id
+  #   reference_id         = local.audit_logs.subscription_workspaceid_reference_id
+  #   parameter_values     = <<VALUE
+  #   {
+  #     "workspaceId": {
+  #       "value": "${var.audit_logs_workspace_id}"
+  #     }
+  #   }
+  #   VALUE
+  # }
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
-    reference_id         = local.audit_logs.subscription_storageid_westeurope_reference_id
-    parameter_values     = <<VALUE
-    {
-      "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
-      },
-      "location": {
-        "value": "westeurope"
-      }
-    }
-    VALUE
-  }
+  # policy_definition_reference {
+  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
+  #   reference_id         = local.audit_logs.subscription_storageid_westeurope_reference_id
+  #   parameter_values     = <<VALUE
+  #   {
+  #     "storageAccount": {
+  #       "value": "${var.audit_logs_storage_id_westeurope}"
+  #     },
+  #     "location": {
+  #       "value": "westeurope"
+  #     }
+  #   }
+  #   VALUE
+  # }
 
 }
 

@@ -16,29 +16,9 @@ resource "azurerm_policy_definition" "audit_logs_subscription_log_analytics" {
     }
 METADATA
 
-  parameters = <<PARAMETERS
-  {
-    "profileName": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Setting name",
-        "description": "Name of the diagnostic settings."
-      },
-      "defaultValue": "AuditLogs_LogAnalytics"
-    },
-    "workspaceId": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Log Analytics workspace",
-        "description": "Specify the Log Analytics workspace the Key Vault should be connected to.",
-        "strongType": "omsWorkspace",
-        "assignPermissions": true
-      }
-    }
-  }
-PARAMETERS
+  parameters = file("./policy_rules/__subscription_log_analytics_parameters.json")
 
-  policy_rule = templatefile("./policy_rules/subscription_log_analytics.json", {
+  policy_rule = templatefile("./policy_rules/__subscription_log_analytics.json", {
     roleDefinitionIds_audit_logs_contributor    = data.azurerm_role_definition.audit_logs_contributor.id,
     roleDefinitionIds_log_analytics_contributor = data.azurerm_role_definition.log_analytics_contributor.id,
   })
