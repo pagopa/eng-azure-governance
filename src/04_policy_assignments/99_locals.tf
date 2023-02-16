@@ -77,4 +77,12 @@ locals {
 
     ]
   }
+  pci_dss_v4 = {
+    id = "/providers/Microsoft.Authorization/policySetDefinitions/c676748e-3af9-4e22-bc28-50feed564afb"
+    # subscriptions = [
+    #   DEV-PCI = "94004462-d636-48bc-aa63-ce22a99d6bf2",
+    #   UAT-PCI = "4821f6e5-09db-4070-80d2-df97bb3737ee",
+    #   PROD-PCI = "b3cbdf05-7fdc-4cdd-9a38-62d6153ade69",
+    # ]
+  }
 }

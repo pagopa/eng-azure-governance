@@ -85,6 +85,7 @@ No modules.
 | [azurerm_role_assignment.strategic_innovation_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.strategic_innovation_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.strategic_innovation_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_subscription_policy_assignment.subscription_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.assistenza_operations_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.assistenza_operations_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
@@ -99,6 +100,7 @@ No modules.
 | [azurerm_management_group.strategic_innovation_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.strategic_innovation_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
+| [azurerm_subscriptions.pci](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscriptions) | data source |
 | [terraform_remote_state.policy_set](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 
 ## Inputs
@@ -111,5 +113,7 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_subscriptions_pci"></a> [subscriptions\_pci](#output\_subscriptions\_pci) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
