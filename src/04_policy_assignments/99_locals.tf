@@ -77,4 +77,7 @@ locals {
 
     ]
   }
+  pci_dss_v4 = {
+    id = "/providers/Microsoft.Authorization/policySetDefinitions/c676748e-3af9-4e22-bc28-50feed564afb"
+  }
 }
