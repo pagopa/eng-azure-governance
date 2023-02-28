@@ -5,11 +5,11 @@ resource "azurerm_role_definition" "iac_reader" {
 
   permissions {
     actions = [
-      "Microsoft.Resources/deployments/exportTemplate/action", # read arm template deployments
-      "Microsoft.Web/sites/config/list/action",                # read app config for function app, app service
-      "Microsoft.Web/sites/slots/config/list/action",          # read app config for function app, app service slots
-      "Microsoft.ContainerService/managedClusters/read",       # help to generate cluster credentials
-      "Microsoft.ContainerService/managedClusters/listClusterUserCredential/action", # help to generate cluster credentials
+      "Microsoft.Resources/deployments/exportTemplate/action",                          # read arm template deployments
+      "Microsoft.Web/sites/config/list/action",                                         # read app config for function app, app service
+      "Microsoft.Web/sites/slots/config/list/action",                                   # read app config for function app, app service slots
+      "Microsoft.ContainerService/managedClusters/read",                                # help to generate cluster credentials
+      "Microsoft.ContainerService/managedClusters/listClusterUserCredential/action",    # help to generate cluster credentials
       "Microsoft.ContainerService/managedClusters/accessProfiles/listCredential/action" # help to generate cluster credentials and read cluster roles
     ]
   }
