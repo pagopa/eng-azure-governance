@@ -30,7 +30,7 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_uat
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_uat_audit_logs" {
   name                 = "${local.pagamenti_servizi_pci_uat_prefix}auditlogs"
-  display_name         = "PagoPA Audit logs PCI"
+  display_name         = "PagoPA Audit logs"
   policy_definition_id = data.terraform_remote_state.policy_set.outputs.audit_logs_pci_id
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_pci_uat.id
 
