@@ -3,7 +3,16 @@ data "azurerm_management_group" "pagamenti_servizi_pci_prod" {
 }
 
 locals {
-  pagamenti_servizi_pci_prod_prefix = "pcip"
+  pagamenti_servizi_pci_prod_prefix                      = "pcip"
+  pagamenti_servizi_pci_prod_audit_logs_pci_workspace_id = data.terraform_remote_state.policy_set.outputs.audit_logs_workspace_id
+  pagamenti_servizi_pci_prod_audit_logs_pci_storage_primary_region = {
+    storage_id = data.terraform_remote_state.policy_set.outputs.audit_logs_storage_id_westeurope
+    location   = "westeurope"
+  }
+  pagamenti_servizi_pci_prod_audit_logs_pci_storage_secondary_region = {
+    storage_id = "novalue"
+    location   = "northeurope"
+  }
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_pcidssv4" {
@@ -11,27 +20,6 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_pro
   display_name         = "PCI DSS v4"
   policy_definition_id = local.pci_dss_v4.id
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_pci_prod.id
-
-  location = var.location
-  enforce  = false
-  identity {
-    type = "SystemAssigned"
-  }
-}
-
-resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_iso_27001_2013" {
-  name                 = "${local.pagamenti_servizi_pci_prod_prefix}iso270012013"
-  display_name         = "ISO 27001:2013"
-  policy_definition_id = local.iso_27001_2013.id
-  management_group_id  = data.azurerm_management_group.pagamenti_servizi_pci_prod.id
-
-  parameters = jsonencode(
-    {
-      metricsEnabled-7f89b1eb-583c-429a-8828-af049802c1d9 = {
-        value = false
-      }
-    }
-  )
 
   location = var.location
   enforce  = false
@@ -69,7 +57,7 @@ resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_resource_lock_con
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_audit_logs" {
   name                 = "${local.pagamenti_servizi_pci_prod_prefix}auditlogs"
   display_name         = "PagoPA Audit logs"
-  policy_definition_id = data.terraform_remote_state.policy_set.outputs.audit_logs_id
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.audit_logs_pci_id
   management_group_id  = data.azurerm_management_group.pagamenti_servizi_pci_prod.id
 
   location = var.location
@@ -93,13 +81,13 @@ resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_audit_logs_monito
 }
 
 resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_audit_logs_contributor_log_analytics" {
-  scope                = data.terraform_remote_state.policy_set.outputs.audit_logs_workspace_id
+  scope                = local.pagamenti_servizi_pci_prod_audit_logs_pci_workspace_id
   role_definition_name = "Log Analytics Contributor"
   principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_audit_logs.identity[0].principal_id
 }
 
 resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_audit_logs_contributor_storage_westeurope" {
-  scope                = data.terraform_remote_state.policy_set.outputs.audit_logs_storage_id_westeurope
+  scope                = local.pagamenti_servizi_pci_prod_audit_logs_pci_storage_primary_region.storage_id
   role_definition_name = "Log Analytics Contributor"
   principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_audit_logs.identity[0].principal_id
 }
