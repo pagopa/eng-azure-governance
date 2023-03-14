@@ -100,7 +100,7 @@ METADATA
             "type": "String",
             "metadata": {
                 "description": "Storage Account Id in Primary Region",
-                "description": "Storage Account Id in Primary Region"
+                "displayName": "Storage Account Id in Primary Region"
             },
             "defaultValue": "${var.audit_logs_pci_storage_primary_region.storage_id}"
         },
@@ -108,7 +108,7 @@ METADATA
             "type": "String",
             "metadata": {
                 "description": "Storage Account Primary Region location",
-                "description": "Storage Account Primary Region location"
+                "displayName": "Storage Account Primary Region location"
             },
             "defaultValue": "${var.audit_logs_pci_storage_primary_region.location}"
         },
@@ -116,7 +116,7 @@ METADATA
             "type": "String",
             "metadata": {
                 "description": "Storage Account Id in Secondary Region",
-                "description": "Storage Account Id in Secondary Region"
+                "displayName": "Storage Account Id in Secondary Region"
             },
             "defaultValue": "${var.audit_logs_pci_storage_secondary_region.storage_id}"
         },
@@ -124,7 +124,7 @@ METADATA
             "type": "String",
             "metadata": {
                 "description": "Storage Account Secondary Region location",
-                "description": "Storage Account Secondary Region location"
+                "displayName": "Storage Account Secondary Region location"
             },
             "defaultValue": "${var.audit_logs_pci_storage_secondary_region.location}"
         }
