@@ -18,10 +18,11 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
-| [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/role_definition) | data source |
+| [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/role_definition) | data source |
+| [azurerm_role_definition.log_analytics_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/role_definition) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
 
 ## Inputs
@@ -29,7 +30,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
-| <a name="input_resource_lock_types"></a> [resource\_lock\_types](#input\_resource\_lock\_types) | Resource lock types | `list(string)` | <pre>[<br>  "Microsoft.DocumentDB/databaseAccounts",<br>  "Microsoft.Storage/storageAccounts",<br>  "Microsoft.Cache/Redis",<br>  "Microsoft.Network/publicIPAddresses",<br>  "Microsoft.DBforPostgreSQL/servers",<br>  "Microsoft.DBforPostgreSQL/flexibleServers",<br>  "Microsoft.DataProtection/backupVaults",<br>  "Microsoft.Network/applicationGateways",<br>  "Microsoft.Network/natGateways",<br>  "Microsoft.Network/virtualNetworkGateways",<br>  "Microsoft.OperationalInsights/workspaces",<br>  "microsoft.insights/components",<br>  "Microsoft.ContainerService/ManagedClusters",<br>  "Microsoft.Cdn/profiles",<br>  "Microsoft.KeyVault/vaults",<br>  "Microsoft.EventHub/Namespaces",<br>  "Microsoft.EventHub/namespaces/eventhubs",<br>  "Microsoft.DataFactory/factories",<br>  "Microsoft.Kusto/Clusters",<br>  "Microsoft.ManagedIdentity/userAssignedIdentities",<br>  "Microsoft.NotificationHubs/namespaces",<br>  "Microsoft.NotificationHubs/namespaces/notificationHubs"<br>]</pre> | no |
+| <a name="input_metrics_logs_types"></a> [metrics\_logs\_types](#input\_metrics\_logs\_types) | Diagnostic Settings for metrics logs resource types | `list(string)` | <pre>[<br>  "Microsoft.KeyVault/vaults",<br>  "Microsoft.Network/virtualNetworkGateways",<br>  "Microsoft.ContainerService/managedClusters",<br>  "Microsoft.Network/publicIPAddresses",<br>  "Microsoft.Network/networkInterfaces",<br>  "Microsoft.EventHub/Namespace",<br>  "Microsoft.Network/networkInterfaces",<br>  "Microsoft.Network/virtualNetworks",<br>  "Microsoft.Network/azureFirewalls",<br>  "Microsoft.ContainerInstance/containerGroups",<br>  "Microsoft.Compute/virtualMachineScaleSets",<br>  "Microsoft.Network/loadBalancers"<br>]</pre> | no |
 
 ## Outputs
 
