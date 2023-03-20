@@ -13,6 +13,7 @@ locals {
     storage_id = "novalue"
     location   = "northeurope"
   }
+  pagamenti_servizi_pci_dev_metrics_logs_pci_workspace_id = data.terraform_remote_state.policy_set.outputs.audit_logs_workspace_id
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_pcidssv4" {
@@ -90,6 +91,46 @@ resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_audit_logs_contri
   scope                = local.pagamenti_servizi_pci_prod_audit_logs_pci_storage_primary_region.storage_id
   role_definition_name = "Log Analytics Contributor"
   principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_audit_logs.identity[0].principal_id
+}
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_metrics_logs" {
+  name                 = "${local.pagamenti_servizi_pci_prod_prefix}metricslogs"
+  display_name         = "PagoPA Metric logs"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.metrics_logs_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_pci_prod.id
+
+  location = var.location
+  enforce  = true
+  identity {
+    type = "SystemAssigned"
+  }
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+
+  parameters = <<PARAMETERS
+    {
+        "logAnalyticsId": {
+            "value": "${local.pagamenti_servizi_pci_prod_metrics_logs_pci_workspace_id}"
+        }
+    }
+  PARAMETERS
+}
+
+resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_metrics_logs_monitoring_contributor" {
+  scope                = data.azurerm_management_group.pagamenti_servizi_pci_prod.id
+  role_definition_name = "PagoPA Audit Logs Contributor"
+  principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_metrics_logs.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "pagamenti_servizi_pci_prod_metrics_logs_contributor_log_analytics" {
+  scope                = local.pagamenti_servizi_pci_prod_metrics_logs_pci_workspace_id
+  role_definition_name = "Log Analytics Contributor"
+  principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_metrics_logs.identity[0].principal_id
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_storage_account" {

@@ -21,6 +21,7 @@ jobs:
             02_policy_application_gateway
             02_policy_audit_logs
             02_policy_resource_lock
+            02_policy_metrics_logs
             02_policy_tags_inherit_from_subscription
             03_policy_set
             04_policy_assignments
