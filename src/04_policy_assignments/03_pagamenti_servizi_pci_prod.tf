@@ -13,7 +13,7 @@ locals {
     storage_id = "novalue"
     location   = "northeurope"
   }
-  pagamenti_servizi_pci_dev_metrics_logs_pci_workspace_id = data.terraform_remote_state.policy_set.outputs.audit_logs_workspace_id
+  pagamenti_servizi_pci_prod_metrics_logs_pci_workspace_id = data.terraform_remote_state.policy_set.outputs.audit_logs_workspace_id
 }
 
 resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_pci_prod_pcidssv4" {
