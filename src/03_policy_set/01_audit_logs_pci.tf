@@ -1,30 +1,42 @@
-variable "audit_logs_workspace_id" {
+variable "audit_logs_pci_workspace_id" {
   type        = string
   default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"
   description = "description"
 }
 
-variable "audit_logs_storage_id_westeurope" {
-  type        = string
-  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
+variable "audit_logs_pci_storage_primary_region" {
+  type = object({
+    storage_id = string,
+    location   = string,
+  })
+  default = {
+    storage_id = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
+    location   = "westeurope"
+  }
   description = "description"
 }
 
-variable "audit_logs_storage_id_northeurope" {
-  type        = string
-  default     = "novalue"
+variable "audit_logs_pci_storage_secondary_region" {
+  type = object({
+    storage_id = string,
+    location   = string,
+  })
+  default = {
+    storage_id = "novalue"
+    location   = "northeurope"
+  }
   description = "description"
 }
 
-resource "azurerm_policy_set_definition" "audit_logs" {
-  name                = "audit_logs"
+resource "azurerm_policy_set_definition" "audit_logs_pci" {
+  name                = "audit_logs_pci"
   policy_type         = "Custom"
-  display_name        = "PagoPA Audit logs"
+  display_name        = "PagoPA Audit logs PCI"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
-        "category": "pagopa_prod",
+        "category": "pagopa_pci",
         "version": "v1.0.0",
         "ASC": "true",
         "parameterScopes": {
@@ -69,12 +81,55 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id} : ${local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.grafana_workspaceid_reference_id} : ${local.audit_logs.grafana_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.grafana_storageid_westeurope_reference_id} : ${local.audit_logs.grafana_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.grafana_storageid_northeurope_reference_id} : ${local.audit_logs.grafana_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.subscription_workspaceid_reference_id} : ${local.audit_logs.subscription_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.subscription_storageid_westeurope_reference_id} : ${local.audit_logs.subscription_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.grafana_storageid_northeurope_reference_id} : ${local.audit_logs.grafana_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
+
+  parameters = <<PARAMETERS
+    {
+        "logAnalyticsId": {
+            "type": "String",
+            "metadata": {
+                "description": "Audit Logs workspace Id",
+                "displayName": "Audit Logs workspace Id"
+            },
+            "defaultValue": "${var.audit_logs_pci_workspace_id}"
+        },
+        "storageAccountPrimaryRegionId": {
+            "type": "String",
+            "metadata": {
+                "description": "Storage Account Id in Primary Region",
+                "displayName": "Storage Account Id in Primary Region"
+            },
+            "defaultValue": "${var.audit_logs_pci_storage_primary_region.storage_id}"
+        },
+        "storageAccountPrimaryRegionLocation": {
+            "type": "String",
+            "metadata": {
+                "description": "Storage Account Primary Region location",
+                "displayName": "Storage Account Primary Region location"
+            },
+            "defaultValue": "${var.audit_logs_pci_storage_primary_region.location}"
+        },
+        "storageAccountSecondaryRegionId": {
+            "type": "String",
+            "metadata": {
+                "description": "Storage Account Id in Secondary Region",
+                "displayName": "Storage Account Id in Secondary Region"
+            },
+            "defaultValue": "${var.audit_logs_pci_storage_secondary_region.storage_id}"
+        },
+        "storageAccountSecondaryRegionLocation": {
+            "type": "String",
+            "metadata": {
+                "description": "Storage Account Secondary Region location",
+                "displayName": "Storage Account Secondary Region location"
+            },
+            "defaultValue": "${var.audit_logs_pci_storage_secondary_region.location}"
+        }
+    }
+PARAMETERS
 
   ## Key vault
 
@@ -84,7 +139,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -96,10 +151,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -111,14 +166,15 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
   }
+
 
   ## Application Gateway
 
@@ -128,7 +184,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -140,10 +196,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -155,10 +211,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -172,7 +228,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -184,10 +240,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -199,10 +255,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -210,47 +266,47 @@ METADATA
 
   ## Kubernetes Cluster
 
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
-  #   reference_id         = local.audit_logs.kubernetes_cluster_workspaceid_reference_id
-  #   parameter_values     = <<VALUE
-  #   {
-  #     "logAnalytics": {
-  #       "value": "${var.audit_logs_workspace_id}"
-  #     }
-  #   }
-  #   VALUE
-  # }
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
+    reference_id         = local.audit_logs.kubernetes_cluster_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "[parameters('logAnalyticsId')]"
+      }
+    }
+    VALUE
+  }
 
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id
-  #   parameter_values     = <<VALUE
-  #   {
-  #     "storageAccount": {
-  #       "value": "${var.audit_logs_storage_id_westeurope}"
-  #     },
-  #     "location": {
-  #       "value": "westeurope"
-  #     }
-  #   }
-  #   VALUE
-  # }
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+    reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
+      },
+      "location": {
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
+      }
+    }
+    VALUE
+  }
 
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id
-  #   parameter_values     = <<VALUE
-  #   {
-  #     "storageAccount": {
-  #       "value": "${var.audit_logs_storage_id_northeurope}"
-  #     },
-  #     "location": {
-  #       "value": "northeurope"
-  #     }
-  #   }
-  #   VALUE
-  # }
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+    reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
+      },
+      "location": {
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
+      }
+    }
+    VALUE
+  }
 
   ## Api Management
 
@@ -260,7 +316,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -272,10 +328,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -287,10 +343,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -304,7 +360,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -316,10 +372,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -331,10 +387,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -348,7 +404,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -360,10 +416,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -375,10 +431,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -392,7 +448,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -404,10 +460,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -419,10 +475,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -436,7 +492,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -448,10 +504,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -463,10 +519,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -480,7 +536,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -492,10 +548,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -507,10 +563,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -524,7 +580,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -536,10 +592,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -551,10 +607,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -568,7 +624,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -580,10 +636,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -595,10 +651,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -612,7 +668,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -624,10 +680,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -639,10 +695,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
@@ -656,7 +712,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "logAnalytics": {
-        "value": "${var.audit_logs_workspace_id}"
+        "value": "[parameters('logAnalyticsId')]"
       }
     }
     VALUE
@@ -668,10 +724,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_westeurope}"
+        "value": "[parameters('storageAccountPrimaryRegionId')]"
       },
       "location": {
-        "value": "westeurope"
+        "value": "[parameters('storageAccountPrimaryRegionLocation')]"
       }
     }
     VALUE
@@ -683,58 +739,29 @@ METADATA
     parameter_values     = <<VALUE
     {
       "storageAccount": {
-        "value": "${var.audit_logs_storage_id_northeurope}"
+        "value": "[parameters('storageAccountSecondaryRegionId')]"
       },
       "location": {
-        "value": "northeurope"
+        "value": "[parameters('storageAccountSecondaryRegionLocation')]"
       }
     }
     VALUE
   }
 
-  ## Subscription
-
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_log_analytics_id
-  #   reference_id         = local.audit_logs.subscription_workspaceid_reference_id
-  #   parameter_values     = <<VALUE
-  #   {
-  #     "workspaceId": {
-  #       "value": "${var.audit_logs_workspace_id}"
-  #     }
-  #   }
-  #   VALUE
-  # }
-
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
-  #   reference_id         = local.audit_logs.subscription_storageid_westeurope_reference_id
-  #   parameter_values     = <<VALUE
-  #   {
-  #     "storageAccount": {
-  #       "value": "${var.audit_logs_storage_id_westeurope}"
-  #     },
-  #     "location": {
-  #       "value": "westeurope"
-  #     }
-  #   }
-  #   VALUE
-  # }
-
 }
 
-output "audit_logs_id" {
-  value = azurerm_policy_set_definition.audit_logs.id
+output "audit_logs_pci_id" {
+  value = azurerm_policy_set_definition.audit_logs_pci.id
 }
 
-output "audit_logs_workspace_id" {
-  value = var.audit_logs_workspace_id
+output "audit_logs_pci_workspace_id" {
+  value = var.audit_logs_pci_workspace_id
 }
 
-output "audit_logs_storage_id_westeurope" {
-  value = var.audit_logs_storage_id_westeurope
+output "audit_logs_pci_storage_primary_region" {
+  value = var.audit_logs_pci_storage_primary_region
 }
 
-output "audit_logs_storage_id_northeurope" {
-  value = var.audit_logs_storage_id_northeurope
+output "audit_logs_pci_storage_secondary_region" {
+  value = var.audit_logs_pci_storage_secondary_region
 }

@@ -1,0 +1,98 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "${metrics_logs_types}"
+  },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "evaluationDelay": "AfterProvisioning",
+      "name": "[parameters('diagnosticsSettingName')]",
+      "roleDefinitionIds": [
+        "${roleDefinitionIds_audit_logs_contributor}",
+        "${roleDefinitionIds_log_analytics_contributor}"
+      ],
+      "existenceCondition": {
+        "allOf": [
+          {
+            "anyof": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/diagnosticSettings/metrics[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/metrics[*].enabled",
+                        "equals": "true"
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/metrics[*].category",
+                        "equals": "AllMetrics"
+                      }
+                    ]
+                  }
+                },
+                "equals": 1
+              }
+            ]
+          },
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
+            "equals": "[parameters('logAnalytics')]"
+          }
+        ]
+      },
+      "deployment": {
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "resourceName": {
+                "type": "string"
+              },
+              "logAnalytics": {
+                "type": "string"
+              }
+            },
+            "variables": {},
+            "resources": [
+              {
+                "type": "${metrics_logs_types}/providers/diagnosticSettings",
+                "apiVersion": "2021-05-01-preview",
+                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
+                "dependsOn": [],
+                "properties": {
+                  "workspaceId": "[parameters('logAnalytics')]",
+                  "metrics": [
+                    {
+                      "category": "AllMetrics",
+                      "enabled": true
+                    }
+                  ]
+                }
+              }
+            ],
+            "outputs": {}
+          },
+          "parameters": {
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "resourceName": {
+              "value": "[field('name')]"
+            },
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
+            }
+          }
+        }
+      }
+    }
+  }
+}
