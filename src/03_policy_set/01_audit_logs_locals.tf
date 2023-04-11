@@ -42,5 +42,7 @@ locals {
     grafana_workspaceid_reference_id                            = "grafana_workspaceid"
     grafana_storageid_westeurope_reference_id                   = "grafana_storageid_westeurope"
     grafana_storageid_northeurope_reference_id                  = "grafana_storageid_northeurope"
+    subscription_workspaceid_reference_id                       = "subscription_workspaceid"
+    subscription_storageid_westeurope_reference_id              = "subscription_storageid_westeurope"
   }
 }

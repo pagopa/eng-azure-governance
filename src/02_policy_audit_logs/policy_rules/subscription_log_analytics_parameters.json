@@ -1,0 +1,19 @@
+{
+  "diagnosticsSettingName": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Setting name",
+      "description": "Name of the diagnostic settings."
+    },
+    "defaultValue": "AuditLogs_LogAnalytics"
+  },
+  "logAnalytics": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Log Analytics workspace",
+      "description": "Specify the Log Analytics workspace the Key Vault should be connected to.",
+      "strongType": "omsWorkspace",
+      "assignPermissions": true
+    }
+  }
+}

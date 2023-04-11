@@ -1,0 +1,128 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.Resources/subscriptions"
+  },
+  "then": {
+    "effect": "DeployIfNotExists",
+    "details": {
+      "roleDefinitionIds": [
+        "/providers/Microsoft.Authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293"
+      ],
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "name": "[parameters('diagnosticsSettingName')]",
+      "existenceScope": "Subscription",
+      "existenceCondition": {
+        "allOf": [
+          {
+            "anyof": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                        "in": [
+                          "Administrative",
+                          "Security",
+                          "ServiceHealth",
+                          "Alert",
+                          "Recommendation",
+                          "Policy",
+                          "Autoscale",
+                          "ResourceHealth"
+                        ]
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                        "equals": "true"
+                      }
+                    ]
+                  }
+                },
+                "equals": 8
+              }
+            ]
+          },
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
+            "equals": "[parameters('logAnalytics')]"
+          }
+        ]
+      },
+      "deploymentScope": "subscription",
+      "deployment": {
+        "location": "westeurope",
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "logAnalytics": {
+                "type": "string"
+              }
+            },
+            "resources": [
+              {
+                "type": "Microsoft.Insights/diagnosticSettings",
+                "apiVersion": "2021-05-01-preview",
+                "name": "[parameters('diagnosticsSettingName')]",
+                "location": "global",
+                "properties": {
+                  "workspaceId": "[parameters('logAnalytics')]",
+                  "logs": [
+                    {
+                      "category": "Administrative",
+                      "enabled": true
+                    },
+                    {
+                      "category": "Security",
+                      "enabled": true
+                    },
+                    {
+                      "category": "ServiceHealth",
+                      "enabled": true
+                    },
+                    {
+                      "category": "Alert",
+                      "enabled": true
+                    },
+                    {
+                      "category": "Recommendation",
+                      "enabled": true
+                    },
+                    {
+                      "category": "Policy",
+                      "enabled": true
+                    },
+                    {
+                      "category": "Autoscale",
+                      "enabled": true
+                    },
+                    {
+                      "category": "ResourceHealth",
+                      "enabled": true
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "parameters": {
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
+            }
+          }
+        }
+      }
+    }
+  }
+}
