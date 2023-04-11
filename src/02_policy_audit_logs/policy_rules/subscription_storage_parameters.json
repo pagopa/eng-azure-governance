@@ -1,0 +1,18 @@
+{
+  "diagnosticsSettingName": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Setting name",
+      "description": "Name of the diagnostic settings."
+    },
+    "defaultValue": "AuditLogs_StorageAccount"
+  },
+  "storageAccount": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Storage Account",
+      "description": "Specify the Storage Account the Key Vault should be connected to.",
+      "assignPermissions": true
+    }
+  }
+}

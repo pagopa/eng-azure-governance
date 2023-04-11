@@ -6,16 +6,20 @@
         "equals": "Microsoft.Network/applicationGateways"
       },
       {
-        "not": {
-          "field": "Microsoft.Network/applicationGateways/sslPolicy.minProtocolVersion",
-          "in": "[parameters('listOfAllowedMinProtocolVersion')]"
-        }
-      },
-      {
-        "not": {
-          "field": "Microsoft.Network/applicationGateways/sslPolicy.cipherSuites[*]",
-          "in": "[parameters('listOfAllowedCipherSuites')]"
-        }
+        "anyOf": [
+          {
+            "not": {
+              "field": "Microsoft.Network/applicationGateways/sslPolicy.minProtocolVersion",
+              "in": "[parameters('listOfAllowedMinProtocolVersion')]"
+            }
+          },
+          {
+            "not": {
+              "field": "Microsoft.Network/applicationGateways/sslPolicy.cipherSuites[*]",
+              "in": "[parameters('listOfAllowedCipherSuites')]"
+            }
+          }
+        ]
       }
     ]
   },

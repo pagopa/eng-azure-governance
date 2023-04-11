@@ -44,9 +44,10 @@
                 "equals": 8
               }
             ]
-          },          {
-            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
-            "equals": "[parameters('storageAccount')]"
+          },
+          {
+            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
+            "equals": "[parameters('logAnalytics')]"
           }
         ]
       },
@@ -62,7 +63,7 @@
               "diagnosticsSettingName": {
                 "type": "string"
               },
-              "storageAccount": {
+              "logAnalytics": {
                 "type": "string"
               }
             },
@@ -73,71 +74,39 @@
                 "name": "[parameters('diagnosticsSettingName')]",
                 "location": "global",
                 "properties": {
-                  "storageAccountId": "[parameters('storageAccount')]",
+                  "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     {
                       "category": "Administrative",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "Security",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "ServiceHealth",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "Alert",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "Recommendation",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "Policy",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "Autoscale",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "ResourceHealth",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }
@@ -148,8 +117,8 @@
             "diagnosticsSettingName": {
               "value": "[parameters('diagnosticsSettingName')]"
             },
-            "storageAccount": {
-              "value": "[parameters('storageAccount')]"
+            "logAnalytics": {
+              "value": "[parameters('logAnalytics')]"
             }
           }
         }
