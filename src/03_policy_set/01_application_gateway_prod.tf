@@ -26,6 +26,10 @@ METADATA
     policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_ciphersuites_id
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_required_zones_id
+  }
+
 }
 
 output "application_gateway_prod_id" {
