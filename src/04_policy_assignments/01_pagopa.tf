@@ -86,6 +86,6 @@ resource "azurerm_resource_policy_exemption" "pagopa_dns_pagopa_it_waiver" {
   resource_id          = "/subscriptions/a001fc05-3125-4940-bbe0-7ef4125a8263/resourcegroups/pagopaorg-rg-prod/providers/microsoft.network/dnszones/pagopa.it"
   policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_dns.id
   policy_definition_reference_ids = [
-    "10417603381492996527",
+    local.dns.policy.dns_required_caa_record_id,
   ]
 }
