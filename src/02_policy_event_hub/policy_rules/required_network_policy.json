@@ -1,0 +1,25 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.EventHub/namespaces/networkRuleSets"
+      },
+      {
+        "not": {
+          "field": "Microsoft.EventHub/namespaces/networkRuleSets/publicNetworkAccess",
+          "equals": "Disabled"
+        }
+      },
+      {
+        "not": {
+          "field": "Microsoft.EventHub/namespaces/networkRuleSets/defaultAction",
+          "equals": "Deny"
+        }
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
