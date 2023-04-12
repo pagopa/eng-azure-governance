@@ -1,7 +1,7 @@
 resource "azurerm_policy_definition" "eventhub_required_network" {
   name                = "eventhub_required_network"
   policy_type         = "Custom"
-  mode                = "Indexed"
+  mode                = "All"
   display_name        = "PagoPA EventHub required network restrictions"
   management_group_id = data.azurerm_management_group.pagopa.id
 
