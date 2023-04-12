@@ -67,3 +67,14 @@ data "terraform_remote_state" "policy_event_hub" {
     key                  = "policy_event_hub.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_dns" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_dns.terraform.tfstate"
+  }
+}

@@ -22,6 +22,22 @@ resource "azurerm_management_group_policy_assignment" "pagopa_data_sovereignty_e
   METADATA
 }
 
+resource "azurerm_management_group_policy_assignment" "pagopa_dns" {
+  name                 = "${local.pagopa_prefix}dns"
+  display_name         = "PagoPA DNS"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.dns_id
+  management_group_id  = data.azurerm_management_group.pagopa.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
 resource "azurerm_management_group_policy_assignment" "pagopa_azure_security_benchmark" {
   name                 = "${local.pagopa_prefix}asc"
   display_name         = "Azure Security Benchmark"
@@ -60,5 +76,16 @@ resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benc
   policy_definition_reference_ids = [
     "ensureWEBAppHasClientCertificatesIncomingClientCertificatesSetToOnMonitoringEffect",
     "functionAppsShouldHaveClientCertificatesEnabledMonitoringEffect",
+  ]
+}
+
+resource "azurerm_resource_policy_exemption" "pagopa_dns_pagopa_it_waiver" {
+  name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-pagopa.it-waiver"
+  exemption_category   = "Waiver"
+  description          = "pagopa.it is the root DNS zone so we can't add the CAA record"
+  resource_id          = "/subscriptions/a001fc05-3125-4940-bbe0-7ef4125a8263/resourcegroups/pagopaorg-rg-prod/providers/microsoft.network/dnszones/pagopa.it"
+  policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_dns.id
+  policy_definition_reference_ids = [
+    local.dns.policy.dns_required_caa_record_id,
   ]
 }

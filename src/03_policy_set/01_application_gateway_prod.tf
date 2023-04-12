@@ -7,7 +7,7 @@ locals {
 resource "azurerm_policy_set_definition" "application_gateway_prod" {
   name                = "application_gateway_prod"
   policy_type         = "Custom"
-  display_name        = "PagoPA Storage Account PROD"
+  display_name        = "PagoPA Application Gateway PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
