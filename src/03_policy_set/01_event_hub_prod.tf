@@ -7,7 +7,7 @@ locals {
 resource "azurerm_policy_set_definition" "event_hub_prod" {
   name                = "event_hub_prod"
   policy_type         = "Custom"
-  display_name        = "PagoPA Storage Account PROD"
+  display_name        = "PagoPA Event Hub PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA

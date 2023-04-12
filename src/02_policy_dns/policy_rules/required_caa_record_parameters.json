@@ -1,0 +1,34 @@
+{
+  "dnsRecordValuesArray": {
+    "type": "Array",
+    "metadata": {
+      "displayName": "dnsRecordValuesArray",
+      "description": "Values to configure in the DNS record"
+    },
+    "defaultValue": [
+      {
+        "flags": 0,
+        "tag": "issue",
+        "value": "digicert.com"
+      },
+      {
+        "flags": 0,
+        "tag": "issue",
+        "value": "letsencrypt.org"
+      },
+      {
+        "flags": 0,
+        "tag": "iodef",
+        "value": "mailto:security+caa@pagopa.it"
+      }
+    ]
+  },
+  "dnsRecordName": {
+    "type": "String",
+    "metadata": {
+      "displayName": "dnsRecordName",
+      "description": "Name of the DNS record"
+    },
+    "defaultValue": "@"
+  }
+}
