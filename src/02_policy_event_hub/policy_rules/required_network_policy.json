@@ -6,16 +6,12 @@
         "equals": "Microsoft.EventHub/namespaces/networkRuleSets"
       },
       {
-        "not": {
           "field": "Microsoft.EventHub/namespaces/networkRuleSets/publicNetworkAccess",
-          "equals": "Disabled"
-        }
+          "notEquals": "Disabled"
       },
       {
-        "not": {
           "field": "Microsoft.EventHub/namespaces/networkRuleSets/defaultAction",
-          "equals": "Deny"
-        }
+          "Equals": "Allow"
       }
     ]
   },
