@@ -22,6 +22,7 @@ jobs:
             02_policy_audit_logs
             02_policy_dns
             02_policy_event_hub
+            02_policy_kubernetes
             02_policy_resource_lock
             02_policy_metrics_logs
             02_policy_tags_inherit_from_subscription
