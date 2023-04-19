@@ -12,63 +12,6 @@ This project contains all PagoPA policies and assignments to governance Azure wo
 * `src/03_policy_set` contains custom policy initiatives (alias policy set)
 * `src/04_policy_assignments` contains policy initiatives assignments to management groups or subscriptions.
 
-## Policy overview
-
-### audit_logs
-
-`Type`: Compliance
-
-`Scope`: Audit all resources that missing to send audit logs to security environment
-
-`Assignment`: All production management groups or subscriptions
-
-`Automatic remediation`: Yes
-
-`Required roles by Managed Identity`:
-
-* `Monitoring Contributor` on management groups or subscriptions
-* `Log Analytics Contributor` on security Log Analitics Workspace and Storage Account
-
-### resource_lock
-
-`Type`: Compliance
-
-`Scope`: Audit all resources that missing Resource Lock
-
-`Assignment`: All production management groups or subscriptions
-
-`Automatic remediation`: Yes
-
-`Required roles by Managed Identity`:
-
-* `PagoPA Resource Lock Contributor` on management groups or subscriptions
-
-### data_sovereignty_eu
-
-`Type`: Compliance
-
-`Scope`: Deny to create resources outside EU regions. Allowed regions are: westeurope, northeurope, global
-
-`Automatic remediation`: No
-
-`Assignment`: Root PagoPA management group and child management groups or subscriptions
-
-`Required roles by Managed Identity`: N/A
-
-### tags_inherit_from_subscription
-
-`Type`: Management
-
-`Scope`: Assign standard tags to all resources inherited from subscription
-
-`Automatic remediation`: Yes
-
-`Assignment`: Root PagoPA management group and child management groups or subscriptions
-
-`Required roles by Managed Identity`:
-
-* `TODO` on management groups or subscriptions
-
 ## Terraform
 
 Apply order is made by folders number.
