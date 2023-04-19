@@ -29,10 +29,12 @@ Apply order is made by folders number.
 ## How to force to rerun policy evaluation
 
 ```bash
-# current subscription
+# change subscription
+az account set -s MY-SUBSCRIPTION
+# trigger scan on current subscription
 az policy state trigger-scan --no-wait
-# resource group in current subscription
-az policy state trigger-scan -g "my-rg" --no-wait
+# trigger scan on resource group in current subscription
+az policy state trigger-scan -g my-rg --no-wait
 ```
 
 ## Terraform lock.hcl
