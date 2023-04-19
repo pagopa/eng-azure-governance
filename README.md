@@ -19,11 +19,7 @@ Apply order is made by folders number.
 ### How to use it
 
 ```bash
-az account set -s common
-
-terraform init
-terraform plan
-terraform apply
+./terraform.sh plan|apply|destroy
 ```
 
 ## Azure policy docs
