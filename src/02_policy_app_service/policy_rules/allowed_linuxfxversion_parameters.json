@@ -1,0 +1,19 @@
+{
+  "listOfAllowedLinuxfxversion": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of linuxfxversion that can be specified for App Service.",
+      "displayName": "Allowed linuxfxversion"
+    },
+    "defaultValue": ["18-lts"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["AuditIfNotExists", "Disabled"],
+    "defaultValue": "AuditIfNotExists"
+  }
+}

@@ -1,7 +1,7 @@
 resource "azurerm_policy_definition" "eventhub_allowed_tls" {
   name                = "eventhub_allowed_tls"
   policy_type         = "Custom"
-  mode                = "All"
+  mode                = "Indexed"
   display_name        = "PagoPA EventHub allowed tls"
   management_group_id = data.azurerm_management_group.pagopa.id
 

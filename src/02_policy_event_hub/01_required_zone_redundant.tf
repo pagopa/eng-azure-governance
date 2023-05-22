@@ -1,7 +1,7 @@
 resource "azurerm_policy_definition" "eventhub_required_zone_redundant" {
   name                = "eventhub_required_zone_redundant"
   policy_type         = "Custom"
-  mode                = "All"
+  mode                = "Indexed"
   display_name        = "PagoPA EventHub required zone redundant"
   management_group_id = data.azurerm_management_group.pagopa.id
 
