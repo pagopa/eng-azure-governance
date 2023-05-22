@@ -18,9 +18,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.eventhub_allowed_tls](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.eventhub_required_network](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.eventhub_required_zone_redundant](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.app_service_allowed_linuxfxversion](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -35,8 +33,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_eventhub_allowed_tls_id"></a> [eventhub\_allowed\_tls\_id](#output\_eventhub\_allowed\_tls\_id) | n/a |
-| <a name="output_eventhub_required_network_id"></a> [eventhub\_required\_network\_id](#output\_eventhub\_required\_network\_id) | n/a |
-| <a name="output_eventhub_required_zone_redundant_id"></a> [eventhub\_required\_zone\_redundant\_id](#output\_eventhub\_required\_zone\_redundant\_id) | n/a |
+| <a name="output_app_service_allowed_linuxfxversion_id"></a> [app\_service\_allowed\_linuxfxversion\_id](#output\_app\_service\_allowed\_linuxfxversion\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

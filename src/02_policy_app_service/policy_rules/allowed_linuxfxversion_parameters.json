@@ -5,7 +5,7 @@
       "description": "The list of linuxfxversion that can be specified for App Service.",
       "displayName": "Allowed linuxfxversion"
     },
-    "defaultValue": ["NODE|18-lts"]
+    "defaultValue": ["18-lts"]
   },
   "effect": {
     "type": "String",

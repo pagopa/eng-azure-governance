@@ -7,11 +7,7 @@
       },
       {
         "field": "kind",
-        "notContains": "functionapp"
-      },
-      {
-        "field": "kind",
-        "contains": "linux"
+        "equals": "app,linux"
       }
     ]
   },
@@ -24,7 +20,13 @@
         "anyOf": [
           {
             "field": "Microsoft.Web/sites/config/web.linuxFxVersion",
-            "in": "[parameters('listOfAllowedLinuxfxversion')]"
+            "notContains": "NODE"
+          },
+          {
+            "not": {
+              "field": "Microsoft.Web/sites/config/web.linuxFxVersion",
+              "in": "[parameters('listOfAllowedLinuxfxversion')]"
+            }
           }
         ]
       }
