@@ -16,8 +16,9 @@ resource "azurerm_policy_definition" "app_service_allowed_linuxfxversion" {
     }
 METADATA
 
-  parameters = file("./policy_rules/allowed_linuxfxversion_parameters.json")
+  parameters = file("./policy_rules/allowed_app_service_linuxfxversion_parameters.json")
 
-  policy_rule = file("./policy_rules/allowed_linuxfxversion_policy.json")
+  policy_rule = file("./policy_rules/allowed_app_service_linuxfxversion_policy.json")
 
 }
+

@@ -18,9 +18,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.application_gateway_allowed_ciphersuites](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.application_gateway_allowed_sku](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.application_gateway_required_zones](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.redis_allowed_versions](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -35,8 +33,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_application_gateway_allowed_ciphersuites_id"></a> [application\_gateway\_allowed\_ciphersuites\_id](#output\_application\_gateway\_allowed\_ciphersuites\_id) | n/a |
-| <a name="output_application_gateway_allowed_sku_id"></a> [application\_gateway\_allowed\_sku\_id](#output\_application\_gateway\_allowed\_sku\_id) | n/a |
-| <a name="output_application_gateway_required_zones_id"></a> [application\_gateway\_required\_zones\_id](#output\_application\_gateway\_required\_zones\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
+| <a name="output_redis_allowed_versions_id"></a> [redis\_allowed\_versions\_id](#output\_redis\_allowed\_versions\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
