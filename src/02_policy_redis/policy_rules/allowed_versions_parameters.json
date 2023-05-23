@@ -1,11 +1,11 @@
 {
-  "listOfAllowedLinuxfxversion": {
+  "listOfAllowedVersions": {
     "type": "Array",
     "metadata": {
-      "description": "The list of linuxfxversion that can be specified for App Service.",
-      "displayName": "Allowed linuxfxversion"
+      "description": "The list of versions that can be specified for Redis.",
+      "displayName": "Allowed SKUs"
     },
-    "defaultValue": ["NODE|18-lts"]
+    "defaultValue": ["6.0"]
   },
   "effect": {
     "type": "String",
@@ -13,7 +13,7 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Disabled"],
+    "allowedValues": ["Audit", "Deny", "Disabled"],
     "defaultValue": "Audit"
   }
 }

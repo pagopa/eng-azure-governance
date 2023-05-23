@@ -8,28 +8,16 @@
       {
         "field": "kind",
         "equals": "app,linux"
+      },
+      {
+        "not": {
+          "field": "Microsoft.Web/sites/siteConfig.linuxFxVersion",
+          "in": "[parameters('listOfAllowedLinuxfxversion')]"
+        }
       }
     ]
   },
   "then": {
-    "effect": "[parameters('effect')]",
-    "details": {
-      "type": "Microsoft.Web/sites/config",
-      "name": "web",
-      "existenceCondition": {
-        "anyOf": [
-          {
-            "field": "Microsoft.Web/sites/config/web.linuxFxVersion",
-            "notContains": "NODE"
-          },
-          {
-            "not": {
-              "field": "Microsoft.Web/sites/config/web.linuxFxVersion",
-              "in": "[parameters('listOfAllowedLinuxfxversion')]"
-            }
-          }
-        ]
-      }
-    }
+    "effect": "[parameters('effect')]"
   }
 }
