@@ -1,0 +1,19 @@
+{
+  "listOfAllowedLinuxfxversion": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of linuxfxversion that can be specified for Function App.",
+      "displayName": "Allowed linuxfxversion"
+    },
+    "defaultValue": ["NODE|18", "NODE|16"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}

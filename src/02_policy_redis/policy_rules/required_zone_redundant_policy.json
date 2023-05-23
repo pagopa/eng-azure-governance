@@ -1,0 +1,19 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.Network/applicationGateways"
+      },
+      {
+        "count": {
+          "field": "Microsoft.Network/applicationGateways/zones[*]"
+        },
+        "less": 3
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

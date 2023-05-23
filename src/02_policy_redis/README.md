@@ -18,8 +18,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.app_service_allowed_linuxfxversion](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.function_app_allowed_linuxfxversion](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.redis_allowed_versions](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -34,7 +33,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_app_service_allowed_linuxfxversion_id"></a> [app\_service\_allowed\_linuxfxversion\_id](#output\_app\_service\_allowed\_linuxfxversion\_id) | n/a |
-| <a name="output_function_app_allowed_linuxfxversion_id"></a> [function\_app\_allowed\_linuxfxversion\_id](#output\_function\_app\_allowed\_linuxfxversion\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
+| <a name="output_redis_allowed_versions_id"></a> [redis\_allowed\_versions\_id](#output\_redis\_allowed\_versions\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

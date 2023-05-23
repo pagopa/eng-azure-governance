@@ -22,6 +22,10 @@ METADATA
     policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_allowed_linuxfxversion_id
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.function_app_allowed_linuxfxversion_id
+  }
+
 }
 
 output "app_service_prod_id" {
