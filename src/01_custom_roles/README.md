@@ -1,5 +1,10 @@
 # custom_roles
 
+Questo folder permette di creare un nuovo ruolo a livello di subscription (non lo troverete all'interno di azure ad > custom roles).
+
+## PagoPA IaC Reader
+Questo custom role permette agli sp o utenti a cui è associato di poter lanciare plan di terraform
+
 <!-- markdownlint-disable -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
