@@ -16,54 +16,6 @@ variable "audit_logs_storage_id_northeurope" {
   description = "description"
 }
 
-locals {
-  audit_logs = {
-    metadata_category_name                                      = "pagopa_prod"
-    keyvault_workspaceid_reference_id                           = "keyvault_workspaceid"
-    keyvault_storageid_westeurope_reference_id                  = "keyvault_storageid_westeurope"
-    keyvault_storageid_northeurope_reference_id                 = "keyvault_storageid_northeurope"
-    application_gateway_workspaceid_reference_id                = "application_gateway_workspaceid"
-    application_gateway_storageid_westeurope_reference_id       = "application_gateway_storageid_westeurope"
-    application_gateway_storageid_northeurope_reference_id      = "application_gateway_storageid_northeurope"
-    container_registry_workspaceid_reference_id                 = "container_registry_workspaceid"
-    container_registry_storageid_westeurope_reference_id        = "container_registry_storageid_westeurope"
-    container_registry_storageid_northeurope_reference_id       = "container_registry_storageid_northeurope"
-    kubernetes_cluster_workspaceid_reference_id                 = "kubernetes_cluster_workspaceid"
-    kubernetes_cluster_storageid_westeurope_reference_id        = "kubernetes_cluster_storageid_westeurope"
-    kubernetes_cluster_storageid_northeurope_reference_id       = "kubernetes_cluster_storageid_northeurope"
-    api_management_workspaceid_reference_id                     = "api_management_workspaceid"
-    api_management_storageid_westeurope_reference_id            = "api_management_storageid_westeurope"
-    api_management_storageid_northeurope_reference_id           = "api_management_storageid_northeurope"
-    postgresql_flexible_workspaceid_reference_id                = "postgresql_flexible_workspaceid"
-    postgresql_flexible_storageid_westeurope_reference_id       = "postgresql_flexible_storageid_westeurope"
-    postgresql_flexible_storageid_northeurope_reference_id      = "postgresql_flexible_storageid_northeurope"
-    postgresql_single_server_workspaceid_reference_id           = "postgresql_single_server_workspaceid"
-    postgresql_single_server_storageid_westeurope_reference_id  = "postgresql_single_server_storageid_westeurope"
-    postgresql_single_server_storageid_northeurope_reference_id = "postgresql_single_server_storageid_northeurope"
-    log_analytics_workspaceid_reference_id                      = "log_analytics_server_workspaceid"
-    log_analytics_storageid_westeurope_reference_id             = "log_analytics_server_storageid_westeurope"
-    log_analytics_storageid_northeurope_reference_id            = "log_analytics_server_storageid_northeurope"
-    cosmos_db_workspaceid_reference_id                          = "cosmos_db_workspaceid"
-    cosmos_db_storageid_westeurope_reference_id                 = "cosmos_db_storageid_westeurope"
-    cosmos_db_storageid_northeurope_reference_id                = "cosmos_db_storageid_northeurope"
-    app_service_workspaceid_reference_id                        = "app_service_workspaceid"
-    app_service_storageid_westeurope_reference_id               = "app_service_storageid_westeurope"
-    app_service_storageid_northeurope_reference_id              = "app_service_storageid_northeurope"
-    event_hub_workspaceid_reference_id                          = "event_hub_workspaceid"
-    event_hub_storageid_westeurope_reference_id                 = "event_hub_storageid_westeurope"
-    event_hub_storageid_northeurope_reference_id                = "event_hub_storageid_northeurope"
-    public_ip_workspaceid_reference_id                          = "public_ip_workspaceid"
-    public_ip_storageid_westeurope_reference_id                 = "public_ip_storageid_westeurope"
-    public_ip_storageid_northeurope_reference_id                = "public_ip_storageid_northeurope"
-    virtual_network_gateway_workspaceid_reference_id            = "virtual_network_gateway_workspaceid"
-    virtual_network_gateway_storageid_westeurope_reference_id   = "virtual_network_gateway_storageid_westeurope"
-    virtual_network_gateway_storageid_northeurope_reference_id  = "virtual_network_gateway_storageid_northeurope"
-    grafana_workspaceid_reference_id                            = "grafana_workspaceid"
-    grafana_storageid_westeurope_reference_id                   = "grafana_storageid_westeurope"
-    grafana_storageid_northeurope_reference_id                  = "grafana_storageid_northeurope"
-  }
-}
-
 resource "azurerm_policy_set_definition" "audit_logs" {
   name                = "audit_logs"
   policy_type         = "Custom"
@@ -72,7 +24,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
 
   metadata = <<METADATA
     {
-        "category": "${local.audit_logs.metadata_category_name}",
+        "category": "pagopa_prod",
         "version": "v1.0.0",
         "ASC": "true",
         "parameterScopes": {
@@ -117,7 +69,9 @@ resource "azurerm_policy_set_definition" "audit_logs" {
           "${local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id} : ${local.audit_logs.virtual_network_gateway_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.grafana_workspaceid_reference_id} : ${local.audit_logs.grafana_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.audit_logs.grafana_storageid_westeurope_reference_id} : ${local.audit_logs.grafana_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.audit_logs.grafana_storageid_northeurope_reference_id} : ${local.audit_logs.grafana_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.audit_logs.grafana_storageid_northeurope_reference_id} : ${local.audit_logs.grafana_storageid_northeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.subscription_workspaceid_reference_id} : ${local.audit_logs.subscription_workspaceid_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.audit_logs.subscription_storageid_westeurope_reference_id} : ${local.audit_logs.subscription_storageid_westeurope_reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -733,6 +687,32 @@ METADATA
       },
       "location": {
         "value": "northeurope"
+      }
+    }
+    VALUE
+  }
+
+  ## Subscription
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_log_analytics_id
+    reference_id         = local.audit_logs.subscription_workspaceid_reference_id
+    parameter_values     = <<VALUE
+    {
+      "logAnalytics": {
+        "value": "${var.audit_logs_workspace_id}"
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
+    reference_id         = local.audit_logs.subscription_storageid_westeurope_reference_id
+    parameter_values     = <<VALUE
+    {
+      "storageAccount": {
+        "value": "${var.audit_logs_storage_id_westeurope}"
       }
     }
     VALUE

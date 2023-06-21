@@ -20,29 +20,57 @@ No modules.
 |------|------|
 | [azurerm_management_group_policy_assignment.assistenza_operations_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.assistenza_operations_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.assistenza_operations_prod_event_hub](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.assistenza_operations_prod_iso_27001_2013](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.assistenza_operations_prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.assistenza_operations_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.assistenza_operations_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_app_service](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_event_hub](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_iso_27001_2013](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_redis](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_cloud_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_dev_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_dev_metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_dev_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_event_hub](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_app_service](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_event_hub](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_iso_27001_2013](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_redis](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagopa_data_sovereignty_eu](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagopa_dns](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.security_itoperations_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.security_itoperations_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_itoperations_prod_event_hub](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.security_itoperations_prod_iso_27001_2013](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.security_itoperations_prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.security_itoperations_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.security_itoperations_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.strategic_innovation_cloud_prod_event_hub](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.strategic_innovation_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.strategic_innovation_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.strategic_innovation_prod_iso_27001_2013](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.strategic_innovation_prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.strategic_innovation_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.strategic_innovation_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_exemption.assistenza_operations_dev_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.assistenza_operations_prod_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.assistenza_operations_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
@@ -66,6 +94,7 @@ No modules.
 | [azurerm_management_group_policy_exemption.strategic_innovation_prod_azure_security_benchmark_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.strategic_innovation_prod_iso_27001_2013_mitigated](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
 | [azurerm_management_group_policy_exemption.strategic_innovation_prod_iso_27001_2013_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_exemption) | resource |
+| [azurerm_resource_policy_exemption.pagopa_dns_pagopa_it_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/resource_policy_exemption) | resource |
 | [azurerm_role_assignment.assistenza_operations_prod_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.assistenza_operations_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.assistenza_operations_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
@@ -74,6 +103,17 @@ No modules.
 | [azurerm_role_assignment.pagamenti_servizi_cloud_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.pagamenti_servizi_cloud_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.pagamenti_servizi_cloud_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_dev_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_dev_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_dev_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_dev_metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_dev_metrics_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_prod_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_prod_metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_prod_metrics_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.pagamenti_servizi_pci_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.pagamenti_servizi_prod_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.pagamenti_servizi_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.pagamenti_servizi_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
@@ -86,7 +126,6 @@ No modules.
 | [azurerm_role_assignment.strategic_innovation_prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.strategic_innovation_prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.strategic_innovation_prod_resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/role_assignment) | resource |
-| [azurerm_subscription_policy_assignment.subscription_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.assistenza_operations_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.assistenza_operations_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
@@ -94,6 +133,8 @@ No modules.
 | [azurerm_management_group.pagamenti_servizi_cloud_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_cloud_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.pagamenti_servizi_pci_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
+| [azurerm_management_group.pagamenti_servizi_pci_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagamenti_servizi_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
@@ -101,7 +142,6 @@ No modules.
 | [azurerm_management_group.strategic_innovation_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.strategic_innovation_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
-| [azurerm_subscriptions.pci](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscriptions) | data source |
 | [terraform_remote_state.policy_set](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 
 ## Inputs
@@ -114,7 +154,5 @@ No modules.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_subscriptions_pci"></a> [subscriptions\_pci](#output\_subscriptions\_pci) | n/a |
+No outputs.
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

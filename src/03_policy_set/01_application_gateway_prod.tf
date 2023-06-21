@@ -7,7 +7,7 @@ locals {
 resource "azurerm_policy_set_definition" "application_gateway_prod" {
   name                = "application_gateway_prod"
   policy_type         = "Custom"
-  display_name        = "PagoPA Storage Account PROD"
+  display_name        = "PagoPA Application Gateway PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
@@ -22,9 +22,13 @@ METADATA
     policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_sku_id
   }
 
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_ciphersuites_id
-  # }
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_ciphersuites_id
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_required_zones_id
+  }
 
 }
 

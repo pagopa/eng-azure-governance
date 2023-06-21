@@ -80,4 +80,10 @@ locals {
   pci_dss_v4 = {
     id = "/providers/Microsoft.Authorization/policySetDefinitions/c676748e-3af9-4e22-bc28-50feed564afb"
   }
+  dns = {
+    id = "/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/dns"
+    policy = {
+      dns_required_caa_record_id = "10417603381492996527"
+    }
+  }
 }

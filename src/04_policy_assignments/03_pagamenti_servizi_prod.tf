@@ -149,3 +149,67 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_ap
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_event_hub" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}evt"
+  display_name         = "PagoPA EventHub"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.event_hub_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_kubernetes" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}k8s"
+  display_name         = "PagoPA Kubernetes"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.kubernetes_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_app_service" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}appservice"
+  display_name         = "PagoPA App Service"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.app_service_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_redis" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}redis"
+  display_name         = "PagoPA Redis"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.redis_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}

@@ -1,0 +1,23 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.Web/sites"
+      },
+      {
+        "field": "kind",
+        "equals": "app,linux"
+      },
+      {
+        "not": {
+          "field": "Microsoft.Web/sites/siteConfig.linuxFxVersion",
+          "in": "[parameters('listOfAllowedLinuxfxversion')]"
+        }
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

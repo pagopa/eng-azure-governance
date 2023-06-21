@@ -117,3 +117,67 @@ resource "azurerm_role_assignment" "strategic_innovation_prod_audit_logs_contrib
   role_definition_name = "Log Analytics Contributor"
   principal_id         = azurerm_management_group_policy_assignment.strategic_innovation_prod_audit_logs.identity[0].principal_id
 }
+
+resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_storage_account" {
+  name                 = "${local.strategic_innovation_prod_prefix}stac"
+  display_name         = "PagoPA Storage Account"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.storage_account_prod_id
+  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_application_gateway" {
+  name                 = "${local.strategic_innovation_prod_prefix}appgw"
+  display_name         = "PagoPA Application Gateway"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.application_gateway_prod_id
+  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "strategic_innovation_cloud_prod_event_hub" {
+  name                 = "${local.strategic_innovation_prod_prefix}evt"
+  display_name         = "PagoPA EventHub"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.event_hub_prod_id
+  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_management_group_policy_assignment" "strategic_innovation_prod_kubernetes" {
+  name                 = "${local.strategic_innovation_prod_prefix}k8s"
+  display_name         = "PagoPA Kubernetes"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.kubernetes_prod_id
+  management_group_id  = data.azurerm_management_group.strategic_innovation_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}

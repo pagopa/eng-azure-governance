@@ -1,0 +1,34 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.Network/dnsZones"
+  },
+  "then": {
+    "effect": "auditIfNotExists",
+    "details": {
+      "type": "Microsoft.Network/dnsZones/Caa",
+      "name": "[concat(field('name'),'/',parameters('dnsRecordName'))]",
+      "existenceCondition": {
+        "allOf": [
+          {
+            "count": {
+              "field": "Microsoft.Network/dnsZones/Caa/caaRecords[*]",
+              "where": {
+                "count": {
+                  "value": "[parameters('dnsRecordValuesArray')]",
+                  "name": "countArray",
+                  "where": {
+                    "value": "[current('Microsoft.Network/dnsZones/Caa/caaRecords[*].value')]",
+                    "equals": "[current('countArray').value]"
+                  }
+                },
+                "equals": 1
+              }
+            },
+            "equals": "[length(parameters('dnsRecordValuesArray'))]"
+          }
+        ]
+      }
+    }
+  }
+}

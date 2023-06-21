@@ -1,0 +1,159 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.Resources/subscriptions"
+  },
+  "then": {
+    "effect": "DeployIfNotExists",
+    "details": {
+      "roleDefinitionIds": [
+        "/providers/Microsoft.Authorization/roleDefinitions/92aaf0da-9dab-42b6-94a3-d43ce8d16293"
+      ],
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "name": "[parameters('diagnosticsSettingName')]",
+      "existenceScope": "Subscription",
+      "existenceCondition": {
+        "allOf": [
+          {
+            "anyof": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                        "in": [
+                          "Administrative",
+                          "Security",
+                          "ServiceHealth",
+                          "Alert",
+                          "Recommendation",
+                          "Policy",
+                          "Autoscale",
+                          "ResourceHealth"
+                        ]
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                        "equals": "true"
+                      }
+                    ]
+                  }
+                },
+                "equals": 8
+              }
+            ]
+          },          {
+            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
+            "equals": "[parameters('storageAccount')]"
+          }
+        ]
+      },
+      "deploymentScope": "subscription",
+      "deployment": {
+        "location": "westeurope",
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "storageAccount": {
+                "type": "string"
+              }
+            },
+            "resources": [
+              {
+                "type": "Microsoft.Insights/diagnosticSettings",
+                "apiVersion": "2021-05-01-preview",
+                "name": "[parameters('diagnosticsSettingName')]",
+                "location": "global",
+                "properties": {
+                  "storageAccountId": "[parameters('storageAccount')]",
+                  "logs": [
+                    {
+                      "category": "Administrative",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "Security",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "ServiceHealth",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "Alert",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "Recommendation",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "Policy",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "Autoscale",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    },
+                    {
+                      "category": "ResourceHealth",
+                      "enabled": true,
+                      "retentionPolicy": {
+                        "enabled": true,
+                        "days": 365
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "parameters": {
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "storageAccount": {
+              "value": "[parameters('storageAccount')]"
+            }
+          }
+        }
+      }
+    }
+  }
+}

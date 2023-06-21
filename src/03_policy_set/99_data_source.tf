@@ -13,6 +13,17 @@ data "terraform_remote_state" "policy_resource_lock" {
   }
 }
 
+data "terraform_remote_state" "policy_metrics_logs" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_metrics_logs.terraform.tfstate"
+  }
+}
+
 data "terraform_remote_state" "policy_tags_inherit_from_subscription" {
   backend = "azurerm"
 
@@ -43,5 +54,49 @@ data "terraform_remote_state" "policy_application_gateway" {
     storage_account_name = "commonazuregovernancest"
     container_name       = "tfstate"
     key                  = "policy_application_gateway.terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "policy_event_hub" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_event_hub.terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "policy_dns" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_dns.terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "policy_app_service" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_app_service.terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "policy_redis" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_redis.terraform.tfstate"
   }
 }
