@@ -12,7 +12,9 @@ resource "azurerm_role_definition" "iac_reader" {
       "Microsoft.ContainerService/managedClusters/listClusterUserCredential/action",     # help to generate cluster credentials
       "Microsoft.ContainerService/managedClusters/accessProfiles/listCredential/action", # help to generate cluster credentials and read cluster roles
       "Microsoft.EventHub/namespaces/eventhubs/authorizationRules/listKeys/action",      #help to list key for event hub connection (mandatory for tf:azurerm_eventhub_authorization_rule)
-      "Microsoft.ServiceBus/namespaces/authorizationRules/listKeys/action"               #help to list key for service bus connection
+      "Microsoft.ServiceBus/namespaces/authorizationRules/listKeys/action",              #help to list key for service bus connection
+      "Microsoft.ServiceBus/namespaces/queues/authorizationRules/listKeys/action",
+      "Microsoft.Cache/redis/listKeys/action",
     ]
   }
 }
