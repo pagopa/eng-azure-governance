@@ -1,0 +1,19 @@
+{
+  "listOfAllowedSku": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of SKUs that can be specified for App Service Plans",
+      "displayName": "Allowed SKUs"
+    },
+    "defaultValue": ["PremiumV3"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the policy"
+    },
+    "allowedValues": ["Audit", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}
