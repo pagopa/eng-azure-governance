@@ -5,7 +5,7 @@
       "description": "The list of SKUs that can be specified for App Service Plans",
       "displayName": "Allowed SKUs"
     },
-    "defaultValue": ["PremiumV3"]
+    "defaultValue": ["P1v3"]
   },
   "effect": {
     "type": "String",

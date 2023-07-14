@@ -6,6 +6,10 @@
         "equals": "Microsoft.Web/serverfarms"
       },
       {
+        "field": "kind",
+        "notEquals": "linux"
+      },
+      {
         "not": {
           "field": "Microsoft.Web/serverfarms/sku.name",
           "in": "[parameters('listOfAllowedSku')]"
