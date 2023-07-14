@@ -3,11 +3,11 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.Web/sites"
+        "equals": "Microsoft.Web/serverfarms"
       },
       {
         "not": {
-          "field": "Microsoft.Web/sites/sku",
+          "field": "Microsoft.Web/serverfarms/sku.name",
           "in": "[parameters('listOfAllowedSku')]"
         }
       }
