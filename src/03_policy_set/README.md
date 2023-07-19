@@ -18,7 +18,9 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azurerm_policy_set_definition.app_service_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.app_service_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.app_service_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.application_gateway_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
@@ -49,6 +51,9 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_allowed_locations"></a> [allowed\_locations](#input\_allowed\_locations) | List of allowed locations for resources | `list(string)` | <pre>[<br>  "northeurope",<br>  "westeurope",<br>  "global"<br>]</pre> | no |
 | <a name="input_allowed_locations_resource_groups"></a> [allowed\_locations\_resource\_groups](#input\_allowed\_locations\_resource\_groups) | List of allowed locations for resource groups | `list(string)` | <pre>[<br>  "northeurope",<br>  "westeurope"<br>]</pre> | no |
+| <a name="input_app_service_dev"></a> [app\_service\_dev](#input\_app\_service\_dev) | List of app service policy set parameters | <pre>object({<br>    listofallowedsku  = list(string)<br>    listofallowedkind = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedkind": [<br>    "elastic",<br>    "linux",<br>    "functionapp"<br>  ],<br>  "listofallowedsku": [<br>    "Y1",<br>    "WS1",<br>    "B1",<br>    "B2",<br>    "B3"<br>  ]<br>}</pre> | no |
+| <a name="input_app_service_prod"></a> [app\_service\_prod](#input\_app\_service\_prod) | List of app service policy set parameters | <pre>object({<br>    listofallowedsku  = list(string)<br>    listofallowedkind = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedkind": [<br>    "elastic",<br>    "linux"<br>  ],<br>  "listofallowedsku": [<br>    "WS1",<br>    "P0v3",<br>    "P1v3"<br>  ]<br>}</pre> | no |
+| <a name="input_app_service_uat"></a> [app\_service\_uat](#input\_app\_service\_uat) | List of app service policy set parameters | <pre>object({<br>    listofallowedsku  = list(string)<br>    listofallowedkind = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedkind": [<br>    "elastic",<br>    "linux",<br>    "functionapp"<br>  ],<br>  "listofallowedsku": [<br>    "Y1",<br>    "WS1",<br>    "B1",<br>    "B2",<br>    "B3"<br>  ]<br>}</pre> | no |
 | <a name="input_audit_logs_pci_storage_primary_region"></a> [audit\_logs\_pci\_storage\_primary\_region](#input\_audit\_logs\_pci\_storage\_primary\_region) | description | <pre>object({<br>    storage_id = string,<br>    location   = string,<br>  })</pre> | <pre>{<br>  "location": "westeurope",<br>  "storage_id": "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"<br>}</pre> | no |
 | <a name="input_audit_logs_pci_storage_secondary_region"></a> [audit\_logs\_pci\_storage\_secondary\_region](#input\_audit\_logs\_pci\_storage\_secondary\_region) | description | <pre>object({<br>    storage_id = string,<br>    location   = string,<br>  })</pre> | <pre>{<br>  "location": "northeurope",<br>  "storage_id": "novalue"<br>}</pre> | no |
 | <a name="input_audit_logs_pci_workspace_id"></a> [audit\_logs\_pci\_workspace\_id](#input\_audit\_logs\_pci\_workspace\_id) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"` | no |
@@ -61,7 +66,9 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_app_service_dev_id"></a> [app\_service\_dev\_id](#output\_app\_service\_dev\_id) | n/a |
 | <a name="output_app_service_prod_id"></a> [app\_service\_prod\_id](#output\_app\_service\_prod\_id) | n/a |
+| <a name="output_app_service_uat_id"></a> [app\_service\_uat\_id](#output\_app\_service\_uat\_id) | n/a |
 | <a name="output_application_gateway_prod_id"></a> [application\_gateway\_prod\_id](#output\_application\_gateway\_prod\_id) | n/a |
 | <a name="output_audit_logs_id"></a> [audit\_logs\_id](#output\_audit\_logs\_id) | n/a |
 | <a name="output_audit_logs_pci_id"></a> [audit\_logs\_pci\_id](#output\_audit\_logs\_pci\_id) | n/a |
