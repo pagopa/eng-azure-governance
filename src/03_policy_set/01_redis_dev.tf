@@ -1,30 +1,30 @@
 locals {
-  redis_prod = {
-    metadata_category_name = "pagopa_prod"
+  redis_dev = {
+    metadata_category_name = "pagopa_dev"
   }
 }
 
-variable "redis_prod" {
+variable "redis_dev" {
   type = object({
     listofallowedskuname     = list(string)
     listofallowedskucapacity = list(string)
   })
   default = {
-    listofallowedskuname     = ["Standard", "Premium"]
-    listofallowedskucapacity = ["0", "1", "2"]
+    listofallowedskuname     = ["Basic"]
+    listofallowedskucapacity = ["0", "1"]
   }
   description = "List of redis policy set parameters"
 }
 
-resource "azurerm_policy_set_definition" "redis_prod" {
-  name                = "redis_prod"
+resource "azurerm_policy_set_definition" "redis_dev" {
+  name                = "redis_dev"
   policy_type         = "Custom"
-  display_name        = "PagoPA Redis PROD"
+  display_name        = "PagoPA Redis DEV"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
-        "category": "${local.redis_prod.metadata_category_name}",
+        "category": "${local.redis_dev.metadata_category_name}",
         "version": "v1.0.0",
         "ASC": "true"
     }
@@ -48,10 +48,10 @@ METADATA
     parameter_values     = <<VALUE
     {
       "listOfAllowedSkuName": {
-        "value": ${jsonencode(var.redis_prod.listofallowedskuname)}
+        "value": ${jsonencode(var.redis_dev.listofallowedskuname)}
       },
       "listOfAllowedSkuCapacity": {
-        "value": ${jsonencode(var.redis_prod.listofallowedskucapacity)}
+        "value": ${jsonencode(var.redis_dev.listofallowedskucapacity)}
       }
     }
     VALUE
@@ -59,6 +59,6 @@ METADATA
 
 }
 
-output "redis_prod_id" {
-  value = azurerm_policy_set_definition.redis_prod.id
+output "redis_dev_id" {
+  value = azurerm_policy_set_definition.redis_dev.id
 }

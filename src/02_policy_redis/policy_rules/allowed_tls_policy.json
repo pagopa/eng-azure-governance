@@ -1,0 +1,19 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.Cache/Redis"
+      },
+      {
+        "not": {
+          "field": "Microsoft.Cache/Redis/minimumTlsVersion",
+          "in": "[parameters('listOfAllowedTLS')]"
+        }
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

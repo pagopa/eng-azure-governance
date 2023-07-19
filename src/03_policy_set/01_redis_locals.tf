@@ -1,5 +1,5 @@
 locals {
-  app_service = {
+  redis = {
     listofallowedsku = "listofallowedsku"
   }
 }
