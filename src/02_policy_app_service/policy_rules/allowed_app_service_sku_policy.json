@@ -6,8 +6,10 @@
         "equals": "Microsoft.Web/serverfarms"
       },
       {
-        "field": "kind",
-        "notEquals": "linux"
+        "not": {
+          "field": "kind",
+          "in": "[parameters('listOfAllowedKind')]"
+        }
       },
       {
         "not": {

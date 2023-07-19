@@ -1,30 +1,30 @@
 locals {
-  app_service_prod = {
-    metadata_category_name = "pagopa_prod"
+  app_service_dev = {
+    metadata_category_name = "pagopa_dev"
   }
 }
 
-variable "app_service_prod" {
+variable "app_service_dev" {
   type = object({
     listofallowedsku  = list(string)
     listofallowedkind = list(string)
   })
   default = {
-    listofallowedsku  = ["WS1", "P0v3", "P1v3"]
-    listofallowedkind = ["elastic", "linux"]
+    listofallowedsku  = ["Y1", "WS1", "B1", "B2", "B3"]
+    listofallowedkind = ["elastic", "linux", "functionapp"]
   }
   description = "List of app service policy set parameters"
 }
 
-resource "azurerm_policy_set_definition" "app_service_prod" {
-  name                = "app_service_prod"
+resource "azurerm_policy_set_definition" "app_service_dev" {
+  name                = "app_service_dev"
   policy_type         = "Custom"
-  display_name        = "PagoPA App Service PROD"
+  display_name        = "PagoPA App Service DEV"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
     {
-        "category": "${local.app_service_prod.metadata_category_name}",
+        "category": "${local.app_service_dev.metadata_category_name}",
         "version": "v1.0.0",
         "ASC": "true",
         "parameterScopes": {
@@ -47,16 +47,16 @@ METADATA
     parameter_values     = <<VALUE
     {
       "listOfAllowedSku": {
-        "value": ${jsonencode(var.app_service_prod.listofallowedsku)}
+        "value": ${jsonencode(var.app_service_dev.listofallowedsku)}
       },
       "listOfAllowedKind": {
-        "value": ${jsonencode(var.app_service_prod.listofallowedkind)}
+        "value": ${jsonencode(var.app_service_dev.listofallowedkind)}
       }
     }
     VALUE
   }
 }
 
-output "app_service_prod_id" {
-  value = azurerm_policy_set_definition.app_service_prod.id
+output "app_service_dev_id" {
+  value = azurerm_policy_set_definition.app_service_dev.id
 }
