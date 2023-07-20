@@ -3,20 +3,20 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.Web/serverfarms"
+        "equals": "Microsoft.Cache/Redis"
       },
       {
         "anyOf": [
           {
             "not": {
-              "field": "kind",
-              "in": "[parameters('listOfAllowedKind')]"
+              "field": "Microsoft.Cache/Redis/sku.name",
+              "in": "[parameters('listOfAllowedSkuName')]"
             }
           },
           {
             "not": {
-              "field": "Microsoft.Web/serverfarms/sku.name",
-              "in": "[parameters('listOfAllowedSku')]"
+              "field": "Microsoft.Cache/Redis/sku.capacity",
+              "in": "[parameters('listOfAllowedSkuCapacity')]"
             }
           }
         ]

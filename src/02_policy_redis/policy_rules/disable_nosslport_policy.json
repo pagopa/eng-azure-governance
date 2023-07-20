@@ -1,0 +1,17 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.Cache/Redis"
+      },
+      {
+        "field": "Microsoft.Cache/Redis/enableNonSslPort",
+        "notEquals": "false"
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
