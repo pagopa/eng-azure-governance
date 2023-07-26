@@ -1,0 +1,51 @@
+{
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "'audit' allows a non-compliant resource to be created or updated, but flags it as non-compliant. 'deny' blocks the non-compliant resource creation or update. 'disabled' turns off the policy."
+    },
+    "allowedValues": [
+      "audit",
+      "deny",
+      "disabled"
+    ],
+    "defaultValue": "audit"
+  },
+  "excludedNamespaces": {
+    "type": "Array",
+    "metadata": {
+      "displayName": "Namespace exclusions",
+      "description": "List of Kubernetes namespaces to exclude from policy evaluation."
+    },
+    "defaultValue": [
+      "kube-system",
+      "gatekeeper-system",
+      "azure-arc"
+    ]
+  },
+  "namespaces": {
+    "type": "Array",
+    "metadata": {
+      "displayName": "Namespace inclusions",
+      "description": "List of Kubernetes namespaces to only include in policy evaluation. An empty list means the policy is applied to all resources in all namespaces."
+    },
+    "defaultValue": []
+  },
+  "labelSelector": {
+    "type": "Object",
+    "metadata": {
+      "displayName": "Kubernetes label selector",
+      "description": "Label query to select Kubernetes resources for policy evaluation. An empty label selector matches all Kubernetes resources."
+    },
+    "defaultValue": {}
+  },
+  "excludedContainers": {
+    "type": "Array",
+    "metadata": {
+      "displayName": "Containers exclusions",
+      "description": "The list of InitContainers and Containers to exclude from policy evaluation. The identify is the name of container. Use an empty list to apply this policy to all containers in all namespaces."
+    },
+    "defaultValue": []
+  }
+}

@@ -100,3 +100,14 @@ data "terraform_remote_state" "policy_redis" {
     key                  = "policy_redis.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_kubernetes" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_kubernetes.terraform.tfstate"
+  }
+}

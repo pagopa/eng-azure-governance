@@ -1,0 +1,23 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.ContainerService/managedClusters"
+  },
+  "then": {
+    "effect": "[parameters('effect')]",
+    "details": {
+      "templateInfo": {
+        "sourceType": "Base64Encoded",
+        "content": "${templateInfoContent}"
+      },
+      "apiGroups": [""],
+      "kinds": ["Pod"],
+      "namespaces": "[parameters('namespaces')]",
+      "excludedNamespaces": "[parameters('excludedNamespaces')]",
+      "labelSelector": "[parameters('labelSelector')]",
+      "values": {
+        "excludedContainers": "[parameters('excludedContainers')]"
+      }
+    }
+  }
+}

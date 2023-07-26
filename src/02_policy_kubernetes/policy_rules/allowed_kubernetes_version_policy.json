@@ -1,0 +1,27 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.ContainerService/ManagedClusters"
+      },
+      {
+        "count": {
+          "field": "Microsoft.ContainerService/ManagedClusters/agentPoolProfiles[*]",
+          "where": {
+            "allOf": [
+              {
+                "field": "Microsoft.ContainerService/ManagedClusters/agentPoolProfiles[*].orchestratorVersion",
+                "notIn": "[parameters('listOfAllowedKubernetesVersion')]"
+              }
+            ]
+          }
+        },
+        "greater": 0
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
