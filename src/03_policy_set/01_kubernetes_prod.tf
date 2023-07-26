@@ -59,6 +59,13 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_kubernetes_version_id
   }
+
+
+
+  # Kubernetes cluster should have 'Standard' SKU
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_sku_id
+  }
 }
 
 output "kubernetes_prod_id" {

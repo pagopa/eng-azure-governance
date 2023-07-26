@@ -17,8 +17,8 @@ resource "azurerm_policy_definition" "kubernetes_allowed_kubernetes_version" {
 METADATA
 
   # az aks get-versions --location westeurope --output table
-  parameters = file("./policy_rules/allowed_kubernetes_version_parameters.json")
+  parameters = file("./policy_rules/allowed_version_parameters.json")
 
-  policy_rule = file("./policy_rules/allowed_kubernetes_version_policy.json")
+  policy_rule = file("./policy_rules/allowed_version_policy.json")
 
 }
