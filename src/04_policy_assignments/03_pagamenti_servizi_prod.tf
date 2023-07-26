@@ -213,3 +213,19 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_re
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_cosmosdb" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}cosmosdb"
+  display_name         = "PagoPA CosmosDB"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.cosmosdb_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
