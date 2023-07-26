@@ -2,11 +2,13 @@
   "listOfAllowedKubernetesVersion": {
     "type": "Array",
     "metadata": {
-      "description": "The list of Kubernetes version that can be specified",
-      "displayName": "Allowed Kubernetes version"
+        "description": "The list of allowed Kubernetes version that can be specified in the format of x.y.*",
+        "displayName": "Allowed Kubernetes version"
     },
     "defaultValue": [
-      "1.24.9"
+      "1.24.*",
+      "1.26.3",
+      "1.27.*"
     ]
   },
   "effect": {
@@ -15,7 +17,7 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Disabled"],
+    "allowedValues": ["Audit", "Deny", "Disabled"],
     "defaultValue": "Audit"
   }
 }

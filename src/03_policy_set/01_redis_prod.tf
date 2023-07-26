@@ -57,6 +57,16 @@ METADATA
     VALUE
   }
 
+  # Azure Cache for Redis should disable public network access
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/470baccb-7e51-4549-8b1a-3e5be069f663"
+  }
+
+  # Azure Cache for Redis should use private link
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/7803067c-7d34-46e3-8c79-0ca68fc4036d"
+  }
+
 }
 
 output "redis_prod_id" {
