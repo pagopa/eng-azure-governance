@@ -3,18 +3,21 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.ContainerService/ManagedClusters"
+        "equals": "Microsoft.ContainerService/managedClusters"
       },
       {
         "count": {
-          "field": "Microsoft.ContainerService/ManagedClusters/agentPoolProfiles[*]",
+          "field": "Microsoft.ContainerService/managedClusters/agentPoolProfiles[*]",
           "where": {
-            "allOf": [
-              {
-                "field": "Microsoft.ContainerService/ManagedClusters/agentPoolProfiles[*].orchestratorVersion",
-                "notIn": "[parameters('listOfAllowedKubernetesVersion')]"
+            "count": {
+              "value": "[parameters('listOfAllowedKubernetesVersion')]",
+              "name": "allowedKubernetesVersion",
+              "where": {
+                "value": "[current('Microsoft.ContainerService/managedClusters/agentPoolProfiles[*].orchestratorVersion')]",
+                "notLike": "[current('allowedKubernetesVersion')]"
               }
-            ]
+            },
+            "equals": "[length(parameters('listOfAllowedKubernetesVersion'))]"
           }
         },
         "greater": 0
