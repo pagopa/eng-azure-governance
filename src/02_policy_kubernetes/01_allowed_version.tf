@@ -16,6 +16,7 @@ resource "azurerm_policy_definition" "kubernetes_allowed_kubernetes_version" {
     }
 METADATA
 
+  # https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli#aks-kubernetes-release-calendar
   # az aks get-versions --location westeurope --output table
   parameters = file("./policy_rules/allowed_version_parameters.json")
 
