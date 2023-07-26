@@ -1,0 +1,19 @@
+{
+  "listOfAllowedSKUs": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of SKUs that can be specified for K8s Cluster",
+      "displayName": "Allowed SKUs"
+    },
+    "defaultValue": ["Standard"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}

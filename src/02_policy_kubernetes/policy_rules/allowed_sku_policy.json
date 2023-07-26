@@ -1,0 +1,19 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.ContainerService/ManagedClusters"
+      },
+      {
+        "not": {
+          "field": "Microsoft.ContainerService/ManagedClusters/sku.tier",
+          "in": "[parameters('listOfAllowedSKUs')]"
+        }
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
