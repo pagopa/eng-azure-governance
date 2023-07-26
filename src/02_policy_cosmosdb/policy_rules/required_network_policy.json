@@ -1,0 +1,25 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDB/databaseAccounts"
+      },
+      {
+        "field": "Microsoft.DocumentDB/databaseAccounts/publicNetworkAccess",
+        "notEquals": "Disabled"
+      },
+      {
+        "field": "Microsoft.DocumentDB/databaseAccounts/isVirtualNetworkFilterEnabled",
+        "notEquals": true
+      },
+      {
+        "value": "[length('Microsoft.DocumentDB/databaseAccounts/ipRules[*]')]",
+        "equals": 0
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

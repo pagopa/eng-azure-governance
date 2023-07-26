@@ -20,6 +20,7 @@ jobs:
             01_custom_roles
             02_policy_application_gateway
             02_policy_audit_logs
+            02_policy_cosmosdb
             02_policy_dns
             02_policy_event_hub
             02_policy_kubernetes
