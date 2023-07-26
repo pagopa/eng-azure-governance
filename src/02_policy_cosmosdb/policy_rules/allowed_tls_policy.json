@@ -1,0 +1,19 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDB/databaseAccounts"
+      },
+      {
+        "not": {
+          "field": "Microsoft.DocumentDB/databaseAccounts/minimalTlsVersion",
+          "in": "[parameters('listOfAllowedTLS')]"
+        }
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
