@@ -1,0 +1,19 @@
+{
+  "listOfRequiredBackupPolicy": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list required backup policy required for CosmosDB.",
+      "displayName": "Required backup policy"
+    },
+    "defaultValue": ["Continuous"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}
