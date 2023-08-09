@@ -1,0 +1,23 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDb/databaseAccounts"
+      },
+      {
+        "count": {
+          "field": "Microsoft.DocumentDB/databaseAccounts/capabilities[*]",
+          "where": {
+            "field": "Microsoft.DocumentDB/databaseAccounts/capabilities[*].name",
+            "in": "[parameters('listOfForbiddenCapabilities')]"
+          }
+        },
+        "greater": 0
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
