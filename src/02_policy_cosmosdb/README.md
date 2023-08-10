@@ -19,6 +19,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_policy_definition.cosmosdb_allowed_tls](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_forbidden_capabilities](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.cosmosdb_required_backup_policy](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.cosmosdb_required_network](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
@@ -36,6 +37,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_cosmosdb_allowed_tls_id"></a> [cosmosdb\_allowed\_tls\_id](#output\_cosmosdb\_allowed\_tls\_id) | n/a |
+| <a name="output_cosmosdb_forbidden_capabilities_id"></a> [cosmosdb\_forbidden\_capabilities\_id](#output\_cosmosdb\_forbidden\_capabilities\_id) | n/a |
 | <a name="output_cosmosdb_required_backup_policy_id"></a> [cosmosdb\_required\_backup\_policy\_id](#output\_cosmosdb\_required\_backup\_policy\_id) | n/a |
 | <a name="output_cosmosdb_required_network_id"></a> [cosmosdb\_required\_network\_id](#output\_cosmosdb\_required\_network\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
