@@ -31,7 +31,7 @@ METADATA
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_forbidden_capabilities_policy.id
+    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_forbidden_capabilities_id
   }
 }
 

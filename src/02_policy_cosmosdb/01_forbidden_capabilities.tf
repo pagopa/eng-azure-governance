@@ -1,8 +1,8 @@
-resource "azurerm_policy_definition" "cosmosdb_forbidden_capabilities_policy" {
-  name                = "cosmosdb_forbidden_capabilities_policy"
+resource "azurerm_policy_definition" "cosmosdb_forbidden_capabilities" {
+  name                = "cosmosdb_forbidden_capabilities"
   policy_type         = "Custom"
   mode                = "Indexed"
-  display_name        = "PagoPA CosmosDB forbidden capabilities policy"
+  display_name        = "PagoPA CosmosDB forbidden capabilities"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
