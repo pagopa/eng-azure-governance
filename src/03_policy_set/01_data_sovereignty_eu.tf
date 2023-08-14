@@ -38,7 +38,7 @@ METADATA
 
   # Allowed locations
   policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e56962a6-4747-49cd-b67b-bf8b01975c4c"
+    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.allowed_locations_id
     reference_id         = local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id
     parameter_values     = <<VALUE
     {
@@ -51,7 +51,7 @@ METADATA
 
   # Allowed locations for resource groups
   policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/e765b5de-1225-4ba3-bd56-1ac6695af988"
+    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.allowed_locations_resource_group_id
     reference_id         = local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id
     parameter_values     = <<VALUE
     {

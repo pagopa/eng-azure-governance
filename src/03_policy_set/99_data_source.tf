@@ -122,3 +122,14 @@ data "terraform_remote_state" "policy_cosmosdb" {
     key                  = "policy_cosmosdb.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_data_sovereignty" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_data_sovereignty.terraform.tfstate"
+  }
+}
