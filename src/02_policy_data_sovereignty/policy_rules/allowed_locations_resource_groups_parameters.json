@@ -1,0 +1,18 @@
+{
+  "listOfAllowedLocations": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of locations that resource groups can be created in.",
+      "displayName": "Allowed locations"
+    }
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the policy"
+    },
+    "allowedValues": ["audit", "deny"],
+    "defaultValue": "deny"
+  }
+}
