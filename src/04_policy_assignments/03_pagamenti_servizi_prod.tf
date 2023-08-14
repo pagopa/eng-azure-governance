@@ -229,3 +229,35 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_co
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_networking" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}networking"
+  display_name         = "PagoPA Networking"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.networking_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  location = var.location
+  enforce  = true
+  identity {
+    type = "SystemAssigned"
+  }
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
+resource "azurerm_role_assignment" "pagamenti_servizi_prod_network_contributor" {
+  scope                = data.azurerm_management_group.pagamenti_servizi_prod.id
+  role_definition_name = "Network Contributor"
+  principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_networking.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "pagamenti_servizi_prod_network_contributor_ddosplan" {
+  scope                = local.networking.ddosplanid
+  role_definition_name = "Network Contributor"
+  principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_networking.identity[0].principal_id
+}
