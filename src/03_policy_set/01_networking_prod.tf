@@ -38,7 +38,7 @@ METADATA
     parameter_values     = <<VALUE
     {
       "ddosPlan": {
-        "value": ${jsonencode(var.networking_uat.ddosplanid)}
+        "value": ${jsonencode(var.networking_prod.ddosplanid)}
       }
     }
     VALUE
