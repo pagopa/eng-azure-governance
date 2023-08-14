@@ -38,7 +38,7 @@ METADATA
 
   # Allowed locations
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.allowed_locations_id
+    policy_definition_id = data.terraform_remote_state.policy_data_sovereignty.outputs.allowed_locations_id
     reference_id         = local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id
     parameter_values     = <<VALUE
     {
@@ -51,7 +51,7 @@ METADATA
 
   # Allowed locations for resource groups
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.allowed_locations_resource_group_id
+    policy_definition_id = data.terraform_remote_state.policy_data_sovereignty.outputs.allowed_locations_resource_group_id
     reference_id         = local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id
     parameter_values     = <<VALUE
     {
