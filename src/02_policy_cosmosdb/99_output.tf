@@ -4,6 +4,7 @@ output "policy_ids" {
     azurerm_policy_definition.cosmosdb_allowed_tls.id,
     azurerm_policy_definition.cosmosdb_required_backup_policy.id,
     azurerm_policy_definition.cosmosdb_forbidden_capabilities.id,
+    azurerm_policy_definition.cosmosdb_required_zone_redundancy.id,
   ]
 }
 
@@ -21,4 +22,8 @@ output "cosmosdb_required_backup_policy_id" {
 
 output "cosmosdb_forbidden_capabilities_id" {
   value = azurerm_policy_definition.cosmosdb_forbidden_capabilities.id
+}
+
+output "cosmosdb_required_zone_redundancy_id" {
+  value = azurerm_policy_definition.cosmosdb_required_zone_redundancy.id
 }
