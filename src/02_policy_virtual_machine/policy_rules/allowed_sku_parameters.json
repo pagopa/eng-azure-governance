@@ -1,0 +1,20 @@
+{
+  "listOfAllowedSKU": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of SKU that can be used in Virtual Machine.",
+      "displayName": "Allowed SKU",
+      "strongType": "vmSKUs"
+    },
+    "defaultValue": ["Standard_B1ls", "Standard_B2s"]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "defaultValue": "Deny"
+  }
+}
