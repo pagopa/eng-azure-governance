@@ -1,0 +1,31 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDb/databaseAccounts"
+      },
+      {
+        "count": {
+          "field": "Microsoft.DocumentDB/databaseAccounts/locations[*]",
+          "where": {
+            "allOf": [
+              {
+                "field": "Microsoft.DocumentDB/databaseAccounts/locations[*].failoverPriority",
+                "equals": 0
+              },
+              {
+                "field": "Microsoft.DocumentDB/databaseAccounts/locations[*].isZoneRedundant",
+                "equals": false
+              }
+            ]
+          }
+        },
+        "greater": 0
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
