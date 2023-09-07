@@ -33,6 +33,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_cosmosdb_allowed_tls_id"></a> [cosmosdb\_allowed\_tls\_id](#output\_cosmosdb\_allowed\_tls\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
+| <a name="output_virtual_machine_allowed_sku_id"></a> [virtual\_machine\_allowed\_sku\_id](#output\_virtual\_machine\_allowed\_sku\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
