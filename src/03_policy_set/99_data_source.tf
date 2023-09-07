@@ -144,3 +144,14 @@ data "terraform_remote_state" "policy_virtual_machine" {
     key                  = "policy_virtual_machine.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_api_management" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_api_management.terraform.tfstate"
+  }
+}
