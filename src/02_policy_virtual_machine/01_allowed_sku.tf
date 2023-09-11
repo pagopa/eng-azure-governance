@@ -1,5 +1,5 @@
 resource "azurerm_policy_definition" "virtual_machine_allowed_sku" {
-  name                = "virtual_machine_allowed_tls"
+  name                = "virtual_machine_allowed_sku"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Virtual Machine allowed SKU"
