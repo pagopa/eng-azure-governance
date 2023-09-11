@@ -6,10 +6,8 @@
         "equals": "Microsoft.OperationalInsights/workspaces"
       },
       {
-        "not": {
-          "field": "Microsoft.OperationalInsights/workspaces/workspaceCapping.dailyQuotaGb",
-          "equals": -1
-        }
+        "field": "Microsoft.OperationalInsights/workspaces/workspaceCapping.dailyQuotaGb",
+        "equals": -1
       }
     ]
   },
