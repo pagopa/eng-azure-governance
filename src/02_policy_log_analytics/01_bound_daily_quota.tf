@@ -1,5 +1,5 @@
 resource "azurerm_policy_definition" "log_analytics_bound_daily_quota" {
-  name                = "log_analytics_allowed_tls"
+  name                = "log_analytics_bound_daily_quota"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Log Analytics bound daily quota"
@@ -19,5 +19,4 @@ METADATA
   parameters = file("./policy_rules/bound_daily_quota_parameters.json")
 
   policy_rule = file("./policy_rules/bound_daily_quota_policy.json")
-
 }

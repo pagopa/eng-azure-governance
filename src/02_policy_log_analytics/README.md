@@ -18,7 +18,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.log_analytics_cap_daily_quota](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.log_analytics_bound_daily_quota](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.log_analytics_unbound_daily_quota](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -33,6 +34,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_log_analytics_cap_daily_quota_id"></a> [log\_analytics\_cap\_daily\_quota\_id](#output\_log\_analytics\_cap\_daily\_quota\_id) | n/a |
+| <a name="output_log_analytics_bound_daily_quota_id"></a> [log\_analytics\_bound\_daily\_quota\_id](#output\_log\_analytics\_bound\_daily\_quota\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
