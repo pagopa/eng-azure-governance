@@ -133,3 +133,14 @@ data "terraform_remote_state" "policy_data_sovereignty" {
     key                  = "policy_data_sovereignty.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_virtual_machine" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_virtual_machine.terraform.tfstate"
+  }
+}

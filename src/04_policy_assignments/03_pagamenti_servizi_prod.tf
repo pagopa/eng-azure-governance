@@ -261,3 +261,19 @@ resource "azurerm_role_assignment" "pagamenti_servizi_prod_network_contributor_d
   role_definition_name = "Network Contributor"
   principal_id         = azurerm_management_group_policy_assignment.pagamenti_servizi_prod_networking.identity[0].principal_id
 }
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_virtual_machine" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}virtualmachine"
+  display_name         = "PagoPA Virtual Machine"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.virtual_machine_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
