@@ -44,6 +44,9 @@ No modules.
 | [azurerm_policy_set_definition.storage_account_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.virtual_machine_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.virtual_machine_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_scale_set_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_scale_set_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_scale_set_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.virtual_machine_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
@@ -62,6 +65,7 @@ No modules.
 | [terraform_remote_state.policy_resource_lock](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_virtual_machine](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
+| [terraform_remote_state.policy_virtual_machine_scale_set](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 
 ## Inputs
 
@@ -88,6 +92,9 @@ No modules.
 | <a name="input_redis_uat"></a> [redis\_uat](#input\_redis\_uat) | List of redis policy set parameters | <pre>object({<br>    listofallowedskuname     = list(string)<br>    listofallowedskucapacity = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskucapacity": [<br>    "0",<br>    "1"<br>  ],<br>  "listofallowedskuname": [<br>    "Basic"<br>  ]<br>}</pre> | no |
 | <a name="input_virtual_machine_dev"></a> [virtual\_machine\_dev](#input\_virtual\_machine\_dev) | List of Virtual Machine policy set parameters | <pre>object({<br>    listofallowedskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskuname": [<br>    "Standard_B2ms",<br>    "Standard_B4ms",<br>    "Standard_B8ms"<br>  ]<br>}</pre> | no |
 | <a name="input_virtual_machine_prod"></a> [virtual\_machine\_prod](#input\_virtual\_machine\_prod) | List of Virtual Machine policy set parameters | <pre>object({<br>    listofallowedskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskuname": [<br>    "Standard_D2ds_v5",<br>    "Standard_D4ds_v5",<br>    "Standard_D8ds_v5"<br>  ]<br>}</pre> | no |
+| <a name="input_virtual_machine_scale_set_dev"></a> [virtual\_machine\_scale\_set\_dev](#input\_virtual\_machine\_scale\_set\_dev) | List of Virtual Machine policy set parameters | <pre>object({<br>    listofallowedskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskuname": [<br>    "Standard_B2ms",<br>    "Standard_B4ms",<br>    "Standard_B8ms"<br>  ]<br>}</pre> | no |
+| <a name="input_virtual_machine_scale_set_prod"></a> [virtual\_machine\_scale\_set\_prod](#input\_virtual\_machine\_scale\_set\_prod) | List of Virtual Machine policy set parameters | <pre>object({<br>    listofallowedskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskuname": [<br>    "Standard_B2ms",<br>    "Standard_B4ms",<br>    "Standard_B8ms"<br>  ]<br>}</pre> | no |
+| <a name="input_virtual_machine_scale_set_uat"></a> [virtual\_machine\_scale\_set\_uat](#input\_virtual\_machine\_scale\_set\_uat) | List of Virtual Machine policy set parameters | <pre>object({<br>    listofallowedskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskuname": [<br>    "Standard_B2ms",<br>    "Standard_B4ms",<br>    "Standard_B8ms"<br>  ]<br>}</pre> | no |
 | <a name="input_virtual_machine_uat"></a> [virtual\_machine\_uat](#input\_virtual\_machine\_uat) | List of Virtual Machine policy set parameters | <pre>object({<br>    listofallowedskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedskuname": [<br>    "Standard_B2ms",<br>    "Standard_B4ms",<br>    "Standard_B8ms"<br>  ]<br>}</pre> | no |
 
 ## Outputs
@@ -126,5 +133,8 @@ No modules.
 | <a name="output_storage_account_prod_id"></a> [storage\_account\_prod\_id](#output\_storage\_account\_prod\_id) | n/a |
 | <a name="output_virtual_machine_dev_id"></a> [virtual\_machine\_dev\_id](#output\_virtual\_machine\_dev\_id) | n/a |
 | <a name="output_virtual_machine_prod_id"></a> [virtual\_machine\_prod\_id](#output\_virtual\_machine\_prod\_id) | n/a |
+| <a name="output_virtual_machine_scale_set_dev_id"></a> [virtual\_machine\_scale\_set\_dev\_id](#output\_virtual\_machine\_scale\_set\_dev\_id) | n/a |
+| <a name="output_virtual_machine_scale_set_prod_id"></a> [virtual\_machine\_scale\_set\_prod\_id](#output\_virtual\_machine\_scale\_set\_prod\_id) | n/a |
+| <a name="output_virtual_machine_scale_set_uat_id"></a> [virtual\_machine\_scale\_set\_uat\_id](#output\_virtual\_machine\_scale\_set\_uat\_id) | n/a |
 | <a name="output_virtual_machine_uat_id"></a> [virtual\_machine\_uat\_id](#output\_virtual\_machine\_uat\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
