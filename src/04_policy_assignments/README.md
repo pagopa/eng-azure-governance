@@ -46,6 +46,7 @@ No modules.
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_pci_prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_api_management](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_app_service](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_application_gateway](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagamenti_servizi_prod_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
