@@ -293,3 +293,19 @@ resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_ap
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "pagamenti_servizi_prod_log_analytics" {
+  name                 = "${local.pagamenti_servizi_prod_prefix}loganalytics"
+  display_name         = "PagoPA Log Analytics"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.log_analytics_prod_id
+  management_group_id  = data.azurerm_management_group.pagamenti_servizi_prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
