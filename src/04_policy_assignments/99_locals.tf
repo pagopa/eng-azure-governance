@@ -25,11 +25,8 @@ locals {
   azure_security_benchmark = {
     id = "/providers/Microsoft.Authorization/policySetDefinitions/1f3afdf9-d0c9-4c3d-847f-89da613e70a8"
     policy_dev_waiver_ids = [
-      "identityRemoveExternalAccountWithOwnerPermissionsMonitoring",
       "identityRemoveExternalAccountWithOwnerPermissionsMonitoringNew",
-      "identityRemoveExternalAccountWithWritePermissionsMonitoring",
       "identityRemoveExternalAccountWithWritePermissionsMonitoringNew",
-      "identityRemoveExternalAccountWithReadPermissionsMonitoring",
       "identityRemoveExternalAccountWithReadPermissionsMonitoringNew",
       "diagnosticsLogsInKeyVaultMonitoring",
       "diagnosticLogsInAppServicesShouldBeEnabledMonitoringEffect",
@@ -53,7 +50,6 @@ locals {
 
     ]
     policy_uat_waiver_ids = [
-      "identityRemoveExternalAccountWithReadPermissionsMonitoring",
       "identityRemoveExternalAccountWithReadPermissionsMonitoringNew",
       "diagnosticsLogsInKeyVaultMonitoring",
       "diagnosticLogsInAppServicesShouldBeEnabledMonitoringEffect",
