@@ -18,15 +18,20 @@ jobs:
         env:
           FOLDERS: >
             01_custom_roles
+            02_policy_app_service
             02_policy_application_gateway
             02_policy_audit_logs
             02_policy_cosmosdb
+            02_policy_data_sovereignty
             02_policy_dns
             02_policy_event_hub
             02_policy_kubernetes
-            02_policy_resource_lock
+            02_policy_log_analytics
             02_policy_metrics_logs
+            02_policy_redis
+            02_policy_resource_lock
             02_policy_tags_inherit_from_subscription
+            02_policy_virtual_machine
             03_policy_set
             04_policy_assignments
             governance
