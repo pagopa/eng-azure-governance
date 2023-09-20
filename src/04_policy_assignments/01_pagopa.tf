@@ -51,41 +51,41 @@ resource "azurerm_management_group_policy_assignment" "pagopa_azure_security_ben
   }
 }
 
-resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benchmark_mitigated" {
-  name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-mitigated"
-  management_group_id  = data.azurerm_management_group.pagopa.id
-  policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
-  exemption_category   = "Mitigated"
-  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
-  policy_definition_reference_ids = [
-    "identityEnableMFAForOwnerPermissionsMonitoring",
-    "identityEnableMFAForOwnerPermissionsMonitoringNew",
-    "identityEnableMFAForWritePermissionsMonitoring",
-    "identityEnableMFAForWritePermissionsMonitoringEffect",
-    "identityEnableMFAForReadPermissionsMonitoring",
-    "identityEnableMFAForReadPermissionsMonitoringNew",
-  ]
-}
+# resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benchmark_mitigated" {
+#   name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-mitigated"
+#   management_group_id  = data.azurerm_management_group.pagopa.id
+#   policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
+#   exemption_category   = "Mitigated"
+#   description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
+#   policy_definition_reference_ids = [
+#     "identityEnableMFAForOwnerPermissionsMonitoring",
+#     "identityEnableMFAForOwnerPermissionsMonitoringNew",
+#     "identityEnableMFAForWritePermissionsMonitoring",
+#     "identityEnableMFAForWritePermissionsMonitoringEffect",
+#     "identityEnableMFAForReadPermissionsMonitoring",
+#     "identityEnableMFAForReadPermissionsMonitoringNew",
+#   ]
+# }
 
-resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benchmark_waiver" {
-  name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-waiver"
-  management_group_id  = data.azurerm_management_group.pagopa.id
-  policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
-  exemption_category   = "Waiver"
-  description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
-  policy_definition_reference_ids = [
-    "ensureWEBAppHasClientCertificatesIncomingClientCertificatesSetToOnMonitoringEffect",
-    "functionAppsShouldHaveClientCertificatesEnabledMonitoringEffect",
-  ]
-}
+# resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benchmark_waiver" {
+#   name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-waiver"
+#   management_group_id  = data.azurerm_management_group.pagopa.id
+#   policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.id
+#   exemption_category   = "Waiver"
+#   description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
+#   policy_definition_reference_ids = [
+#     "ensureWEBAppHasClientCertificatesIncomingClientCertificatesSetToOnMonitoringEffect",
+#     "functionAppsShouldHaveClientCertificatesEnabledMonitoringEffect",
+#   ]
+# }
 
-resource "azurerm_resource_policy_exemption" "pagopa_dns_pagopa_it_waiver" {
-  name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-pagopa.it-waiver"
-  exemption_category   = "Waiver"
-  description          = "pagopa.it is the root DNS zone so we can't add the CAA record"
-  resource_id          = "/subscriptions/a001fc05-3125-4940-bbe0-7ef4125a8263/resourcegroups/pagopaorg-rg-prod/providers/microsoft.network/dnszones/pagopa.it"
-  policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_dns.id
-  policy_definition_reference_ids = [
-    local.dns.policy.dns_required_caa_record_id,
-  ]
-}
+# resource "azurerm_resource_policy_exemption" "pagopa_dns_pagopa_it_waiver" {
+#   name                 = "${azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark.name}-pagopa.it-waiver"
+#   exemption_category   = "Waiver"
+#   description          = "pagopa.it is the root DNS zone so we can't add the CAA record"
+#   resource_id          = "/subscriptions/a001fc05-3125-4940-bbe0-7ef4125a8263/resourcegroups/pagopaorg-rg-prod/providers/microsoft.network/dnszones/pagopa.it"
+#   policy_assignment_id = azurerm_management_group_policy_assignment.pagopa_dns.id
+#   policy_definition_reference_ids = [
+#     local.dns.policy.dns_required_caa_record_id,
+#   ]
+# }
