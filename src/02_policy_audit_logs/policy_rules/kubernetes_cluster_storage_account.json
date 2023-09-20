@@ -88,27 +88,15 @@
                   "logs": [
                     {
                       "category": "kube-audit",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "kube-audit-admin",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "guard",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }

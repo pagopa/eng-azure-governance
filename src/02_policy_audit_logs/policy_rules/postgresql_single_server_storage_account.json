@@ -84,11 +84,7 @@
                   "logs": [
                     {
                       "category": "PostgreSQLLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }
