@@ -87,19 +87,11 @@
                   "logs": [
                     {
                       "categoryGroup": "allLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "categoryGroup": "Audit",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }

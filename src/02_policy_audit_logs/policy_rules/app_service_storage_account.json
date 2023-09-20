@@ -92,27 +92,15 @@
                   "logs": [
                     {
                       "category": "AppServiceAntivirusScanAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "AppServiceFileAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "AppServiceAuditLogs",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }

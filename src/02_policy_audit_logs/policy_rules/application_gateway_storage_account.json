@@ -87,19 +87,11 @@
                   "logs": [
                     {
                       "category": "ApplicationGatewayFirewallLog",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     },
                     {
                       "category": "ApplicationGatewayAccessLog",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }

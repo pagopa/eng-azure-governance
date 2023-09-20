@@ -82,11 +82,7 @@
                   "logs": [
                     {
                       "categoryGroup": "audit",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }
