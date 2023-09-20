@@ -86,11 +86,7 @@
                   "logs": [
                     {
                       "category": "ControlPlaneRequests",
-                      "enabled": true,
-                      "retentionPolicy": {
-                        "enabled": true,
-                        "days": 365
-                      }
+                      "enabled": true
                     }
                   ]
                 }
