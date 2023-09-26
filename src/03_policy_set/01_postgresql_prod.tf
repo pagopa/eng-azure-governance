@@ -22,6 +22,10 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/48af4db5-9b8b-401c-8e74-076be876a430"
   }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_required_flexible_georedundancy_id
+  }
 }
 
 output "postgresql_prod_id" {
