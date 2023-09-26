@@ -325,3 +325,19 @@ resource "azurerm_management_group_policy_assignment" "prod_log_analytics" {
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "prod_postgresql" {
+  name                 = "${local.prod_prefix}postgresql"
+  display_name         = "PagoPA PostgreSQL"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.postgresql_prod_id
+  management_group_id  = data.azurerm_management_group.prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
