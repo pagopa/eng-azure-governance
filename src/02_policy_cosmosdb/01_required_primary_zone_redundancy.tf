@@ -1,5 +1,5 @@
-resource "azurerm_policy_definition" "cosmosdb_required_zone_redundancy" {
-  name                = "cosmosdb_required_zone_redundancy"
+resource "azurerm_policy_definition" "cosmosdb_required_primary_zone_redundancy" {
+  name                = "cosmosdb_required_primary_zone_redundancy"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA CosmosDB required zone redundancy for primary region"
@@ -16,8 +16,7 @@ resource "azurerm_policy_definition" "cosmosdb_required_zone_redundancy" {
     }
 METADATA
 
-  parameters = file("./policy_rules/required_zone_redundancy_parameters.json")
+  parameters = file("./policy_rules/required_primary_zone_redundancy_parameters.json")
 
-  policy_rule = file("./policy_rules/required_zone_redundancy_policy.json")
-
+  policy_rule = file("./policy_rules/required_primary_zone_redundancy_policy.json")
 }
