@@ -4,7 +4,8 @@ output "policy_ids" {
     azurerm_policy_definition.cosmosdb_allowed_tls.id,
     azurerm_policy_definition.cosmosdb_required_backup_policy.id,
     azurerm_policy_definition.cosmosdb_forbidden_capabilities.id,
-    azurerm_policy_definition.cosmosdb_required_zone_redundancy.id,
+    azurerm_policy_definition.cosmosdb_required_primary_zone_redundancy.id,
+    azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy.id,
   ]
 }
 
@@ -26,4 +27,8 @@ output "cosmosdb_forbidden_capabilities_id" {
 
 output "cosmosdb_required_primary_zone_redundancy_id" {
   value = azurerm_policy_definition.cosmosdb_required_primary_zone_redundancy.id
+}
+
+output "cosmosdb_forbidden_secondary_zone_redundancy_id" {
+  value = azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy.id
 }
