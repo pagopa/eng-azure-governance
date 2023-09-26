@@ -1,0 +1,17 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DBforPostgreSQL/flexibleServers"
+      },
+      {
+        "field": "Microsoft.DBforPostgreSQL/flexibleServers/backup.geoRedundantBackup",
+        "notEquals": "Enabled"
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

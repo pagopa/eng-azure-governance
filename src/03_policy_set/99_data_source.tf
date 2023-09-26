@@ -166,3 +166,14 @@ data "terraform_remote_state" "policy_virtual_machine_scale_set" {
     key                  = "policy_virtual_machine_scale_set.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_postgresql" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "common-azure-governance-rg"
+    storage_account_name = "commonazuregovernancest"
+    container_name       = "tfstate"
+    key                  = "policy_postgresql.terraform.tfstate"
+  }
+}
