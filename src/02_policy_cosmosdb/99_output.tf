@@ -24,6 +24,6 @@ output "cosmosdb_forbidden_capabilities_id" {
   value = azurerm_policy_definition.cosmosdb_forbidden_capabilities.id
 }
 
-output "cosmosdb_required_zone_redundancy_id" {
-  value = azurerm_policy_definition.cosmosdb_required_zone_redundancy.id
+output "cosmosdb_required_primary_zone_redundancy_id" {
+  value = azurerm_policy_definition.cosmosdb_required_primary_zone_redundancy.id
 }
