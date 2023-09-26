@@ -2,7 +2,7 @@ resource "azurerm_policy_definition" "cosmosdb_forbidden_secondary_zone_redundan
   name                = "cosmosdb_forbidden_secondary_zone_redundancy"
   policy_type         = "Custom"
   mode                = "Indexed"
-  display_name        = "PagoPA CosmosDB forbidden zone redundancy for primary region"
+  display_name        = "PagoPA CosmosDB forbidden zone redundancy for secondary region"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA
