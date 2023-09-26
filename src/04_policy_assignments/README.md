@@ -47,6 +47,7 @@ No modules.
 | [azurerm_management_group_policy_assignment.prod_pci_metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_pci_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_pci_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.prod_postgresql](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_redis](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/management_group_policy_assignment) | resource |
