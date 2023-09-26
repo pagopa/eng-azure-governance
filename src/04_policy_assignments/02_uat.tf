@@ -63,6 +63,22 @@ resource "azurerm_management_group_policy_assignment" "uat_virtual_machine" {
   METADATA
 }
 
+resource "azurerm_management_group_policy_assignment" "uat_virtual_machine_scael_set" {
+  name                 = "${local.uat_prefix}vmscaleset"
+  display_name         = "PagoPA Virtual Machine Scale Set"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.virtual_machine_scale_set_uat_id
+  management_group_id  = data.azurerm_management_group.uat.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
+
 resource "azurerm_management_group_policy_assignment" "uat_api_management" {
   name                 = "${local.uat_prefix}apimanagement"
   display_name         = "PagoPA Api Management"
