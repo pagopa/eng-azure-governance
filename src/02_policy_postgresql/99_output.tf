@@ -1,13 +1,19 @@
 output "policy_ids" {
   value = [
-    azurerm_policy_definition.postgres_required_flexible_georedundancy.id,
+    azurerm_policy_definition.postgresql_required_flexible_georedundancy.id,
+    azurerm_policy_definition.postgresql_allowed_flexible_sku.id,
+    azurerm_policy_definition.postgresql_allowed_sku.id,
   ]
 }
 
-output "postgres_required_flexible_georedundancy_id" {
-  value = azurerm_policy_definition.postgres_required_flexible_georedundancy.id
+output "postgresql_required_flexible_georedundancy_id" {
+  value = azurerm_policy_definition.postgresql_required_flexible_georedundancy.id
 }
 
-output "postgres_allowed_flexible_sku_id" {
-  value = azurerm_policy_definition.postgres_allowed_flexible_sku_id.id
+output "postgresql_allowed_flexible_sku_id" {
+  value = azurerm_policy_definition.postgresql_allowed_flexible_sku.id
+}
+
+output "postgresql_allowed_sku_id" {
+  value = azurerm_policy_definition.postgresql_allowed_sku.id
 }

@@ -1,0 +1,19 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DBforPostgreSql/servers"
+      },
+      {
+        "not": {
+          "field": "Microsoft.DBforPostgreSql/servers/sku.name",
+          "in": "[parameters('listOfAllowedSKU')]"
+        }
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

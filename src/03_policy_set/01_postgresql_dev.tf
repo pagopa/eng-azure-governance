@@ -43,6 +43,18 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
     }
     VALUE
   }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_allowed_sku_id
+    reference_id         = local.postgresql.listofallowedsku
+    parameter_values     = <<VALUE
+    {
+      "listOfAllowedSKU": {
+        "value": ${jsonencode(var.postgresql_dev.listofallowedskuname)}
+      }
+    }
+    VALUE
+  }
 }
 
 output "postgresql_dev_id" {

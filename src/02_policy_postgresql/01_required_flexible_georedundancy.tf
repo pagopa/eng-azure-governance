@@ -1,5 +1,5 @@
-resource "azurerm_policy_definition" "postgres_required_flexible_georedundancy" {
-  name                = "postgres_required_flexible_georedundancy"
+resource "azurerm_policy_definition" "postgresql_required_flexible_georedundancy" {
+  name                = "postgresql_required_flexible_georedundancy"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Database for PostgreSQL Flexible required georedundancy"
