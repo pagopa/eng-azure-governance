@@ -1,0 +1,5 @@
+locals {
+  postgresql = {
+    listofallowedsku = "listofallowedsku"
+  }
+}
