@@ -24,14 +24,14 @@ data "terraform_remote_state" "policy_metrics_logs" {
   }
 }
 
-data "terraform_remote_state" "policy_tags_inherit_from_subscription" {
+data "terraform_remote_state" "policy_tags" {
   backend = "azurerm"
 
   config = {
     resource_group_name  = "common-azure-governance-rg"
     storage_account_name = "commonazuregovernancest"
     container_name       = "tfstate"
-    key                  = "policy_tags_inherit_from_subscription.terraform.tfstate"
+    key                  = "policy_tags.terraform.tfstate"
   }
 }
 
