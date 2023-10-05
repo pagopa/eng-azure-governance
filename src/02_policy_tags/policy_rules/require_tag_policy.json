@@ -1,0 +1,9 @@
+{
+  "if": {
+    "field": "[concat('tags[', parameters('tagName'), ']')]",
+    "exists": "true"
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

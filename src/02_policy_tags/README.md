@@ -18,6 +18,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azurerm_policy_definition.require_tag](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.tags_inherit_from_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
@@ -35,4 +36,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
+| <a name="output_tags_require_tag_id"></a> [tags\_require\_tag\_id](#output\_tags\_require\_tag\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
