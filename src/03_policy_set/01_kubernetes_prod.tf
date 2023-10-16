@@ -6,6 +6,7 @@ locals {
     allowed_container_registry_regex           = "^([^\\/]+\\.azurecr\\.io|ghcr\\.io\\/pagopa|ghcr\\.io\\/kedacore|mcr\\.microsoft\\.com\\/azure-storage)\\/.+$"
     disable_privileged_containers_reference_id = "disable_privileged_containers_reference_id"
     disable_privileged_containers_effect       = "Audit"
+    enable_azure_policy_addon_effect           = "Audit"
   }
 }
 
@@ -64,6 +65,17 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_sku_id
   }
+
+  # Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/0a15ec92-a229-4763-bb14-0ea34a568f8d"
+    parameter_values = jsonencode({
+      "effect" : {
+        "value" : local.kubernetes_prod.enable_azure_policy_addon_effect
+      }
+    })
+  }
+
 }
 
 output "kubernetes_prod_id" {
