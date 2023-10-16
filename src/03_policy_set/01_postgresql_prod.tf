@@ -11,12 +11,17 @@ variable "postgresql_prod" {
   })
   default = {
     listofallowedflexibleskuname = [
-      "Standard_B2ms",
-      "Standard_B4ms",
-      "Standard_B8ms",
+      "Standard_D2ds_v4",
+      "Standard_D4ds_v4",
+      "Standard_D8ds_v4",
+      "Standard_D2ds_v5",
+      "Standard_D4ds_v5",
+      "Standard_D8ds_v5",
     ]
     listofallowedskuname = [
-      "B_Gen5_1",
+      "GP_Gen5_2",
+      "GP_Gen5_4",
+      "GP_Gen5_8",
     ]
   }
   description = "List of PostgreSQL policy set parameters"
@@ -42,11 +47,11 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_required_flexible_georedundancy_id
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_required_flexible_georedundancy_id
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_allowed_flexible_sku_id
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_flexible_sku_id
     reference_id         = local.postgresql.listofallowedflexiblesku
     parameter_values     = <<VALUE
     {
@@ -58,7 +63,7 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_allowed_sku_id
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_sku_id
     reference_id         = local.postgresql.listofallowedsku
     parameter_values     = <<VALUE
     {

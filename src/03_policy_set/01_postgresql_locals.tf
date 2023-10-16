@@ -1,6 +1,6 @@
 locals {
   postgresql = {
-    listofallowedflexiblesku = "listofallowedsku"
+    listofallowedflexiblesku = "listofallowedflexiblesku"
     listofallowedsku         = "listofallowedsku"
   }
 }

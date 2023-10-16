@@ -6,13 +6,21 @@ locals {
 
 variable "postgresql_dev" {
   type = object({
-    listofallowedskuname = list(string)
+    listofallowedskuname         = list(string)
+    listofallowedflexibleskuname = list(string)
   })
   default = {
-    listofallowedskuname = [
+    listofallowedflexibleskuname = [
+      "Standard_B1ms",
+      "Standard_B2s",
       "Standard_B2ms",
-      "Standard_B4ms",
-      "Standard_B8ms",
+      # "Standard_B4ms",
+      # "Standard_B8ms",
+    ]
+    listofallowedskuname = [
+      "B_Gen5_1",
+      "B_Gen5_2",
+      "GP_Gen5_2",
     ]
   }
   description = "List of PostgreSQL policy set parameters"
@@ -33,19 +41,19 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
   METADATA
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_allowed_flexible_sku_id
-    reference_id         = local.postgresql.listofallowedsku
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_flexible_sku_id
+    reference_id         = local.postgresql.listofallowedflexiblesku
     parameter_values     = <<VALUE
     {
       "listOfAllowedSKU": {
-        "value": ${jsonencode(var.postgresql_dev.listofallowedskuname)}
+        "value": ${jsonencode(var.postgresql_dev.listofallowedflexibleskuname)}
       }
     }
     VALUE
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_allowed_sku_id
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_sku_id
     reference_id         = local.postgresql.listofallowedsku
     parameter_values     = <<VALUE
     {
