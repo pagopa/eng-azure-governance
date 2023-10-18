@@ -5,7 +5,7 @@ locals {
     allowed_container_registry_effect          = "Audit"
     allowed_container_registry_regex           = "^([^\\/]+\\.azurecr\\.io|ghcr\\.io\\/pagopa|ghcr\\.io\\/kedacore|mcr\\.microsoft\\.com\\/azure-storage)\\/.+$"
     disable_privileged_containers_reference_id = "disable_privileged_containers_reference_id"
-    disable_privileged_containers_effect       = "Audit"
+    disable_privileged_containers_effect       = "Deny"
     disable_capsysadmin = {
       reference_id = "disable_capsysadmin_reference_id"
       effect       = "Audit"
