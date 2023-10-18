@@ -7,12 +7,8 @@ locals {
     disable_privileged_containers_reference_id = "disable_privileged_containers_reference_id"
     disable_privileged_containers_effect       = "Audit"
     disable_capsysadmin = {
-      effect             = "Audit"
-      excludedNamespaces = ["kube-system", "gatekeeper-system", "azure-arc", "azure-extensions-usage-system"]
-      namespaces         = []
-      labelSelector      = {}
-      excludedContainers = []
-      excludedImages     = []
+      reference_id = "disable_capsysadmin_reference_id"
+      effect       = "Audit"
     }
   }
 }
@@ -30,7 +26,8 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
         "ASC": "true",
         "parameterScopes": {
           "${local.kubernetes_prod.allowed_container_registry_reference_id} : ${local.kubernetes_prod.allowed_container_registry_reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.disable_privileged_containers_reference_id} : ${local.kubernetes_prod.disable_privileged_containers_reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.kubernetes_prod.disable_privileged_containers_reference_id} : ${local.kubernetes_prod.disable_privileged_containers_reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -76,24 +73,10 @@ METADATA
   # Kubernetes clusters should not grant CAP_SYS_ADMIN security capabilities
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/d2e7ea85-6b44-4317-a0be-1b951587f626"
+    reference_id         = local.kubernetes_prod.disable_capsysadmin.reference_id
     parameter_values = jsonencode({
       "effect" : {
         "value" : local.kubernetes_prod.disable_capsysadmin.effect
-      },
-      "excludedNamespaces" : {
-        "value" : local.kubernetes_prod.disable_capsysadmin.excludedNamespaces
-      },
-      "namespaces" : {
-        "value" : local.kubernetes_prod.disable_capsysadmin.namespaces
-      },
-      "labelSelector" : {
-        "value" : local.kubernetes_prod.disable_capsysadmin.labelSelector
-      },
-      "excludedContainers" : {
-        "value" : local.kubernetes_prod.disable_capsysadmin.excludedContainers
-      },
-      "excludedImages" : {
-        "value" : local.kubernetes_prod.disable_capsysadmin.excludedImages
       }
     })
   }
