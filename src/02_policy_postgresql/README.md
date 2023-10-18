@@ -18,7 +18,9 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.postgres_required_flexible_georedundancy](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.postgresql_allowed_flexible_sku](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.postgresql_allowed_sku](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.postgresql_required_flexible_georedundancy](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -34,5 +36,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-| <a name="output_postgres_required_flexible_georedundancy_id"></a> [postgres\_required\_flexible\_georedundancy\_id](#output\_postgres\_required\_flexible\_georedundancy\_id) | n/a |
+| <a name="output_postgresql_allowed_flexible_sku_id"></a> [postgresql\_allowed\_flexible\_sku\_id](#output\_postgresql\_allowed\_flexible\_sku\_id) | n/a |
+| <a name="output_postgresql_allowed_sku_id"></a> [postgresql\_allowed\_sku\_id](#output\_postgresql\_allowed\_sku\_id) | n/a |
+| <a name="output_postgresql_required_flexible_georedundancy_id"></a> [postgresql\_required\_flexible\_georedundancy\_id](#output\_postgresql\_required\_flexible\_georedundancy\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
