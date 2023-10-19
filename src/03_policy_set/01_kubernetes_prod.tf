@@ -14,6 +14,10 @@ locals {
       reference_id = "disable_capsysadmin_reference_id"
       effect       = "Deny"
     }
+    enable_defender_profile = {
+      reference_id = "enable_defender_profile_reference_id"
+      effect       = "Audit"
+    }
   }
 }
 
@@ -32,7 +36,8 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
           "${local.kubernetes_prod.allowed_container_registry_reference_id} : ${local.kubernetes_prod.allowed_container_registry_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.disable_privileged_containers_reference_id} : ${local.kubernetes_prod.disable_privileged_containers_reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -93,6 +98,17 @@ METADATA
     parameter_values = jsonencode({
       "effect" : {
         "value" : local.kubernetes_prod.enable_azure_policy_addon.effect
+      }
+    })
+  }
+
+  # Azure Kubernetes Service clusters should have Defender profile enabled
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/a1840de2-8088-4ea8-b153-b4c723e9cb01"
+    reference_id         = local.kubernetes_prod.enable_defender_profile.reference_id
+    parameter_values = jsonencode({
+      "effect" : {
+        "value" : local.kubernetes_prod.enable_defender_profile.effect
       }
     })
   }
