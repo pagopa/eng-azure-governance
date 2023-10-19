@@ -4,6 +4,29 @@ locals {
   }
 }
 
+variable "postgresql_prod" {
+  type = object({
+    listofallowedflexibleskuname = list(string)
+    listofallowedskuname         = list(string)
+  })
+  default = {
+    listofallowedflexibleskuname = [
+      "Standard_D2ds_v4",
+      "Standard_D4ds_v4",
+      "Standard_D8ds_v4",
+      "Standard_D2ds_v5",
+      "Standard_D4ds_v5",
+      "Standard_D8ds_v5",
+    ]
+    listofallowedskuname = [
+      "GP_Gen5_2",
+      "GP_Gen5_4",
+      "GP_Gen5_8",
+    ]
+  }
+  description = "List of PostgreSQL policy set parameters"
+}
+
 resource "azurerm_policy_set_definition" "postgresql_prod" {
   name                = "postgresql_prod"
   policy_type         = "Custom"
@@ -16,7 +39,7 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
          "version": "v1.0.0",
          "ASC": "true"
      }
- METADATA
+  METADATA
 
   # Geo-redundant backup should be enabled for Azure Database for PostgreSQL
   policy_definition_reference {
@@ -24,7 +47,31 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgres_required_flexible_georedundancy_id
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_required_flexible_georedundancy_id
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_flexible_sku_id
+    reference_id         = local.postgresql.listofallowedflexiblesku
+    parameter_values     = <<VALUE
+    {
+      "listOfAllowedSKU": {
+        "value": ${jsonencode(var.postgresql_prod.listofallowedflexibleskuname)}
+      }
+    }
+    VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_sku_id
+    reference_id         = local.postgresql.listofallowedsku
+    parameter_values     = <<VALUE
+    {
+      "listOfAllowedSKU": {
+        "value": ${jsonencode(var.postgresql_prod.listofallowedskuname)}
+      }
+    }
+    VALUE
   }
 }
 
