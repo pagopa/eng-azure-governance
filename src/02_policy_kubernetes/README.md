@@ -20,7 +20,9 @@ No modules.
 |------|------|
 | [azurerm_policy_definition.kubernetes_allowed_kubernetes_version](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.kubernetes_allowed_sku](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.kubernetes_required_defender_profile](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.kubernetes_required_image_sha256](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.kubernetes_required_policy_addon](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.38.0/docs/data-sources/subscription) | data source |
@@ -37,6 +39,8 @@ No modules.
 |------|-------------|
 | <a name="output_kubernetes_allowed_kubernetes_version_id"></a> [kubernetes\_allowed\_kubernetes\_version\_id](#output\_kubernetes\_allowed\_kubernetes\_version\_id) | n/a |
 | <a name="output_kubernetes_allowed_sku_id"></a> [kubernetes\_allowed\_sku\_id](#output\_kubernetes\_allowed\_sku\_id) | n/a |
+| <a name="output_kubernetes_required_defender_profile_id"></a> [kubernetes\_required\_defender\_profile\_id](#output\_kubernetes\_required\_defender\_profile\_id) | n/a |
 | <a name="output_kubernetes_required_image_sha256_id"></a> [kubernetes\_required\_image\_sha256\_id](#output\_kubernetes\_required\_image\_sha256\_id) | n/a |
+| <a name="output_kubernetes_required_policy_addon_id"></a> [kubernetes\_required\_policy\_addon\_id](#output\_kubernetes\_required\_policy\_addon\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

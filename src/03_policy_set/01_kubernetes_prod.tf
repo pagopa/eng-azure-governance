@@ -12,7 +12,7 @@ locals {
     }
     enable_azure_policy_addon = {
       reference_id = "enable_azure_policy_addon_reference_id"
-      effect       = "Audit"
+      effect       = "Deny"
     }
     disable_capsysadmin = {
       reference_id = "disable_capsysadmin_reference_id"
@@ -20,7 +20,7 @@ locals {
     }
     enable_defender_profile = {
       reference_id = "enable_defender_profile_reference_id"
-      effect       = "Audit"
+      effect       = "Deny"
     }
   }
 }
@@ -97,7 +97,7 @@ METADATA
 
   # Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters
   policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/0a15ec92-a229-4763-bb14-0ea34a568f8d"
+    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_policy_addon_id
     reference_id         = local.kubernetes_prod.enable_azure_policy_addon.reference_id
     parameter_values = jsonencode({
       "effect" : {
@@ -108,7 +108,7 @@ METADATA
 
   # Azure Kubernetes Service clusters should have Defender profile enabled
   policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/a1840de2-8088-4ea8-b153-b4c723e9cb01"
+    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_defender_profile_id
     reference_id         = local.kubernetes_prod.enable_defender_profile.reference_id
     parameter_values = jsonencode({
       "effect" : {
