@@ -1,0 +1,25 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.ContainerService/managedClusters"
+      },
+      {
+        "anyOf": [
+          {
+            "field": "Microsoft.ContainerService/managedClusters/addonProfiles.azurePolicy.enabled",
+            "exists": "false"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/addonProfiles.azurePolicy.enabled",
+            "equals": "false"
+          }
+        ]
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
