@@ -55,6 +55,46 @@ METADATA
     }
     VALUE
   }
+
+  # Function app slots should use the latest TLS version
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/deb528de-8f89-4101-881c-595899253102"
+  }
+
+  # Function apps should use the latest TLS version
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f9d614c5-c173-4d56-95a7-b4437057d193"
+  }
+
+  # App Service apps should use the latest TLS version
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f0e6e85b-9b9f-4a4b-b67b-f730d42f1b0b"
+  }
+
+  # App Service app slots should use the latest TLS version
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/4ee5b817-627a-435a-8932-116193268172"
+  }
+
+  # App Service app slots should only be accessible over HTTPS
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/ae1b9a8c-dfce-4605-bd91-69213b4a26fc"
+  }
+
+  # App Service apps should only be accessible over HTTPS
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/a4af4a39-4135-47fb-b175-47fbdf85311d"
+  }
+
+  # Function apps should only be accessible over HTTPS
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/6d555dd1-86f2-4f1c-8ed7-5abae7c6cbab"
+  }
+
+  # Function app slots should only be accessible over HTTPS
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/5e5dbe3f-2702-4ffc-8b1e-0cae008a5c71"
+  }
 }
 
 output "app_service_dev_id" {
