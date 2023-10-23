@@ -1,7 +1,7 @@
 {
   "if": {
     "field": "[concat('tags[', parameters('tagName'), ']')]",
-    "exists": "true"
+    "exists": "false"
   },
   "then": {
     "effect": "[parameters('effect')]"
