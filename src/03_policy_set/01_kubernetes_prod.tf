@@ -22,6 +22,10 @@ locals {
       reference_id = "enable_defender_profile_reference_id"
       effect       = "Deny"
     }
+    enforce_apparmor_profile = {
+      reference_id = "enforce_apparmor_profile_reference_id"
+      effect       = "Audit"
+    }
   }
 }
 
@@ -42,6 +46,7 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
           "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -113,6 +118,17 @@ METADATA
     parameter_values = jsonencode({
       "effect" : {
         "value" : local.kubernetes_prod.enable_defender_profile.effect
+      }
+    })
+  }
+
+  # Kubernetes cluster containers should only use allowed AppArmor profiles
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/511f5417-5d12-434d-ab2e-816901e72a5e"
+    reference_id         = local.kubernetes_prod.enforce_apparmor_profile.reference_id
+    parameter_values = jsonencode({
+      "effect" : {
+        "value" : local.kubernetes_prod.enforce_apparmor_profile.effect
       }
     })
   }
