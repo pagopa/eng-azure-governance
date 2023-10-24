@@ -22,6 +22,10 @@ locals {
       reference_id = "enable_defender_profile_reference_id"
       effect       = "Deny"
     }
+    disable_api_credentials_automounting = {
+      reference_id = "disable_api_credentials_automounting_reference_id"
+      effect       = "Audit"
+    }
   }
 }
 
@@ -42,6 +46,7 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
           "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.kubernetes_prod.disable_api_credentials_automounting.reference_id} : ${local.kubernetes_prod.disable_api_credentials_automounting.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -113,6 +118,17 @@ METADATA
     parameter_values = jsonencode({
       "effect" : {
         "value" : local.kubernetes_prod.enable_defender_profile.effect
+      }
+    })
+  }
+
+  # Kubernetes clusters should disable automounting API credentials
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/423dd1ba-798e-40e4-9c4d-b6902674b423"
+    reference_id         = local.kubernetes_prod.disable_api_credentials_automounting.reference_id
+    parameter_values = jsonencode({
+      "effect" : {
+        "value" : local.kubernetes_prod.disable_api_credentials_automounting.effect
       }
     })
   }
