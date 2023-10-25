@@ -8,7 +8,7 @@ resource "azurerm_policy_definition" "require_tag" {
   metadata = <<METADATA
     {
         "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
+        "version": "v1.0.0"
     }
 METADATA
 

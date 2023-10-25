@@ -16,6 +16,7 @@ locals {
     }
     Owner = {
       required = true
+      allowed_values = []
     }
     Environment = {
       required = true
@@ -23,11 +24,11 @@ locals {
     }
     CreatedBy = {
       required = false
-      allowed_values = ["terraform", "aws cli", "arm", "cloud formation", "email?"]
+      allowed_values = ["terraform", "aws cli", "arm", "cloud formation"]
     }
     Backup = {
       required = false
-      allowed_values = ["Si", "No"]
+      allowed_values = ["Yes", "No"]
     }
     DisasterRecovery = {
       required = false
@@ -50,11 +51,20 @@ resource "azurerm_policy_set_definition" "tags" {
     }
 METADATA
 
+  dynamic "policy_definition_group" {
+    for_each = [for name, tag in local.tags : name ]
+
+    content {
+      name = policy_definition_group.value
+    }
+  }
+
   dynamic "policy_definition_reference" {
     for_each = [for name, tag in local.tags : name if tag.required ]
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_id
+      policy_group_names   = [policy_definition_reference.value]
       parameter_values     = <<VALUE
       {
         "tagName": {
@@ -66,20 +76,25 @@ METADATA
   }
 
   dynamic "policy_definition_reference" {
-    for_each = [for name, tag in local.tags : name => tag if tag.allowed_values]
+    for_each = [for name, tag in local.tags : name if length(tag.allowed_values) > 0 ]
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_values_id
+      policy_group_names   = [policy_definition_reference.value]
       parameter_values     = <<VALUE
       {
         "tagName": {
-          "value": "${policy_definition_reference.key}"
+          "value": "${policy_definition_reference.value}"
         },
         "tagValues": {
-          "value": ${policy_definition_reference.value.allowed_values}
+          "value": ${jsonencode(local.tags[policy_definition_reference.value].allowed_values)}
         }
       }
       VALUE
     }
   }
+}
+
+output "tags_id" {
+  value = azurerm_policy_set_definition.tags.id
 }

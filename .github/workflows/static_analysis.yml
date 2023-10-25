@@ -28,10 +28,12 @@ jobs:
             02_policy_kubernetes
             02_policy_log_analytics
             02_policy_metrics_logs
+            02_policy_postgresql
             02_policy_redis
             02_policy_resource_lock
-            02_policy_tags_inherit_from_subscription
+            02_policy_tags
             02_policy_virtual_machine
+            02_policy_virtual_machine_scale_set
             03_policy_set
             04_policy_assignments
             governance
@@ -49,5 +51,5 @@ jobs:
       - name: run_test
         run: |
           # from https://github.com/antonbabenko/pre-commit-terraform/pkgs/container/pre-commit-terraform
-          TAG="v1.77.0@sha256:64ce1e4b99d85497fe646db0724669039b079b45fa8cd503b4dc23dbdca490ae"
+          TAG="v1.83.5@sha256:fed35dd9347aa3dd3e59a870dbc4500245dae26910d84065a6f66fe61afceaa8"
           docker run -v $(pwd):/lint -w /lint ghcr.io/antonbabenko/pre-commit-terraform:$TAG run -a
