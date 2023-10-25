@@ -15,23 +15,23 @@ locals {
       ]
     }
     Owner = {
-      required = true
+      required       = true
       allowed_values = []
     }
     Environment = {
-      required = true
+      required       = true
       allowed_values = ["Dev", "Prod", "Uat"]
     }
     CreatedBy = {
-      required = false
+      required       = false
       allowed_values = ["terraform", "aws cli", "arm", "cloud formation"]
     }
     Backup = {
-      required = false
+      required       = false
       allowed_values = ["Yes", "No"]
     }
     DisasterRecovery = {
-      required = false
+      required       = false
       allowed_values = ["MultiAz", "MultiRegion"]
     }
   }
@@ -52,7 +52,7 @@ resource "azurerm_policy_set_definition" "tags" {
 METADATA
 
   dynamic "policy_definition_group" {
-    for_each = [for name, tag in local.tags : name ]
+    for_each = [for name, tag in local.tags : name]
 
     content {
       name = policy_definition_group.value
@@ -60,7 +60,7 @@ METADATA
   }
 
   dynamic "policy_definition_reference" {
-    for_each = [for name, tag in local.tags : name if tag.required ]
+    for_each = [for name, tag in local.tags : name if tag.required]
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_id
@@ -76,7 +76,7 @@ METADATA
   }
 
   dynamic "policy_definition_reference" {
-    for_each = [for name, tag in local.tags : name if length(tag.allowed_values) > 0 ]
+    for_each = [for name, tag in local.tags : name if length(tag.allowed_values) > 0]
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_values_id
