@@ -20,14 +20,17 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_event_hub.outputs.eventhub_required_network_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_event_hub.outputs.eventhub_allowed_tls_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_event_hub.outputs.eventhub_required_zone_redundant_id
+    parameter_values     = jsonencode({})
   }
 
 }

@@ -32,14 +32,17 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_versions_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_tls_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_disable_nosslport_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
@@ -60,11 +63,13 @@ METADATA
   # Azure Cache for Redis should disable public network access
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/470baccb-7e51-4549-8b1a-3e5be069f663"
+    parameter_values     = jsonencode({})
   }
 
   # Azure Cache for Redis should use private link
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/7803067c-7d34-46e3-8c79-0ca68fc4036d"
+    parameter_values     = jsonencode({})
   }
 
 }

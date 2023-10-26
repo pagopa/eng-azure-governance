@@ -20,26 +20,32 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_required_network_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_allowed_tls_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_required_backup_policy_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_forbidden_capabilities_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_required_primary_zone_redundancy_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_forbidden_secondary_zone_redundancy_id
+    parameter_values     = jsonencode({})
   }
 }
 

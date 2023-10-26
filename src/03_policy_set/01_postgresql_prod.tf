@@ -44,10 +44,12 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   # Geo-redundant backup should be enabled for Azure Database for PostgreSQL
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/48af4db5-9b8b-401c-8e74-076be876a430"
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_required_flexible_georedundancy_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {

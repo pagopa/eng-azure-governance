@@ -34,16 +34,19 @@ METADATA
   # Storage accounts should have the specified minimum TLS version (only TLS 1.2)
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/fe83a0eb-a853-422d-aac2-1bffd182c5d0"
+    parameter_values     = jsonencode({})
   }
 
   # Secure transfer to storage accounts should be enabled
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/404c3081-a854-4457-ae30-26a93ef643f9"
+    parameter_values     = jsonencode({})
   }
 
   # [Preview]: Storage account public access should be disallowed
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/4fa4b6c0-31ca-4c0d-b10d-24b96f62a751"
+    parameter_values     = jsonencode({})
   }
 
   # Storage accounts should be limited by allowed SKUs

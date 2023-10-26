@@ -20,6 +20,7 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_dns.outputs.dns_required_caa_record_id
+    parameter_values     = jsonencode({})
   }
 
 }

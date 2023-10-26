@@ -22,6 +22,7 @@ METADATA
     for_each = data.terraform_remote_state.policy_resource_lock.outputs.policy_ids
     content {
       policy_definition_id = policy_definition_reference.value
+      parameter_values     = jsonencode({})
     }
   }
 }
