@@ -1,0 +1,26 @@
+{
+  "tagName": {
+    "type": "String",
+    "metadata": {
+      "description": "The name of the tag",
+      "displayName": "Tag name"
+    }
+  },
+  "tagValues": {
+    "type": "Array",
+    "metadata": {
+      "description": "The allowedValues of the tag",
+      "displayName": "Tag values"
+    }
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}
+
