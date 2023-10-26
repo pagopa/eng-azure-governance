@@ -49,10 +49,10 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
           "${local.kubernetes_prod.disable_privileged_containers.reference_id} : ${local.kubernetes_prod.disable_privileged_containers.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.disable_api_credentials_automounting.reference_id} : ${local.kubernetes_prod.disable_api_credentials_automounting.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
+          "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
