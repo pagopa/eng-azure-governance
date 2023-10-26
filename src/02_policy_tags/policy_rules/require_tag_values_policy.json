@@ -1,0 +1,11 @@
+{
+  "if": {
+    "not": {
+      "field": "[concat('tags[', parameters('tagName'), ']')]",
+      "in": "[parameters('tagValues')]"
+    }
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
