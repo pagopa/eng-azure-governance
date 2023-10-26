@@ -3,11 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "= 3.38.0"
-    }
-    azuread = {
-      source  = "hashicorp/azuread"
-      version = "= 2.31.0"
+      version = "= 3.77.0"
     }
   }
 
@@ -15,6 +11,6 @@ terraform {
     resource_group_name  = "common-azure-governance-rg"
     storage_account_name = "commonazuregovernancest"
     container_name       = "tfstate"
-    key                  = "policy_tags_inherit_from_subscription.terraform.tfstate"
+    key                  = "policy_tags.terraform.tfstate"
   }
 }
