@@ -32,14 +32,17 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_versions_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_tls_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_disable_nosslport_id
+    parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {

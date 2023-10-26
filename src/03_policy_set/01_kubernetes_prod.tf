@@ -73,6 +73,7 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_image_sha256_id
+    parameter_values     = jsonencode({})
   }
 
   # Kubernetes cluster should not allow privileged containers
@@ -88,11 +89,13 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_kubernetes_version_id
+    parameter_values     = jsonencode({})
   }
 
   # Kubernetes cluster should have 'Standard' SKU
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_sku_id
+    parameter_values     = jsonencode({})
   }
 
   # Kubernetes clusters should not grant CAP_SYS_ADMIN security capabilities
