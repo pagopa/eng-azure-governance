@@ -30,10 +30,6 @@ locals {
       reference_id = "enforce_apparmor_profile_reference_id"
       effect       = "Audit"
     }
-    restrict_privileged_containers = {
-      reference_id = "restrict_privileged_containers_id"
-      effect       = "Audit"
-    }
   }
 }
 
@@ -57,7 +53,6 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
           "${local.kubernetes_prod.disable_api_credentials_automounting.reference_id} : ${local.kubernetes_prod.disable_api_credentials_automounting.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
           "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.restrict_privileged_containers.reference_id} : ${local.kubernetes_prod.restrict_privileged_containers.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -151,17 +146,6 @@ METADATA
     parameter_values = jsonencode({
       "effect" : {
         "value" : local.kubernetes_prod.enforce_apparmor_profile.effect
-      }
-    })
-  }
-
-  # Kubernetes cluster should not allow privileged containers
-  policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/95edb821-ddaf-4404-9732-666045e056b4"
-    reference_id         = local.kubernetes_prod.restrict_privileged_containers.reference_id
-    parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.restrict_privileged_containers.effect
       }
     })
   }
