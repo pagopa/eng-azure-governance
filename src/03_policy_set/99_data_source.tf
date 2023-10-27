@@ -6,10 +6,10 @@ data "terraform_remote_state" "policy_resource_lock" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_resource_lock.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_resource_lock.terraform.tfstate"
   }
 }
 
@@ -17,10 +17,10 @@ data "terraform_remote_state" "policy_metrics_logs" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_metrics_logs.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_metrics_logs.terraform.tfstate"
   }
 }
 
@@ -28,10 +28,10 @@ data "terraform_remote_state" "policy_tags" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_tags.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_tags.terraform.tfstate"
   }
 }
 
@@ -39,10 +39,10 @@ data "terraform_remote_state" "policy_audit_logs" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_audit_logs.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_audit_logs.terraform.tfstate"
   }
 }
 
@@ -50,10 +50,10 @@ data "terraform_remote_state" "policy_application_gateway" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_application_gateway.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_application_gateway.terraform.tfstate"
   }
 }
 
@@ -61,10 +61,10 @@ data "terraform_remote_state" "policy_event_hub" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_event_hub.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_event_hub.terraform.tfstate"
   }
 }
 
@@ -72,10 +72,10 @@ data "terraform_remote_state" "policy_dns" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_dns.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_dns.terraform.tfstate"
   }
 }
 
@@ -83,10 +83,10 @@ data "terraform_remote_state" "policy_app_service" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_app_service.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_app_service.terraform.tfstate"
   }
 }
 
@@ -94,10 +94,10 @@ data "terraform_remote_state" "policy_redis" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_redis.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_redis.terraform.tfstate"
   }
 }
 
@@ -105,10 +105,10 @@ data "terraform_remote_state" "policy_kubernetes" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_kubernetes.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_kubernetes.terraform.tfstate"
   }
 }
 
@@ -116,10 +116,10 @@ data "terraform_remote_state" "policy_cosmosdb" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_cosmosdb.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_cosmosdb.terraform.tfstate"
   }
 }
 
@@ -127,10 +127,10 @@ data "terraform_remote_state" "policy_data_sovereignty" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_data_sovereignty.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_data_sovereignty.terraform.tfstate"
   }
 }
 
@@ -138,10 +138,10 @@ data "terraform_remote_state" "policy_virtual_machine" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_virtual_machine.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_virtual_machine.terraform.tfstate"
   }
 }
 
@@ -149,10 +149,10 @@ data "terraform_remote_state" "policy_log_analytics" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_log_analytics.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_log_analytics.terraform.tfstate"
   }
 }
 
@@ -160,10 +160,10 @@ data "terraform_remote_state" "policy_virtual_machine_scale_set" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_virtual_machine_scale_set.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_virtual_machine_scale_set.terraform.tfstate"
   }
 }
 
@@ -171,9 +171,9 @@ data "terraform_remote_state" "policy_postgresql" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "common-azure-governance-rg"
-    storage_account_name = "commonazuregovernancest"
-    container_name       = "tfstate"
-    key                  = "policy_postgresql.terraform.tfstate"
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_postgresql.terraform.tfstate"
   }
 }
