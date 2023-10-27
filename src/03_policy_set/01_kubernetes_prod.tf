@@ -28,7 +28,7 @@ locals {
     }
     enforce_apparmor_profile = {
       reference_id = "enforce_apparmor_profile_reference_id"
-      effect       = "Audit"
+      effect       = "Deny"
     }
   }
 }
