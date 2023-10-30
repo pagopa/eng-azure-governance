@@ -357,3 +357,19 @@ resource "azurerm_management_group_policy_assignment" "prod_key_vault" {
     }
   METADATA
 }
+
+resource "azurerm_management_group_policy_assignment" "prod_container_apps" {
+  name                 = "${local.prod_prefix}container_apps"
+  display_name         = "PagoPA container_apps"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.container_apps_prod_id
+  management_group_id  = data.azurerm_management_group.prod.id
+
+  enforce = true
+
+  metadata = <<METADATA
+    {
+        "category": "${var.metadata_category_name}",
+        "version": "v1.0.0"
+    }
+  METADATA
+}
