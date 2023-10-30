@@ -43,12 +43,6 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_api_management.outputs.api_management_allowed_versions_id
-    reference_id         = local.api_management_dev.allowed_versions.reference_id
-    parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.api_management_dev.allowed_versions.effect
-      }
-    })
   }
 }
 
