@@ -7,7 +7,7 @@
       },
       {
         "count": {
-          "field": "Microsoft.Network/publicIPAddresses.zones[*]"
+          "field": "Microsoft.Network/publicIPAddresses/zones[*]"
         },
         "lessOrEquals": 1
       }

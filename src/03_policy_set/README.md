@@ -36,7 +36,6 @@ No modules.
 | [azurerm_policy_set_definition.log_analytics_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.log_analytics_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.network_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.networking_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.postgresql_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.postgresql_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
@@ -66,7 +65,7 @@ No modules.
 | [terraform_remote_state.policy_kubernetes](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_log_analytics](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_metrics_logs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_network](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
+| [terraform_remote_state.policy_networking](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_postgresql](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_redis](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_resource_lock](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
@@ -93,7 +92,6 @@ No modules.
 | <a name="input_audit_logs_storage_id_westeurope"></a> [audit\_logs\_storage\_id\_westeurope](#input\_audit\_logs\_storage\_id\_westeurope) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"` | no |
 | <a name="input_audit_logs_workspace_id"></a> [audit\_logs\_workspace\_id](#input\_audit\_logs\_workspace\_id) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"` | no |
 | <a name="input_metrics_logs_pci_workspace_id"></a> [metrics\_logs\_pci\_workspace\_id](#input\_metrics\_logs\_pci\_workspace\_id) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"` | no |
-| <a name="input_networking_prod"></a> [networking\_prod](#input\_networking\_prod) | List of app service policy set parameters | <pre>object({<br>    ddosplanid = string<br>  })</pre> | <pre>{<br>  "ddosplanid": "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-ddos/providers/Microsoft.Network/ddosProtectionPlans/sec-p-ddos-protection"<br>}</pre> | no |
 | <a name="input_postgresql_dev"></a> [postgresql\_dev](#input\_postgresql\_dev) | List of PostgreSQL policy set parameters | <pre>object({<br>    listofallowedskuname         = list(string)<br>    listofallowedflexibleskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedflexibleskuname": [<br>    "Standard_B1ms",<br>    "Standard_B2s",<br>    "Standard_B2ms"<br>  ],<br>  "listofallowedskuname": [<br>    "B_Gen5_1",<br>    "B_Gen5_2",<br>    "GP_Gen5_2"<br>  ]<br>}</pre> | no |
 | <a name="input_postgresql_prod"></a> [postgresql\_prod](#input\_postgresql\_prod) | List of PostgreSQL policy set parameters | <pre>object({<br>    listofallowedflexibleskuname = list(string)<br>    listofallowedskuname         = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedflexibleskuname": [<br>    "Standard_D2ds_v4",<br>    "Standard_D4ds_v4",<br>    "Standard_D8ds_v4",<br>    "Standard_D2ds_v5",<br>    "Standard_D4ds_v5",<br>    "Standard_D8ds_v5"<br>  ],<br>  "listofallowedskuname": [<br>    "GP_Gen5_2",<br>    "GP_Gen5_4",<br>    "GP_Gen5_8"<br>  ]<br>}</pre> | no |
 | <a name="input_postgresql_uat"></a> [postgresql\_uat](#input\_postgresql\_uat) | List of PostgreSQL policy set parameters | <pre>object({<br>    listofallowedskuname         = list(string)<br>    listofallowedflexibleskuname = list(string)<br>  })</pre> | <pre>{<br>  "listofallowedflexibleskuname": [<br>    "Standard_B1ms",<br>    "Standard_B2s",<br>    "Standard_B2ms"<br>  ],<br>  "listofallowedskuname": [<br>    "GP_Gen5_2"<br>  ]<br>}</pre> | no |
@@ -136,7 +134,6 @@ No modules.
 | <a name="output_log_analytics_prod_id"></a> [log\_analytics\_prod\_id](#output\_log\_analytics\_prod\_id) | n/a |
 | <a name="output_log_analytics_uat_id"></a> [log\_analytics\_uat\_id](#output\_log\_analytics\_uat\_id) | n/a |
 | <a name="output_metrics_logs_id"></a> [metrics\_logs\_id](#output\_metrics\_logs\_id) | n/a |
-| <a name="output_network_prod_id"></a> [network\_prod\_id](#output\_network\_prod\_id) | n/a |
 | <a name="output_networking_prod_id"></a> [networking\_prod\_id](#output\_networking\_prod\_id) | n/a |
 | <a name="output_postgresql_dev_id"></a> [postgresql\_dev\_id](#output\_postgresql\_dev\_id) | n/a |
 | <a name="output_postgresql_prod_id"></a> [postgresql\_prod\_id](#output\_postgresql\_prod\_id) | n/a |
