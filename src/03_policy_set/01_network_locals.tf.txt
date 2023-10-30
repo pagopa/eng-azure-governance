@@ -1,5 +1,5 @@
 locals {
-  networking = {
+  network = {
     ddosplanid = "ddosplanid"
   }
 }

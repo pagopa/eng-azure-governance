@@ -178,6 +178,17 @@ data "terraform_remote_state" "policy_postgresql" {
   }
 }
 
+data "terraform_remote_state" "policy_networking" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_networking.terraform.tfstate"
+  }
+}
+
 data "terraform_remote_state" "policy_api_management" {
   backend = "azurerm"
 
