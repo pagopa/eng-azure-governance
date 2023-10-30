@@ -1,0 +1,17 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.ApiManagement/service"
+      },
+      {
+        "field": "Microsoft.ApiManagement/service/platformVersion",
+        "notIn": "[parameters('listOfAllowedVersions')]"
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

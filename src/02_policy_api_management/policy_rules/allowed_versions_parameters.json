@@ -1,0 +1,21 @@
+{
+  "listOfAllowedVersions": {
+    "type": "Array",
+    "metadata": {
+        "description": "The list of allowed API Management versions",
+        "displayName": "Allowed API Management versions"
+    },
+    "defaultValue": [
+      "stv2"
+    ]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "defaultValue": "Audit"
+  }
+}
