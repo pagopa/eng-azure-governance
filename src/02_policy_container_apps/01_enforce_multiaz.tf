@@ -1,5 +1,5 @@
-resource "azurerm_policy_definition" "container_apps_enforce_multiaz" {
-  name                = "container_apps_enforce_multiaz"
+resource "azurerm_policy_definition" "enforce_multiaz" {
+  name                = "enforce_multiaz"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Container Apps enforce multi-az"

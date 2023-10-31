@@ -1,5 +1,0 @@
-locals {
-  network = {
-    ddosplanid = "ddosplanid"
-  }
-}

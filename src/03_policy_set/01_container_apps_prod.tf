@@ -3,7 +3,7 @@ locals {
     metadata_category_name = "pagopa_prod"
     enforce_multiaz = {
       reference_id = "enforce_multiaz_reference_id"
-      effect = "Audit"
+      effect       = "Audit"
     }
   }
 }
@@ -34,4 +34,8 @@ METADATA
       }
     })
   }
+}
+
+output "container_apps_prod_id" {
+  value = azurerm_policy_set_definition.container_apps_prod.id
 }

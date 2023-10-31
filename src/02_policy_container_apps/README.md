@@ -17,7 +17,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.container_apps_enforce_multiaz](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.enforce_multiaz](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/subscription) | data source |
@@ -32,6 +32,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_container_apps_enforce_multiaz"></a> [container\_apps\_enforce\_multiaz](#output\_container\_apps\_enforce\_multiaz) | n/a |
+| <a name="output_enforce_multiaz_id"></a> [enforce\_multiaz\_id](#output\_enforce\_multiaz\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
