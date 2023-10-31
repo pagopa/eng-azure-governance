@@ -7,7 +7,7 @@ output "policy_ids" {
   ]
 }
 
-output "postgresql_required_engine_version" {
+output "postgresql_required_engine_version_id" {
   value = azurerm_policy_definition.postgresql_required_engine_version.id
 }
 

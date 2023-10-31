@@ -66,6 +66,7 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_required_engine_version_id
+    parameter_values     = jsonencode({})
   }
 }
 
