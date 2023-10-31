@@ -7,7 +7,7 @@
       },
       {
         "field": "Microsoft.DBforPostgreSQL/servers/version",
-        "greaterOrEquals": "14"
+        "greaterOrEquals": "15"
       }
     ]
   },
