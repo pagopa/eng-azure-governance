@@ -18,9 +18,11 @@ jobs:
         env:
           FOLDERS: >
             01_custom_roles
+            02_policy_api_management
             02_policy_app_service
             02_policy_application_gateway
             02_policy_audit_logs
+            02_policy_container_apps
             02_policy_cosmosdb
             02_policy_data_sovereignty
             02_policy_dns
@@ -28,6 +30,7 @@ jobs:
             02_policy_kubernetes
             02_policy_log_analytics
             02_policy_metrics_logs
+            02_policy_networking
             02_policy_postgresql
             02_policy_redis
             02_policy_resource_lock

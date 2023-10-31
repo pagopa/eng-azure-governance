@@ -199,3 +199,14 @@ data "terraform_remote_state" "policy_api_management" {
     key                  = "eng-azure-governance.policy_api_management.terraform.tfstate"
   }
 }
+
+data "terraform_remote_state" "policy_container_apps" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "tfinforg"
+    container_name       = "terraform-state"
+    key                  = "eng-azure-governance.policy_container_apps.terraform.tfstate"
+  }
+}

@@ -31,6 +31,7 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_networking.outputs.deny_zonal_publicip_id
+    parameter_values     = jsonencode({})
   }
 
   # Virtual networks should be protected by Azure DDoS Protection Standard
