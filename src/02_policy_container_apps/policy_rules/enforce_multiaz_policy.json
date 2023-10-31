@@ -1,0 +1,17 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.App/managedEnvironments"
+      },
+      {
+        "field": "Microsoft.App/managedEnvironments/zoneRedundant",
+        "equals": false
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

@@ -358,10 +358,10 @@ resource "azurerm_management_group_policy_assignment" "prod_key_vault" {
   METADATA
 }
 
-resource "azurerm_management_group_policy_assignment" "prod_network" {
-  name                 = "${local.prod_prefix}network"
-  display_name         = "PagoPA network"
-  policy_definition_id = data.terraform_remote_state.policy_set.outputs.network_prod_id
+resource "azurerm_management_group_policy_assignment" "prod_container_apps" {
+  name                 = "${local.prod_prefix}containerapps"
+  display_name         = "PagoPA Container Apps"
+  policy_definition_id = data.terraform_remote_state.policy_set.outputs.container_apps_prod_id
   management_group_id  = data.azurerm_management_group.prod.id
 
   enforce = true
@@ -373,4 +373,3 @@ resource "azurerm_management_group_policy_assignment" "prod_network" {
     }
   METADATA
 }
-
