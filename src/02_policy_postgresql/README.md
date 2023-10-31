@@ -38,6 +38,6 @@ No modules.
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 | <a name="output_postgresql_allowed_flexible_sku_id"></a> [postgresql\_allowed\_flexible\_sku\_id](#output\_postgresql\_allowed\_flexible\_sku\_id) | n/a |
 | <a name="output_postgresql_allowed_sku_id"></a> [postgresql\_allowed\_sku\_id](#output\_postgresql\_allowed\_sku\_id) | n/a |
-| <a name="output_postgresql_required_engine_version"></a> [postgresql\_required\_engine\_version](#output\_postgresql\_required\_engine\_version) | n/a |
+| <a name="output_postgresql_required_engine_version_id"></a> [postgresql\_required\_engine\_version\_id](#output\_postgresql\_required\_engine\_version\_id) | n/a |
 | <a name="output_postgresql_required_flexible_georedundancy_id"></a> [postgresql\_required\_flexible\_georedundancy\_id](#output\_postgresql\_required\_flexible\_georedundancy\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
