@@ -1,0 +1,19 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.Network/publicIPAddresses"
+      },
+      {
+        "count": {
+          "field": "Microsoft.Network/publicIPAddresses/zones[*]"
+        },
+        "lessOrEquals": 1
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

@@ -1,6 +1,9 @@
 locals {
   api_management_dev = {
     metadata_category_name = "pagopa_dev"
+    allowed_versions = {
+      effect = "Audit"
+    }
   }
 }
 
@@ -39,6 +42,10 @@ METADATA
       }
     }
     VALUE
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_api_management.outputs.api_management_allowed_versions_id
   }
 }
 

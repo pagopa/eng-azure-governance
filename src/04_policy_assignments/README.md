@@ -41,6 +41,7 @@ No modules.
 | [azurerm_management_group_policy_assignment.prod_key_vault](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
+| [azurerm_management_group_policy_assignment.prod_network](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_networking](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_pci_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.prod_pci_metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
