@@ -9,6 +9,10 @@ locals {
       reference_id = "ddos_protection_reference_id"
       plan_id      = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-ddos/providers/Microsoft.Network/ddosProtectionPlans/sec-p-ddos-protection"
     }
+    vpngw_aad_authentication = {
+      reference_id = "vpngw_aad_authentication_reference_id"
+      effect       = "Audit"
+    }
   }
 }
 
@@ -25,6 +29,7 @@ resource "azurerm_policy_set_definition" "networking_prod" {
         "ASC": "true",
         "parameterScopes": {
           "${local.networking_prod.ddos_protection.reference_id} : ${local.networking_prod.ddos_protection.reference_id}": "${data.azurerm_management_group.pagopa.id}"
+          "${local.networking_prod.vpngw_aad_authentication.reference_id} : ${local.networking_prod.vpngw_aad_authentication.reference_id}": "${data.azurerm_management_group.pagopa.id}"
         }
     }
 METADATA
@@ -42,6 +47,19 @@ METADATA
     {
       "ddosPlan": {
         "value": ${jsonencode(local.networking_prod.ddos_protection.plan_id)}
+      }
+    }
+    VALUE
+  }
+
+  # VPN gateways should use only Azure Active Directory (Azure AD) authentication for point-to-site users
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/21a6bc25-125e-4d13-b82d-2e19b7208ab7"
+    reference_id         = local.networking_prod.vpngw_aad_authentication.reference_id
+    parameter_values     = <<VALUE
+    {
+      "effect": {
+        "value": ${local.networking_prod.vpngw_aad_authentication.effect}
       }
     }
     VALUE
