@@ -11,7 +11,7 @@ locals {
     }
     vpngw_aad_authentication = {
       reference_id = "vpngw_aad_authentication_reference_id"
-      effect       = "Audit"
+      effect       = "Deny"
     }
   }
 }
