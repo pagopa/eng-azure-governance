@@ -10,6 +10,10 @@ locals {
       reference_id = "disable_privileged_containers_reference_id"
       effect       = "Deny"
     }
+    disable_privilege_escalation = {
+      reference_id = "disable_privilege_escalation_reference_id"
+      effect       = "Audit"
+    }
     enable_azure_policy_addon = {
       reference_id = "enable_azure_policy_addon_reference_id"
       effect       = "Deny"
@@ -39,34 +43,33 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
   display_name        = "PagoPA Kubernetes PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${local.kubernetes_prod.metadata_category_name}",
-        "version": "v1.0.0",
-        "ASC": "true",
-        "parameterScopes": {
-          "${local.kubernetes_prod.allowed_container_registry.reference_id} : ${local.kubernetes_prod.allowed_container_registry.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.disable_privileged_containers.reference_id} : ${local.kubernetes_prod.disable_privileged_containers.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.disable_api_credentials_automounting.reference_id} : ${local.kubernetes_prod.disable_api_credentials_automounting.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}",
-          "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}": "${data.azurerm_management_group.pagopa.id}"
-        }
+  metadata = jsonencode({
+    category = local.kubernetes_prod.metadata_category_name
+    version = "v1.0.0"
+    ASC = "true"
+    parameterScopes = {
+      "${local.kubernetes_prod.allowed_container_registry.reference_id} : ${local.kubernetes_prod.allowed_container_registry.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.disable_privileged_containers.reference_id} : ${local.kubernetes_prod.disable_privileged_containers.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.disable_privilege_escalation.reference_id} : ${local.kubernetes_prod.disable_privilege_escalation.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.disable_api_credentials_automounting.reference_id} : ${local.kubernetes_prod.disable_api_credentials_automounting.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}" = data.azurerm_management_group.pagopa.id
+      "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}" = data.azurerm_management_group.pagopa.id
     }
-METADATA
+  })
 
   # Kubernetes cluster containers should only use allowed images
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/febd0533-8e55-448f-b837-bd0e06f16469"
     reference_id         = local.kubernetes_prod.allowed_container_registry.reference_id
     parameter_values = jsonencode({
-      "allowedContainerImagesRegex" : {
-        "value" : local.kubernetes_prod.allowed_container_registry.regex
+      allowedContainerImagesRegex = {
+        value = local.kubernetes_prod.allowed_container_registry.regex
       },
-      "effect" : {
-        "value" : local.kubernetes_prod.allowed_container_registry.effect
+      effect = {
+        value = local.kubernetes_prod.allowed_container_registry.effect
       }
     })
   }
@@ -81,8 +84,19 @@ METADATA
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/95edb821-ddaf-4404-9732-666045e056b4"
     reference_id         = local.kubernetes_prod.disable_privileged_containers.reference_id
     parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.disable_privileged_containers.effect
+      effect = {
+        value = local.kubernetes_prod.disable_privileged_containers.effect
+      }
+    })
+  }
+
+  # Kubernetes clusters should not allow container privilege escalation
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/1c6e92c9-99f0-4e55-9cf2-0c234dc48f99"
+    reference_id         = local.kubernetes_prod.disable_privilege_escalation.reference_id
+    parameter_values = jsonencode({
+      effect = {
+        value = local.kubernetes_prod.disable_privilege_escalation.effect
       }
     })
   }
@@ -103,8 +117,8 @@ METADATA
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/d2e7ea85-6b44-4317-a0be-1b951587f626"
     reference_id         = local.kubernetes_prod.disable_capsysadmin.reference_id
     parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.disable_capsysadmin.effect
+      effect = {
+        value = local.kubernetes_prod.disable_capsysadmin.effect
       }
     })
   }
@@ -114,8 +128,8 @@ METADATA
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_policy_addon_id
     reference_id         = local.kubernetes_prod.enable_azure_policy_addon.reference_id
     parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.enable_azure_policy_addon.effect
+      effect = {
+        value = local.kubernetes_prod.enable_azure_policy_addon.effect
       }
     })
   }
@@ -125,8 +139,8 @@ METADATA
     policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_defender_profile_id
     reference_id         = local.kubernetes_prod.enable_defender_profile.reference_id
     parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.enable_defender_profile.effect
+      effect = {
+        value = local.kubernetes_prod.enable_defender_profile.effect
       }
     })
   }
@@ -136,8 +150,8 @@ METADATA
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/423dd1ba-798e-40e4-9c4d-b6902674b423"
     reference_id         = local.kubernetes_prod.disable_api_credentials_automounting.reference_id
     parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.disable_api_credentials_automounting.effect
+      effect = {
+        value = local.kubernetes_prod.disable_api_credentials_automounting.effect
       }
     })
   }
@@ -147,8 +161,8 @@ METADATA
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/511f5417-5d12-434d-ab2e-816901e72a5e"
     reference_id         = local.kubernetes_prod.enforce_apparmor_profile.reference_id
     parameter_values = jsonencode({
-      "effect" : {
-        "value" : local.kubernetes_prod.enforce_apparmor_profile.effect
+      effect = {
+        value = local.kubernetes_prod.enforce_apparmor_profile.effect
       }
     })
   }
