@@ -45,6 +45,12 @@ METADATA
     policy_definition_id = data.terraform_remote_state.policy_api_management.outputs.api_management_allowed_versions_id
     parameter_values     = jsonencode({})
   }
+
+  # Require Internal VPN
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/eb969283-cfab-4a68-a8a8-2b1fdd5feef8"
+    parameter_values     = jsonencode({})
+  }
 }
 
 output "api_management_uat_id" {
