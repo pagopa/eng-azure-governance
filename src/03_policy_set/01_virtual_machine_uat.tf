@@ -21,7 +21,7 @@ variable "virtual_machine_uat" {
 resource "azurerm_policy_set_definition" "virtual_machine_uat" {
   name                = "virtual_machine_uat"
   policy_type         = "Custom"
-  display_name        = "PagoPA Virtual Machine uat"
+  display_name        = "PagoPA Virtual Machine UAT"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = <<METADATA

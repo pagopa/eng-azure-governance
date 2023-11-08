@@ -10,7 +10,7 @@ resource "azurerm_policy_definition" "virtual_machine_scale_set_allowed_sku" {
         "category": "${var.metadata_category_name}",
         "version": "v1.0.0",
         "securityCenter": {
-		      "RemediationDescription": "Use Virtual Machine allowed SKU",
+		      "RemediationDescription": "Use Virtual Machine Scale Set allowed SKU",
 		      "Severity": "High"
         }
     }
