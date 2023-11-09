@@ -45,18 +45,11 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
 
   metadata = jsonencode({
     category = local.kubernetes_prod.metadata_category_name
-    version = "v1.0.0"
-    ASC = "true"
+    version  = "v1.0.0"
+    ASC      = "true"
     parameterScopes = {
-      "${local.kubernetes_prod.allowed_container_registry.reference_id} : ${local.kubernetes_prod.allowed_container_registry.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.disable_privileged_containers.reference_id} : ${local.kubernetes_prod.disable_privileged_containers.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.disable_privilege_escalation.reference_id} : ${local.kubernetes_prod.disable_privilege_escalation.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.disable_capsysadmin.reference_id} : ${local.kubernetes_prod.disable_capsysadmin.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.enable_azure_policy_addon.reference_id} : ${local.kubernetes_prod.enable_azure_policy_addon.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.disable_api_credentials_automounting.reference_id} : ${local.kubernetes_prod.disable_api_credentials_automounting.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.enable_defender_profile.reference_id} : ${local.kubernetes_prod.enable_defender_profile.reference_id}" = data.azurerm_management_group.pagopa.id
-      "${local.kubernetes_prod.enforce_apparmor_profile.reference_id} : ${local.kubernetes_prod.enforce_apparmor_profile.reference_id}" = data.azurerm_management_group.pagopa.id
+      for _, param in local.kubernetes_prod :
+      "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id if contains(param, "reference_id")
     }
   })
 
