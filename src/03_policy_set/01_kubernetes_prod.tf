@@ -1,6 +1,5 @@
 locals {
   kubernetes_prod = {
-    metadata_category_name = "pagopa_prod"
     allowed_container_registry = {
       reference_id = "allowed_container_registry"
       effect       = "Audit"
@@ -44,12 +43,11 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
-    category = local.kubernetes_prod.metadata_category_name
+    category = "pagopa_prod"
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {
-      for _, param in local.kubernetes_prod :
-      "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id if contains(param, "reference_id")
+      for _, param in local.kubernetes_prod : "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id
     }
   })
 
