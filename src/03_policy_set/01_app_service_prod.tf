@@ -58,6 +58,11 @@ METADATA
     VALUE
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_disable_ftp_id
+    parameter_values     = jsonencode({})
+  }
+
   # Function app slots should use the latest TLS version
   policy_definition_reference {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/deb528de-8f89-4101-881c-595899253102"
