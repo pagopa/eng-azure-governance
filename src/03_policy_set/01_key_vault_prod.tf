@@ -1,9 +1,3 @@
-locals {
-  key_vault_prod = {
-    metadata_category_name = "pagopa_prod"
-  }
-}
-
 resource "azurerm_policy_set_definition" "key_vault_prod" {
   name                = "key_vault_prod"
   policy_type         = "Custom"
@@ -12,7 +6,7 @@ resource "azurerm_policy_set_definition" "key_vault_prod" {
 
   metadata = <<METADATA
     {
-        "category": "${local.key_vault_prod.metadata_category_name}",
+        "category": "pagopa_prod",
         "version": "v1.0.0",
         "ASC": "true"
     }

@@ -1,9 +1,3 @@
-locals {
-  app_service_dev = {
-    metadata_category_name = "pagopa_dev"
-  }
-}
-
 variable "app_service_dev" {
   type = object({
     listofallowedsku  = list(string)
@@ -24,7 +18,7 @@ resource "azurerm_policy_set_definition" "app_service_dev" {
 
   metadata = <<METADATA
     {
-        "category": "${local.app_service_dev.metadata_category_name}",
+        "category": "pagopa_dev",
         "version": "v1.0.0",
         "ASC": "true",
         "parameterScopes": {

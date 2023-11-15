@@ -1,9 +1,3 @@
-locals {
-  postgresql_dev = {
-    metadata_category_name = "pagopa_dev"
-  }
-}
-
 variable "postgresql_dev" {
   type = object({
     listofallowedskuname         = list(string)
@@ -34,7 +28,7 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
 
   metadata = <<METADATA
      {
-         "category": "${local.postgresql_dev.metadata_category_name}",
+         "category": "pagopa_dev",
          "version": "v1.0.0",
          "ASC": "true"
      }

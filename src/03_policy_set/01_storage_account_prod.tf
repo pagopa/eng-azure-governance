@@ -1,6 +1,5 @@
 locals {
   storage_account_prod = {
-    metadata_category_name = "pagopa_prod"
     allowed_sku = {
       reference_id = "allowed_sku_reference_id"
       effect       = "Audit"
@@ -27,7 +26,7 @@ resource "azurerm_policy_set_definition" "storage_account_prod" {
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
-    category = local.storage_account_prod.metadata_category_name
+    category = "pagopa_prod"
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {

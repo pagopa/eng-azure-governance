@@ -1,9 +1,3 @@
-locals {
-  api_management_prod = {
-    metadata_category_name = "pagopa_prod"
-  }
-}
-
 variable "api_management_prod" {
   type = object({
     listofallowedskusname = list(string)
@@ -21,7 +15,7 @@ resource "azurerm_policy_set_definition" "api_management_prod" {
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
-    category = local.api_management_prod.metadata_category_name
+    category = "pagopa_prod"
     version  = "v1.0.0"
     ASC      = "true"
   })

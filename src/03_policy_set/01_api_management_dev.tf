@@ -1,12 +1,3 @@
-locals {
-  api_management_dev = {
-    metadata_category_name = "pagopa_dev"
-    allowed_versions = {
-      effect = "Audit"
-    }
-  }
-}
-
 variable "api_management_dev" {
   type = object({
     listofallowedskusname = list(string)
@@ -24,7 +15,7 @@ resource "azurerm_policy_set_definition" "api_management_dev" {
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
-    category = local.api_management_dev.metadata_category_name
+    category = "pagopa_dev"
     version  = "v1.0.0"
     ASC      = "true"
   })

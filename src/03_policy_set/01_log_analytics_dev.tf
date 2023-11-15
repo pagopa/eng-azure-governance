@@ -1,9 +1,3 @@
-locals {
-  log_analytics_dev = {
-    metadata_category_name = "pagopa_dev"
-  }
-}
-
 resource "azurerm_policy_set_definition" "log_analytics_dev" {
   name                = "log_analytics_dev"
   policy_type         = "Custom"
@@ -12,7 +6,7 @@ resource "azurerm_policy_set_definition" "log_analytics_dev" {
 
   metadata = <<METADATA
     {
-      "category": "${local.log_analytics_dev.metadata_category_name}",
+      "category": "pagopa_dev",
       "version": "v1.0.0",
       "ASC": "true"
     }

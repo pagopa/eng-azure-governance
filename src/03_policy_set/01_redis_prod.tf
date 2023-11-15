@@ -1,9 +1,3 @@
-locals {
-  redis_prod = {
-    metadata_category_name = "pagopa_prod"
-  }
-}
-
 variable "redis_prod" {
   type = object({
     listofallowedskuname     = list(string)
@@ -24,7 +18,7 @@ resource "azurerm_policy_set_definition" "redis_prod" {
 
   metadata = <<METADATA
     {
-        "category": "${local.redis_prod.metadata_category_name}",
+        "category": "pagopa_prod",
         "version": "v1.0.0",
         "ASC": "true"
     }

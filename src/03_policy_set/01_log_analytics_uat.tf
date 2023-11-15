@@ -1,9 +1,3 @@
-locals {
-  log_analytics_uat = {
-    metadata_category_name = "pagopa_uat"
-  }
-}
-
 resource "azurerm_policy_set_definition" "log_analytics_uat" {
   name                = "log_analytics_uat"
   policy_type         = "Custom"
@@ -12,7 +6,7 @@ resource "azurerm_policy_set_definition" "log_analytics_uat" {
 
   metadata = <<METADATA
     {
-      "category": "${local.log_analytics_uat.metadata_category_name}",
+      "category": "pagopa_uat",
       "version": "v1.0.0",
       "ASC": "true"
     }

@@ -1,9 +1,3 @@
-locals {
-  virtual_machine_scale_set_dev = {
-    metadata_category_name = "pagopa_dev"
-  }
-}
-
 variable "virtual_machine_scale_set_dev" {
   type = object({
     listofallowedskuname = list(string)
@@ -26,7 +20,7 @@ resource "azurerm_policy_set_definition" "virtual_machine_scale_set_dev" {
 
   metadata = <<METADATA
     {
-        "category": "${local.virtual_machine_scale_set_dev.metadata_category_name}",
+        "category": "pagopa_dev",
         "version": "v1.0.0",
         "ASC": "true"
     }

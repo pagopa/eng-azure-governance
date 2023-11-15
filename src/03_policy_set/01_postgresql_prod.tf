@@ -1,9 +1,3 @@
-locals {
-  postgresql_prod = {
-    metadata_category_name = "pagopa_prod"
-  }
-}
-
 variable "postgresql_prod" {
   type = object({
     listofallowedflexibleskuname = list(string)
@@ -35,7 +29,7 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
 
   metadata = <<METADATA
      {
-         "category": "${local.postgresql_prod.metadata_category_name}",
+         "category": "pagopa_prod",
          "version": "v1.0.0",
          "ASC": "true"
      }

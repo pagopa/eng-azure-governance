@@ -1,9 +1,3 @@
-locals {
-  virtual_machine_uat = {
-    metadata_category_name = "pagopa_uat"
-  }
-}
-
 variable "virtual_machine_uat" {
   type = object({
     listofallowedskuname = list(string)
@@ -26,7 +20,7 @@ resource "azurerm_policy_set_definition" "virtual_machine_uat" {
 
   metadata = <<METADATA
     {
-        "category": "${local.virtual_machine_uat.metadata_category_name}",
+        "category": "pagopa_uat",
         "version": "v1.0.0",
         "ASC": "true"
     }
