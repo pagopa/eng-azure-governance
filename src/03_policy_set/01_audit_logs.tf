@@ -12,7 +12,13 @@ variable "audit_logs_storage_id_westeurope" {
 
 variable "audit_logs_storage_id_northeurope" {
   type        = string
-  default     = "novalue"
+  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
+  description = "description"
+}
+
+variable "audit_logs_storage_id_italynorth" {
+  type        = string
+  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
   description = "description"
 }
 
