@@ -26,8 +26,7 @@ resource "azurerm_policy_set_definition" "networking_prod" {
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {
-      "${local.networking_prod.ddos_protection.reference_id} : ${local.networking_prod.ddos_protection.reference_id}"                   = data.azurerm_management_group.pagopa.id
-      "${local.networking_prod.vpngw_aad_authentication.reference_id} : ${local.networking_prod.vpngw_aad_authentication.reference_id}" = data.azurerm_management_group.pagopa.id
+      for _, param in local.networking_prod : "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id
     }
   })
 

@@ -22,8 +22,7 @@ resource "azurerm_policy_set_definition" "container_apps_prod" {
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {
-      "${local.container_apps_prod.enforce_multiaz.reference_id} : ${local.container_apps_prod.enforce_multiaz.reference_id}"                 = data.azurerm_management_group.pagopa.id
-      "${local.container_apps_prod.enforce_private_subnets.reference_id} : ${local.container_apps_prod.enforce_private_subnets.reference_id}" = data.azurerm_management_group.pagopa.id
+      for _, param in local.container_apps_prod : "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id
     }
   })
 
