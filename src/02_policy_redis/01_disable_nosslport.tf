@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "redis_disable_nosslport" {
   display_name        = "PagoPA Redis disable no SSL port"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Disable no SSL Redis port",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Disable no SSL Redis port"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/disable_nosslport_parameters.json")
 

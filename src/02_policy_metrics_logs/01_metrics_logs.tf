@@ -27,38 +27,34 @@ resource "azurerm_policy_definition" "metrics_logs" {
   display_name        = "PagoPA Add Diagnostic Settings for metrics logs to ${replace(replace(each.key, "/", "_"), "Microsoft.", "")}"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Add Diagnostic Settings for metrics logs to ${each.key}",
-		      "Severity": "Low"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Add Diagnostic Settings for metrics logs to ${each.key}"
+      Severity               = "Low"
     }
-METADATA
+  })
 
-  parameters = <<PARAMETERS
-  {
-    "diagnosticsSettingName": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Setting name",
-        "description": "Name of the diagnostic settings."
-      },
-      "defaultValue": "MetricsLogs_LogAnalytics"
-    },
-    "logAnalytics": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Log Analytics workspace",
-        "description": "Specify the Log Analytics workspace the Key Vault should be connected to.",
-        "strongType": "omsWorkspace",
-        "assignPermissions": true
+  parameters = jsonencode({
+    diagnosticsSettingName = {
+      type = "String"
+      metadata = {
+        displayName = "Setting name"
+        description = "Name of the diagnostic settings."
+      }
+      defaultValue = "MetricsLogs_LogAnalytics"
+    }
+    logAnalytics = {
+      type = "String"
+      metadata = {
+        displayName       = "Log Analytics workspace"
+        description       = "Specify the Log Analytics workspace the Key Vault should be connected to."
+        strongType        = "omsWorkspace"
+        assignPermissions = "True"
       }
     }
-  }
-PARAMETERS
+  })
 
   policy_rule = templatefile("./policy_rules/metrics_logs.json", {
     metrics_logs_types                          = each.key,
