@@ -14,12 +14,10 @@ resource "azurerm_management_group_policy_assignment" "pagopa_data_sovereignty_e
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "pagopa_dns" {
@@ -30,12 +28,10 @@ resource "azurerm_management_group_policy_assignment" "pagopa_dns" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "pagopa_tags" {
@@ -46,12 +42,10 @@ resource "azurerm_management_group_policy_assignment" "pagopa_tags" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "pagopa_azure_security_benchmark" {

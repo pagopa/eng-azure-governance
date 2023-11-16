@@ -41,32 +41,28 @@ resource "azurerm_management_group_policy_assignment" "uat_pci_audit_logs" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 
-  parameters = <<PARAMETERS
-    {
-        "logAnalyticsId": {
-            "value": "${local.uat_pci_audit_logs_pci_workspace_id}"
-        },
-        "storageAccountPrimaryRegionId": {
-            "value": "${local.uat_pci_audit_logs_pci_storage_primary_region.storage_id}"
-        },
-        "storageAccountPrimaryRegionLocation": {
-            "value": "${local.uat_pci_audit_logs_pci_storage_primary_region.location}"
-        },
-        "storageAccountSecondaryRegionId": {
-            "value": "${local.uat_pci_audit_logs_pci_storage_secondary_region.storage_id}"
-        },
-        "storageAccountSecondaryRegionLocation": {
-            "value": "${local.uat_pci_audit_logs_pci_storage_secondary_region.location}"
-        }
+  parameters = jsonencode({
+    logAnalyticsId = {
+      value = local.uat_pci_audit_logs_pci_workspace_id
     }
-  PARAMETERS
+    storageAccountPrimaryRegionId = {
+      value = local.uat_pci_audit_logs_pci_storage_primary_region.storage_id
+    }
+    storageAccountPrimaryRegionLocation = {
+      value = local.uat_pci_audit_logs_pci_storage_primary_region.location
+    }
+    storageAccountSecondaryRegionId = {
+      value = local.uat_pci_audit_logs_pci_storage_secondary_region.storage_id
+    }
+    storageAccountSecondaryRegionLocation = {
+      value = local.uat_pci_audit_logs_pci_storage_secondary_region.location
+    }
+  })
 }
 
 resource "azurerm_role_assignment" "uat_pci_audit_logs_monitoring_contributor" {
@@ -99,20 +95,16 @@ resource "azurerm_management_group_policy_assignment" "uat_pci_metrics_logs" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 
-  parameters = <<PARAMETERS
-    {
-        "logAnalyticsId": {
-            "value": "${local.uat_pci_metrics_logs_pci_workspace_id}"
-        }
+  parameters = jsonencode({
+    logAnalyticsId = {
+      value = local.uat_pci_metrics_logs_pci_workspace_id
     }
-  PARAMETERS
+  })
 }
 
 resource "azurerm_role_assignment" "uat_pci_metrics_logs_monitoring_contributor" {

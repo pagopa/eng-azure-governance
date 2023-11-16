@@ -41,12 +41,10 @@ resource "azurerm_management_group_policy_assignment" "prod_pci_audit_logs" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_role_assignment" "prod_pci_audit_logs_monitoring_contributor" {
@@ -79,20 +77,16 @@ resource "azurerm_management_group_policy_assignment" "prod_pci_metrics_logs" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 
-  parameters = <<PARAMETERS
-    {
-        "logAnalyticsId": {
-            "value": "${local.prod_pci_metrics_logs_pci_workspace_id}"
-        }
+  parameters = jsonencode({
+    logAnalyticsId = {
+      value = local.prod_pci_metrics_logs_pci_workspace_id
     }
-  PARAMETERS
+  })
 }
 
 resource "azurerm_role_assignment" "prod_pci_metrics_logs_monitoring_contributor" {
@@ -115,10 +109,8 @@ resource "azurerm_management_group_policy_assignment" "prod_pci_storage_account"
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
