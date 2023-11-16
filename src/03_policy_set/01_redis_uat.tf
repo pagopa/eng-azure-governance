@@ -16,13 +16,11 @@ resource "azurerm_policy_set_definition" "redis_uat" {
   display_name        = "PagoPA Redis UAT"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "pagopa_uat",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = "pagopa_uat"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_versions_id
@@ -42,16 +40,14 @@ METADATA
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_sku_id
     reference_id         = local.redis.listofallowedsku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSkuName": {
-        "value": ${jsonencode(var.redis_uat.listofallowedskuname)}
-      },
-      "listOfAllowedSkuCapacity": {
-        "value": ${jsonencode(var.redis_uat.listofallowedskucapacity)}
+    parameter_values = jsonencode({
+      listOfAllowedSkuName = {
+        value = var.redis_uat.listofallowedskuname
       }
-    }
-    VALUE
+      listOfAllowedSkuCapacity = {
+        value = var.redis_uat.listofallowedskucapacity
+      }
+    })
   }
 
 }

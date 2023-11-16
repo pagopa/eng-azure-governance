@@ -24,36 +24,30 @@ resource "azurerm_policy_set_definition" "postgresql_uat" {
   display_name        = "PagoPA Database for PostgreSQL UAT"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-     {
-         "category": "pagopa_uat",
-         "version": "v1.0.0",
-         "ASC": "true"
-     }
-  METADATA
+  metadata = jsonencode({
+    category = "pagopa_uat"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_flexible_sku_id
     reference_id         = local.postgresql.listofallowedflexiblesku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSKU": {
-        "value": ${jsonencode(var.postgresql_uat.listofallowedflexibleskuname)}
+    parameter_values = jsonencode({
+      listOfAllowedSKU = {
+        value = var.postgresql_uat.listofallowedflexibleskuname
       }
-    }
-    VALUE
+    })
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_sku_id
     reference_id         = local.postgresql.listofallowedsku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSKU": {
-        "value": ${jsonencode(var.postgresql_uat.listofallowedskuname)}
+    parameter_values = jsonencode({
+      listOfAllowedSKU = {
+        value = var.postgresql_uat.listofallowedskuname
       }
-    }
-    VALUE
+    })
   }
 
   policy_definition_reference {

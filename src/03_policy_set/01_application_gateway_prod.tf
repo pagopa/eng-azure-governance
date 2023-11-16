@@ -4,13 +4,11 @@ resource "azurerm_policy_set_definition" "application_gateway_prod" {
   display_name        = "PagoPA Application Gateway PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "pagopa_prod",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = "pagopa_prod"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_sku_id
