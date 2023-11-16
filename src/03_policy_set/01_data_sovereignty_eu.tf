@@ -12,9 +12,12 @@ variable "allowed_locations_resource_groups" {
 
 locals {
   data_sovereignty_eu = {
-    metadata_category_name                                           = "pagopa_global"
-    allowed_locations_policy_definition_reference_id                 = "Allowed locations"
-    allowed_locations_resource_groups_policy_definition_reference_id = "Allowed locations for resource groups"
+    allowed_locations_policy_definition = {
+      reference_id = "Allowed locations"
+    }
+    allowed_locations_resource_groups_policy_definition = {
+      reference_id = "Allowed locations for resource groups"
+    }
   }
 }
 
@@ -25,7 +28,7 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
-    category = local.data_sovereignty_eu.metadata_category_name
+    category = "pagopa_global"
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {
@@ -36,7 +39,7 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
   # Allowed locations
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_data_sovereignty.outputs.allowed_locations_id
-    reference_id         = local.data_sovereignty_eu.allowed_locations_policy_definition_reference_id
+    reference_id         = local.data_sovereignty_eu.allowed_locations_policy_definition.reference_id
     parameter_values = jsonencode({
       listOfAllowedLocations = {
         value = var.allowed_locations
@@ -47,7 +50,7 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
   # Allowed locations for resource groups
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_data_sovereignty.outputs.allowed_locations_resource_group_id
-    reference_id         = local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition_reference_id
+    reference_id         = local.data_sovereignty_eu.allowed_locations_resource_groups_policy_definition.reference_id
     parameter_values = jsonencode({
       listOfAllowedLocations = {
         value = var.allowed_locations_resource_groups

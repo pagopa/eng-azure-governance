@@ -37,7 +37,7 @@ resource "azurerm_policy_set_definition" "app_service_uat" {
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_allowed_sku_id
-    reference_id         = local.app_service.listofallowedsku
+    reference_id         = local.app_service.listofallowedsku.reference_id
     parameter_values = jsonencode({
       listOfAllowedSku = {
         value = var.app_service_uat.listofallowedsku

@@ -1,5 +1,7 @@
 locals {
   app_service = {
-    listofallowedsku = "listofallowedsku"
+    listofallowedsku = {
+      reference_id = "listofallowedsku"
+    }
   }
 }
