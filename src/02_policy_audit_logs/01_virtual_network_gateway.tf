@@ -29,7 +29,7 @@ resource "azurerm_policy_definition" "audit_logs_virtual_network_gateway_log_ana
         displayName       = "Log Analytics workspace"
         description       = "Specify the Log Analytics workspace the Key Vault should be connected to."
         strongType        = "omsWorkspace"
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
   })
@@ -71,7 +71,7 @@ resource "azurerm_policy_definition" "audit_logs_virtual_network_gateway_storage
       metadata = {
         displayName       = "Storage Account"
         description       = "Specify the Storage Account the Key Vault should be connected to."
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
     location = {
@@ -79,7 +79,7 @@ resource "azurerm_policy_definition" "audit_logs_virtual_network_gateway_storage
       metadata = {
         displayName       = "Resource location"
         description       = "Specify the resource location."
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
   })

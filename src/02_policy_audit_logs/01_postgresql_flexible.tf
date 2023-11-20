@@ -29,7 +29,7 @@ resource "azurerm_policy_definition" "audit_logs_postgresql_flexible_log_analyti
         displayName       = "Log Analytics workspace"
         description       = "Specify the Log Analytics workspace the Key Vault should be connected to."
         strongType        = "omsWorkspace"
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
   })
@@ -71,7 +71,7 @@ resource "azurerm_policy_definition" "audit_logs_postgresql_flexible_storage_acc
       metadata = {
         displayName       = "Storage Account"
         description       = "Specify the Storage Account the Key Vault should be connected to."
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
     location = {
@@ -79,7 +79,7 @@ resource "azurerm_policy_definition" "audit_logs_postgresql_flexible_storage_acc
       metadata = {
         displayName       = "Resource location"
         description       = "Specify the resource location."
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
   })

@@ -28,15 +28,12 @@
                       },
                       {
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "in": [
-                          "allLogs",
-                          "audit"
-                        ]
+                        "equals": "allLogs"
                       }
                     ]
                   }
                 },
-                "equals": 2
+                "equals": 1
               }
             ]
           },
@@ -75,10 +72,6 @@
                   "logs": [
                     {
                       "categoryGroup": "allLogs",
-                      "enabled": true
-                    },
-                    {
-                      "categoryGroup": "audit",
                       "enabled": true
                     }
                   ]
