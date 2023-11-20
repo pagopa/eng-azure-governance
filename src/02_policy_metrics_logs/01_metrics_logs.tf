@@ -51,7 +51,7 @@ resource "azurerm_policy_definition" "metrics_logs" {
         displayName       = "Log Analytics workspace"
         description       = "Specify the Log Analytics workspace the Key Vault should be connected to."
         strongType        = "omsWorkspace"
-        assignPermissions = "True"
+        assignPermissions = true
       }
     }
   })
