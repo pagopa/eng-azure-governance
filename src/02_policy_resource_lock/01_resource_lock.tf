@@ -42,16 +42,14 @@ resource "azurerm_policy_definition" "resource_lock" {
   display_name        = "PagoPA Add resource lock to ${replace(replace(each.key, "/", "_"), "Microsoft.", "")}"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Add resource lock to ${each.key}",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Add resource lock to ${each.key}"
+      Severity               = "High"
     }
-METADATA
+  })
 
   policy_rule = templatefile("./policy_rules/resource_lock.json", {
     resource_lock_types                         = each.key,

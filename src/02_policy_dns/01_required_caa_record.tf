@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "dns_required_caa_record" {
   display_name        = "PagoPA DNS required CAA records"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Use DNS required CAA records",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Use DNS required CAA records"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/required_caa_record_parameters.json")
 

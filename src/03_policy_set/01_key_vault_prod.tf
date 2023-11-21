@@ -1,22 +1,14 @@
-locals {
-  key_vault_prod = {
-    metadata_category_name = "pagopa_prod"
-  }
-}
-
 resource "azurerm_policy_set_definition" "key_vault_prod" {
   name                = "key_vault_prod"
   policy_type         = "Custom"
   display_name        = "PagoPA Kay Vault PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${local.key_vault_prod.metadata_category_name}",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = "pagopa_prod"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   # Key vaults should have deletion protection enabled
   policy_definition_reference {

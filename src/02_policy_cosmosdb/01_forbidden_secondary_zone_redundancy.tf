@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "cosmosdb_forbidden_secondary_zone_redundan
   display_name        = "PagoPA CosmosDB forbidden zone redundancy for secondary region"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Disable zone redundancy for secondary region",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Disable zone redundancy for secondary region"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/forbidden_secondary_zone_redundancy_parameters.json")
 

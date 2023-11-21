@@ -16,39 +16,33 @@ resource "azurerm_policy_set_definition" "metrics_logs" {
   display_name        = "PagoPA Metrics Logs"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${local.metrics_logs.metadata_category_name}",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = local.metrics_logs.metadata_category_name
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
-  parameters = <<PARAMETERS
-    {
-        "logAnalyticsId": {
-            "type": "String",
-            "metadata": {
-                "description": "Metrics Logs workspace Id",
-                "displayName": "Metrics Logs workspace Id"
-            },
-            "defaultValue": "${var.metrics_logs_pci_workspace_id}"
-        }
+  parameters = jsonencode({
+    logAnalyticsId = {
+      type = "String"
+      metadata = {
+        description = "Metrics Logs workspace Id"
+        displayName = "Metrics Logs workspace Id"
+      }
+      defaultValue = var.metrics_logs_pci_workspace_id
     }
-PARAMETERS
+  })
 
   dynamic "policy_definition_reference" {
     for_each = data.terraform_remote_state.policy_metrics_logs.outputs.policy_ids
     content {
       policy_definition_id = policy_definition_reference.value
       reference_id         = replace(replace(policy_definition_reference.value, "/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policyDefinitions/metricslogs", ""), "/", "")
-      parameter_values     = <<VALUE
-      {
-        "logAnalytics": {
-          "value": "[parameters('logAnalyticsId')]"
+      parameter_values = jsonencode({
+        logAnalytics = {
+          value = "[parameters('logAnalyticsId')]"
         }
-      }
-    VALUE
+      })
     }
   }
 }

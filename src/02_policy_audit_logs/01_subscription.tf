@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "audit_logs_subscription_log_analytics" {
   display_name        = "PagoPA Add Diagnostic Settings for audit logs for Subscription to Log Analytics workspace"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Add Diagnostic Settings for audit logs for Subscription to Log Analytics workspace",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Add Diagnostic Settings for audit logs for Subscription to Log Analytics workspace"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/subscription_log_analytics_parameters.json")
 
@@ -32,16 +30,14 @@ resource "azurerm_policy_definition" "audit_logs_subscription_storage_account" {
   display_name        = "PagoPA Add Diagnostic Settings for audit logs for Subscription to Storage Account"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Add Diagnostic Settings for audit logs for Subscription to Storage Account",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Add Diagnostic Settings for audit logs for Subscription to Storage Account"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/subscription_storage_parameters.json")
 

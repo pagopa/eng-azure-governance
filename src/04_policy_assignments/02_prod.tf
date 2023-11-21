@@ -66,12 +66,10 @@ resource "azurerm_management_group_policy_assignment" "prod_resource_lock" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_role_assignment" "prod_resource_lock_contributor" {
@@ -92,12 +90,10 @@ resource "azurerm_management_group_policy_assignment" "prod_audit_logs" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_role_assignment" "prod_audit_logs_monitoring_contributor" {
@@ -126,12 +122,10 @@ resource "azurerm_management_group_policy_assignment" "prod_storage_account" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_application_gateway" {
@@ -142,12 +136,10 @@ resource "azurerm_management_group_policy_assignment" "prod_application_gateway"
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_event_hub" {
@@ -158,12 +150,10 @@ resource "azurerm_management_group_policy_assignment" "prod_event_hub" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_kubernetes" {
@@ -174,12 +164,10 @@ resource "azurerm_management_group_policy_assignment" "prod_kubernetes" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_app_service" {
@@ -190,12 +178,10 @@ resource "azurerm_management_group_policy_assignment" "prod_app_service" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_redis" {
@@ -206,12 +192,10 @@ resource "azurerm_management_group_policy_assignment" "prod_redis" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_cosmosdb" {
@@ -222,12 +206,10 @@ resource "azurerm_management_group_policy_assignment" "prod_cosmosdb" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_networking" {
@@ -242,12 +224,10 @@ resource "azurerm_management_group_policy_assignment" "prod_networking" {
     type = "SystemAssigned"
   }
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_role_assignment" "prod_network_contributor" {
@@ -270,12 +250,10 @@ resource "azurerm_management_group_policy_assignment" "prod_virtual_machine" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_virtual_machine_scael_set" {
@@ -286,12 +264,10 @@ resource "azurerm_management_group_policy_assignment" "prod_virtual_machine_scae
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_api_management" {
@@ -302,12 +278,10 @@ resource "azurerm_management_group_policy_assignment" "prod_api_management" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_log_analytics" {
@@ -318,12 +292,10 @@ resource "azurerm_management_group_policy_assignment" "prod_log_analytics" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_postgresql" {
@@ -334,12 +306,10 @@ resource "azurerm_management_group_policy_assignment" "prod_postgresql" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_key_vault" {
@@ -350,12 +320,10 @@ resource "azurerm_management_group_policy_assignment" "prod_key_vault" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "prod_container_apps" {
@@ -366,10 +334,8 @@ resource "azurerm_management_group_policy_assignment" "prod_container_apps" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }

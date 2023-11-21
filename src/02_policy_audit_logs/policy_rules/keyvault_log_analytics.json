@@ -28,7 +28,7 @@
                       },
                       {
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "equals": "Audit"
+                        "equals": "allLogs"
                       }
                     ]
                   }
@@ -71,7 +71,7 @@
                   "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     {
-                      "categoryGroup": "Audit",
+                      "categoryGroup": "allLogs",
                       "enabled": true
                     }
                   ]
