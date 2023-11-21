@@ -6,9 +6,7 @@ provider "azurerm" {
   }
 }
 
-data "azurerm_subscription" "current" {}
-
-data "azurerm_client_config" "current" {}
+data "azurerm_subscriptions" "available" {}
 
 data "terraform_remote_state" "policy_set" {
   backend = "azurerm"
