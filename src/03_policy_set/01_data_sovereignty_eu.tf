@@ -13,10 +13,10 @@ variable "allowed_locations_resource_groups" {
 locals {
   data_sovereignty_eu = {
     allowed_locations_policy_definition = {
-      reference_id = "Allowed locations"
+      reference_id = "allowed_locations_policy_definition_reference_id"
     }
     allowed_locations_resource_groups_policy_definition = {
-      reference_id = "Allowed locations for resource groups"
+      reference_id = "allowed_locations_resource_groups_policy_definition_reference_id"
     }
   }
 }
