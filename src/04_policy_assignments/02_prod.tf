@@ -114,6 +114,18 @@ resource "azurerm_role_assignment" "prod_audit_logs_contributor_storage_westeuro
   principal_id         = azurerm_management_group_policy_assignment.prod_audit_logs.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "prod_audit_logs_sql_security_manager" {
+  scope                = data.azurerm_management_group.prod.id
+  role_definition_name = "SQL Security Manager"
+  principal_id         = azurerm_management_group_policy_assignment.prod_audit_logs.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "prod_audit_logs_storage_account_contributor_italynorth" {
+  scope                = data.terraform_remote_state.policy_set.outputs.audit_logs_storage_id_italynorth
+  role_definition_name = "Storage Account Contributor"
+  principal_id         = azurerm_management_group_policy_assignment.prod_audit_logs.identity[0].principal_id
+}
+
 resource "azurerm_management_group_policy_assignment" "prod_storage_account" {
   name                 = "${local.prod_prefix}storageaccount"
   display_name         = "PagoPA Storage Account"

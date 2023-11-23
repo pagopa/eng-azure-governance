@@ -30,6 +30,7 @@ output "policy_ids" {
     azurerm_policy_definition.audit_logs_grafana_storage_account.id,
     azurerm_policy_definition.audit_logs_subscription_log_analytics.id,
     azurerm_policy_definition.audit_logs_subscription_storage_account.id,
+    azurerm_policy_definition.audit_logs_azure_sql_storage_account.id,
   ]
 }
 
@@ -151,4 +152,8 @@ output "audit_logs_subscription_log_analytics_id" {
 
 output "audit_logs_subscription_storage_account_id" {
   value = azurerm_policy_definition.audit_logs_subscription_storage_account.id
+}
+
+output "audit_logs_azure_sql_storage_account_id" {
+  value = azurerm_policy_definition.audit_logs_azure_sql_storage_account.id
 }

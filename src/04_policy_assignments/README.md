@@ -77,6 +77,8 @@ No modules.
 | [azurerm_role_assignment.prod_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.prod_audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.prod_audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.prod_audit_logs_sql_security_manager](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.prod_audit_logs_storage_account_contributor_italynorth](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.prod_network_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.prod_network_contributor_ddosplan](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.prod_pci_audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |

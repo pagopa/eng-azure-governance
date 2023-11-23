@@ -3,7 +3,7 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.ContainerRegistry/registries"
+        "equals": "Microsoft.Sql/servers"
       },
       {
         "field": "location",
@@ -14,43 +14,16 @@
   "then": {
     "effect": "deployIfNotExists",
     "details": {
-      "type": "Microsoft.Insights/diagnosticSettings",
-      "evaluationDelay": "AfterProvisioning",
-      "name": "[parameters('diagnosticsSettingName')]",
-      "roleDefinitionIds": [
-        "${roleDefinitionIds_audit_logs_contributor}",
-        "${roleDefinitionIds_log_analytics_contributor}"
-      ],
+      "type": "Microsoft.Sql/servers/auditingSettings",
+      "name": "Default",
       "existenceCondition": {
-        "allOf": [
-          {
-            "anyof": [
-              {
-                "count": {
-                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
-                  "where": {
-                    "allOf": [
-                      {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
-                        "equals": "true"
-                      },
-                      {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "equals": "audit"
-                      }
-                    ]
-                  }
-                },
-                "equals": 1
-              }
-            ]
-          },
-          {
-            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
-            "equals": "[parameters('storageAccount')]"
-          }
-        ]
+        "field": "Microsoft.Sql/auditingSettings.state",
+        "equals": "Enabled"
       },
+      "roleDefinitionIds": [
+        "${roleDefinitionIds_sql_security_manager}",
+        "${roleDefinitionIds_storage_account_contributor}"
+      ],
       "deployment": {
         "properties": {
           "mode": "incremental",
@@ -64,29 +37,57 @@
               "resourceName": {
                 "type": "string"
               },
-              "location": {
+              "retentionDays": {
                 "type": "string"
               },
-              "storageAccount": {
+              "storageAccountName": {
+                "type": "string"
+              },
+              "storageAccountResourceGroup": {
+                "type": "string"
+              },
+              "storageAccountSubscriptionId": {
                 "type": "string"
               }
             },
-            "variables": {},
+            "variables": {
+              "storageAccountId": "[concat('/subscriptions/', parameters('storageAccountSubscriptionId'), '/resourceGroups/', parameters('storageAccountResourceGroup'), '/providers/Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+            },
             "resources": [
               {
-                "type": "Microsoft.ContainerRegistry/registries/providers/diagnosticSettings",
-                "apiVersion": "2021-05-01-preview",
-                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
-                "location": "[parameters('location')]",
+                "type": "Microsoft.Sql/servers/auditingSettings",
+                "apiVersion": "2023-02-01-preview",
+                "name": "[concat(parameters('resourceName'), '/Default')]",
                 "dependsOn": [],
                 "properties": {
-                  "storageAccountId": "[parameters('storageAccount')]",
-                  "logs": [
-                    {
-                      "categoryGroup": "audit",
-                      "enabled": true
-                    }
-                  ]
+                  "state": "Enabled",
+                  "storageEndpoint": "[reference(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]",
+                  "storageAccountAccessKey": "[listKeys(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                  "retentionDays": "[parameters('retentionDays')]",
+                  "storageAccountSubscriptionId": "[parameters('storageAccountSubscriptionId')]",
+                  "isStorageSecondaryKeyInUse": false,
+                  "isDevopsAuditEnabled": false,
+                  "auditActionsAndGroups": [
+                    "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+                    "FAILED_DATABASE_AUTHENTICATION_GROUP",
+                    "BATCH_COMPLETED_GROUP"
+                  ],
+                  "isAzureMonitorTargetEnabled": true,
+                  "isManagedIdentityInUse": false
+                }
+              },
+              {
+                "type": "Microsoft.Sql/servers/devOpsAuditingSettings",
+                "apiVersion": "2023-02-01-preview",
+                "name": "[concat(parameters('resourceName'), '/Default')]",
+                "dependsOn": [],
+                "properties": {
+                  "state": "Enabled",
+                  "isAzureMonitorTargetEnabled": false,
+                  "isManagedIdentityInUse": false,
+                  "storageEndpoint": "[reference(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]",
+                  "storageAccountAccessKey": "[listKeys(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                  "storageAccountSubscriptionId": "[parameters('storageAccountSubscriptionId')]"
                 }
               }
             ],
@@ -99,11 +100,17 @@
             "resourceName": {
               "value": "[field('name')]"
             },
-            "location": {
-              "value": "[field('location')]"
+            "retentionDays": {
+              "value": "[parameters('retentionDays')]"
             },
-            "storageAccount": {
-              "value": "[parameters('storageAccount')]"
+            "storageAccountName": {
+              "value": "[parameters('storageAccountName')]"
+            },
+            "storageAccountResourceGroup": {
+              "value": "[parameters('storageAccountResourceGroup')]"
+            },
+            "storageAccountSubscriptionId": {
+              "value": "[parameters('storageAccountSubscriptionId')]"
             }
           }
         }

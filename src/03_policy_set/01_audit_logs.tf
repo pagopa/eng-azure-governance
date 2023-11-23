@@ -16,6 +16,26 @@ variable "audit_logs_storage_id_northeurope" {
   description = "description"
 }
 
+variable "audit_logs_storage_italynorth" {
+  type = object({
+    id              = string
+    name            = string
+    resource_group  = string
+    subscription_id = string
+    retention_days  = string
+    location        = string
+  })
+  default = {
+    id              = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-nit/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
+    name            = "ppseclogsitn"
+    resource_group  = "sec-p-rg-nit"
+    subscription_id = "0da48c97-355f-4050-a520-f11a18b8be90"
+    retention_days  = "365"
+    location        = "italynorth"
+  }
+  description = "description"
+}
+
 resource "azurerm_policy_set_definition" "audit_logs" {
   name                = "audit_logs"
   policy_type         = "Custom"
@@ -585,6 +605,30 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  # Azure SQL
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      location = {
+        value = var.audit_logs_storage_italynorth.location
+      }
+      retentionDays = {
+        value = var.audit_logs_storage_italynorth.retention_days
+      }
+      storageAccountName = {
+        value = var.audit_logs_storage_italynorth.name
+      }
+      storageAccountResourceGroup = {
+        value = var.audit_logs_storage_italynorth.resource_group
+      }
+      storageAccountSubscriptionId = {
+        value = var.audit_logs_storage_italynorth.subscription_id
+      }
+    })
+  }
+
 }
 
 output "audit_logs_id" {
@@ -601,4 +645,8 @@ output "audit_logs_storage_id_westeurope" {
 
 output "audit_logs_storage_id_northeurope" {
   value = var.audit_logs_storage_id_northeurope
+}
+
+output "audit_logs_storage_id_italynorth" {
+  value = var.audit_logs_storage_italynorth.id
 }

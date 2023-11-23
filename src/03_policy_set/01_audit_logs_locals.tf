@@ -132,5 +132,8 @@ locals {
     subscription_storageid_westeurope = {
       reference_id = "subscription_storageid_westeurope"
     }
+    azure_sql_storageid_italynorth = {
+      reference_id = "azure_sql_storageid_italynorth"
+    }
   }
 }
