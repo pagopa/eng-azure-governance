@@ -11,21 +11,17 @@
 
 ## Modules
 
-No modules.
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_dev_assignments"></a> [dev\_assignments](#module\_dev\_assignments) | ./modules/dev | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azurerm_management_group_policy_assignment.dev_api_management](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.dev_app_service](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.dev_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.dev_pci_audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.dev_pci_metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.dev_pci_pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.dev_redis](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.dev_virtual_machine](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
-| [azurerm_management_group_policy_assignment.dev_virtual_machine_scael_set](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagopa_azure_security_benchmark](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagopa_data_sovereignty_eu](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
 | [azurerm_management_group_policy_assignment.pagopa_dns](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/management_group_policy_assignment) | resource |
@@ -91,7 +87,6 @@ No modules.
 | [azurerm_role_assignment.uat_pci_metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.uat_pci_metrics_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.dev_pci](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
