@@ -4,15 +4,43 @@ variable "audit_logs_workspace_id" {
   description = "description"
 }
 
-variable "audit_logs_storage_id_westeurope" {
-  type        = string
-  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
+variable "audit_logs_storage_westeurope" {
+  type = object({
+    id              = string
+    name            = string
+    resource_group  = string
+    subscription_id = string
+    retention_days  = string
+    location        = string
+  })
+  default = {
+    id              = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
+    name            = "ppseclogs"
+    resource_group  = "sec-p-sentinel"
+    subscription_id = "0da48c97-355f-4050-a520-f11a18b8be90"
+    retention_days  = "365"
+    location        = "westeurope"
+  }
   description = "description"
 }
 
-variable "audit_logs_storage_id_northeurope" {
-  type        = string
-  default     = "novalue"
+variable "audit_logs_storage_northeurope" {
+  type = object({
+    id              = string
+    name            = string
+    resource_group  = string
+    subscription_id = string
+    retention_days  = string
+    location        = string
+  })
+  default = {
+    id              = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-neu/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
+    name            = "ppseclogsneu"
+    resource_group  = "sec-p-rg-neu"
+    subscription_id = "0da48c97-355f-4050-a520-f11a18b8be90"
+    retention_days  = "365"
+    location        = "northeurope"
+  }
   description = "description"
 }
 
@@ -68,10 +96,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.keyvault_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -81,10 +109,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.keyvault_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -106,10 +134,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.application_gateway_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -119,10 +147,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.application_gateway_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -144,10 +172,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.container_registry_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -157,10 +185,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.container_registry_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -182,10 +210,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope.reference_id
   #   parameter_values = jsonencode({
   #     storageAccount = {
-  #       value = var.audit_logs_storage_id_westeurope
+  #       value = var.audit_logs_storage_westeurope.id
   #     }
   #     location = {
-  #       value = "westeurope"
+  #       value = var.audit_logs_storage_westeurope.location
   #     }
   #   })
   # }
@@ -195,10 +223,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope.reference_id
   #   parameter_values = jsonencode({
   #     storageAccount = {
-  #       value = var.audit_logs_storage_id_northeurope
+  #       value = var.audit_logs_storage_northeurope.id
   #     }
   #     location = {
-  #       value = "northeurope"
+  #       value = var.audit_logs_storage_northeurope.location
   #     }
   #   })
   # }
@@ -220,10 +248,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.api_management_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -233,10 +261,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.api_management_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -258,10 +286,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.postgresql_flexible_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -271,10 +299,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.postgresql_flexible_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -296,10 +324,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.postgresql_single_server_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -309,10 +337,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.postgresql_single_server_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -334,10 +362,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.log_analytics_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -347,10 +375,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.log_analytics_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -372,10 +400,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.cosmos_db_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -385,10 +413,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.cosmos_db_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -410,10 +438,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.app_service_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -423,10 +451,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.app_service_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -448,10 +476,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.event_hub_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -461,10 +489,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.event_hub_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -486,10 +514,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.public_ip_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -499,10 +527,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.public_ip_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -524,10 +552,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.virtual_network_gateway_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -537,10 +565,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.virtual_network_gateway_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -562,10 +590,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.grafana_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
       location = {
-        value = "westeurope"
+        value = var.audit_logs_storage_westeurope.location
       }
     })
   }
@@ -575,10 +603,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.grafana_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
+        value = var.audit_logs_storage_northeurope.id
       }
       location = {
-        value = "northeurope"
+        value = var.audit_logs_storage_northeurope.location
       }
     })
   }
@@ -600,16 +628,70 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     reference_id         = local.audit_logs.subscription_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+        value = var.audit_logs_storage_westeurope.id
       }
     })
   }
 
-  # Azure SQL
+  # Azure SQL Server
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_storage_account_id
-    reference_id         = local.audit_logs.azure_sql_storageid_italynorth.reference_id
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_server_log_analytics_id
+    reference_id         = local.audit_logs.azure_sql_server_workspaceid.reference_id
+    parameter_values = jsonencode({
+      logAnalytics = {
+        value = var.audit_logs_workspace_id
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_server_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_server_storageid_westeurope.reference_id
+    parameter_values = jsonencode({
+      location = {
+        value = var.audit_logs_storage_westeurope.location
+      }
+      retentionDays = {
+        value = var.audit_logs_storage_westeurope.retention_days
+      }
+      storageAccountName = {
+        value = var.audit_logs_storage_westeurope.name
+      }
+      storageAccountResourceGroup = {
+        value = var.audit_logs_storage_westeurope.resource_group
+      }
+      storageAccountSubscriptionId = {
+        value = var.audit_logs_storage_westeurope.subscription_id
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_server_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_server_storageid_northeurope.reference_id
+    parameter_values = jsonencode({
+      location = {
+        value = var.audit_logs_storage_northeurope.location
+      }
+      retentionDays = {
+        value = var.audit_logs_storage_northeurope.retention_days
+      }
+      storageAccountName = {
+        value = var.audit_logs_storage_northeurope.name
+      }
+      storageAccountResourceGroup = {
+        value = var.audit_logs_storage_northeurope.resource_group
+      }
+      storageAccountSubscriptionId = {
+        value = var.audit_logs_storage_northeurope.subscription_id
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_server_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_server_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       location = {
         value = var.audit_logs_storage_italynorth.location
@@ -640,11 +722,11 @@ output "audit_logs_workspace_id" {
 }
 
 output "audit_logs_storage_id_westeurope" {
-  value = var.audit_logs_storage_id_westeurope
+  value = var.audit_logs_storage_westeurope.id
 }
 
 output "audit_logs_storage_id_northeurope" {
-  value = var.audit_logs_storage_id_northeurope
+  value = var.audit_logs_storage_northeurope.id
 }
 
 output "audit_logs_storage_id_italynorth" {

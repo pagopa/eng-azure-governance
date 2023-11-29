@@ -17,7 +17,7 @@
       "type": "Microsoft.Sql/servers/auditingSettings",
       "name": "Default",
       "existenceCondition": {
-        "field": "Microsoft.Sql/auditingSettings.state",
+        "field": "Microsoft.Sql/servers/auditingSettings/state",
         "equals": "Enabled"
       },
       "roleDefinitionIds": [
@@ -83,7 +83,7 @@
                 "dependsOn": [],
                 "properties": {
                   "state": "Enabled",
-                  "isAzureMonitorTargetEnabled": false,
+                  "isAzureMonitorTargetEnabled": true,
                   "isManagedIdentityInUse": false,
                   "storageEndpoint": "[reference(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]",
                   "storageAccountAccessKey": "[listKeys(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
