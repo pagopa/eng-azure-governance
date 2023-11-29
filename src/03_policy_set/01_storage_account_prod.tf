@@ -5,8 +5,6 @@ locals {
       effect       = "Audit"
       skus = [
         "Standard_ZRS",
-        "Standard_GRS",
-        "Standard_RAGRS",
         "Standard_GZRS",
         "Standard_RAGZRS",
         "Premium_ZRS",
