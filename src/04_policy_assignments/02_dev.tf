@@ -3,11 +3,15 @@ locals {
     "DEV-CSTAR",
     "DEV-FATTURAZIONE",
     "DEV-IO",
-    "DEV-MIL",
+    "DEV-mil",
     "DEV-SelfCare",
     "DEV-pagoPA",
     "DevOpsLab"
   ]
+}
+
+data "azurerm_management_group" "dev" {
+  name = "dev"
 }
 
 module "dev_assignments" {
@@ -15,7 +19,7 @@ module "dev_assignments" {
 
   for_each = toset(local.dev_subscriptions)
 
-  subscription   = lookup([for s in data.azurerm_subscriptions.available : s if s.display_name == each.value], 0, null)
+  subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
   location       = var.location
   policy_set_ids = data.terraform_remote_state.policy_set.outputs
 }

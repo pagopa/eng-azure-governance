@@ -1,8 +1,8 @@
 resource "azurerm_subscription_policy_assignment" "redis" {
   name                 = substr("${local.prefix}redis", 0, 64)
-  display_name         = "PagoPA Redis"
+  display_name         = "PagoPA DEV Redis"
   policy_definition_id = var.policy_set_ids.redis_dev_id
-  subscription_id      = var.subscription.subscription_id
+  subscription_id      = var.subscription.id
 
   enforce = true
 

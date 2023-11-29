@@ -1,8 +1,8 @@
 resource "azurerm_subscription_policy_assignment" "virtual_machine" {
   name                 = substr("${local.prefix}virtualmachine", 0, 64)
-  display_name         = "PagoPA Virtual Machine"
+  display_name         = "PagoPA DEV Virtual Machine"
   policy_definition_id = var.policy_set_ids.virtual_machine_dev_id
-  subscription_id      = var.subscription.subscription_id
+  subscription_id      = var.subscription.id
 
   enforce = true
 

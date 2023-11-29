@@ -1,8 +1,8 @@
 resource "azurerm_subscription_policy_assignment" "log_analytics" {
   name                 = substr("${local.prefix}loganalytics", 0, 64)
-  display_name         = "PagoPA Log Analytics"
+  display_name         = "PagoPA DEV Log Analytics"
   policy_definition_id = var.policy_set_ids.log_analytics_dev_id
-  subscription_id      = var.subscription.subscription_id
+  subscription_id      = var.subscription.id
 
   enforce = true
 

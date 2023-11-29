@@ -1,8 +1,8 @@
 resource "azurerm_subscription_policy_assignment" "app_service" {
   name                 = substr("${local.prefix}appservice", 0, 64)
-  display_name         = "PagoPA App Service"
+  display_name         = "PagoPA DEV App Service"
   policy_definition_id = var.policy_set_ids.app_service_dev_id
-  subscription_id      = var.subscription.subscription_id
+  subscription_id      = var.subscription.id
 
   enforce = true
 
