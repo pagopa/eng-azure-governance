@@ -87,6 +87,7 @@
 | [azurerm_role_assignment.uat_pci_metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.uat_pci_metrics_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_assignment) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/client_config) | data source |
+| [azurerm_management_group.dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.dev_pci](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
 | [azurerm_management_group.prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
