@@ -2,10 +2,10 @@ locals {
   uat_subscriptions = [
     "UAT-CSTAR",
     "UAT-Esercenti",
-    "UAT-MIL",
-    "UAT-PCI",
+    "UAT-mil",
     "UAT-SelfCare",
     "UAT-pagoPA",
+    "UAT-PCI",
   ]
 }
 

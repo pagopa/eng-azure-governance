@@ -1,8 +1,8 @@
 resource "azurerm_subscription_policy_assignment" "api_management" {
-  name = substr("${local.prefix}apimanagement", 0, 64)
+  name                 = substr("${local.prefix}apimanagement", 0, 64)
   display_name         = "PagoPA UAT Api Management"
   policy_definition_id = var.policy_set_ids.api_management_uat_id
-  subscription_id  = var.subscription.id
+  subscription_id      = var.subscription.id
 
   enforce = true
 
