@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "application_gateway_allowed_sku" {
   display_name        = "PagoPA Application Gateway allowed SKU"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Use Application Gateway allowed SKU",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Use Application Gateway allowed SKU"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/allowed_sku_parameters.json")
 

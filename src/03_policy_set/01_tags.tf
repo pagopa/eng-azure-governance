@@ -43,13 +43,11 @@ resource "azurerm_policy_set_definition" "tags" {
   display_name        = "PagoPA Tags"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "pagopa_prod",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = "pagopa_prod"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   dynamic "policy_definition_group" {
     for_each = [for name, tag in local.tags : name]
@@ -65,13 +63,11 @@ METADATA
     content {
       policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_id
       policy_group_names   = [policy_definition_reference.value]
-      parameter_values     = <<VALUE
-      {
-        "tagName": {
-          "value": "${policy_definition_reference.value}"
+      parameter_values = jsonencode({
+        tagName = {
+          value = policy_definition_reference.value
         }
-      }
-      VALUE
+      })
     }
   }
 
@@ -81,16 +77,14 @@ METADATA
     content {
       policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_values_id
       policy_group_names   = [policy_definition_reference.value]
-      parameter_values     = <<VALUE
-      {
-        "tagName": {
-          "value": "${policy_definition_reference.value}"
-        },
-        "tagValues": {
-          "value": ${jsonencode(local.tags[policy_definition_reference.value].allowed_values)}
+      parameter_values = jsonencode({
+        tagName = {
+          value = policy_definition_reference.value
         }
-      }
-      VALUE
+        tagValues = {
+          value = local.tags[policy_definition_reference.value].allowed_values
+        }
+      })
     }
   }
 }

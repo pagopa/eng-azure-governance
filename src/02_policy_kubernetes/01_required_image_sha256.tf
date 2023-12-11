@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "kubernetes_required_image_sha256" {
   display_name        = "PagoPA Kubernetes image must use sha256 tag"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Kubernetes cluster containers should only use sha256 tag",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Kubernetes cluster containers should only use sha256 tag"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/required_image_sha256_parameters.json")
 

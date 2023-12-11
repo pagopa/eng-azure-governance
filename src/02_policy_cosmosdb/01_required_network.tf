@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "cosmosdb_required_network" {
   display_name        = "PagoPA CosmosDB required network restrictions"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Use CosmosDB required network restrictions",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Use CosmosDB required network restrictions"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/required_network_parameters.json")
 

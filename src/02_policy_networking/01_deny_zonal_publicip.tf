@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "deny_zonal_publicip" {
   display_name        = "PagoPA Deny zonal Public IP"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Use zone redundancy for Public IP",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Use zone redundancy for Public IP"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/deny_zonal_publicip_parameters.json")
 

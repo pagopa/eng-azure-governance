@@ -1,9 +1,3 @@
-locals {
-  postgresql_prod = {
-    metadata_category_name = "pagopa_prod"
-  }
-}
-
 variable "postgresql_prod" {
   type = object({
     listofallowedflexibleskuname = list(string)
@@ -33,13 +27,11 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   display_name        = "PagoPA Database for PostgreSQL PROD"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-     {
-         "category": "${local.postgresql_prod.metadata_category_name}",
-         "version": "v1.0.0",
-         "ASC": "true"
-     }
-  METADATA
+  metadata = jsonencode({
+    category = "pagopa_prod"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   # Geo-redundant backup should be enabled for Azure Database for PostgreSQL
   policy_definition_reference {
@@ -55,25 +47,21 @@ resource "azurerm_policy_set_definition" "postgresql_prod" {
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_flexible_sku_id
     reference_id         = local.postgresql.listofallowedflexiblesku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSKU": {
-        "value": ${jsonencode(var.postgresql_prod.listofallowedflexibleskuname)}
+    parameter_values = jsonencode({
+      listOfAllowedSKU = {
+        value = var.postgresql_prod.listofallowedflexibleskuname
       }
-    }
-    VALUE
+    })
   }
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_sku_id
     reference_id         = local.postgresql.listofallowedsku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSKU": {
-        "value": ${jsonencode(var.postgresql_prod.listofallowedskuname)}
+    parameter_values = jsonencode({
+      listOfAllowedSKU = {
+        value = var.postgresql_prod.listofallowedskuname
       }
-    }
-    VALUE
+    })
   }
 
   policy_definition_reference {

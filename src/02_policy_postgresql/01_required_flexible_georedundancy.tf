@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "postgresql_required_flexible_georedundancy
   display_name        = "PagoPA Database for PostgreSQL Flexible required georedundancy"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Enable georedundancy for PostgreSQL flexible",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Enable georedundancy for PostgreSQL flexible"
+      Severity               = "High"
     }
-METADATA
+  })
 
   parameters = file("./policy_rules/required_flexible_georedundancy_parameters.json")
 

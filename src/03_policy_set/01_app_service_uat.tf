@@ -1,9 +1,3 @@
-locals {
-  app_service_uat = {
-    metadata_category_name = "pagopa_uat"
-  }
-}
-
 variable "app_service_uat" {
   type = object({
     listofallowedsku  = list(string)
@@ -22,16 +16,14 @@ resource "azurerm_policy_set_definition" "app_service_uat" {
   display_name        = "PagoPA App Service UAT"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${local.app_service_uat.metadata_category_name}",
-        "version": "v1.0.0",
-        "ASC": "true",
-        "parameterScopes": {
-          "${local.app_service.listofallowedsku} : ${local.app_service.listofallowedsku}": "${data.azurerm_management_group.pagopa.id}"
-        }
+  metadata = jsonencode({
+    category = "pagopa_uat"
+    version  = "v1.0.0"
+    ASC      = "true"
+    parameterScopes = {
+      for _, param in local.app_service : "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id
     }
-METADATA
+  })
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_allowed_linuxfxversion_id
@@ -45,17 +37,15 @@ METADATA
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_allowed_sku_id
-    reference_id         = local.app_service.listofallowedsku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSku": {
-        "value": ${jsonencode(var.app_service_uat.listofallowedsku)}
-      },
-      "listOfAllowedKind": {
-        "value": ${jsonencode(var.app_service_uat.listofallowedkind)}
+    reference_id         = local.app_service.listofallowedsku.reference_id
+    parameter_values = jsonencode({
+      listOfAllowedSku = {
+        value = var.app_service_uat.listofallowedsku
       }
-    }
-    VALUE
+      listOfAllowedKind = {
+        value = var.app_service_uat.listofallowedkind
+      }
+    })
   }
 
   policy_definition_reference {

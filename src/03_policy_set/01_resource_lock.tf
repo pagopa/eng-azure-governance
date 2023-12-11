@@ -10,13 +10,11 @@ resource "azurerm_policy_set_definition" "resource_lock" {
   display_name        = "PagoPA Resource lock"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${local.resource_lock.metadata_category_name}",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = local.resource_lock.metadata_category_name
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   dynamic "policy_definition_reference" {
     for_each = data.terraform_remote_state.policy_resource_lock.outputs.policy_ids

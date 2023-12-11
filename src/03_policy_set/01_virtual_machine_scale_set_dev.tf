@@ -1,9 +1,3 @@
-locals {
-  virtual_machine_scale_set_dev = {
-    metadata_category_name = "pagopa_dev"
-  }
-}
-
 variable "virtual_machine_scale_set_dev" {
   type = object({
     listofallowedskuname = list(string)
@@ -24,24 +18,20 @@ resource "azurerm_policy_set_definition" "virtual_machine_scale_set_dev" {
   display_name        = "PagoPA Virtual Machine Scale Set DEV"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${local.virtual_machine_scale_set_dev.metadata_category_name}",
-        "version": "v1.0.0",
-        "ASC": "true"
-    }
-METADATA
+  metadata = jsonencode({
+    category = "pagopa_dev"
+    version  = "v1.0.0"
+    ASC      = "true"
+  })
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_virtual_machine_scale_set.outputs.virtual_machine_scale_set_allowed_sku_id
     reference_id         = local.virtual_machine_scale_set.listofallowedsku
-    parameter_values     = <<VALUE
-    {
-      "listOfAllowedSKU": {
-        "value": ${jsonencode(var.virtual_machine_scale_set_dev.listofallowedskuname)}
+    parameter_values = jsonencode({
+      listOfAllowedSKU = {
+        value = var.virtual_machine_scale_set_dev.listofallowedskuname
       }
-    }
-    VALUE
+    })
   }
 }
 

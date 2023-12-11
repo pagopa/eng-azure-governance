@@ -23,12 +23,10 @@ resource "azurerm_management_group_policy_assignment" "uat_app_service" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "uat_redis" {
@@ -39,12 +37,10 @@ resource "azurerm_management_group_policy_assignment" "uat_redis" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "uat_virtual_machine" {
@@ -55,12 +51,10 @@ resource "azurerm_management_group_policy_assignment" "uat_virtual_machine" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "uat_virtual_machine_scael_set" {
@@ -71,12 +65,10 @@ resource "azurerm_management_group_policy_assignment" "uat_virtual_machine_scael
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "uat_api_management" {
@@ -87,12 +79,10 @@ resource "azurerm_management_group_policy_assignment" "uat_api_management" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }
 
 resource "azurerm_management_group_policy_assignment" "uat_log_analytics" {
@@ -103,10 +93,8 @@ resource "azurerm_management_group_policy_assignment" "uat_log_analytics" {
 
   enforce = true
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0"
-    }
-  METADATA
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+  })
 }

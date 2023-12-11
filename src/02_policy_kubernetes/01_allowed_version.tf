@@ -5,16 +5,14 @@ resource "azurerm_policy_definition" "kubernetes_allowed_kubernetes_version" {
   display_name        = "PagoPA Kubernetes allowed versions"
   management_group_id = data.azurerm_management_group.pagopa.id
 
-  metadata = <<METADATA
-    {
-        "category": "${var.metadata_category_name}",
-        "version": "v1.0.0",
-        "securityCenter": {
-		      "RemediationDescription": "Kubernetes allowed versions",
-		      "Severity": "High"
-        }
+  metadata = jsonencode({
+    category = var.metadata_category_name
+    version  = "v1.0.0"
+    securityCenter = {
+      RemediationDescription = "Kubernetes allowed versions"
+      Severity               = "High"
     }
-METADATA
+  })
 
   # https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli#aks-kubernetes-release-calendar
   # az aks get-versions --location westeurope --output table
