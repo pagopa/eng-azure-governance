@@ -3,7 +3,11 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.Sql/servers"
+        "equals": "Microsoft.Sql/servers/databases"
+      },
+      {
+        "field": "name",
+        "notEquals": "master"
       }
     ]
   },
@@ -69,7 +73,7 @@
               {
                 "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
                 "apiVersion": "2021-05-01-preview",
-                "name": "[concat(parameters('resourceName'), '/master/Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
+                "name": "[concat(parameters('resourceName'),'/Microsoft.Insights/',parameters('diagnosticsSettingName'))]",
                 "dependsOn": [],
                 "properties": {
                   "workspaceId": "[parameters('logAnalytics')]",

@@ -711,6 +711,57 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  # Azure SQL Database
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_database_log_analytics_id
+    reference_id         = local.audit_logs.azure_sql_database_workspaceid.reference_id
+    parameter_values = jsonencode({
+      logAnalytics = {
+        value = var.audit_logs_workspace_id
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_database_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_database_storageid_westeurope.reference_id
+    parameter_values = jsonencode({
+      location = {
+        value = var.audit_logs_storage_westeurope.location
+      }
+      storageAccount = {
+        value = var.audit_logs_storage_westeurope.name
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_database_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_database_storageid_northeurope.reference_id
+    parameter_values = jsonencode({
+      location = {
+        value = var.audit_logs_storage_northeurope.location
+      }
+      storageAccount = {
+        value = var.audit_logs_storage_northeurope.name
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_azure_sql_database_storage_account_id
+    reference_id         = local.audit_logs.azure_sql_database_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      location = {
+        value = var.audit_logs_storage_italynorth.location
+      }
+      storageAccount = {
+        value = var.audit_logs_storage_italynorth.name
+      }
+    })
+  }
+
 }
 
 output "audit_logs_id" {

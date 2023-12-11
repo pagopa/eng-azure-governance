@@ -10,43 +10,24 @@
   "then": {
     "effect": "deployIfNotExists",
     "details": {
-      "type": "Microsoft.Insights/diagnosticSettings",
-      "evaluationDelay": "AfterProvisioning",
-      "name": "[parameters('diagnosticsSettingName')]",
-      "roleDefinitionIds": [
-        "${roleDefinitionIds_audit_logs_contributor}",
-        "${roleDefinitionIds_log_analytics_contributor}"
-      ],
+      "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
+      "name": "Default",
       "existenceCondition": {
         "allOf": [
           {
-            "anyof": [
-              {
-                "count": {
-                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
-                  "where": {
-                    "allOf": [
-                      {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
-                        "equals": "true"
-                      },
-                      {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "in": ["audit"]
-                      }
-                    ]
-                  }
-                },
-                "equals": 1
-              }
-            ]
+            "field": "Microsoft.Sql/servers/auditingSettings/state",
+            "equals": "Enabled"
           },
           {
-            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
-            "equals": "[parameters('logAnalytics')]"
+            "field": "Microsoft.Sql/servers/auditingSettings/isAzureMonitorTargetEnabled",
+            "equals": "false"
           }
         ]
       },
+      "roleDefinitionIds": [
+        "${roleDefinitionIds_sql_security_manager}",
+        "${roleDefinitionIds_log_analytics_contributor}"
+      ],
       "deployment": {
         "properties": {
           "mode": "incremental",
@@ -68,10 +49,10 @@
             "resources": [
               {
                 "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
+                "name": "[concat(parameters('resourceName'),'/master/microsoft.insights/',parameters('diagnosticsSettingName'))]",
                 "apiVersion": "2021-05-01-preview",
-                "name": "[concat(parameters('resourceName'), '/master/Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
-                "dependsOn": [],
                 "properties": {
+                  "name": "[parameters('diagnosticsSettingName')]",
                   "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     {
@@ -81,8 +62,7 @@
                   ]
                 }
               }
-            ],
-            "outputs": {}
+            ]
           },
           "parameters": {
             "diagnosticsSettingName": {

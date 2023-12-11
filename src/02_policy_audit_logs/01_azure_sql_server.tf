@@ -35,7 +35,7 @@ resource "azurerm_policy_definition" "audit_logs_azure_sql_server_log_analytics"
   })
 
   policy_rule = templatefile("./policy_rules/azure_sql_server_log_analytics.json", {
-    roleDefinitionIds_sql_security_manager      = data.azurerm_role_definition.sql_security_manager.id,
+    roleDefinitionIds_audit_logs_contributor    = data.azurerm_role_definition.audit_logs_contributor.id,
     roleDefinitionIds_log_analytics_contributor = data.azurerm_role_definition.log_analytics_contributor.id,
   })
 

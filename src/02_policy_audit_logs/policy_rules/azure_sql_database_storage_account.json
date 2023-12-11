@@ -3,7 +3,15 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.Sql/servers"
+       "equals": "Microsoft.Sql/servers/databases"
+      },
+      {
+        "field": "name",
+        "notEquals": "master"
+      },
+      {
+        "field": "location",
+        "equals": "[parameters('location')]"
       }
     ]
   },
@@ -32,7 +40,7 @@
                       },
                       {
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "in": ["audit"]
+                        "equals": "audit"
                       }
                     ]
                   }
@@ -42,8 +50,8 @@
             ]
           },
           {
-            "field": "Microsoft.Insights/diagnosticSettings/workspaceId",
-            "equals": "[parameters('logAnalytics')]"
+            "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
+            "equals": "[parameters('storageAccount')]"
           }
         ]
       },
@@ -60,7 +68,10 @@
               "resourceName": {
                 "type": "string"
               },
-              "logAnalytics": {
+              "location": {
+                "type": "string"
+              },
+              "storageAccount": {
                 "type": "string"
               }
             },
@@ -69,10 +80,11 @@
               {
                 "type": "Microsoft.Sql/servers/databases/providers/diagnosticSettings",
                 "apiVersion": "2021-05-01-preview",
-                "name": "[concat(parameters('resourceName'), '/master/Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
+                "name": "[concat(parameters('resourceName'), '/', 'Microsoft.Insights/', parameters('diagnosticsSettingName'))]",
+                "location": "[parameters('location')]",
                 "dependsOn": [],
                 "properties": {
-                  "workspaceId": "[parameters('logAnalytics')]",
+                  "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
                       "categoryGroup": "audit",
@@ -91,8 +103,11 @@
             "resourceName": {
               "value": "[field('name')]"
             },
-            "logAnalytics": {
-              "value": "[parameters('logAnalytics')]"
+            "location": {
+              "value": "[field('location')]"
+            },
+            "storageAccount": {
+              "value": "[parameters('storageAccount')]"
             }
           }
         }

@@ -630,9 +630,9 @@ output "audit_logs_pci_workspace_id" {
 }
 
 output "audit_logs_pci_storage_primary_region" {
-  value = var.audit_logs_pci_storage_primary_region
+  value = var.audit_logs_pci_storage_primary_region.storage_id
 }
 
 output "audit_logs_pci_storage_secondary_region" {
-  value = var.audit_logs_pci_storage_secondary_region
+  value = var.audit_logs_pci_storage_secondary_region.storage_id
 }
