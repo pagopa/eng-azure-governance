@@ -9,6 +9,7 @@ locals {
     "PROD-SITECORP",
     "PROD-SelfCare",
     "PROD-pagoPA",
+    "PROD-PCI",
     "ORG",
     "Common",
     "DevOpsAutomation",
