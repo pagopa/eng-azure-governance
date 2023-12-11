@@ -13,7 +13,8 @@ repos:
       - id: terraform_validate
         exclude: |
             (?x)^(
-                ^modules*
+                ^modules/dev*|
+                ^modules/prod*
             )$
         args:
           - --init-args=-lockfile=readonly
