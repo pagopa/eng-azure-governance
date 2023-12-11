@@ -23,6 +23,8 @@ No modules.
 | [azurerm_policy_definition.audit_logs_app_service_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_azure_sql_database_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_azure_sql_database_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_azure_sql_server_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_azure_sql_server_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_container_registry_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
@@ -73,6 +75,8 @@ No modules.
 | <a name="output_audit_logs_app_service_storage_account_id"></a> [audit\_logs\_app\_service\_storage\_account\_id](#output\_audit\_logs\_app\_service\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_log_analytics_id"></a> [audit\_logs\_application\_gateway\_log\_analytics\_id](#output\_audit\_logs\_application\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_storage_account_id"></a> [audit\_logs\_application\_gateway\_storage\_account\_id](#output\_audit\_logs\_application\_gateway\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_azure_sql_database_log_analytics_id"></a> [audit\_logs\_azure\_sql\_database\_log\_analytics\_id](#output\_audit\_logs\_azure\_sql\_database\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_azure_sql_database_storage_account_id"></a> [audit\_logs\_azure\_sql\_database\_storage\_account\_id](#output\_audit\_logs\_azure\_sql\_database\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_azure_sql_server_log_analytics_id"></a> [audit\_logs\_azure\_sql\_server\_log\_analytics\_id](#output\_audit\_logs\_azure\_sql\_server\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_azure_sql_server_storage_account_id"></a> [audit\_logs\_azure\_sql\_server\_storage\_account\_id](#output\_audit\_logs\_azure\_sql\_server\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_container_registry_log_analytics_id"></a> [audit\_logs\_container\_registry\_log\_analytics\_id](#output\_audit\_logs\_container\_registry\_log\_analytics\_id) | n/a |
