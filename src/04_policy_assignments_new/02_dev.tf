@@ -6,7 +6,7 @@ locals {
     "DEV-mil",
     "DEV-SelfCare",
     "DEV-pagoPA",
-    "DevOpsLab"
+    "DevOpsLab",
   ]
 }
 

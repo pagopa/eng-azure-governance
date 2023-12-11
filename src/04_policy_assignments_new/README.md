@@ -14,6 +14,7 @@
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_dev_assignments"></a> [dev\_assignments](#module\_dev\_assignments) | ./modules/dev | n/a |
+| <a name="module_prod_assignments"></a> [prod\_assignments](#module\_prod\_assignments) | ./modules/prod | n/a |
 
 ## Resources
 
