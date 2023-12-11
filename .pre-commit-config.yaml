@@ -11,6 +11,11 @@ repos:
           - --args=--hide providers
       - id: terraform_tfsec
       - id: terraform_validate
+      - id: terraform_validate
+        exclude: |
+            (?x)^(
+                ^modules*
+            )$
         args:
           - --init-args=-lockfile=readonly
           - --args=-json
