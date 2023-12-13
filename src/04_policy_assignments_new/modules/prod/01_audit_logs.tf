@@ -33,3 +33,15 @@ resource "azurerm_role_assignment" "audit_logs_contributor_storage_westeurope" {
   role_definition_name = "Log Analytics Contributor"
   principal_id         = azurerm_subscription_policy_assignment.audit_logs.identity[0].principal_id
 }
+
+resource "azurerm_role_assignment" "audit_logs_contributor_storage_northeurope" {
+  scope                = var.policy_set_ids.audit_logs_storage_id_northeurope
+  role_definition_name = "Log Analytics Contributor"
+  principal_id         = azurerm_subscription_policy_assignment.audit_logs.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "audit_logs_contributor_storage_italynorth" {
+  scope                = var.policy_set_ids.audit_logs_storage_id_italynorth
+  role_definition_name = "Log Analytics Contributor"
+  principal_id         = azurerm_subscription_policy_assignment.audit_logs.identity[0].principal_id
+}
