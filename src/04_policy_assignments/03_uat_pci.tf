@@ -1,13 +1,13 @@
 locals {
-  dev_pci_subscriptions = [
-    "DEV-PCI",
+  uat_pci_subscriptions = [
+    "UAT_PCI",
   ]
 }
 
-module "dev_pci_assignments" {
-  source = "./modules/dev_pci"
+module "uat_pci_assignments" {
+  source = "./modules/uat_pci"
 
-  for_each = toset(local.dev_pci_subscriptions)
+  for_each = toset(local.uat_pci_subscriptions)
 
   subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
   location       = var.location

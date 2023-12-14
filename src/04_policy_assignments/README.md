@@ -16,7 +16,9 @@
 | <a name="module_dev_assignments"></a> [dev\_assignments](#module\_dev\_assignments) | ./modules/dev | n/a |
 | <a name="module_dev_pci_assignments"></a> [dev\_pci\_assignments](#module\_dev\_pci\_assignments) | ./modules/dev_pci | n/a |
 | <a name="module_prod_assignments"></a> [prod\_assignments](#module\_prod\_assignments) | ./modules/prod | n/a |
+| <a name="module_prod_pci_assignments"></a> [prod\_pci\_assignments](#module\_prod\_pci\_assignments) | ./modules/prod_pci | n/a |
 | <a name="module_uat_assignments"></a> [uat\_assignments](#module\_uat\_assignments) | ./modules/uat | n/a |
+| <a name="module_uat_pci_assignments"></a> [uat\_pci\_assignments](#module\_uat\_pci\_assignments) | ./modules/uat_pci | n/a |
 
 ## Resources
 
