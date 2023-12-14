@@ -81,7 +81,7 @@ resource "azurerm_management_group_policy_exemption" "pagopa_azure_security_benc
   exemption_category   = "Waiver"
   description          = "Motivation at https://pagopa.atlassian.net/wiki/spaces/DEVOPS/pages/608960613/Azure+Policy+-+Azure+Security+Benchmark"
   policy_definition_reference_ids = [
-    "ensureWEBAppHasClientCertificatesIncomingClientCertificatesSetToOnMonitoringEffect",
+    "ensureWebAppHasIncomingClientCertificatesSetToOnMonitoringEffect",
     "functionAppsShouldHaveClientCertificatesEnabledMonitoringEffect",
   ]
 }
