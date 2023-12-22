@@ -1,5 +1,5 @@
 locals {
-  audit_logs =
+  audit_logs = {
     reference_ids = {
       api_management_storageid_northeurope = "api_management_storageid_northeurope"
       api_management_storageid_westeurope = "api_management_storageid_westeurope"
