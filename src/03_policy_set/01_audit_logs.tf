@@ -1,25 +1,20 @@
 variable "audit_logs_workspace_id" {
-  type        = string
-  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"
-  description = "description"
+  type    = string
+  default = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"
 }
 
-variable "audit_logs_storage_id_westeurope" {
-  type        = string
-  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
-  description = "description"
+variable "audit_logs_storage_ids" {
+  type = map(string)
+  default = {
+    westeurope  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
+    northeurope = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
+    italynorth  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
+  }
 }
 
-variable "audit_logs_storage_id_northeurope" {
-  type        = string
-  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
-  description = "description"
-}
-
-variable "audit_logs_storage_id_italynorth" {
-  type        = string
-  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
-  description = "description"
+variable "audit_logs_storage_regions" {
+  type    = list(string)
+  default = ["west_europe", "northeurope", "italynorth"]
 }
 
 resource "azurerm_policy_set_definition" "audit_logs" {
@@ -37,114 +32,20 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     }
   })
 
-  ## Key vault
-
+  ## Workspace
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.keyvault_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.keyvault}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.keyvault_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.keyvault_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.keyvault_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Application Gateway
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.application_gateway_workspaceid
-    parameter_values = jsonencode({
-      logAnalytics = {
-        value = var.audit_logs_workspace_id
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.application_gateway_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.application_gateway_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.application_gateway_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-
-  ## Container Registry
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.container_registry_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.container_registry}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
@@ -152,50 +53,9 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.container_registry_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.container_registry_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.container_registry_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Kubernetes Cluster
-
   # policy_definition_reference {
   #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
-  #   reference_id         = local.audit_logs.reference_ids.kubernetes_cluster_workspaceid
+  #   reference_id         = "${local.audit_logs.reference_ids.kubernetes_cluster}_workspaceid"
   #   parameter_values = jsonencode({
   #     logAnalytics = {
   #       value = var.audit_logs_workspace_id
@@ -203,560 +63,110 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   #   })
   # }
   #
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.reference_ids.kubernetes_cluster_storageid_westeurope
-  #   parameter_values = jsonencode({
-  #     storageAccount = {
-  #       value = var.audit_logs_storage_id_westeurope
-  #     }
-  #     location = {
-  #       value = "westeurope"
-  #     }
-  #   })
-  # }
-  #
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.reference_ids.kubernetes_cluster_storageid_northeurope
-  #   parameter_values = jsonencode({
-  #     storageAccount = {
-  #       value = var.audit_logs_storage_id_northeurope
-  #     }
-  #     location = {
-  #       value = "northeurope"
-  #     }
-  #   })
-  # }
-  #
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.reference_ids.kubernetes_cluster_storageid_italynorth
-  #   parameter_values = jsonencode({
-  #     storageAccount = {
-  #       value = var.audit_logs_storage_id_italynorth
-  #     }
-  #     location = {
-  #       value = "italynorth"
-  #     }
-  #   })
-  # }
-
-  ## Api Management
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.api_management_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.api_management}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.api_management_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.api_management_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.api_management_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Postgresql Flexible
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_flexible_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.postgresql_flexible}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_flexible_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_flexible_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_flexible_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Postgresql Flexible
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_single_server_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.postgresql_single_server}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_single_server_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_single_server_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.postgresql_single_server_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Log Analytics Workspace
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.log_analytics_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.log_analytics}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.log_analytics_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.log_analytics_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.log_analytics_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Cosmos DB
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.cosmos_db_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.cosmos_db}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.cosmos_db_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.cosmos_db_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.cosmos_db_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## App Service
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.app_service_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.app_service}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.app_service_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.app_service_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.app_service_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Event Hub
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.event_hub_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.event_hub}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.event_hub_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.event_hub_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.event_hub_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Public IP
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.public_ip_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.public_ip}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.public_ip_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.public_ip_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.public_ip_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Virtual Network Gateway
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.virtual_network_gateway_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.virtual_network_gateway}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.virtual_network_gateway_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.virtual_network_gateway_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.virtual_network_gateway_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Grafana
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.grafana_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.grafana}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
       }
     })
   }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.grafana_storageid_westeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
-      }
-      location = {
-        value = "westeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.grafana_storageid_northeurope
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_northeurope
-      }
-      location = {
-        value = "northeurope"
-      }
-    })
-  }
-
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.grafana_storageid_italynorth
-    parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_italynorth
-      }
-      location = {
-        value = "italynorth"
-      }
-    })
-  }
-
-  ## Subscription
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_log_analytics_id
-    reference_id         = local.audit_logs.reference_ids.subscription_workspaceid
+    reference_id         = "${local.audit_logs.reference_ids.subscription}_workspaceid"
     parameter_values = jsonencode({
       logAnalytics = {
         value = var.audit_logs_workspace_id
@@ -765,15 +175,270 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
-    reference_id         = local.audit_logs.reference_ids.subscription_storageid_westeurope
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_log_analytics_id
+    reference_id         = "${local.audit_logs.reference_ids.application_gateway}_workspaceid"
     parameter_values = jsonencode({
-      storageAccount = {
-        value = var.audit_logs_storage_id_westeurope
+      logAnalytics = {
+        value = var.audit_logs_workspace_id
       }
     })
   }
 
+  ## Storage
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.keyvault}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.application_gateway}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.container_registry}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  # policy_definition_reference {
+  #   for_each = var.audit_logs_storage_regions
+  #
+  #   content {
+  #     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
+  #     reference_id         = "${local.audit_logs.reference_ids.kubernetes_cluster}_storageid_${each.value}"
+  #     parameter_values = jsonencode({
+  #       storageAccount = {
+  #         value = var.audit_logs_storage_ids[each.value]
+  #       }
+  #       location = {
+  #         value = "westeurope"
+  #       }
+  #     })
+  #   }
+  # }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.api_management}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.postgresql_flexible}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.postgresql_single_server}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.log_analytics}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.cosmos_db}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.app_service}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.event_hub}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.public_ip}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.virtual_network_gateway}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = var.audit_logs_storage_regions
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.grafana}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
+
+  policy_definition_reference {
+    for_each = ["west_europe", "italynorth"]
+
+    content {
+      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
+      reference_id         = "${local.audit_logs.reference_ids.subscription}_storageid_${each.value}"
+      parameter_values = jsonencode({
+        storageAccount = {
+          value = var.audit_logs_storage_ids[each.value]
+        }
+        location = {
+          value = each.value
+        }
+      })
+    }
+  }
 }
 
 output "audit_logs_id" {
@@ -785,13 +450,13 @@ output "audit_logs_workspace_id" {
 }
 
 output "audit_logs_storage_id_westeurope" {
-  value = var.audit_logs_storage_id_westeurope
+  value = var.audit_logs_storage_ids.westeurope
 }
 
 output "audit_logs_storage_id_northeurope" {
-  value = var.audit_logs_storage_id_northeurope
+  value = var.audit_logs_storage_ids.northeurope
 }
 
 output "audit_logs_storage_id_italynorth" {
-  value = var.audit_logs_storage_id_italynorth
+  value = var.audit_logs_storage_ids.italynorth
 }
