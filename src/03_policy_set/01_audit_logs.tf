@@ -14,7 +14,7 @@ variable "audit_logs_storage_ids" {
 
 variable "audit_logs_storage_regions" {
   type    = list(string)
-  default = ["west_europe", "northeurope", "italynorth"]
+  default = ["westeurope", "northeurope", "italynorth"]
 }
 
 resource "azurerm_policy_set_definition" "audit_logs" {
@@ -28,7 +28,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {
-      for _, param in local.audit_logs : "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id
+      for _, param in local.audit_logs.reference_ids : "${param} : ${param}" => data.azurerm_management_group.pagopa.id
     }
   })
 
@@ -62,7 +62,6 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   #     }
   #   })
   # }
-  #
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_log_analytics_id
@@ -185,52 +184,52 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   ## Storage
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.keyvault}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.keyvault}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.application_gateway}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.application_gateway}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.container_registry}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.container_registry}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
@@ -241,10 +240,10 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   #
   #   content {
   #     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #     reference_id         = "${local.audit_logs.reference_ids.kubernetes_cluster}_storageid_${each.value}"
+  #     reference_id         = "${local.audit_logs.reference_ids.kubernetes_cluster}_storageid_${policy_definition_reference.value}"
   #     parameter_values = jsonencode({
   #       storageAccount = {
-  #         value = var.audit_logs_storage_ids[each.value]
+  #         value = var.audit_logs_storage_ids[policy_definition_reference.value]
   #       }
   #       location = {
   #         value = "westeurope"
@@ -253,188 +252,188 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   #   }
   # }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.api_management}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.api_management}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.postgresql_flexible}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.postgresql_flexible}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.postgresql_single_server}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.postgresql_single_server}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.log_analytics}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.log_analytics}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.cosmos_db}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.cosmos_db}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.app_service}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.app_service}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.event_hub}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.event_hub}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.public_ip}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.public_ip}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.virtual_network_gateway}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.virtual_network_gateway}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
+  dynamic "policy_definition_reference" {
     for_each = var.audit_logs_storage_regions
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.grafana}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.grafana}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
   }
 
-  policy_definition_reference {
-    for_each = ["west_europe", "italynorth"]
+  dynamic "policy_definition_reference" {
+    for_each = ["westeurope"]
 
     content {
       policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.subscription}_storageid_${each.value}"
+      reference_id         = "${local.audit_logs.reference_ids.subscription}_storageid_${policy_definition_reference.value}"
       parameter_values = jsonencode({
         storageAccount = {
-          value = var.audit_logs_storage_ids[each.value]
+          value = var.audit_logs_storage_ids[policy_definition_reference.value]
         }
         location = {
-          value = each.value
+          value = policy_definition_reference.value
         }
       })
     }
