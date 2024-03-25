@@ -36,7 +36,7 @@
                       },
                       {
                         "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "equals": "audit"
+                        "equals": "allLogs"
                       }
                     ]
                   }
@@ -83,7 +83,7 @@
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
-                      "categoryGroup": "audit",
+                      "categoryGroup": "allLogs",
                       "enabled": true
                     }
                   ]

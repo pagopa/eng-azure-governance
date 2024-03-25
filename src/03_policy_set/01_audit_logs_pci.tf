@@ -7,8 +7,8 @@ variable "audit_logs_pci_storage_ids" {
   type = map(string)
   default = {
     westeurope  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
-    northeurope = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
-    italynorth  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
+    northeurope = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-neu/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
+    italynorth  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-nit/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
   }
 }
 
@@ -49,7 +49,7 @@ resource "azurerm_policy_set_definition" "audit_logs_pci" {
     version  = "v1.0.0"
     ASC      = "true"
     parameterScopes = {
-      for _, param in local.audit_logs_pci : "${param.reference_id} : ${param.reference_id}" => data.azurerm_management_group.pagopa.id
+      for _, param in local.audit_logs_pci.reference_ids : "${param} : ${param}" => data.azurerm_management_group.pagopa.id
     }
   })
 

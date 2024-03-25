@@ -23,18 +23,6 @@ variable "metadata_category_name" {
   default     = "Custom PagoPA"
 }
 
-variable "audit_logs" {
-  description = "Audit logs configuration"
-  type        = map(string)
-  default = {
-    workspace_id                        = "novalue"
-    storage_primary_region_storage_id   = "novalue"
-    storage_primary_region_location     = "novalue"
-    storage_secondary_region_storage_id = "novalue"
-    storage_secondary_region_location   = "novalue"
-  }
-}
-
 variable "metrics_logs" {
   description = "Metrics logs configuration"
   type        = map(string)

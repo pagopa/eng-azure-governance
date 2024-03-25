@@ -2,10 +2,12 @@ variable "redis_dev" {
   type = object({
     listofallowedskuname     = list(string)
     listofallowedskucapacity = list(string)
+    listofallowedtlseffect   = string
   })
   default = {
     listofallowedskuname     = ["Basic"]
     listofallowedskucapacity = ["0", "1"]
+    listofallowedtlseffect   = "Audit"
   }
   description = "List of redis policy set parameters"
 }
@@ -29,7 +31,11 @@ resource "azurerm_policy_set_definition" "redis_dev" {
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_tls_id
-    parameter_values     = jsonencode({})
+    parameter_values = jsonencode({
+      effect = {
+        value = var.redis_dev.listofallowedtlseffect
+      }
+    })
   }
 
   policy_definition_reference {

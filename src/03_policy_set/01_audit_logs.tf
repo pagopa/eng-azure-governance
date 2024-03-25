@@ -7,8 +7,8 @@ variable "audit_logs_storage_ids" {
   type = map(string)
   default = {
     westeurope  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"
-    northeurope = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
-    italynorth  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
+    northeurope = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-neu/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
+    italynorth  = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-nit/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
   }
 }
 
@@ -444,21 +444,15 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     }
   }
 
-  dynamic "policy_definition_reference" {
-    for_each = ["westeurope"]
-
-    content {
-      policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
-      reference_id         = "${local.audit_logs.reference_ids.subscription}_storageid_${policy_definition_reference.value}"
-      parameter_values = jsonencode({
-        storageAccount = {
-          value = var.audit_logs_storage_ids[policy_definition_reference.value]
-        }
-        location = {
-          value = policy_definition_reference.value
-        }
-      })
-    }
+  # Subscription logs must be send to west europe storage account
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
+    reference_id         = "${local.audit_logs.reference_ids.subscription}_storageid_westeurope"
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_ids.westeurope
+      }
+    })
   }
 }
 
