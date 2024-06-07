@@ -16,6 +16,7 @@ resource "azurerm_role_definition" "iac_reader" {
       "Microsoft.ServiceBus/namespaces/queues/authorizationRules/listKeys/action",
       "Microsoft.Cache/redis/listKeys/action",
       "Microsoft.Web/sites/host/listkeys/action",
+      "Microsoft.NotificationHubs/namespaces/notificationHubs/pnsCredentials/action", #list NotificationHub PNS credentials
     ]
   }
 }
