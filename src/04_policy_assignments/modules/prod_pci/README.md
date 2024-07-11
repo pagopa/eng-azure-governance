@@ -16,6 +16,8 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_role_assignment.audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.audit_logs_contributor_storage_italynorth](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.audit_logs_contributor_storage_northeurope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_role_assignment.metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
@@ -29,7 +31,6 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_audit_logs"></a> [audit\_logs](#input\_audit\_logs) | Audit logs configuration | `map(string)` | <pre>{<br>  "storage_primary_region_location": "novalue",<br>  "storage_primary_region_storage_id": "novalue",<br>  "storage_secondary_region_location": "novalue",<br>  "storage_secondary_region_storage_id": "novalue",<br>  "workspace_id": "novalue"<br>}</pre> | no |
 | <a name="input_location"></a> [location](#input\_location) | The Azure Region where the Policy Assignment should exist | `string` | n/a | yes |
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | Metadata category name | `string` | `"Custom PagoPA"` | no |
 | <a name="input_metrics_logs"></a> [metrics\_logs](#input\_metrics\_logs) | Metrics logs configuration | `map(string)` | <pre>{<br>  "workspace_id": "novalue"<br>}</pre> | no |
