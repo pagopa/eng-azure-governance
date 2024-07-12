@@ -6,8 +6,9 @@ locals {
       regex        = "^([^\\/]+\\.azurecr\\.io|ghcr\\.io\\/pagopa|ghcr\\.io\\/kedacore|mcr\\.microsoft\\.com\\/azure-storage)\\/.+$"
     }
     disable_privileged_containers = {
-      reference_id = "disable_privileged_containers_reference_id"
-      effect       = "Deny"
+      reference_id        = "disable_privileged_containers_reference_id"
+      effect              = "Deny"
+      excluded_namespaces = ["kube-system", "gatekeeper-system", "azure-arc", "azure-extensions-usage-system", "elastic-system"]
     }
     disable_privilege_escalation = {
       reference_id = "disable_privilege_escalation_reference_id"
@@ -77,6 +78,9 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
     parameter_values = jsonencode({
       effect = {
         value = local.kubernetes_prod.disable_privileged_containers.effect
+      }
+      excludedNamespaces = {
+        value = local.kubernetes_prod.disable_privileged_containers.excluded_namespaces
       }
     })
   }
