@@ -26,6 +26,8 @@ No modules.
 | [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.authorization_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.ddos_joiner](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.dns_takeover](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.dns_zone_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.export_deployments_template](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.iac_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.policy_exempt](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
