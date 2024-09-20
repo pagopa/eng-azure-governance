@@ -11,6 +11,7 @@ locals {
     "PROD-pagoPA",
     "PROD-PCI",
     "ORG",
+    "ORG-PCI",
     "Common",
     "DevOpsAutomation",
   ]
