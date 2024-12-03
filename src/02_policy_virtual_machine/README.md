@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -34,4 +34,4 @@ No modules.
 |------|-------------|
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 | <a name="output_virtual_machine_allowed_sku_id"></a> [virtual\_machine\_allowed\_sku\_id](#output\_virtual\_machine\_allowed\_sku\_id) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

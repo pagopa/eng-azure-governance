@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -40,4 +40,4 @@ No modules.
 | <a name="output_postgresql_allowed_sku_id"></a> [postgresql\_allowed\_sku\_id](#output\_postgresql\_allowed\_sku\_id) | n/a |
 | <a name="output_postgresql_required_engine_version_id"></a> [postgresql\_required\_engine\_version\_id](#output\_postgresql\_required\_engine\_version\_id) | n/a |
 | <a name="output_postgresql_required_flexible_georedundancy_id"></a> [postgresql\_required\_flexible\_georedundancy\_id](#output\_postgresql\_required\_flexible\_georedundancy\_id) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

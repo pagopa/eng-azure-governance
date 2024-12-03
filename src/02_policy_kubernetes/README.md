@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -42,4 +42,4 @@ No modules.
 | <a name="output_kubernetes_required_image_sha256_id"></a> [kubernetes\_required\_image\_sha256\_id](#output\_kubernetes\_required\_image\_sha256\_id) | n/a |
 | <a name="output_kubernetes_required_policy_addon_id"></a> [kubernetes\_required\_policy\_addon\_id](#output\_kubernetes\_required\_policy\_addon\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

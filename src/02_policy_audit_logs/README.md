@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -94,4 +94,4 @@ No modules.
 | <a name="output_audit_logs_virtual_network_gateway_log_analytics_id"></a> [audit\_logs\_virtual\_network\_gateway\_log\_analytics\_id](#output\_audit\_logs\_virtual\_network\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_virtual_network_gateway_storage_account_id"></a> [audit\_logs\_virtual\_network\_gateway\_storage\_account\_id](#output\_audit\_logs\_virtual\_network\_gateway\_storage\_account\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

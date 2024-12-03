@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -36,4 +36,4 @@ No modules.
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 | <a name="output_tags_require_tag_id"></a> [tags\_require\_tag\_id](#output\_tags\_require\_tag\_id) | n/a |
 | <a name="output_tags_require_tag_values_id"></a> [tags\_require\_tag\_values\_id](#output\_tags\_require\_tag\_values\_id) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -38,4 +38,4 @@ No modules.
 | <a name="output_application_gateway_allowed_sku_id"></a> [application\_gateway\_allowed\_sku\_id](#output\_application\_gateway\_allowed\_sku\_id) | n/a |
 | <a name="output_application_gateway_required_zones_id"></a> [application\_gateway\_required\_zones\_id](#output\_application\_gateway\_required\_zones\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

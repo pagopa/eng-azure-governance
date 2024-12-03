@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -40,4 +40,4 @@ No modules.
 | <a name="output_redis_allowed_tls_id"></a> [redis\_allowed\_tls\_id](#output\_redis\_allowed\_tls\_id) | n/a |
 | <a name="output_redis_allowed_versions_id"></a> [redis\_allowed\_versions\_id](#output\_redis\_allowed\_versions\_id) | n/a |
 | <a name="output_redis_disable_nosslport_id"></a> [redis\_disable\_nosslport\_id](#output\_redis\_disable\_nosslport\_id) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
