@@ -1,0 +1,75 @@
+name: Terraform Drift Detection
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1' #Every Monday at 9:00
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  DIR: "src/"
+
+
+jobs:
+  terraform-drift-detection:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.5.0'  # Adjust to your desired version
+
+      # Step 3: Log in to Azure using Service Principal
+      - name: Login to Azure using Service Principal
+        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+
+      # # Step 4: List directories under /src
+      # - name: List directories under /src
+      #   run: |
+      #     echo "Listing directories under /src"
+      #     ls -d $DIR*/
+
+      # Step 5: Terraform Drift Detection for all folders under /src
+      - name: Terraform Drift Detection for all folders under /src
+        run: |
+          cd $DIR
+          # Loop through each folder under /src dynamically
+          for folder in $(ls -d */); do
+            echo "Running Terraform plan for $folder"
+            
+            # Change into the directory
+            cd $folder
+
+            # Initialize Terraform in the folder (this assumes backend config is set)
+            terraform init 
+
+            # Run terraform plan, display output, and check the exit code directly
+            terraform plan -detailed-exitcode
+
+            # Check the exit code of terraform plan
+            if [ $? -eq 0 ]; then
+              echo "No drift detected in $folder."
+            elif [ $? -eq 1 ]; then
+              echo "Drift detected in $folder."
+              exit 1  # This will cause the job to fail immediately 
+            else
+              echo "An error occurred while running terraform plan in $folder."
+              exit 1  # This will cause the job to fail if terraform plan fails
+            fi
+
+            # Return to the root directory before processing the next folder
+            cd - || exit
+          done
