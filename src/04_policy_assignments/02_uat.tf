@@ -6,6 +6,10 @@ locals {
     "UAT-SelfCare",
     "UAT-pagoPA",
     "UAT-PCI",
+    "UAT-P4PA",
+    "UAT-ARC",
+    "UAT-FATTURAZIONE",
+    "UAT-CRM",
   ]
 }
 

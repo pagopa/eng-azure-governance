@@ -8,6 +8,12 @@ locals {
     "DEV-pagoPA",
     "DEV-PCI",
     "DevOpsLab",
+    "DEV-Assistenza",
+    "DEV-P4PA",
+    "DEV-ARC",
+    "DEV-GRC",
+    "DEV-ICT",
+    "DEV-CRM",
   ]
 }
 
