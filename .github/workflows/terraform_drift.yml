@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 9 * * 1' #Every Monday at 9:00
+    
 
 permissions:
   id-token: write
@@ -11,30 +12,34 @@ permissions:
 
 env:
   DIR: "src/"
-
-
+  
 jobs:
   terraform-drift-detection:
+    environment: prod 
     runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout the repository
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # Step 2: Setup Terraform
+      - name: Set Terraform Version
+        id: env_tf_version
+        run: |
+          echo "terraform_version=$(cat .terraform-version)" >> $GITHUB_OUTPUT
 
-      # Step 2: Set up Terraform
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
+        id: terraform_setup
+        name: Setup Terraform
         with:
-          terraform_version: '1.5.0'  # Adjust to your desired version
-
-      # Step 3: Log in to Azure using Service Principal
-      - name: Login to Azure using Service Principal
-        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
+          terraform_version: ${{ steps.env_tf_version.outputs.terraform_version}}
+          terraform_wrapper: true
+      # Step 3: Log in to Azure 
+      - name: Login to Azure 
+        uses: azure/login@a65d910e8af852a8061c627c456678983e180302
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-id: ${{ secrets.AZ_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZ_TENANT_ID }}
 
       # # Step 4: List directories under /src
       # - name: List directories under /src
@@ -53,22 +58,7 @@ jobs:
             # Change into the directory
             cd $folder
 
-            # Initialize Terraform in the folder (this assumes backend config is set)
-            terraform init 
-
-            # Run terraform plan, display output, and check the exit code directly
-            terraform plan -detailed-exitcode
-
-            # Check the exit code of terraform plan
-            if [ $? -eq 0 ]; then
-              echo "No drift detected in $folder."
-            elif [ $? -eq 1 ]; then
-              echo "Drift detected in $folder."
-              exit 1  # This will cause the job to fail immediately 
-            else
-              echo "An error occurred while running terraform plan in $folder."
-              exit 1  # This will cause the job to fail if terraform plan fails
-            fi
+            ./terraform.sh plan -detailed-exitcode
 
             # Return to the root directory before processing the next folder
             cd - || exit
