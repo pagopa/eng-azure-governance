@@ -8,5 +8,5 @@ data "azurerm_storage_account" "tfinforg" {
 }
 
 data "azurerm_resource_group" "identity" {
-  name     = "${local.project}-identity-rg"
+  name = "${local.project}-identity-rg"
 }
