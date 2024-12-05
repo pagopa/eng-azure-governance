@@ -16,7 +16,7 @@ env:
 jobs:
   terraform-drift-detection:
     environment: prod 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       # Step 1: Checkout the repository
@@ -32,7 +32,7 @@ jobs:
         id: terraform_setup
         name: Setup Terraform
         with:
-          terraform_version: ${{ steps.env_tf_version.outputs.terraform_version}}
+          terraform_version: ${{ steps.env_tf_version.outputs.terraform_version }}
           terraform_wrapper: true
       # Step 3: Log in to Azure 
       - name: Login to Azure 
