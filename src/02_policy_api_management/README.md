@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -36,4 +36,4 @@ No modules.
 | <a name="output_api_management_allowed_versions_id"></a> [api\_management\_allowed\_versions\_id](#output\_api\_management\_allowed\_versions\_id) | n/a |
 | <a name="output_api_management_require_vnet_id"></a> [api\_management\_require\_vnet\_id](#output\_api\_management\_require\_vnet\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

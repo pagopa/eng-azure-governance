@@ -1,7 +1,7 @@
 # policy
 
 <!-- markdownlint-disable -->
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -38,4 +38,4 @@ No modules.
 | <a name="output_app_service_allowed_sku_id"></a> [app\_service\_allowed\_sku\_id](#output\_app\_service\_allowed\_sku\_id) | n/a |
 | <a name="output_function_app_allowed_linuxfxversion_id"></a> [function\_app\_allowed\_linuxfxversion\_id](#output\_function\_app\_allowed\_linuxfxversion\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
