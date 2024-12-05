@@ -1,0 +1,11 @@
+resource "azurerm_role_assignment" "pullrequest_authorization_reader" {
+  scope                = data.azurerm_management_group.pagopa.id
+  role_definition_name = "PagoPA Authorization Reader"
+  principal_id         = azurerm_user_assigned_identity.pullrequest.principal_id
+}
+
+resource "azurerm_role_assignment" "pullrequest_tfapporg" {
+  scope                = data.azurerm_storage_account.tfapporg.id
+  role_definition_name = "Reader and Data Access"
+  principal_id         = azurerm_user_assigned_identity.pullrequest.principal_id
+}

@@ -1,0 +1,65 @@
+name: Terraform Drift Detection
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * 1' #Every Monday at 9:00
+    
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  DIR: "src/"
+  
+jobs:
+  terraform-drift-detection:
+    environment: prod 
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # Step 2: Setup Terraform
+      - name: Set Terraform Version
+        id: env_tf_version
+        run: |
+          echo "terraform_version=$(cat .terraform-version)" >> $GITHUB_OUTPUT
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
+        id: terraform_setup
+        name: Setup Terraform
+        with:
+          terraform_version: ${{ steps.env_tf_version.outputs.terraform_version }}
+          terraform_wrapper: true
+      # Step 3: Log in to Azure 
+      - name: Login to Azure 
+        uses: azure/login@a65d910e8af852a8061c627c456678983e180302
+        with:
+          client-id: ${{ secrets.AZ_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZ_TENANT_ID }}
+
+      # # Step 4: List directories under /src
+      # - name: List directories under /src
+      #   run: |
+      #     echo "Listing directories under /src"
+      #     ls -d $DIR*/
+
+      # Step 5: Terraform Drift Detection for all folders under /src
+      - name: Terraform Drift Detection for all folders under /src
+        run: |
+          cd $DIR
+          # Loop through each folder under /src dynamically
+          for folder in $(ls -d */); do
+            echo "Running Terraform plan for $folder"
+            
+            # Change into the directory
+            cd $folder
+
+            ./terraform.sh plan -detailed-exitcode
+
+            # Return to the root directory before processing the next folder
+            cd - || exit
+          done
