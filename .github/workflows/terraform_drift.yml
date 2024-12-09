@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 9 * * 1' #Every Monday at 9:00
-    
+
 
 permissions:
   id-token: write
@@ -12,10 +12,10 @@ permissions:
 
 env:
   DIR: "src/"
-  
+
 jobs:
   terraform-drift-detection:
-    environment: prod 
+    environment: prod
     runs-on: ubuntu-22.04
 
     steps:
@@ -34,12 +34,13 @@ jobs:
         with:
           terraform_version: ${{ steps.env_tf_version.outputs.terraform_version }}
           terraform_wrapper: true
-      # Step 3: Log in to Azure 
-      - name: Login to Azure 
+      # Step 3: Log in to Azure
+      - name: Login to Azure
         uses: azure/login@a65d910e8af852a8061c627c456678983e180302
         with:
           client-id: ${{ secrets.AZ_CLIENT_ID }}
           tenant-id: ${{ secrets.AZ_TENANT_ID }}
+          subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
 
       # # Step 4: List directories under /src
       # - name: List directories under /src
@@ -54,7 +55,7 @@ jobs:
           # Loop through each folder under /src dynamically
           for folder in $(ls -d */); do
             echo "Running Terraform plan for $folder"
-            
+
             # Change into the directory
             cd $folder
 
