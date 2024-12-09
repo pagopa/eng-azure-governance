@@ -50,6 +50,11 @@ jobs:
 
       # Step 5: Terraform Drift Detection for all folders under /src
       - name: Terraform Drift Detection for all folders under /src
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZ_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZ_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: 'true'
         run: |
           cd $DIR
           # Loop through each folder under /src dynamically
