@@ -76,5 +76,5 @@ jobs:
             fi
 
             # Return to the root directory before processing the next folder
-            cd - || exit
+           
           done
