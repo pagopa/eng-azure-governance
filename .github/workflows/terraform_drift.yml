@@ -60,23 +60,20 @@ jobs:
             # Change into the directory
             cd $folder
             
-            ./terraform.sh plan -detailed-exitcode -lock=false || export exitcode=$?
-        
-            echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
-        
-     
-            if [ $exitcode -eq 2 ]; then
-                echo "Terraform drift detected in $folder."
-                exit 1
-            elif [ $exitcode -eq 1 ]; then
-                echo "Terraform error in $folder."
-                exit 1  # This will cause the job to fail immediately on drift detection
-            elif [ $exitcode -eq 0 ]; then
-                echo "No drift detected in $folder."
-                exit 0  # This will cause the job to fail immediately on drift detection
+            ./terraform.sh plan -detailed-exitcode -lock=false
+            result=$?
+            if [ $result -eq 2 ]; then
+              echo "No drift detected in $folder."
+              exit 1
+            elif [ $result -eq 1 ]; then
+              echo "Terraform error in $folder."
+              exit 1  # This will cause the job to fail immediately on drift detection
+            elif [ $result -eq 0 ]; then
+              echo "Terraform drift detected in $folder."
+              exit 0  # This will cause the job to fail immediately on drift detection
             else
-                echo "Other error in $folder."
-                exit 1  # This will cause the job to fail immediately on drift detection
+              echo "Other error in $folder."
+              exit 1  # This will cause the job to fail immediately on drift detection
             fi
 
           done
