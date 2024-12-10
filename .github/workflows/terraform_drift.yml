@@ -59,8 +59,6 @@ jobs:
 
             # Change into the directory
             cd $folder
-
-            export exitcode=0
             
             ./terraform.sh plan -detailed-exitcode -lock=false || export exitcode=$?
         
