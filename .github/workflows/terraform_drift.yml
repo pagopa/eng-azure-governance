@@ -53,6 +53,9 @@ jobs:
           ARM_USE_OIDC: 'true'
         run: |
           cd $DIR
+          
+          export result=0
+
           # Loop through each folder under /src dynamically
           for folder in $(ls -d */); do
             echo "Running Terraform plan for $folder"
@@ -60,8 +63,8 @@ jobs:
             # Change into the directory
             cd $folder
             
-            ./terraform.sh plan -detailed-exitcode -lock=false
-            result=$?
+            ./terraform.sh plan -detailed-exitcode -lock=false || export result=$?
+            
             if [ $result -eq 2 ]; then
               echo "No drift detected in $folder."
               exit 1
