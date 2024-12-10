@@ -61,13 +61,13 @@ jobs:
             cd $folder
 
             ./terraform.sh plan -detailed-exitcode
-            echo $?
-            if [ $? -eq 0 ]; then
+            result=$?
+            if [ $result -eq 0 ]; then
               echo "No drift detected in $folder."
-            elif [ $? -eq 1 ]; then
+            elif [ $result -eq 1 ]; then
               echo "Terraform error in $folder."
               exit 1  # This will cause the job to fail immediately on drift detection
-            elif [ $? -eq 2 ]; then
+            elif [ $result -eq 2 ]; then
               echo "Terraform drift detected in $folder."
               exit 1  # This will cause the job to fail immediately on drift detection
             else
