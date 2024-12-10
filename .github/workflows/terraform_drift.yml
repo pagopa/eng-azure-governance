@@ -67,22 +67,18 @@ jobs:
             echo "exitcode=$exitcode" >> $GITHUB_OUTPUT
         
      
-          case $exitcode in
-             0)
-              echo "No drift detected in $folder."
-              ;;
-            1)
-             echo "Terraform error in $folder."
-             exit 1  # This will cause the job to fail immediately on error
-             ;;
-            2)
-            echo "Terraform drift detected in $folder."
-            exit 1  # This will cause the job to fail immediately on drift detection
-            ;;
-           *)
-            echo "Other error in $folder."
-            exit 1  # This will cause the job to fail immediately on error
-            ;;
-          esac
+            if [ $exitcode -eq 2 ]; then
+                echo "Terraform drift detected in $folder."
+                exit 1
+            elif [ $exitcode -eq 1 ]; then
+                echo "Terraform error in $folder."
+                exit 1  # This will cause the job to fail immediately on drift detection
+            elif [ $exitcode -eq 0 ]; then
+                echo "No drift detected in $folder."
+                exit 0  # This will cause the job to fail immediately on drift detection
+            else
+                echo "Other error in $folder."
+                exit 1  # This will cause the job to fail immediately on drift detection
+            fi
 
           done
