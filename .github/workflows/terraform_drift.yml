@@ -60,7 +60,7 @@ jobs:
             # Change into the directory
             cd $folder
 
-            ./terraform.sh plan -detailed-exitcode
+            ./terraform.sh plan -detailed-exitcode -lock=false
             result=$?
             if [ $result -eq 0 ]; then
               echo "No drift detected in $folder."
