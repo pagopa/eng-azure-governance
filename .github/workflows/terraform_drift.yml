@@ -61,7 +61,7 @@ jobs:
             cd $folder
 
             ./terraform.sh plan -detailed-exitcode
-
+            echo $?
             if [ $? -eq 0 ]; then
               echo "No drift detected in $folder."
             elif [ $? -eq 1 ]; then
