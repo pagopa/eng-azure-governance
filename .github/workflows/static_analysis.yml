@@ -39,7 +39,6 @@ jobs:
             02_policy_virtual_machine_scale_set
             03_policy_set
             04_policy_assignments
-            governance
         run: |
           TAG=$(cat .terraform-version)
           cd src/
