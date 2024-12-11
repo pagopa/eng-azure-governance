@@ -34,7 +34,7 @@ jobs:
         name: Setup Terraform
         with:
           terraform_version: ${{ steps.env_tf_version.outputs.terraform_version }}
-          terraform_wrapper: true
+          terraform_wrapper: false
 
       # Step 3: Log in to Azure
       - name: Login to Azure
