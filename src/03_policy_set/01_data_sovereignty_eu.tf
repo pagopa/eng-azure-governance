@@ -10,6 +10,16 @@ variable "allowed_locations_resource_groups" {
   description = "List of allowed locations for resource groups"
 }
 
+variable "allowed_locations_cosmosdb" {
+  type        = list(string)
+  default     = ["italynorth", "northeurope", "westeurope"]
+  description = "List of allowed locations for CosmosDB"
+}
+
+data "azurerm_policy_definition" "azure_cosmos_db_allowed_locations" {
+  name = "Azure Cosmos DB allowed locations"
+}
+
 locals {
   data_sovereignty_eu = {
     allowed_locations_policy_definition = {
@@ -54,6 +64,19 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
     parameter_values = jsonencode({
       listOfAllowedLocations = {
         value = var.allowed_locations_resource_groups
+      }
+    })
+  }
+
+  # Allowed locations for Cosmos
+  policy_definition_reference {
+    policy_definition_id = data.azurerm_policy_definition.azure_cosmos_db_allowed_locations.id
+    parameter_values = jsonencode({
+      listOfAllowedLocations = {
+        value = var.allowed_locations_cosmosdb
+      },
+      policyEffect = {
+        value = "Audit"
       }
     })
   }
