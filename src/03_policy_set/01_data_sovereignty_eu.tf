@@ -1,23 +1,19 @@
 variable "allowed_locations" {
   type        = list(string)
-  default     = ["italynorth", "northeurope", "westeurope", "global"]
+  default     = ["italynorth", "northeurope", "westeurope", "spaincentral", "global"]
   description = "List of allowed locations for resources"
 }
 
 variable "allowed_locations_resource_groups" {
   type        = list(string)
-  default     = ["italynorth", "northeurope", "westeurope"]
+  default     = ["italynorth", "northeurope", "westeurope", "spaincentral"]
   description = "List of allowed locations for resource groups"
 }
 
 variable "allowed_locations_cosmosdb" {
   type        = list(string)
-  default     = ["italynorth", "northeurope", "westeurope"]
+  default     = ["italynorth", "northeurope", "westeurope", "spaincentral", "germanywestcentral"]
   description = "List of allowed locations for CosmosDB"
-}
-
-data "azurerm_policy_definition" "azure_cosmos_db_allowed_locations" {
-  name = "Azure Cosmos DB allowed locations"
 }
 
 locals {
@@ -27,6 +23,9 @@ locals {
     }
     allowed_locations_resource_groups_policy_definition = {
       reference_id = "allowed_locations_resource_groups_policy_definition_reference_id"
+    }
+    allowed_locations_cosmosdb_policy_definition = {
+      reference_id = "allowed_locations_cosmosdb_policy_definition_reference_id"
     }
   }
 }
@@ -70,7 +69,8 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
 
   # Allowed locations for Cosmos
   policy_definition_reference {
-    policy_definition_id = data.azurerm_policy_definition.azure_cosmos_db_allowed_locations.id
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/0473574d-2d43-4217-aefe-941fcdf7e684"
+    reference_id         = local.data_sovereignty_eu.allowed_locations_cosmosdb_policy_definition.reference_id
     parameter_values = jsonencode({
       listOfAllowedLocations = {
         value = var.allowed_locations_cosmosdb
