@@ -33,7 +33,6 @@ No modules.
 | [azurerm_role_definition.iac_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.policy_exempt](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.resource_policy_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.security_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
