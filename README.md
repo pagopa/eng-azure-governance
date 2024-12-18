@@ -2,6 +2,7 @@
 
 [![release](https://img.shields.io/github/v/release/pagopa/eng-azure-governance)](https://github.com/pagopa/eng-azure-governance/releases)
 [![Static Analysis](https://github.com/pagopa/eng-azure-governance/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/pagopa/eng-azure-governance/actions/workflows/static_analysis.yml)
+[![Terraform Drift Detection](https://github.com/pagopa/eng-azure-governance/actions/workflows/terraform_drift.yml/badge.svg)](https://github.com/pagopa/eng-azure-governance/actions/workflows/terraform_drift.yml)
 
 This project contains all PagoPA policies and assignments to governance Azure workloads.
 
