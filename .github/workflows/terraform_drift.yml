@@ -77,5 +77,5 @@ jobs:
               echo "Other error in $folder."
               exit 1  # This will cause the job to fail immediately on drift detection
             fi
-
+          cd ..
           done
