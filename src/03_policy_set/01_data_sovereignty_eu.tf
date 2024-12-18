@@ -74,9 +74,6 @@ resource "azurerm_policy_set_definition" "data_sovereignty_eu" {
     parameter_values = jsonencode({
       listOfAllowedLocations = {
         value = var.allowed_locations_cosmosdb
-      },
-      policyEffect = {
-        value = "Audit"
       }
     })
   }
