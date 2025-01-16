@@ -1,0 +1,22 @@
+{
+            "if": {
+                "allOf": [
+                    {
+                        "field": "location",
+                        "in": "[parameters('listOfLocations')]"
+                    },
+                    {
+                        "field": "type",
+                        "equals": "Microsoft.OperationalInsights/workspaces"
+                    },
+                    {
+                        "field": "Microsoft.OperationalInsights/workspaces.properties.sku.name",
+                        "in": "[parameters('listOfAllowedSku')]"
+                    }
+                ]
+            },
+            "then": {
+                "effect": "[parameters('effect')]"
+            }
+        }
+

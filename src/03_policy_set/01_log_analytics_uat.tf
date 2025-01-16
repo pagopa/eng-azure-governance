@@ -20,6 +20,11 @@ resource "azurerm_policy_set_definition" "log_analytics_uat" {
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/d550e854-df1a-4de9-bf44-cd894b39a95e"
     parameter_values     = jsonencode({})
   }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_log_analytics.outputs.log_analytics_allowed_sku_id
+    parameter_values     = jsonencode({})
+  }
 }
 
 output "log_analytics_uat_id" {
