@@ -1,5 +1,5 @@
-resource "azurerm_policy_definition" "log_analytics_allowed_sku" {
-  name                = "log_analytics_allowed_sku"
+resource "azurerm_policy_definition" "log_analytics_link_dedicated_cluster" {
+  name                = "log_analytics_link_dedicated_cluster"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA Log Analytics Workspace must be linked to dedicated cluster"
@@ -14,8 +14,8 @@ resource "azurerm_policy_definition" "log_analytics_allowed_sku" {
     }
   })
 
-  parameters = file("./policy_rules/allowed_sku_parameters.json")
+  parameters = file("./policy_rules/link_dedicated_cluster_parameters.json")
 
-  policy_rule = file("./policy_rules/allowed_sku_policy.json")
+  policy_rule = file("./policy_rules/link_dedicated_cluster_policy.json")
 
 }
