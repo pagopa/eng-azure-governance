@@ -2,14 +2,14 @@ resource "azurerm_policy_definition" "log_analytics_allowed_sku" {
   name                = "log_analytics_allowed_sku"
   policy_type         = "Custom"
   mode                = "Indexed"
-  display_name        = "PagoPA Log Analytics Workspace allowed sku"
+  display_name        = "PagoPA Log Analytics Workspace must be linked to dedicated cluster"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
     category = var.metadata_category_name
     version  = "v1.0.0"
     securityCenter = {
-      RemediationDescription = "Use Log Analytics Workspace allowed sku"
+      RemediationDescription = "Link Log Analytics Workspace to dedicated cluster"
       Severity               = "High"
     }
   })
