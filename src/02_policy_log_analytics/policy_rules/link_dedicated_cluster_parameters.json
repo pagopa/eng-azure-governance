@@ -1,0 +1,35 @@
+{
+  "listOfAllowedSku": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of Sku that can be specified for Log Analytics Workspace.",
+      "displayName": "Allowed Sku"
+    },
+    "defaultValue": [
+      "LACluster"
+    ]
+  },
+  "listOfLocations": {
+    "type": "Array",
+    "metadata": {
+      "description": "The list of locations for Log Analytics Workspaces.",
+      "displayName": "Allowed Locations"
+    },
+    "defaultValue": [
+      "westeurope"
+    ]
+  },
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
+    },
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
+    "defaultValue": "Audit"
+  }
+}

@@ -18,6 +18,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_policy_definition.log_analytics_bound_daily_quota](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.log_analytics_link_dedicated_cluster](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.log_analytics_unbound_daily_quota](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
@@ -34,6 +35,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_log_analytics_bound_daily_quota_id"></a> [log\_analytics\_bound\_daily\_quota\_id](#output\_log\_analytics\_bound\_daily\_quota\_id) | n/a |
+| <a name="output_log_analytics_link_dedicated_cluster_id"></a> [log\_analytics\_link\_dedicated\_cluster\_id](#output\_log\_analytics\_link\_dedicated\_cluster\_id) | n/a |
 | <a name="output_log_analytics_unbound_daily_quota_id"></a> [log\_analytics\_unbound\_daily\_quota\_id](#output\_log\_analytics\_unbound\_daily\_quota\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
 <!-- END_TF_DOCS -->
