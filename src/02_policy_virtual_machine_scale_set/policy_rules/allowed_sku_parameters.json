@@ -6,7 +6,10 @@
       "displayName": "Allowed SKU",
       "strongType": "vmSKUs"
     },
-    "defaultValue": ["Standard_B1ls", "Standard_B2s"]
+    "defaultValue": [
+      "Standard_B1ls",
+      "Standard_B2s"
+    ]
   },
   "effect": {
     "type": "String",
@@ -14,7 +17,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

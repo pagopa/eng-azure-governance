@@ -5,7 +5,9 @@
       "description": "The list of SKU that can be used in PostgreSQL.",
       "displayName": "Allowed SKU"
     },
-    "defaultValue": ["B_Gen5_1"]
+    "defaultValue": [
+      "B_Gen5_1"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

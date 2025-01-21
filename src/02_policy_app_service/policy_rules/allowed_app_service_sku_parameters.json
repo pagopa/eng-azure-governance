@@ -5,7 +5,10 @@
       "description": "The list of SKUs that can be specified for App Service Plans",
       "displayName": "Allowed SKUs"
     },
-    "defaultValue": ["P1v3","WS1"]
+    "defaultValue": [
+      "P1v3",
+      "WS1"
+    ]
   },
   "listOfAllowedKind": {
     "type": "Array",
@@ -13,7 +16,10 @@
       "description": "The list of Kind that can be specified for App Service Plans",
       "displayName": "Allowed Kind"
     },
-    "defaultValue": ["linux", "elastic"]
+    "defaultValue": [
+      "linux",
+      "elastic"
+    ]
   },
   "effect": {
     "type": "String",
@@ -21,7 +27,10 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the policy"
     },
-    "allowedValues": ["Audit", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

@@ -44,7 +44,8 @@
                 "equals": 8
               }
             ]
-          },          {
+          },
+          {
             "field": "Microsoft.Insights/diagnosticSettings/storageAccountId",
             "equals": "[parameters('storageAccount')]"
           }

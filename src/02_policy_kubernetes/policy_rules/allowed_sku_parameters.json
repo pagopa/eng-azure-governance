@@ -5,7 +5,9 @@
       "description": "The list of SKUs that can be specified for K8s Cluster",
       "displayName": "Allowed SKUs"
     },
-    "defaultValue": ["Standard"]
+    "defaultValue": [
+      "Standard"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

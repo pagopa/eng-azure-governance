@@ -5,7 +5,9 @@
       "description": "The list of SKUs that can be specified for Application Gateways.",
       "displayName": "Allowed SKUs"
     },
-    "defaultValue": ["WAF_v2"]
+    "defaultValue": [
+      "WAF_v2"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

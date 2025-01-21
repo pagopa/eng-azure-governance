@@ -10,8 +10,12 @@
         "sourceType": "Base64Encoded",
         "content": "${templateInfoContent}"
       },
-      "apiGroups": [""],
-      "kinds": ["Pod"],
+      "apiGroups": [
+        ""
+      ],
+      "kinds": [
+        "Pod"
+      ],
       "namespaces": "[parameters('namespaces')]",
       "excludedNamespaces": "[parameters('excludedNamespaces')]",
       "labelSelector": "[parameters('labelSelector')]",
