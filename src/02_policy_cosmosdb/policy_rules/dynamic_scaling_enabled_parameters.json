@@ -1,26 +1,15 @@
-{    
-    "listOfCapacity": {
-      "type": "Array",
-      "metadata": {
-        "description": "The list of Capacity for CosmosDB.",
-        "displayName": "Allowed Capacity"
-      },
-      "defaultValue": [
-        "Provisioned"
-      ]
+{
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "Enable or disable the execution of the audit policy"
     },
-    "effect": {
-      "type": "String",
-      "metadata": {
-        "displayName": "Effect",
-        "description": "Enable or disable the execution of the audit policy"
-      },
-      "allowedValues": [
-        "Audit",
-        "Deny",
-        "Disabled"
-      ],
-      "defaultValue": "Audit"
-    }
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
+    "defaultValue": "Audit"
   }
-  
+}

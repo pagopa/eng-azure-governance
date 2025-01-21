@@ -6,7 +6,7 @@ output "policy_ids" {
     azurerm_policy_definition.cosmosdb_forbidden_capabilities.id,
     azurerm_policy_definition.cosmosdb_required_primary_zone_redundancy.id,
     azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy.id,
-    azurerm_policy_definition.cosmos_dynamic_scaling_enabled.id
+    azurerm_policy_definition.cosmosdb_dynamic_scaling_enabled.id
   ]
 }
 
@@ -34,6 +34,6 @@ output "cosmosdb_forbidden_secondary_zone_redundancy_id" {
   value = azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy.id
 }
 
-output "cosmos_dynamic_scaling_enabled_id" {
-  value = azurerm_policy_definition.cosmos_dynamic_scaling_enabled.id
+output "cosmosdb_dynamic_scaling_enabled_id" {
+  value = azurerm_policy_definition.cosmosdb_dynamic_scaling_enabled.id
 }

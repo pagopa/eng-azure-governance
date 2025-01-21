@@ -1,5 +1,5 @@
 {
-"if": {
+  "if": {
     "allOf": [
       {
         "field": "type",
@@ -7,7 +7,7 @@
       },
       {
         "field": "Microsoft.DocumentDB/databaseAccounts/capacityMode",
-        "in": "[parameters('listOfCapacity')]"
+        "equals": "Provisioned"
       },
       {
         "field": "Microsoft.DocumentDB/databaseAccounts/enablePerRegionPerPartitionAutoscale",
@@ -19,4 +19,3 @@
     "effect": "[parameters('effect')]"
   }
 }
-  

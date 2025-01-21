@@ -1,5 +1,5 @@
-resource "azurerm_policy_definition" "cosmos_dynamic_scaling_enabled" {
-  name                = "cosmos_dynamic_scaling_enabled"
+resource "azurerm_policy_definition" "cosmosdb_dynamic_scaling_enabled" {
+  name                = "cosmosdb_dynamic_scaling_enabled"
   policy_type         = "Custom"
   mode                = "Indexed"
   display_name        = "PagoPA CosmosDB must have dynamic scaling enabled"
