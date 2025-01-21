@@ -5,7 +5,10 @@
       "description": "The list of SKU name that can be specified for Redis",
       "displayName": "Allowed SKU name"
     },
-    "defaultValue": ["Standard","Premium"]
+    "defaultValue": [
+      "Standard",
+      "Premium"
+    ]
   },
   "listOfAllowedSkuCapacity": {
     "type": "Array",
@@ -13,7 +16,11 @@
       "description": "The list of Capacity that can be specified for Redis",
       "displayName": "Allowed SKU Capacity"
     },
-    "defaultValue": ["0", "1", "2"]
+    "defaultValue": [
+      "0",
+      "1",
+      "2"
+    ]
   },
   "effect": {
     "type": "String",
@@ -21,7 +28,10 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the policy"
     },
-    "allowedValues": ["Audit", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

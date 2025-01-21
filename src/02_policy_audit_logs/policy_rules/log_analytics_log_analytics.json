@@ -1,8 +1,14 @@
 {
   "if": {
     "allOf": [
-      { "field": "type", "equals": "Microsoft.OperationalInsights/workspaces" },
-      { "field": "name", "notLike": "DefaultWorkspace-*" }
+      {
+        "field": "type",
+        "equals": "Microsoft.OperationalInsights/workspaces"
+      },
+      {
+        "field": "name",
+        "notLike": "DefaultWorkspace-*"
+      }
     ]
   },
   "then": {

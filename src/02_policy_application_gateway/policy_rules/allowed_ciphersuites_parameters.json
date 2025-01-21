@@ -24,8 +24,14 @@
       "description": "The list of accepted TLS version",
       "displayName": "The list of accepted TLS version"
     },
-    "allowedValues": ["TLSv1_2", "TLSv1_3"],
-    "defaultValue": ["TLSv1_2", "TLSv1_3"]
+    "allowedValues": [
+      "TLSv1_2",
+      "TLSv1_3"
+    ],
+    "defaultValue": [
+      "TLSv1_2",
+      "TLSv1_3"
+    ]
   },
   "effect": {
     "type": "String",
@@ -33,7 +39,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

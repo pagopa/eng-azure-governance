@@ -5,7 +5,9 @@
       "description": "The list required backup policy required for CosmosDB.",
       "displayName": "Required backup policy"
     },
-    "defaultValue": ["Continuous"]
+    "defaultValue": [
+      "Continuous"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

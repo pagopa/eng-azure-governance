@@ -5,7 +5,9 @@
       "description": "The list of TLs that can be specified for Redis.",
       "displayName": "Allowed TLS"
     },
-    "defaultValue": ["1.2"]
+    "defaultValue": [
+      "1.2"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Deny"
   }
 }

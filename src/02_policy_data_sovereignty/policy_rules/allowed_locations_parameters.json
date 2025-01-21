@@ -12,7 +12,10 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the policy"
     },
-    "allowedValues": ["audit", "deny"],
+    "allowedValues": [
+      "audit",
+      "deny"
+    ],
     "defaultValue": "deny"
   }
 }

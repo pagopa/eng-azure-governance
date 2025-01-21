@@ -5,7 +5,9 @@
       "description": "The list of SKU that can be used in PostgreSQL Flexible.",
       "displayName": "Allowed SKU"
     },
-    "defaultValue": ["Standard_B1ms"]
+    "defaultValue": [
+      "Standard_B1ms"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

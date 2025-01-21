@@ -5,7 +5,9 @@
       "description": "The list of versions that can be specified for Redis.",
       "displayName": "Allowed SKUs"
     },
-    "defaultValue": ["6.0"]
+    "defaultValue": [
+      "6.0"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

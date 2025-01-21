@@ -5,7 +5,9 @@
       "description": "The list of linuxfxversion that can be specified for App Service.",
       "displayName": "Allowed linuxfxversion"
     },
-    "defaultValue": ["NODE|18-lts"]
+    "defaultValue": [
+      "NODE|18-lts"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,10 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

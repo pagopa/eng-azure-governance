@@ -1,7 +1,10 @@
 {
   "if": {
     "allOf": [
-      { "field": "type", "equals": "Microsoft.Web/sites" },
+      {
+        "field": "type",
+        "equals": "Microsoft.Web/sites"
+      },
       {
         "field": "kind",
         "notLike": "functionapp*"

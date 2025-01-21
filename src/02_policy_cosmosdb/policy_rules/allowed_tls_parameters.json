@@ -5,7 +5,9 @@
       "description": "The list of TLs that can be specified for CosmosDB.",
       "displayName": "Allowed TLS"
     },
-    "defaultValue": ["Tls12"]
+    "defaultValue": [
+      "Tls12"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

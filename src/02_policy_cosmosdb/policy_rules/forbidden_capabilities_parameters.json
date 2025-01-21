@@ -5,7 +5,9 @@
       "description": "The list of forbidden capabilities for CosmosDB.",
       "displayName": "Forbidden capabilities"
     },
-    "defaultValue": ["EnableServerless"]
+    "defaultValue": [
+      "EnableServerless"
+    ]
   },
   "effect": {
     "type": "String",
@@ -13,7 +15,11 @@
       "displayName": "Effect",
       "description": "Enable or disable the execution of the audit policy"
     },
-    "allowedValues": ["Audit", "Deny", "Disabled"],
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
     "defaultValue": "Audit"
   }
 }

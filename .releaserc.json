@@ -1,5 +1,8 @@
 {
-  "branches": ["main", "master"],
+  "branches": [
+    "main",
+    "master"
+  ],
   "ci": false,
   "plugins": [
     [
@@ -7,8 +10,14 @@
       {
         "preset": "angular",
         "releaseRules": [
-          { "type": "breaking", "release": "major" },
-          { "type": "major", "release": "major" }
+          {
+            "type": "breaking",
+            "release": "major"
+          },
+          {
+            "type": "major",
+            "release": "major"
+          }
         ]
       }
     ],
