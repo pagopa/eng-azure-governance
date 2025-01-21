@@ -1,0 +1,22 @@
+{
+"if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDB/databaseAccounts"
+      },
+      {
+        "field": "Microsoft.DocumentDB/databaseAccounts/capacityMode",
+        "in": "[parameters('listOfCapacity')]"
+      },
+      {
+        "field": "Microsoft.DocumentDB/databaseAccounts/enablePerRegionPerPartitionAutoscale",
+        "equals": false
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}
+  
