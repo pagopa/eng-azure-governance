@@ -1,12 +1,12 @@
 variable "allowed_locations" {
   type        = list(string)
-  default     = ["italynorth", "northeurope", "westeurope", "spaincentral", "global"]
+  default     = ["italynorth", "northeurope", "westeurope", "spaincentral", "germanywestcentral", "global"]
   description = "List of allowed locations for resources"
 }
 
 variable "allowed_locations_resource_groups" {
   type        = list(string)
-  default     = ["italynorth", "northeurope", "westeurope", "spaincentral"]
+  default     = ["italynorth", "northeurope", "westeurope", "spaincentral", "germanywestcentral"]
   description = "List of allowed locations for resource groups"
 }
 
