@@ -5,11 +5,16 @@ resource "azurerm_role_definition" "apim_operator_app" {
 
   permissions {
     actions = [
+      "Microsoft.ApiManagement/service/*/read",
+      "Microsoft.ApiManagement/service/read",
+      "Microsoft.ApiManagement/service/write",
+      "Microsoft.Authorization/*/read",
+      "Microsoft.ResourceHealth/availabilityStatuses/read",
+      "Microsoft.Resources/subscriptions/resourceGroups/read",
+
       # Subscription
       "Microsoft.ApiManagement/service/subscriptions/write",
-      "Microsoft.ApiManagement/service/subscriptions/read",
       "Microsoft.ApiManagement/service/workspaces/subscriptions/write",
-      "Microsoft.ApiManagement/service/workspaces/subscriptions/read",
 
       # Secrets and Keys
       "Microsoft.ApiManagement/service/tenant/write",
@@ -18,10 +23,8 @@ resource "azurerm_role_definition" "apim_operator_app" {
       "Microsoft.ApiManagement/service/*/listSecrets/action",
 
       # User and Group
-      "Microsoft.ApiManagement/service/users/read",
       "Microsoft.ApiManagement/service/users/write",
       "Microsoft.ApiManagement/service/users/delete",
-      "Microsoft.ApiManagement/service/groups/read",
       "Microsoft.ApiManagement/service/groups/write",
       "Microsoft.ApiManagement/service/groups/delete",
       "Microsoft.ApiManagement/service/groups/users/read",
@@ -29,7 +32,11 @@ resource "azurerm_role_definition" "apim_operator_app" {
       "Microsoft.ApiManagement/service/groups/users/delete",
 
       # Product
-      "Microsoft.ApiManagement/service/products/read"
+      "Microsoft.ApiManagement/service/products/read",
+
+      # Deployments
+      "Microsoft.ApiManagement/service/managedeployments/action",
+      "Microsoft.Resources/deployments/*",
     ]
   }
 }
