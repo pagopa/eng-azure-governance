@@ -31,9 +31,6 @@ resource "azurerm_role_definition" "apim_operator_app" {
       "Microsoft.ApiManagement/service/groups/users/write",
       "Microsoft.ApiManagement/service/groups/users/delete",
 
-      # Product
-      "Microsoft.ApiManagement/service/products/read",
-
       # Deployments
       "Microsoft.ApiManagement/service/managedeployments/action",
       "Microsoft.Resources/deployments/*",
