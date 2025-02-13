@@ -23,8 +23,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_role_definition.apim_custom_user](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.apim_list_secrets](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.apim_operator_app](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.applicationgateway_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.authorization_reader](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/role_definition) | resource |

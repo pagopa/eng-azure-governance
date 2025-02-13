@@ -1,5 +1,5 @@
-resource "azurerm_role_definition" "apim_custom_user" {
-  name        = "PagoPA API Management Custom User"
+resource "azurerm_role_definition" "apim_operator_app" {
+  name        = "PagoPA API Management Operator App"
   scope       = data.azurerm_management_group.pagopa.id
   description = "Custom role for managing API Management users, groups, subscriptions, and secrets."
 
