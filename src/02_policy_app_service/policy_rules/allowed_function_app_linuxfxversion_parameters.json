@@ -6,7 +6,13 @@
       "displayName": "Allowed linuxfxversion"
     },
     "defaultValue": [
-      "NODE|18"
+      "NODE|20",
+      "NODE|22",
+      "JAVA|17",
+      "JAVA|21",
+      "Python|3.12",
+      "Python|3.11",
+      "DOTNET|8.0"
     ]
   },
   "effect": {
