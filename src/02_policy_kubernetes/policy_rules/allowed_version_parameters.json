@@ -6,8 +6,7 @@
       "displayName": "Allowed Kubernetes version"
     },
     "defaultValue": [
-      "1.26.*",
-      "1.27.*"
+      "1.31.*"
     ]
   },
   "effect": {
