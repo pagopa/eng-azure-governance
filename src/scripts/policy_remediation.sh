@@ -20,7 +20,7 @@ for subscriptionId in $subscriptions; do
             echo "Processing policy assignment: $policyAssignmentName"
 
             # Get the compliance state of resources for this policy assignment
-            complianceStates=$(az policy state list --policy-assignment $policyAssignmentName --query "[].[resourceId, complianceState]" -o tsv)
+            complianceStates=$(az policy state list --policy-assignment $policyAssignmentName --query "[?complianceState=='NonCompliant'].{ResourceID:resourceId, ComplianceState:complianceState}" -o tsv)
 
             # Check if there are any non-compliant resources
             if [[ -z "$complianceStates" ]]; then
