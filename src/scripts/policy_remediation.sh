@@ -6,7 +6,6 @@ policySetIds=(
 )
     
 for subscriptionId in $subscriptions; do
-    echo "Processing subscription: $subscriptionId"
     az account set --subscription $subscriptionId
 
     # Loop through each policy set ID
@@ -29,13 +28,9 @@ for subscriptionId in $subscriptions; do
                 # Process the compliance states using awk
                 echo "$complianceStates" | awk -F'\t' '{
                     resourceId=$1
-                    complianceState=$2
-                    if (complianceState == "NonCompliant") {
-                        #print "Resource: " resourceId ", Compliance State: " complianceState
-                        print "Remediating resource: " resourceId
-                        # Command to remediate the resource
-                        # az policy remediation create --name "remediationTask" --policy-assignment $policyAssignmentName --resource-group $resourceGroupName --resource $resourceId
-                    }
+                    print "Remediating resource: " resourceId
+                    # Command to remediate the resource
+                    # az policy remediation create --name "remediationTask" --policy-assignment $policyAssignmentName --resource-group $resourceGroupName --resource $resourceId
                 }'
             fi
         done
