@@ -10,9 +10,6 @@ permissions:
   id-token: write
   contents: read
 
-env:
-  DIR: "src/"
-
 jobs:
   policy-remediation:
     environment: prod
@@ -34,4 +31,4 @@ jobs:
       # Step 4: Terraform Drift Detection for all folders under /src
       - name: check policy to remediate
         shell: bash
-        run: scripts/policy_remediation.sh 
+        run: src/scripts/policy_remediation.sh 
