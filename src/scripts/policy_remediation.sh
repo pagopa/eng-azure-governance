@@ -19,7 +19,7 @@ for subscriptionId in $subscriptions; do
             echo "Processing policy assignment: $policyAssignmentName"
 
             # Get the compliance state of resources for this policy assignment
-            complianceStates=$(az policy state list --policy-assignment $policyAssignmentName --query "[?complianceState=='NonCompliant'].{ResourceID:resourceId, ComplianceState:complianceState}" -o tsv)
+            complianceStates=$(az policy state list --policy-assignment $policyAssignmentName --query "[?complianceState=='NonCompliant'].{ResourceID:resourceId, ComplianceState:complianceState, PolicyDefinition:policyDefinitionReferenceId}" -o tsv)
 
             # Check if there are any non-compliant resources
             if [[ -z "$complianceStates" ]]; then
@@ -28,9 +28,10 @@ for subscriptionId in $subscriptions; do
                 # Process the compliance states using awk
                 echo "$complianceStates" | awk -F'\t' '{
                     resourceId=$1
+                    policyDefinitionReferenceId=$2
                     print "Remediating resource: " resourceId
                     # Command to remediate the resource
-                    # az policy remediation create --name "remediationTask" --policy-assignment $policyAssignmentName --resource-group $resourceGroupName --resource $resourceId
+                    # az policy remediation create --name "remediationTask" --policy-assignment $policyAssignmentName --definition-reference-id $policyDefinitionReferenceId 
                 }'
             fi
         done
