@@ -7,7 +7,6 @@ policySetIds=(
 
 for subscriptionId in $subscriptions; do
     az account set --subscription $subscriptionId
-    az account set --subscription PROD-P4PA
 
     # Loop through each policy set ID
     for policySetId in "${policySetIds[@]}"; do
@@ -36,7 +35,6 @@ for subscriptionId in $subscriptions; do
             fi
         done
     done
-    exit 0
 done
 
 

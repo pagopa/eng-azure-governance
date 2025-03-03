@@ -5,7 +5,6 @@ on:
   schedule:
     - cron: '0 9 * * 1' #Every Monday at 9:00
 
-
 permissions:
   id-token: write
   contents: read
@@ -53,7 +52,7 @@ jobs:
           ARM_USE_OIDC: 'true'
         run: |
           cd $DIR
-          
+
           export result=0
 
           # Loop through each folder under /src dynamically
@@ -62,9 +61,9 @@ jobs:
 
             # Change into the directory
             cd $folder
-            
+
             ./terraform.sh plan -detailed-exitcode -lock=false || export result=$?
-            
+
             if [ $result -eq 2 ]; then
               echo "Terraform drift detected in $folder."
               exit 1
