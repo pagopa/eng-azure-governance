@@ -4,13 +4,14 @@ policySetIds=(
     '/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/audit_logs'
     '/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/resource_lock'
 )
-    
+
 for subscriptionId in $subscriptions; do
     az account set --subscription $subscriptionId
+    az account set --subscription PROD-P4PA
 
     # Loop through each policy set ID
     for policySetId in "${policySetIds[@]}"; do
-    
+
         # Get the list of policy assignments and filter by the policy set
         policyAssignments=$(az policy assignment list --query "[?policyDefinitionId=='$policySetId'].name" -o tsv)
 
@@ -19,7 +20,7 @@ for subscriptionId in $subscriptions; do
             echo "Processing policy assignment: $policyAssignmentName"
 
             # Get the compliance state of resources for this policy assignment
-            complianceStates=$(az policy state list --policy-assignment $policyAssignmentName --query "[?complianceState=='NonCompliant'].policyDefinitionReferenceId" -o tsv)
+            complianceStates=$(az policy state list --policy-assignment $policyAssignmentName --query "[?complianceState=='NonCompliant'].policyDefinitionReferenceId" -o tsv | sort | uniq)
 
             # Check if there are any non-compliant resources
             if [[ -z "$complianceStates" ]]; then
@@ -28,11 +29,14 @@ for subscriptionId in $subscriptions; do
                 for policyDefinitionReferenceId in $complianceStates; do
                     echo "Remediating resource for policy definition: $policyDefinitionReferenceId"
                     # Command to remediate the resource
-                    # az policy remediation create --name "remediationTask" --policy-assignment $policyAssignmentName --definition-reference-id $policyDefinitionReferenceId
+                    timestamp=$(date +%s)
+                    # echo "DRY RUN: az policy remediation create --name "remediationTask$timestamp" --policy-assignment $policyAssignmentName --definition-reference-id $policyDefinitionReferenceId"
+                    az policy remediation create --name "remediationTask$timestamp" --policy-assignment $policyAssignmentName --definition-reference-id $policyDefinitionReferenceId
                 done
             fi
         done
     done
+    exit 0
 done
 
 
