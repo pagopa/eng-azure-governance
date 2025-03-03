@@ -2,16 +2,12 @@ name: Policy Remediation
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 9 * * 1' #Every Monday at 9:00
-
+  schedule:
+    - cron: '0 20 * * *' #Every Day at 20:00
 
 permissions:
   id-token: write
   contents: read
-
-env:
-  DIR: "src/"
 
 jobs:
   policy-remediation:
@@ -31,7 +27,7 @@ jobs:
           tenant-id: ${{ secrets.AZ_TENANT_ID }}
           subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
 
-      # Step 4: Terraform Drift Detection for all folders under /src
+      # Step 3: Terraform Drift Detection for all folders under /src
       - name: check policy to remediate
         shell: bash
-        run: scripts/policy_remediation.sh 
+        run: src/scripts/policy_remediation.sh
