@@ -2,10 +2,6 @@
   "if": {
     "allOf": [
       {
-        "field": "location",
-        "in": "[parameters('listOfLocations')]"
-      },
-      {
         "field": "type",
         "equals": "Microsoft.OperationalInsights/workspaces"
       },

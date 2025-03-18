@@ -6,17 +6,8 @@
       "displayName": "Allowed Sku"
     },
     "defaultValue": [
-      "LACluster"
-    ]
-  },
-  "listOfLocations": {
-    "type": "Array",
-    "metadata": {
-      "description": "The list of locations for Log Analytics Workspaces.",
-      "displayName": "Allowed Locations"
-    },
-    "defaultValue": [
-      "westeurope"
+      "LACluster",
+      "PerGB2018"
     ]
   },
   "effect": {
@@ -30,6 +21,6 @@
       "Deny",
       "Disabled"
     ],
-    "defaultValue": "Audit"
+    "defaultValue": "Deny"
   }
 }
