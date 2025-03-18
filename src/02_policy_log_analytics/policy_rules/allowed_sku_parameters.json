@@ -10,16 +10,6 @@
       "PerGB2018"
     ]
   },
-  "listOfLocations": {
-    "type": "Array",
-    "metadata": {
-      "description": "The list of locations for Log Analytics Workspaces.",
-      "displayName": "Allowed Locations"
-    },
-    "defaultValue": [
-      "westeurope"
-    ]
-  },
   "effect": {
     "type": "String",
     "metadata": {

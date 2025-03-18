@@ -22,7 +22,7 @@ resource "azurerm_policy_set_definition" "log_analytics_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_log_analytics.outputs.log_analytics_link_dedicated_cluster_id
+    policy_definition_id = data.terraform_remote_state.policy_log_analytics.outputs.log_analytics_allowed_sku_id
     parameter_values     = jsonencode({})
   }
 }
