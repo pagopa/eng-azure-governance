@@ -8,7 +8,7 @@ resource "azurerm_role_definition" "log_analytics_table_reader" {
       "Microsoft.OperationalInsights/workspaces/query/read",
     ]
     not_actions = [
-    "Microsoft.OperationalInsights/workspaces/sharedKeys/read"
+      "Microsoft.OperationalInsights/workspaces/sharedKeys/read"
     ]
   }
 }
