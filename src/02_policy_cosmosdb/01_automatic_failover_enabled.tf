@@ -9,7 +9,7 @@ resource "azurerm_policy_definition" "cosmosdb_automatic_failover_enabled" {
     category = var.metadata_category_name
     version  = "v1.0.0"
     securityCenter = {
-      RemediationDescription = "Enable Automaric Failover for CosmosDB"
+      RemediationDescription = "Enable Automatic Failover for CosmosDB"
       Severity               = "High"
     }
   })
