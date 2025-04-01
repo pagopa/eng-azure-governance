@@ -37,3 +37,7 @@ output "cosmosdb_forbidden_secondary_zone_redundancy_id" {
 output "cosmosdb_dynamic_scaling_enabled_id" {
   value = azurerm_policy_definition.cosmosdb_dynamic_scaling_enabled.id
 }
+
+output "cosmosdb_automatic_failover_enabled_id" {
+  value = azurerm_policy_definition.cosmosdb_automatic_failover_enabled.id
+}

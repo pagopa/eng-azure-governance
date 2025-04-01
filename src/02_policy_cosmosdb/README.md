@@ -18,6 +18,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_policy_definition.cosmosdb_allowed_tls](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_automatic_failover_enabled](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.cosmosdb_dynamic_scaling_enabled](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.cosmosdb_forbidden_capabilities](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_definition) | resource |
@@ -39,6 +40,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_cosmosdb_allowed_tls_id"></a> [cosmosdb\_allowed\_tls\_id](#output\_cosmosdb\_allowed\_tls\_id) | n/a |
+| <a name="output_cosmosdb_automatic_failover_enabled_id"></a> [cosmosdb\_automatic\_failover\_enabled\_id](#output\_cosmosdb\_automatic\_failover\_enabled\_id) | n/a |
 | <a name="output_cosmosdb_dynamic_scaling_enabled_id"></a> [cosmosdb\_dynamic\_scaling\_enabled\_id](#output\_cosmosdb\_dynamic\_scaling\_enabled\_id) | n/a |
 | <a name="output_cosmosdb_forbidden_capabilities_id"></a> [cosmosdb\_forbidden\_capabilities\_id](#output\_cosmosdb\_forbidden\_capabilities\_id) | n/a |
 | <a name="output_cosmosdb_forbidden_secondary_zone_redundancy_id"></a> [cosmosdb\_forbidden\_secondary\_zone\_redundancy\_id](#output\_cosmosdb\_forbidden\_secondary\_zone\_redundancy\_id) | n/a |
