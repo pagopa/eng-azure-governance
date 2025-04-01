@@ -50,6 +50,11 @@ resource "azurerm_policy_set_definition" "cosmosdb_prod" {
     parameter_values     = jsonencode({})
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_allowed_capacity_mode_id
+    parameter_values     = jsonencode({})
+  }
+
 }
 
 output "cosmosdb_prod_id" {

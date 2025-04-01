@@ -41,3 +41,7 @@ output "cosmosdb_dynamic_scaling_enabled_id" {
 output "cosmosdb_automatic_failover_enabled_id" {
   value = azurerm_policy_definition.cosmosdb_automatic_failover_enabled.id
 }
+
+output "cosmosdb_allowed_capacity_mode_id" {
+  value = azurerm_policy_definition.cosmosdb_allowed_capacity_mode.id
+}
