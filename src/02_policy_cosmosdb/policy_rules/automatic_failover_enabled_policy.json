@@ -8,10 +8,6 @@
       {
         "field": "Microsoft.DocumentDB/databaseAccounts/enableAutomaticFailover",
         "equals": "false"
-      },
-      {
-        "field": "Microsoft.DocumentDB/databaseAccounts/enableMultipleWriteLocations",
-        "equals": "false"
       }
     ]
   },
