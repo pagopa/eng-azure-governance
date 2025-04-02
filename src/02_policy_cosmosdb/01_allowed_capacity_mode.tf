@@ -1,8 +1,8 @@
-resource "azurerm_policy_definition" "cosmosdb_forbidden_capabilities" {
-  name                = "cosmosdb_forbidden_capabilities"
+resource "azurerm_policy_definition" "cosmosdb_allowed_capacity_mode" {
+  name                = "cosmosdb_allowed_capacity_mode"
   policy_type         = "Custom"
   mode                = "Indexed"
-  display_name        = "PagoPA CosmosDB forbidden capabilities"
+  display_name        = "PagoPA CosmosDB allowed capacity mode"
   management_group_id = data.azurerm_management_group.pagopa.id
 
   metadata = jsonencode({
@@ -14,8 +14,8 @@ resource "azurerm_policy_definition" "cosmosdb_forbidden_capabilities" {
     }
   })
 
-  parameters = file("./policy_rules/forbidden_capabilities_parameters.json")
+  parameters = file("./policy_rules/allowed_capacity_mode_parameters.json")
 
-  policy_rule = file("./policy_rules/forbidden_capabilities_policy.json")
+  policy_rule = file("./policy_rules/allowed_capacity_mode_policy.json")
 
 }

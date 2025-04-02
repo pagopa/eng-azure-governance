@@ -1,14 +1,4 @@
 {
-  "listOfForbiddenCapabilities": {
-    "type": "Array",
-    "metadata": {
-      "description": "The list of forbidden capabilities for CosmosDB.",
-      "displayName": "Forbidden capabilities"
-    },
-    "defaultValue": [
-      "EnableServerless"
-    ]
-  },
   "effect": {
     "type": "String",
     "metadata": {
