@@ -1,18 +1,17 @@
 {
-    "if": {
-      "allOf": [
-        {
-          "field": "type",
-          "equals": "Microsoft.DocumentDB/databaseAccounts"
-        },
-        {
-          "field": "Microsoft.DocumentDB/databaseAccounts/capabilities[*].name",
-          "notEquals": "ProvisionedThroughput"
-        }
-      ]
-    },
-    "then": {
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDB/databaseAccounts"
+      },
+      {
+        "field": "Microsoft.DocumentDB/databaseAccounts/capabilities[*].name",
+        "notEquals": "ProvisionedThroughput"
+      }
+    ]
+  },
+  "then": {
     "effect": "[parameters('effect')]"
   }
 }
-  
