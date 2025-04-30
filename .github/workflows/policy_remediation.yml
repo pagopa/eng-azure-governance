@@ -31,3 +31,24 @@ jobs:
       - name: check policy to remediate
         shell: bash
         run: src/scripts/policy_remediation.sh
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
+            "text": "GitHub Action failed.",
+            "attachments": [
+              {
+                "color": "danger",
+                "fields": [
+                  { "title": "Repository", "value": "${{ github.repository }}", "short": false },
+                  { "title": "Branch", "value": "${{ github.ref }}", "short": false },
+                  { "title": "Workflow Name", "value": "${{ github.workflow }}", "short": false },
+                  { "title": "Link", "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false }
+                ]
+              }
+            ]  
