@@ -1,17 +1,17 @@
 {
-    "if": {
-      "allOf": [
-        {
-          "field": "type",
-          "equals": "Microsoft.DocumentDB/databaseAccounts"
-        },
-        {
-          "field": "Microsoft.DocumentDB/databaseAccounts/capacityMode",
-          "notEquals": "Provisioned"
-        }
-      ]
-    },
-    "then": {
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.DocumentDB/databaseAccounts"
+      },
+      {
+        "field": "Microsoft.DocumentDB/databaseAccounts/capacityMode",
+        "notEquals": "Provisioned"
+      }
+    ]
+  },
+  "then": {
     "effect": "[parameters('effect')]"
   }
 }

@@ -12,6 +12,10 @@
       {
         "field": "type",
         "notEquals": "Microsoft.AzureActiveDirectory/b2cDirectories"
+      },
+      {
+        "field": "type",
+        "notEquals": "Microsoft.AzureActiveDirectory/ciamDirectories"
       }
     ]
   },
