@@ -132,5 +132,29 @@ locals {
     subscription_storageid_westeurope = {
       reference_id = "subscription_storageid_westeurope"
     }
+    azure_sql_server_workspaceid = {
+      reference_id = "azure_sql_server_workspaceid"
+    }
+    azure_sql_server_storageid_westeurope = {
+      reference_id = "azure_sql_server_storageid_westeurope"
+    }
+    azure_sql_server_storageid_northeurope = {
+      reference_id = "azure_sql_server_storageid_northeurope"
+    }
+    azure_sql_server_storageid_italynorth = {
+      reference_id = "azure_sql_server_storageid_italynorth"
+    }
+    azure_sql_database_workspaceid = {
+      reference_id = "azure_sql_database_workspaceid"
+    }
+    azure_sql_database_storageid_westeurope = {
+      reference_id = "azure_sql_database_storageid_westeurope"
+    }
+    azure_sql_database_storageid_northeurope = {
+      reference_id = "azure_sql_database_storageid_northeurope"
+    }
+    azure_sql_database_storageid_italynorth = {
+      reference_id = "azure_sql_database_storageid_italynorth"
+    }
   }
 }
