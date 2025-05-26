@@ -14,6 +14,7 @@ locals {
     "DEV-GRC",
     "DEV-ICT",
     "DEV-CRM",
+    "DEV-DEVEX",
   ]
 }
 

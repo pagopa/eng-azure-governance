@@ -21,6 +21,7 @@ locals {
     "ORG-PCI",
     "Common",
     "DevOpsAutomation",
+    "PROD-DEVEX",
   ]
 }
 
