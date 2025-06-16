@@ -12,7 +12,8 @@
       "JAVA|21",
       "Python|3.12",
       "Python|3.11",
-      "DOTNET|8.0"
+      "DOTNET|8.0",
+      "DOTNET-ISOLATED|8.0"
     ]
   },
   "effect": {
