@@ -1,0 +1,120 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.Sql/servers"
+      },
+      {
+        "field": "location",
+        "equals": "[parameters('location')]"
+      }
+    ]
+  },
+  "then": {
+    "effect": "deployIfNotExists",
+    "details": {
+      "type": "Microsoft.Sql/servers/auditingSettings",
+      "name": "Default",
+      "existenceCondition": {
+        "field": "Microsoft.Sql/servers/auditingSettings/state",
+        "equals": "Enabled"
+      },
+      "roleDefinitionIds": [
+        "${roleDefinitionIds_sql_security_manager}",
+        "${roleDefinitionIds_storage_account_contributor}"
+      ],
+      "deployment": {
+        "properties": {
+          "mode": "incremental",
+          "template": {
+            "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "diagnosticsSettingName": {
+                "type": "string"
+              },
+              "resourceName": {
+                "type": "string"
+              },
+              "retentionDays": {
+                "type": "string"
+              },
+              "storageAccountName": {
+                "type": "string"
+              },
+              "storageAccountResourceGroup": {
+                "type": "string"
+              },
+              "storageAccountSubscriptionId": {
+                "type": "string"
+              }
+            },
+            "variables": {
+              "storageAccountId": "[concat('/subscriptions/', parameters('storageAccountSubscriptionId'), '/resourceGroups/', parameters('storageAccountResourceGroup'), '/providers/Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+            },
+            "resources": [
+              {
+                "type": "Microsoft.Sql/servers/auditingSettings",
+                "apiVersion": "2023-02-01-preview",
+                "name": "[concat(parameters('resourceName'), '/Default')]",
+                "dependsOn": [],
+                "properties": {
+                  "state": "Enabled",
+                  "storageEndpoint": "[reference(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]",
+                  "storageAccountAccessKey": "[listKeys(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                  "retentionDays": "[parameters('retentionDays')]",
+                  "storageAccountSubscriptionId": "[parameters('storageAccountSubscriptionId')]",
+                  "isStorageSecondaryKeyInUse": false,
+                  "isDevopsAuditEnabled": false,
+                  "auditActionsAndGroups": [
+                    "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+                    "FAILED_DATABASE_AUTHENTICATION_GROUP",
+                    "BATCH_COMPLETED_GROUP"
+                  ],
+                  "isAzureMonitorTargetEnabled": true,
+                  "isManagedIdentityInUse": false
+                }
+              },
+              {
+                "type": "Microsoft.Sql/servers/devOpsAuditingSettings",
+                "apiVersion": "2023-02-01-preview",
+                "name": "[concat(parameters('resourceName'), '/Default')]",
+                "dependsOn": [],
+                "properties": {
+                  "state": "Enabled",
+                  "isAzureMonitorTargetEnabled": true,
+                  "isManagedIdentityInUse": false,
+                  "storageEndpoint": "[reference(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).primaryEndpoints.blob]",
+                  "storageAccountAccessKey": "[listKeys(variables('storageAccountId'), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]",
+                  "storageAccountSubscriptionId": "[parameters('storageAccountSubscriptionId')]"
+                }
+              }
+            ],
+            "outputs": {}
+          },
+          "parameters": {
+            "diagnosticsSettingName": {
+              "value": "[parameters('diagnosticsSettingName')]"
+            },
+            "resourceName": {
+              "value": "[field('name')]"
+            },
+            "retentionDays": {
+              "value": "[parameters('retentionDays')]"
+            },
+            "storageAccountName": {
+              "value": "[parameters('storageAccountName')]"
+            },
+            "storageAccountResourceGroup": {
+              "value": "[parameters('storageAccountResourceGroup')]"
+            },
+            "storageAccountSubscriptionId": {
+              "value": "[parameters('storageAccountSubscriptionId')]"
+            }
+          }
+        }
+      }
+    }
+  }
+}
