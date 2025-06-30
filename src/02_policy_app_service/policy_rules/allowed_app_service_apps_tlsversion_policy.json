@@ -1,0 +1,12 @@
+{
+  "if": {
+    "allOf": [
+      { "field": "type", "equals": "Microsoft.Web/sites" },
+      { "field": "kind", "notContains": "functionapp" },
+      { "field": "Microsoft.Web/sites/config/minTlsVersion", "notIn": "[parameters('listOfAllowedTLS')]" }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

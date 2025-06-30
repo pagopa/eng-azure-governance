@@ -56,14 +56,12 @@ resource "azurerm_policy_set_definition" "app_service_dev" {
 
   # Function apps should use the latest TLS version
   policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f9d614c5-c173-4d56-95a7-b4437057d193"
-    parameter_values     = jsonencode({})
+    policy_definition_id = azurerm_policy_definition.function_apps_tls_custom.id
   }
 
   # App Service apps should use the latest TLS version
   policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f0e6e85b-9b9f-4a4b-b67b-f730d42f1b0b"
-    parameter_values     = jsonencode({})
+    policy_definition_id = azurerm_policy_definition.app_service_apps_tls_custom.id
   }
 
   # App Service app slots should use the latest TLS version
