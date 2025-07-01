@@ -2,7 +2,7 @@
   "listOfAllowedTLS": {
     "type": "Array",
     "metadata": {
-      "description": "The list of TLs that can be specified for CosmosDB.",
+      "description": "The list of TLs that can be specified for Function Apps.",
       "displayName": "Allowed TLS"
     },
     "defaultValue": [
