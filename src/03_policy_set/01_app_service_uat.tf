@@ -51,7 +51,7 @@ resource "azurerm_policy_set_definition" "app_service_uat" {
   # Function app slots should use the latest TLS version
   # https://www.azadvertizer.net/azpolicyadvertizer/deb528de-8f89-4101-881c-595899253102.html
   policy_definition_reference {
-    version              = "1.0.0"
+    version              = "1.0.*"
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/deb528de-8f89-4101-881c-595899253102"
     parameter_values     = jsonencode({})
   }
@@ -59,7 +59,7 @@ resource "azurerm_policy_set_definition" "app_service_uat" {
   # Function apps should use the latest TLS version
   # https://www.azadvertizer.net/azpolicyadvertizer/f9d614c5-c173-4d56-95a7-b4437057d193.html
   policy_definition_reference {
-    version              = "2.0.1"
+    version              = "2.0.*"
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f9d614c5-c173-4d56-95a7-b4437057d193"
     parameter_values     = jsonencode({})
   }
@@ -67,7 +67,7 @@ resource "azurerm_policy_set_definition" "app_service_uat" {
   # App Service apps should use the latest TLS version
   # https://www.azadvertizer.net/azpolicyadvertizer/f0e6e85b-9b9f-4a4b-b67b-f730d42f1b0b.html
   policy_definition_reference {
-    version              = "2.0.1"
+    version              = "2.0.*"
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/f0e6e85b-9b9f-4a4b-b67b-f730d42f1b0b"
     parameter_values     = jsonencode({})
   }
@@ -75,7 +75,7 @@ resource "azurerm_policy_set_definition" "app_service_uat" {
   # App Service app slots should use the latest TLS version
   # https://www.azadvertizer.net/azpolicyadvertizer/4ee5b817-627a-435a-8932-116193268172.html
   policy_definition_reference {
-    version              = "1.0.0"
+    version              = "1.0.*"
     policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/4ee5b817-627a-435a-8932-116193268172"
     parameter_values     = jsonencode({})
   }

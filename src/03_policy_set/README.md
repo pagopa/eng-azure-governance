@@ -7,7 +7,7 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 3.77.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
 
 ## Modules
 
@@ -17,47 +17,47 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_set_definition.api_management_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.api_management_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.api_management_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.app_service_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.app_service_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.app_service_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.application_gateway_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.container_apps_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.cosmosdb_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.cosmosdb_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.cosmosdb_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.data_sovereignty_eu](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.dns](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.event_hub_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.key_vault_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.kubernetes_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.log_analytics_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.log_analytics_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.log_analytics_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.networking_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.postgresql_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.postgresql_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.postgresql_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.redis_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.redis_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.redis_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.storage_account_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.tags](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.virtual_machine_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.virtual_machine_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.virtual_machine_scale_set_dev](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.virtual_machine_scale_set_prod](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.virtual_machine_scale_set_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.virtual_machine_uat](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/resources/policy_set_definition) | resource |
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/management_group) | data source |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/3.77.0/docs/data-sources/subscription) | data source |
+| [azurerm_policy_set_definition.api_management_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.api_management_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.api_management_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.app_service_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.app_service_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.app_service_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.application_gateway_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.container_apps_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.cosmosdb_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.cosmosdb_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.cosmosdb_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.data_sovereignty_eu](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.dns](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.event_hub_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.key_vault_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.kubernetes_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.log_analytics_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.log_analytics_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.log_analytics_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.networking_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.postgresql_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.postgresql_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.postgresql_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.redis_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.redis_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.redis_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.storage_account_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.tags](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_scale_set_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_scale_set_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_scale_set_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.virtual_machine_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/client_config) | data source |
+| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/management_group) | data source |
+| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/subscription) | data source |
 | [terraform_remote_state.policy_api_management](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_app_service](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 | [terraform_remote_state.policy_application_gateway](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
@@ -104,6 +104,7 @@ No modules.
 | <a name="input_redis_dev"></a> [redis\_dev](#input\_redis\_dev) | List of redis policy set parameters | <pre>object({<br/>    listofallowedskuname     = list(string)<br/>    listofallowedskucapacity = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedskucapacity": [<br/>    "0",<br/>    "1"<br/>  ],<br/>  "listofallowedskuname": [<br/>    "Basic"<br/>  ]<br/>}</pre> | no |
 | <a name="input_redis_prod"></a> [redis\_prod](#input\_redis\_prod) | List of redis policy set parameters | <pre>object({<br/>    listofallowedskuname     = list(string)<br/>    listofallowedskucapacity = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedskucapacity": [<br/>    "0",<br/>    "1",<br/>    "2"<br/>  ],<br/>  "listofallowedskuname": [<br/>    "Standard",<br/>    "Premium"<br/>  ]<br/>}</pre> | no |
 | <a name="input_redis_uat"></a> [redis\_uat](#input\_redis\_uat) | List of redis policy set parameters | <pre>object({<br/>    listofallowedskuname     = list(string)<br/>    listofallowedskucapacity = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedskucapacity": [<br/>    "0",<br/>    "1"<br/>  ],<br/>  "listofallowedskuname": [<br/>    "Basic"<br/>  ]<br/>}</pre> | no |
+| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
 | <a name="input_virtual_machine_dev"></a> [virtual\_machine\_dev](#input\_virtual\_machine\_dev) | List of Virtual Machine policy set parameters | <pre>object({<br/>    listofallowedskuname = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedskuname": [<br/>    "Standard_B2ms",<br/>    "Standard_B4ms",<br/>    "Standard_B8ms"<br/>  ]<br/>}</pre> | no |
 | <a name="input_virtual_machine_prod"></a> [virtual\_machine\_prod](#input\_virtual\_machine\_prod) | List of Virtual Machine policy set parameters | <pre>object({<br/>    listofallowedskuname = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedskuname": [<br/>    "Standard_D2ds_v5",<br/>    "Standard_D4ds_v5",<br/>    "Standard_D8ds_v5"<br/>  ]<br/>}</pre> | no |
 | <a name="input_virtual_machine_scale_set_dev"></a> [virtual\_machine\_scale\_set\_dev](#input\_virtual\_machine\_scale\_set\_dev) | List of Virtual Machine policy set parameters | <pre>object({<br/>    listofallowedskuname = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedskuname": [<br/>    "Standard_B2ms",<br/>    "Standard_B4ms",<br/>    "Standard_B8ms"<br/>  ]<br/>}</pre> | no |
