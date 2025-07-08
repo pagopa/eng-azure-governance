@@ -19,6 +19,8 @@ case $action in
         fi
 
         az account set -s "${subscription}"
+        SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+        export TF_VAR_subscription_id="${SUBSCRIPTION_ID}"
 
         terraform init
         terraform "$action" $other
