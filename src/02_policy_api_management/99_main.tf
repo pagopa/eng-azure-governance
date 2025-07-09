@@ -1,11 +1,6 @@
 provider "azurerm" {
-  skip_provider_registration = true
-
-  features {
-    key_vault {
-      purge_soft_delete_on_destroy = false
-    }
-  }
+  subscription_id = var.subscription_id
+  features {}
 }
 
 data "azurerm_subscription" "current" {}

@@ -5,7 +5,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~>3.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
 
 ## Modules
 
@@ -15,13 +15,13 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_subscription_policy_assignment.api_management](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.app_service](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.cosmosdb](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.redis](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.virtual_machine](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.virtual_machine_scale_set](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.api_management](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.app_service](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.cosmosdb](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.redis](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.virtual_machine](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.virtual_machine_scale_set](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
 
 ## Inputs
 
