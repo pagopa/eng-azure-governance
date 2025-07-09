@@ -5,7 +5,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~>3.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
 
 ## Modules
 
@@ -15,14 +15,14 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_role_assignment.audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.dev_pci_metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_role_assignment.dev_pci_metrics_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
-| [azurerm_subscription_policy_assignment.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
-| [azurerm_subscription_policy_assignment.pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_role_assignment.audit_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.audit_logs_contributor_storage_westeurope](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.audit_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.dev_pci_metrics_logs_contributor_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_assignment) | resource |
+| [azurerm_role_assignment.dev_pci_metrics_logs_monitoring_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_assignment) | resource |
+| [azurerm_subscription_policy_assignment.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.pcidssv4](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/subscription_policy_assignment) | resource |
 
 ## Inputs
 
