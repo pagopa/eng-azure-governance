@@ -1,13 +1,15 @@
-# policy
-
-<!-- markdownlint-disable -->
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.35.0 |
 
 ## Modules
 
@@ -23,10 +25,10 @@ No modules.
 | [azurerm_policy_definition.audit_logs_app_service_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_application_gateway_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.audit_logs_container_registry_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.audit_logs_container_registry_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_container_app_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_container_app_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_container_registry_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.audit_logs_container_registry_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_cosmos_db_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_cosmos_db_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.audit_logs_event_hub_log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
@@ -72,10 +74,10 @@ No modules.
 | <a name="output_audit_logs_app_service_storage_account_id"></a> [audit\_logs\_app\_service\_storage\_account\_id](#output\_audit\_logs\_app\_service\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_log_analytics_id"></a> [audit\_logs\_application\_gateway\_log\_analytics\_id](#output\_audit\_logs\_application\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_application_gateway_storage_account_id"></a> [audit\_logs\_application\_gateway\_storage\_account\_id](#output\_audit\_logs\_application\_gateway\_storage\_account\_id) | n/a |
+| <a name="output_audit_logs_container_app_log_analytics_id"></a> [audit\_logs\_container\_app\_log\_analytics\_id](#output\_audit\_logs\_container\_app\_log\_analytics\_id) | n/a |
+| <a name="output_audit_logs_container_app_storage_account_id"></a> [audit\_logs\_container\_app\_storage\_account\_id](#output\_audit\_logs\_container\_app\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_container_registry_log_analytics_id"></a> [audit\_logs\_container\_registry\_log\_analytics\_id](#output\_audit\_logs\_container\_registry\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_container_registry_storage_account_id"></a> [audit\_logs\_container\_registry\_storage\_account\_id](#output\_audit\_logs\_container\_registry\_storage\_account\_id) | n/a |
-| <a name="output_audit_logs_container_app_log_analytics_id"></a> [audit\_logs\_container\_app\_log\_analytics\_id](#output\_audit\_logs\_container\_registry\_log\_analytics\_id) | n/a |
-| <a name="output_audit_logs_container_app_storage_account_id"></a> [audit\_logs\_container\_app\_storage\_account\_id](#output\_audit\_logs\_container\_registry\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_cosmos_db_log_analytics_id"></a> [audit\_logs\_cosmos\_db\_log\_analytics\_id](#output\_audit\_logs\_cosmos\_db\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_cosmos_db_storage_account_id"></a> [audit\_logs\_cosmos\_db\_storage\_account\_id](#output\_audit\_logs\_cosmos\_db\_storage\_account\_id) | n/a |
 | <a name="output_audit_logs_event_hub_log_analytics_id"></a> [audit\_logs\_event\_hub\_log\_analytics\_id](#output\_audit\_logs\_event\_hub\_log\_analytics\_id) | n/a |
@@ -99,4 +101,3 @@ No modules.
 | <a name="output_audit_logs_virtual_network_gateway_log_analytics_id"></a> [audit\_logs\_virtual\_network\_gateway\_log\_analytics\_id](#output\_audit\_logs\_virtual\_network\_gateway\_log\_analytics\_id) | n/a |
 | <a name="output_audit_logs_virtual_network_gateway_storage_account_id"></a> [audit\_logs\_virtual\_network\_gateway\_storage\_account\_id](#output\_audit\_logs\_virtual\_network\_gateway\_storage\_account\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END_TF_DOCS -->
