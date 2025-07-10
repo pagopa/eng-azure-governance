@@ -145,6 +145,44 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  ## Container App
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_log_analytics_id
+    reference_id         = local.audit_logs.container_app_workspaceid.reference_id
+    parameter_values = jsonencode({
+      logAnalytics = {
+        value = var.audit_logs_workspace_id
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    reference_id         = local.audit_logs.container_app_storageid_westeurope.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_westeurope
+      }
+      location = {
+        value = "westeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    reference_id         = local.audit_logs.container_app_storageid_northeurope.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_northeurope
+      }
+      location = {
+        value = "northeurope"
+      }
+    })
+  }
+
   ## Kubernetes Cluster
 
   # policy_definition_reference {

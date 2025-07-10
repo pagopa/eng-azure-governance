@@ -27,6 +27,15 @@ locals {
     container_registry_storageid_northeurope = {
       reference_id = "container_registry_storageid_northeurope"
     }
+    container_app_workspaceid = {
+      reference_id = "container_app_workspaceid"
+    }
+    container_app_storageid_westeurope = {
+      reference_id = "container_app_storageid_westeurope"
+    }
+    container_app_storageid_northeurope = {
+      reference_id = "container_app_storageid_northeurope"
+    }
     kubernetes_cluster_workspaceid = {
       reference_id = "kubernetes_cluster_workspaceid"
     }
