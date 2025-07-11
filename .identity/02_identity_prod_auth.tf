@@ -21,3 +21,9 @@ resource "azurerm_role_assignment" "prod_tfinforg" {
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.prod.principal_id
 }
+
+resource "azurerm_role_assignment" "prod_container_app_job_contributor" {
+  scope                = data.azurerm_management_group.pagopa.id
+  role_definition_name = "Container Apps Jobs Contributor"
+  principal_id         = azurerm_user_assigned_identity.prod.principal_id
+}
