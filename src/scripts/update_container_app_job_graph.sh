@@ -41,6 +41,7 @@ echo "$JOBS" | jq -c '.data[]' | while read -r job; do
     #   --name "$NAME" \
     #   --resource-group "$RG" \
     #   --min-executions 0 \
+    #   --subscription "$SUBSCRIPTION"
     #   --only-show-errors
 
   else
