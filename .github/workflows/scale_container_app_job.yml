@@ -1,0 +1,54 @@
+name: Scale Container App Jobs
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * *' #Every Day at 20:00
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  scale-container-job:
+    environment: prod
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      # Step 2: Log in to Azure
+      - name: Login to Azure
+        uses: azure/login@a65d910e8af852a8061c627c456678983e180302
+        with:
+          client-id: ${{ secrets.AZ_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZ_TENANT_ID }}
+          subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
+
+      # Step 3: Execute script
+      - name: check policy to remediate
+        shell: bash
+        run: src/scripts/update_container_app_job_graph.sh
+
+      - name: Notify Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            "channel": "${{ secrets.SLACK_CHANNEL_ID }}",
+            "text": "GitHub Action failed.",
+            "attachments": [
+              {
+                "color": "danger",
+                "fields": [
+                  { "title": "Repository", "value": "${{ github.repository }}", "short": false },
+                  { "title": "Branch", "value": "${{ github.ref }}", "short": false },
+                  { "title": "Workflow Name", "value": "${{ github.workflow }}", "short": false },
+                  { "title": "Link", "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false }
+                ]
+              }
+            ]  
