@@ -28,7 +28,7 @@ jobs:
           subscription-id: ${{ secrets.AZ_SUBSCRIPTION_ID }}
 
       # Step 3: Execute script
-      - name: check policy to remediate
+      - name: scale container jobs
         shell: bash
         run: src/scripts/update_container_app_job_graph.sh
 
