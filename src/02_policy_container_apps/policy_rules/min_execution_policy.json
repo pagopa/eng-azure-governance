@@ -1,0 +1,21 @@
+{
+  "if": {
+    "allOf": [
+      {
+        "field": "type",
+        "equals": "Microsoft.App/jobs"
+      },
+      {
+        "field": "Microsoft.App/jobs/template.containers[*].image",
+        "contains": "ghcr.io/pagopa/github-self-hosted-runner-azure:latest"
+      },
+      {
+        "field": "Microsoft.App/jobs/configuration.eventTriggerConfig.scale.minExecutions",
+        "notEquals": 0
+      }
+    ]
+  },
+  "then": {
+    "effect": "[parameters('effect')]"
+  }
+}

@@ -8,6 +8,10 @@ locals {
       reference_id = "enforce_private_subnets_reference_id"
       effect       = "Audit"
     }
+    min_execution = {
+      reference_id = "min_execution_reference_id"
+      effect       = "Audit"
+    }
   }
 }
 
@@ -43,6 +47,17 @@ resource "azurerm_policy_set_definition" "container_apps_prod" {
     parameter_values = jsonencode({
       effect = {
         value = local.container_apps_prod.enforce_private_subnets.effect
+      }
+    })
+  }
+
+  # Container Apps Jobs must have min execution equal to 0
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_container_apps.outputs.min_execution_id
+    reference_id         = local.container_apps_prod.min_execution.reference_id
+    parameter_values = jsonencode({
+      effect = {
+        value = local.container_apps_prod.min_execution.effect
       }
     })
   }
