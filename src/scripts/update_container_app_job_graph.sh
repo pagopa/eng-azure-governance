@@ -6,6 +6,10 @@ if ! az extension show --name containerapp &>/dev/null; then
   az extension add --name containerapp
 fi
 
+if ! az extension show --name resource-graph &>/dev/null; then
+  az extension add --name resource-graph
+fi
+
 JOBS=$(az graph query -q "
 resources
 | where type == 'microsoft.app/jobs'
