@@ -32,8 +32,7 @@ echo "$JOBS" | jq -c '.data[]' | while read -r job; do
 
   echo "[DEBUG] name=$NAME, rg=$RG, sub=$SUBSCRIPTION, min_exec=$MIN_EXEC, image=$IMAGE"
 
-  if [[ "$IMAGE" == "$TARGET_IMAGE"* && "$MIN_EXEC" != "0" ]]; then
-    #az account set --subscription "$SUBSCRIPTION"
+  if [[ "$IMAGE" == "$TARGET_IMAGE"* ]]; then
 
     echo "--> ✅ [Subscription=$SUBSCRIPTION] job with min-exec != 0: $NAME (image: $IMAGE)"
 
