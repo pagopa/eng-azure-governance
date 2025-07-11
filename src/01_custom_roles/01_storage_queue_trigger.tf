@@ -4,7 +4,7 @@ resource "azurerm_role_definition" "storage_queue_trigger" {
   description = "Role for managing visibility timeout of messages in storage queues"
 
   permissions {
-    actions = [
+    data_actions = [
       "Microsoft.Storage/storageAccounts/queueServices/queues/messages/write" # set visibility timeout of messages in storage queues
     ]
   }
