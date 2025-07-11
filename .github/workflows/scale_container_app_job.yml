@@ -3,7 +3,7 @@ name: Scale Container App Jobs
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 20 * * *'
 
 permissions:
   id-token: write
@@ -51,4 +51,4 @@ jobs:
                   { "title": "Link", "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false }
                 ]
               }
-            ]  
+            ]
