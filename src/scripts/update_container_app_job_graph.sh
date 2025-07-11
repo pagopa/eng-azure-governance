@@ -36,12 +36,12 @@ echo "$JOBS" | jq -c '.data[]' | while read -r job; do
 
     echo "--> ✅ [Subscription=$SUBSCRIPTION] job with min-exec != 0: $NAME (image: $IMAGE)"
 
-    # az containerapp job update \
-    #   --name "$NAME" \
-    #   --resource-group "$RG" \
-    #   --min-executions 0 \
-    #   --subscription "$SUBSCRIPTION"
-    #   --only-show-errors
+    az containerapp job update \
+      --name "$NAME" \
+      --resource-group "$RG" \
+      --min-executions 0 \
+      --subscription "$SUBSCRIPTION"
+      --only-show-errors
 
   else
     echo "--> ⏭️  Skipping job: $NAME (image: $IMAGE)"
