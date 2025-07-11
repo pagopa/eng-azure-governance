@@ -9,6 +9,13 @@
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
 
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.35.0 |
+| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
+
 ## Modules
 
 No modules.
@@ -26,7 +33,9 @@ No modules.
 | [azurerm_policy_set_definition.application_gateway_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.container_apps_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.container_apps_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.container_apps_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.cosmosdb_dev](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.cosmosdb_prod](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.cosmosdb_uat](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_set_definition) | resource |
@@ -131,7 +140,9 @@ No modules.
 | <a name="output_audit_logs_storage_id_northeurope"></a> [audit\_logs\_storage\_id\_northeurope](#output\_audit\_logs\_storage\_id\_northeurope) | n/a |
 | <a name="output_audit_logs_storage_id_westeurope"></a> [audit\_logs\_storage\_id\_westeurope](#output\_audit\_logs\_storage\_id\_westeurope) | n/a |
 | <a name="output_audit_logs_workspace_id"></a> [audit\_logs\_workspace\_id](#output\_audit\_logs\_workspace\_id) | n/a |
+| <a name="output_container_apps_dev_id"></a> [container\_apps\_dev\_id](#output\_container\_apps\_dev\_id) | n/a |
 | <a name="output_container_apps_prod_id"></a> [container\_apps\_prod\_id](#output\_container\_apps\_prod\_id) | n/a |
+| <a name="output_container_apps_uat_id"></a> [container\_apps\_uat\_id](#output\_container\_apps\_uat\_id) | n/a |
 | <a name="output_cosmosdb_dev_id"></a> [cosmosdb\_dev\_id](#output\_cosmosdb\_dev\_id) | n/a |
 | <a name="output_cosmosdb_prod_id"></a> [cosmosdb\_prod\_id](#output\_cosmosdb\_prod\_id) | n/a |
 | <a name="output_cosmosdb_uat_id"></a> [cosmosdb\_uat\_id](#output\_cosmosdb\_uat\_id) | n/a |
