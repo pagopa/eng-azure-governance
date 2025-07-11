@@ -1,7 +1,3 @@
-# policy
-
-<!-- markdownlint-disable -->
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -43,4 +39,3 @@ No modules.
 | <a name="output_enforce_multiaz_id"></a> [enforce\_multiaz\_id](#output\_enforce\_multiaz\_id) | n/a |
 | <a name="output_min_execution_id"></a> [min\_execution\_id](#output\_min\_execution\_id) | n/a |
 | <a name="output_policy_ids"></a> [policy\_ids](#output\_policy\_ids) | n/a |
-<!-- END_TF_DOCS -->
