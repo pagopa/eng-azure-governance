@@ -40,7 +40,9 @@ echo "$JOBS" | jq -c '.data[]' | while read -r job; do
     --resource-group "$RG" \
     --min-executions "0" \
     --max-executions "$MAX_EXEC" \
-    --subscription "$SUBSCRIPTION"
+    --subscription "$SUBSCRIPTION" \
+    --query "{name: name}" \
+    --output json
 
 done
 
