@@ -3,7 +3,7 @@ name: Scale Container App Jobs
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 20 * * *'
+    - cron: '0 17 * * *' # 17 UTC -> 19 CET
 
 permissions:
   id-token: write
