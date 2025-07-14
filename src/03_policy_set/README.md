@@ -1,13 +1,16 @@
-# policy_set
-
-<!-- markdownlint-disable -->
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.35.0 |
+| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
@@ -160,4 +163,3 @@ No modules.
 | <a name="output_virtual_machine_scale_set_prod_id"></a> [virtual\_machine\_scale\_set\_prod\_id](#output\_virtual\_machine\_scale\_set\_prod\_id) | n/a |
 | <a name="output_virtual_machine_scale_set_uat_id"></a> [virtual\_machine\_scale\_set\_uat\_id](#output\_virtual\_machine\_scale\_set\_uat\_id) | n/a |
 | <a name="output_virtual_machine_uat_id"></a> [virtual\_machine\_uat\_id](#output\_virtual\_machine\_uat\_id) | n/a |
-<!-- END_TF_DOCS -->

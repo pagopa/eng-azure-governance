@@ -4,7 +4,7 @@ output "policy_ids" {
     azurerm_policy_definition.redis_allowed_tls.id,
     azurerm_policy_definition.redis_disable_nosslport.id,
     azurerm_policy_definition.redis_allowed_sku.id,
-    # azurerm_policy_definition.redis_required_zone_redundant.id,
+    azurerm_policy_definition.redis_required_zone_redundant.id,
   ]
 }
 
@@ -23,3 +23,8 @@ output "redis_disable_nosslport_id" {
 output "redis_allowed_sku_id" {
   value = azurerm_policy_definition.redis_allowed_sku.id
 }
+
+output "redis_required_zone_redundant_id" {
+  value = azurerm_policy_definition.redis_required_zone_redundant.id
+}
+

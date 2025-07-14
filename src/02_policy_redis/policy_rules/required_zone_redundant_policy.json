@@ -3,11 +3,11 @@
     "allOf": [
       {
         "field": "type",
-        "equals": "Microsoft.Network/applicationGateways"
+        "equals": "Microsoft.Cache/Redis"
       },
       {
         "count": {
-          "field": "Microsoft.Network/applicationGateways/zones[*]"
+          "field": "Microsoft.Cache/Redis/zones[*]"
         },
         "less": 3
       }
