@@ -50,11 +50,6 @@ resource "azurerm_policy_set_definition" "redis_uat" {
     })
   }
 
-  policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_required_zone_redundant_id
-    parameter_values     = jsonencode({})
-  }
-
 }
 
 output "redis_uat_id" {

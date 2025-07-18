@@ -6,10 +6,8 @@
         "equals": "Microsoft.Cache/Redis"
       },
       {
-        "count": {
-          "field": "Microsoft.Cache/Redis/zones[*]"
-        },
-        "less": 3
+        "field": "Microsoft.Cache/Redis/zonalAllocationPolicy",
+        "notEquals": "Automatic"
       }
     ]
   },
