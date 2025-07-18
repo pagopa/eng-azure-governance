@@ -14,7 +14,7 @@ JOBS=$(az graph query -q "
 resources
 | where type == 'microsoft.app/jobs'
 | where properties.configuration.eventTriggerConfig.scale.minExecutions != '0'
-| where properties.template.containers[0].image startswith 'ghcr.io/pagopa/github-self-hosted-runner-azure'
+| where properties.template.containers[0].image contains 'github-self-hosted-runner'
 | project name, resourceGroup, subscriptionId, minExecutions=properties.configuration.eventTriggerConfig.scale.minExecutions, maxExecutions=properties.configuration.eventTriggerConfig.scale.maxExecutions, image=properties.template.containers[0].image
 " --first 1000 -o json)
 
