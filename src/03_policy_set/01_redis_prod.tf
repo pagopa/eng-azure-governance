@@ -62,6 +62,11 @@ resource "azurerm_policy_set_definition" "redis_prod" {
     parameter_values     = jsonencode({})
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_required_zone_redundant_id
+    parameter_values     = jsonencode({})
+  }
+
 }
 
 output "redis_prod_id" {
