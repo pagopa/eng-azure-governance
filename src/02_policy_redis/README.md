@@ -1,13 +1,15 @@
-# policy
-
-<!-- markdownlint-disable -->
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.35.0 |
 
 ## Modules
 
@@ -21,6 +23,7 @@ No modules.
 | [azurerm_policy_definition.redis_allowed_tls](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.redis_allowed_versions](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_policy_definition.redis_disable_nosslport](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.redis_required_zone_redundant](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/management_group) | data source |
 | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/subscription) | data source |
@@ -41,4 +44,4 @@ No modules.
 | <a name="output_redis_allowed_tls_id"></a> [redis\_allowed\_tls\_id](#output\_redis\_allowed\_tls\_id) | n/a |
 | <a name="output_redis_allowed_versions_id"></a> [redis\_allowed\_versions\_id](#output\_redis\_allowed\_versions\_id) | n/a |
 | <a name="output_redis_disable_nosslport_id"></a> [redis\_disable\_nosslport\_id](#output\_redis\_disable\_nosslport\_id) | n/a |
-<!-- END_TF_DOCS -->
+| <a name="output_redis_required_zone_redundant_id"></a> [redis\_required\_zone\_redundant\_id](#output\_redis\_required\_zone\_redundant\_id) | n/a |
