@@ -27,8 +27,10 @@
                         "equals": "true"
                       },
                       {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "equals": "audit"
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                        "in": [
+                          "ContainerAppsystemlogs"
+                        ]
                       }
                     ]
                   }
@@ -71,7 +73,7 @@
                   "workspaceId": "[parameters('logAnalytics')]",
                   "logs": [
                     {
-                      "categoryGroup": "audit",
+                      "category": "ContainerAppsystemlogs",
                       "enabled": true
                     }
                   ]

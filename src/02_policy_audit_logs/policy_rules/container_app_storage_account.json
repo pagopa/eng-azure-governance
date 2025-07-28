@@ -35,8 +35,10 @@
                         "equals": "true"
                       },
                       {
-                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].categoryGroup",
-                        "equals": "audit"
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                        "in": [
+                          "ContainerAppsystemlogs"
+                        ]
                       }
                     ]
                   }
@@ -83,7 +85,7 @@
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
-                      "categoryGroup": "audit",
+                      "categoryGroup": "ContainerAppsystemlogs",
                       "enabled": true
                     }
                   ]
