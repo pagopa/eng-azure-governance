@@ -57,6 +57,11 @@ jobs:
 
           # Loop through each folder under /src dynamically
           for folder in $(ls -d */); do
+            if [ "$folder" == "scripts/" ]; then
+              echo "Skipping $folder"
+              continue
+            fi
+
             echo "Running Terraform plan for $folder"
 
             # Change into the directory
