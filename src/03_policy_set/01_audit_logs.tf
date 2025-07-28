@@ -12,7 +12,13 @@ variable "audit_logs_storage_id_westeurope" {
 
 variable "audit_logs_storage_id_northeurope" {
   type        = string
-  default     = "novalue"
+  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-neu/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"
+  description = "description"
+}
+
+variable "audit_logs_storage_id_italynorth" {
+  type        = string
+  default     = "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-nit/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"
   description = "description"
 }
 
@@ -69,6 +75,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
+    reference_id         = local.audit_logs.keyvault_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
+
   ## Application Gateway
 
   policy_definition_reference {
@@ -103,6 +122,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
       }
       location = {
         value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
+    reference_id         = local.audit_logs.application_gateway_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
       }
     })
   }
@@ -145,43 +177,69 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
-  ## Kubernetes Cluster
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
+    reference_id         = local.audit_logs.container_registry_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
 
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_log_analytics_id
-  #   reference_id         = local.audit_logs.kubernetes_cluster_workspaceid.reference_id
-  #   parameter_values = jsonencode({
-  #     logAnalytics = {
-  #       value = var.audit_logs_workspace_id
-  #     }
-  #   })
-  # }
-  #
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_westeurope.reference_id
-  #   parameter_values = jsonencode({
-  #     storageAccount = {
-  #       value = var.audit_logs_storage_id_westeurope
-  #     }
-  #     location = {
-  #       value = "westeurope"
-  #     }
-  #   })
-  # }
-  #
-  # policy_definition_reference {
-  #   policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_kubernetes_cluster_storage_account_id
-  #   reference_id         = local.audit_logs.kubernetes_cluster_storageid_northeurope.reference_id
-  #   parameter_values = jsonencode({
-  #     storageAccount = {
-  #       value = var.audit_logs_storage_id_northeurope
-  #     }
-  #     location = {
-  #       value = "northeurope"
-  #     }
-  #   })
-  # }
+  ## Container App
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_log_analytics_id
+    reference_id         = local.audit_logs.container_app_workspaceid.reference_id
+    parameter_values = jsonencode({
+      logAnalytics = {
+        value = var.audit_logs_workspace_id
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    reference_id         = local.audit_logs.container_app_storageid_westeurope.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_westeurope
+      }
+      location = {
+        value = "westeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    reference_id         = local.audit_logs.container_app_storageid_northeurope.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_northeurope
+      }
+      location = {
+        value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    reference_id         = local.audit_logs.container_app_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
 
   ## Api Management
 
@@ -217,6 +275,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
       }
       location = {
         value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
+    reference_id         = local.audit_logs.api_management_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
       }
     })
   }
@@ -259,7 +330,20 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
-  ## Postgresql Flexible
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+    reference_id         = local.audit_logs.postgresql_flexible_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
+
+  ## Postgresql Single Server
 
   policy_definition_reference {
     policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_log_analytics_id
@@ -293,6 +377,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
       }
       location = {
         value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
+    reference_id         = local.audit_logs.postgresql_single_server_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
       }
     })
   }
@@ -335,6 +432,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
+    reference_id         = local.audit_logs.log_analytics_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
+
   ## Cosmos DB
 
   policy_definition_reference {
@@ -369,6 +479,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
       }
       location = {
         value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+    reference_id         = local.audit_logs.cosmos_db_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
       }
     })
   }
@@ -411,6 +534,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+    reference_id         = local.audit_logs.app_service_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
+
   ## Event Hub
 
   policy_definition_reference {
@@ -445,6 +581,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
       }
       location = {
         value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    reference_id         = local.audit_logs.event_hub_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
       }
     })
   }
@@ -487,6 +636,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+    reference_id         = local.audit_logs.public_ip_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
+
   ## Virtual Network Gateway
 
   policy_definition_reference {
@@ -521,6 +683,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
       }
       location = {
         value = "northeurope"
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+    reference_id         = local.audit_logs.virtual_network_gateway_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
       }
     })
   }
@@ -563,6 +738,19 @@ resource "azurerm_policy_set_definition" "audit_logs" {
     })
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+    reference_id         = local.audit_logs.grafana_storageid_italynorth.reference_id
+    parameter_values = jsonencode({
+      storageAccount = {
+        value = var.audit_logs_storage_id_italynorth
+      }
+      location = {
+        value = "italynorth"
+      }
+    })
+  }
+
   ## Subscription
 
   policy_definition_reference {
@@ -601,4 +789,8 @@ output "audit_logs_storage_id_westeurope" {
 
 output "audit_logs_storage_id_northeurope" {
   value = var.audit_logs_storage_id_northeurope
+}
+
+output "audit_logs_storage_id_italynorth" {
+  value = var.audit_logs_storage_id_italynorth
 }
