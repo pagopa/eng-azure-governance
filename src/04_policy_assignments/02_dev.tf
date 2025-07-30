@@ -15,6 +15,8 @@ locals {
     "DEV-ICT",
     "DEV-CRM",
     "DEV-DEVEX",
+    "DEV-PLATFORM-SM",
+    "DEV-PAY-MONITORING",
   ]
 }
 
