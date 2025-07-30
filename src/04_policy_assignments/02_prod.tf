@@ -34,3 +34,17 @@ module "prod_assignments" {
   location       = var.location
   policy_set_ids = data.terraform_remote_state.policy_set.outputs
 }
+
+resource "azurerm_resource_policy_exemption" "pioauditlogs_fims_waiver" {
+  name                 = "pioauditlogs-fims-waiver"
+  exemption_category   = "Waiver"
+  description          = "fims-rp is an example app and does not require audit logs to be enabled"
+  resource_id          = "/subscriptions/ec285037-c673-4f58-b594-d7c480da4e8b/resourcegroups/io-p-weu-fims-rg-01/providers/microsoft.web/sites/io-p-weu-fims-rp-example-app-02"
+  policy_assignment_id = "/subscriptions/ec285037-c673-4f58-b594-d7c480da4e8b/providers/microsoft.authorization/policyassignments/pioauditlogs"
+  policy_definition_reference_ids = [
+    "app_service_workspaceid",
+    "app_service_storageid_westeurope",
+    "app_service_storageid_northeurope",
+    "app_service_storageid_italynorth",
+  ]
+}
