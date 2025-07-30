@@ -10,6 +10,7 @@ locals {
     "UAT-ARC",
     "UAT-FATTURAZIONE",
     "UAT-CRM",
+    "UAT-PAY-MONITORING",
   ]
 }
 

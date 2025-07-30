@@ -22,6 +22,9 @@ locals {
     "Common",
     "DevOpsAutomation",
     "PROD-DEVEX",
+    "PROD-PLATFORM-SM",
+    "GitHub",
+    "PROD-PAY-MONITORING",
   ]
 }
 
