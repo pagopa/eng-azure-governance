@@ -40,6 +40,7 @@ No modules.
 | [azurerm_role_definition.policy_remediator](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.security_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.storage_blob_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
 | [azurerm_role_definition.storage_queue_trigger](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/client_config) | data source |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/management_group) | data source |
