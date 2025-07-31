@@ -1,4 +1,4 @@
-resource "azurerm_role_definition" "storage_blob_contributor" {
+resource "azurerm_role_definition" "storage_blob_tags_contributor" {
   name        = "PagoPA Storage Blob Tags Contributor"
   scope       = data.azurerm_management_group.pagopa.id
   description = "Role for managing tags of blobs in storage"
