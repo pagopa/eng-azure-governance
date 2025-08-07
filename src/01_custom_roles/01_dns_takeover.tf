@@ -9,6 +9,8 @@ resource "azurerm_role_definition" "dns_takeover" {
       "Microsoft.Network/frontDoors/read",
       "Microsoft.Storage/storageAccounts/read",
       "Microsoft.Cdn/profiles/endpoints/read",
+      "Microsoft.Cdn/profiles/customdomains/read",
+      "Microsoft.Cdn/profiles/endpoints/customdomains/read",
       "Microsoft.Cdn/profiles/afdendpoints/read",
       "Microsoft.Network/trafficManagerProfiles/read",
       "Microsoft.Network/publicIPAddresses/read",
