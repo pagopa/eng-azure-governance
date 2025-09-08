@@ -85,7 +85,7 @@
                   "storageAccountId": "[parameters('storageAccount')]",
                   "logs": [
                     {
-                      "categoryGroup": "ContainerAppsystemlogs",
+                      "category": "ContainerAppsystemlogs",
                       "enabled": true
                     }
                   ]
