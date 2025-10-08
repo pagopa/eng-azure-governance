@@ -6,6 +6,7 @@ resource "azurerm_role_definition" "static_web_app_secrets" {
   permissions {
     actions = [
       "Microsoft.Web/staticSites/listSecrets/action",
+      "Microsoft.Web/staticSites/listAppSettings/action"
     ]
   }
 }
