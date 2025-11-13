@@ -36,15 +36,15 @@ resource "azurerm_policy_set_definition" "networking_prod" {
   }
 
   # Virtual networks should be protected by Azure DDoS Protection Standard
-  policy_definition_reference {
-    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/94de2ad3-e0c1-4caf-ad78-5d47bbc83d3d"
-    reference_id         = local.networking_prod.ddos_protection.reference_id
-    parameter_values = jsonencode({
-      ddosPlan = {
-        value = local.networking_prod.ddos_protection.plan_id
-      }
-    })
-  }
+  # policy_definition_reference {
+  #   policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/94de2ad3-e0c1-4caf-ad78-5d47bbc83d3d"
+  #   reference_id         = local.networking_prod.ddos_protection.reference_id
+  #   parameter_values = jsonencode({
+  #     ddosPlan = {
+  #       value = local.networking_prod.ddos_protection.plan_id
+  #     }
+  #   })
+  # }
 
   # VPN gateways should use only Azure Active Directory (Azure AD) authentication for point-to-site users
   policy_definition_reference {
