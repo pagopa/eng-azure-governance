@@ -85,7 +85,7 @@ jobs:
           done
 
       - name: Notify Slack on Failure
-        if: success()
+        if: failure()
         uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d
         with:
           method: chat.postMessage
