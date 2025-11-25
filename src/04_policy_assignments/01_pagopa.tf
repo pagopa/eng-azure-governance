@@ -34,19 +34,20 @@ resource "azurerm_management_group_policy_assignment" "pagopa_dns" {
   })
 }
 
-resource "azurerm_management_group_policy_assignment" "pagopa_tags" {
-  name                 = "${local.pagopa_prefix}tags"
-  display_name         = "PagoPA Tags"
-  policy_definition_id = data.terraform_remote_state.policy_set.outputs.tags_id
-  management_group_id  = data.azurerm_management_group.pagopa.id
+# disabled due to inconsistent tagging strategy across PagoPA subscriptions
+# resource "azurerm_management_group_policy_assignment" "pagopa_tags" {
+#   name                 = "${local.pagopa_prefix}tags"
+#   display_name         = "PagoPA Tags"
+#   policy_definition_id = data.terraform_remote_state.policy_set.outputs.tags_id
+#   management_group_id  = data.azurerm_management_group.pagopa.id
 
-  enforce = true
+#   enforce = true
 
-  metadata = jsonencode({
-    category = var.metadata_category_name
-    version  = "v1.0.0"
-  })
-}
+#   metadata = jsonencode({
+#     category = var.metadata_category_name
+#     version  = "v1.0.0"
+#   })
+# }
 
 resource "azurerm_management_group_policy_assignment" "pagopa_azure_security_benchmark" {
   name                 = "${local.pagopa_prefix}asc"
