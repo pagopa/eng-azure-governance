@@ -52,4 +52,4 @@ jobs:
                   { "title": "Link", "value": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false }
                 ]
               }
-            ]  
+            ]
