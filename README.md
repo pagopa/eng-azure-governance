@@ -56,3 +56,27 @@ terraform providers lock \
   -platform=darwin_arm64 \
   -platform=linux_amd64
 ```
+
+---
+## Repository Structure & Details (Auto-generated)
+
+### Scopo
+Repository centrale per le Azure Policy d’organizzazione; definisce ruoli RBAC custom, policy singole e initiative e le assegna ai Management Group per imporre controlli di sicurezza/compliance su subscription e workload. Garantisce applicazione coerente dei guardrail e remediation automatica su larga scala.
+
+### Cartelle
+- `src/01_custom_roles`: ruoli RBAC custom (JSON) per abilitare permessi minimi.
+- `src/02_policy_*`: set di policy per dominio (es. networking, db, storage) con definizioni e parametri.
+- `src/03_policy_set`: iniziative (PolicySet) che aggregano policy correlate con parametri predefiniti.
+- `src/04_policy_assignments`: assignment verso Management Group con scope e parametri di iniziative/policy.
+- eventuali `modules/`: moduli Terraform per deployment e riuso delle definizioni.
+
+### Script
+Nessuno; tutto è definizione Policy/Initiative/Assignment.
+
+### Workflow
+- `terraform_drift.yml`: drift detection.
+- `policy_remediation.yml`: remediation.
+- `automation_scale_container_app_job.yml`: scaling automation.
+
+### Note
+Stato Terraform su storage `tfinforg` (container `terraform-state`, chiavi es. `eng-azure-governance.policy_<module>.terraform.tfstate`).

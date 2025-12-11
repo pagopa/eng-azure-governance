@@ -1,3 +1,4 @@
+# Scopo: drift detection
 name: Terraform Drift Detection
 
 on:
