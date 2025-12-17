@@ -25,6 +25,7 @@ locals {
     "PROD-PLATFORM-SM",
     "GitHub",
     "PROD-PAY-MONITORING",
+    "PROD-QATM",
   ]
 }
 

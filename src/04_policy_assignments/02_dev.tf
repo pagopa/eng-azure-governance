@@ -17,6 +17,7 @@ locals {
     "DEV-DEVEX",
     "DEV-PLATFORM-SM",
     "DEV-PAY-MONITORING",
+    "DEV-QATM",
   ]
 }
 
