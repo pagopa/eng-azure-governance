@@ -11,6 +11,7 @@ locals {
     "UAT-FATTURAZIONE",
     "UAT-CRM",
     "UAT-PAY-MONITORING",
+    "UAT-DEVEX",
   ]
 }
 
