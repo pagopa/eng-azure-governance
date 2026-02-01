@@ -1,28 +1,39 @@
-<!-- markdownlint-disable -->
-<!--- Please always add a PR description as if nobody knows anything about the context these changes come from. -->
-<!--- Even if we are all from our internal team, we may not be on the same page. -->
-<!--- Write this PR as you were contributing to a public OSS project, where nobody knows you and you have to earn their trust. -->
-<!--- This will improve our projects in the long run! Thanks. -->
+## 📋 Description
 
-### List of changes
+<!-- Brief description of the changes -->
 
-<!--- Describe your changes in detail -->
+## 🎯 Type of Change
 
-### Motivation and context
-
-<!--- Why is this change required? What problem does it solve? -->
-
-### Type of changes
-
-- [ ] Add new governance rule
+- [ ] New custom RBAC role
+- [ ] New policy definition
+- [ ] New policy initiative
+- [ ] Policy assignment
 - [ ] Update existing governance rule
 - [ ] Remove existing governance rule
+- [ ] Documentation
+- [ ] Other: ___
 
-### Does this introduce a breaking change?
+## 📝 Details
 
-- [ ] Yes
-- [ ] No
+### What does this change do?
 
-### Other information
+<!-- Explain the change -->
 
-<!-- Any other information that is important to this PR such as screenshots of how the component looks before and after the change. -->
+### Why is this change needed?
+
+<!-- Explain the motivation -->
+
+## ⚠️ Risk Assessment
+
+- [ ] Low risk - Documentation/minor changes
+- [ ] Medium risk - New policies with Audit effect
+- [ ] High risk - Policies with Deny effect (requires extra review)
+
+## ✅ Checklist
+
+- [ ] I followed the apply order (01 → 02 → 03 → 04)
+- [ ] Terraform files are formatted
+- [ ] Terraform plan shows expected changes
+- [ ] Tested in non-production (if applicable)
+- [ ] Security implications considered
+
