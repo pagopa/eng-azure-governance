@@ -1,6 +1,6 @@
 # AGENTS.md - eng-azure-governance
 
-This file is for **OpenAI Codex CLI** and other AI agents.
+This file is for AI assistants and GitHub Copilot.
 
 ## 📚 Main Instructions
 
@@ -16,6 +16,16 @@ This file is for **OpenAI Codex CLI** and other AI agents.
 | [.github/instructions/terraform.instructions.md](.github/instructions/terraform.instructions.md) | Terraform conventions |
 | [.github/instructions/json.instructions.md](.github/instructions/json.instructions.md) | JSON/Policy conventions |
 | [.github/instructions/scripts.instructions.md](.github/instructions/scripts.instructions.md) | Script conventions |
+
+
+## 🧠 Available Skills
+
+| Skill | Description |
+|------|-------------|
+| [.github/skills/terraform-module/SKILL.md](.github/skills/terraform-module/SKILL.md) | Create or modify Terraform modules |
+| [.github/skills/script-python/SKILL.md](.github/skills/script-python/SKILL.md) | Create or modify Python scripts (with tests when required) |
+| [.github/skills/script-bash/SKILL.md](.github/skills/script-bash/SKILL.md) | Create or modify Bash scripts for simple operations |
+| [.github/skills/cicd-workflow/SKILL.md](.github/skills/cicd-workflow/SKILL.md) | Create or modify GitHub Actions workflows |
 
 ## 🎯 Available Prompts
 

@@ -9,59 +9,22 @@ description: Modify or create Terraform modules for Azure governance
 
 I need to modify or extend Terraform configuration for Azure governance (policies, initiatives, custom roles).
 
-## Codebase Discovery
-
-Analyze existing files with `#codebase` and:
-- `#file:src/01_custom_roles/`
-- `#file:src/02_policy_*/`
-- `#file:src/03_policy_set/`
-- `#file:src/04_policy_assignments/`
-
-## Input Required
+## Inputs
 
 - **Modification type**: ${input:type:resource,variable,output,data_source,module}
 - **Description**: ${input:description}
 
-## Conventions
+## Steps
 
-- Use `snake_case` for resources and variables
-- Always add `description` to variables
-- Use `try()` for optional values
-- Follow the folder naming convention: `02_policy_{service}/`
-
-## Provider
-
-```hcl
-terraform {
-  required_version = ">= 1.7.0"
-
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
-    }
-  }
-
-  backend "azurerm" {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "yourterraformstate"
-    container_name       = "tfstate"
-    key                  = "azure-governance.tfstate"
-  }
-}
-
-provider "azurerm" {
-  features {}
-}
-```
+1. Use the `terraform-module` skill in `.github/skills/terraform-module/SKILL.md`.
+2. Analyze existing files with `#codebase` and:
+   - `#file:src/01_custom_roles/`
+   - `#file:src/02_policy_*/`
+   - `#file:src/03_policy_set/`
+   - `#file:src/04_policy_assignments/`
+3. Implement changes following the skill template and repository instructions.
 
 ## Validations
 
-- Always add `description` to variables
-- Use `try()` for optional values in JSON
-- Check with `#problems` for any errors after modifications
-- Run `terraform fmt` before committing
-
-## References
-
-Follow conventions in `#file:.github/copilot-instructions.md`
+- Run `terraform fmt` before committing.
+- Check `#problems` for errors after changes.

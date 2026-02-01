@@ -9,37 +9,17 @@ description: Create Bash scripts for simple and quick operations
 
 I need to create a Bash script for simple operations in Azure governance management.
 
-## Input Required
+## Inputs
 
 - **Script name**: ${input:script_name}
 - **Purpose**: ${input:purpose}
 
-## Mandatory Template
+## Steps
 
-```bash
-#!/usr/bin/env bash
-#
-# 📋 {script_name}.sh
-# 🎯 Purpose: {purpose}
-# 📖 Usage: ./src/scripts/{script_name}.sh [options]
-#
+1. Use the `script-bash` skill in `.github/skills/script-bash/SKILL.md`.
+2. Review relevant files with `#codebase` to align with existing patterns.
+3. Implement changes following the skill template and repository instructions.
 
-set -euo pipefail
+## Validations
 
-log_info()    { echo -e "🔍 $1"; }
-log_success() { echo -e "✅ $1"; }
-log_error()   { echo -e "❌ $1" >&2; }
-
-main() {
-    log_info "Starting script"
-    # Early return pattern
-    # ... implementation ...
-    log_success "Completed"
-}
-
-main "$@"
-```
-
-## References
-
-Follow conventions in `#file:.github/copilot-instructions.md`
+- Check `#problems` for errors after changes.

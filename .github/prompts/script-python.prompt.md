@@ -9,48 +9,17 @@ description: Create Python scripts with test suite for complex operations
 
 I need to create a Python script for complex operations in Azure governance (policies, remediation).
 
-## Discovery
-
-Use `#codebase` to search for existing Python scripts in `src/scripts/`.
-
-## Input Required
+## Inputs
 
 - **Script name**: ${input:script_name}
 - **Purpose**: ${input:purpose}
 
-## Mandatory Template
+## Steps
 
-```python
-#!/usr/bin/env python3
-"""
-📋 {script_name}.py
+1. Use the `script-python` skill in `.github/skills/script-python/SKILL.md`.
+2. Use `#codebase` to search for existing Python scripts in `src/scripts/`.
+3. Implement changes following the skill template and repository instructions.
 
-🎯 Purpose: {purpose}
-📖 Usage: python src/scripts/{script_name}.py [options]
-"""
+## Validations
 
-import argparse
-import logging
-import sys
-
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-logger = logging.getLogger(__name__)
-
-def main() -> int:
-    logger.info("🚀 Starting script")
-    # Early return pattern
-    # ... implementation ...
-    logger.info("✅ Completed")
-    return 0
-
-if __name__ == "__main__":
-    sys.exit(main())
-```
-
-## Test Suite
-
-Also create `src/scripts/tests/test_{script_name}.py` with pytest.
-
-## References
-
-Follow conventions in `#file:.github/copilot-instructions.md`
+- Check `#problems` for errors after changes.
