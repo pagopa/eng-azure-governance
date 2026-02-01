@@ -1,4 +1,3 @@
-```prompt
 ---
 agent: agent
 description: Create Python scripts with test suite for complex operations
@@ -55,4 +54,3 @@ Also create `src/scripts/tests/test_{script_name}.py` with pytest.
 ## References
 
 Follow conventions in `#file:.github/copilot-instructions.md`
-```

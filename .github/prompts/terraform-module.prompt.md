@@ -1,4 +1,3 @@
-```prompt
 ---
 agent: agent
 description: Modify or create Terraform modules for Azure governance
@@ -66,4 +65,3 @@ provider "azurerm" {
 ## References
 
 Follow conventions in `#file:.github/copilot-instructions.md`
-```

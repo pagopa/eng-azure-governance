@@ -1,4 +1,3 @@
-```prompt
 ---
 agent: agent
 description: Create Bash scripts for simple and quick operations
@@ -44,4 +43,3 @@ main "$@"
 ## References
 
 Follow conventions in `#file:.github/copilot-instructions.md`
-```
