@@ -1,0 +1,26 @@
+{
+  "github.copilot.enable": {
+    "*": true
+  },
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "[terraform]": {
+    "editor.defaultFormatter": "hashicorp.terraform",
+    "editor.tabSize": 2
+  },
+  "[python]": {
+    "editor.tabSize": 4
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
+  },
+  "files.associations": {
+    "*.prompt.md": "markdown",
+    "*.tfvars": "terraform"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true
+}
