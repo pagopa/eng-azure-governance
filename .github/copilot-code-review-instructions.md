@@ -1,62 +1,19 @@
-# Code Review Instructions - eng-azure-governance
+# Code Review Instructions
 
-## 🎯 Review Focus
+## Primary checks
+1. Security and least privilege.
+2. No hardcoded secrets or credentials.
+3. Consistency with repository naming and structure conventions.
+4. Test coverage for testable logic.
+5. Documentation updates when behavior changes.
 
-### Custom Roles (`01_custom_roles/`)
+## Review output format
+- `Critical`: must-fix issues
+- `Major`: high-risk improvements
+- `Minor`: optional improvements
+- `Notes`: assumptions and follow-ups
 
-- [ ] Role name is descriptive
-- [ ] Permissions follow least privilege
-- [ ] No unnecessary wildcards in actions
-- [ ] Scope is appropriate
-
-### Policy Definitions (`02_policy_*/`)
-
-- [ ] Policy name follows `pagopa-*` convention
-- [ ] Description is clear and helpful
-- [ ] Parameters are documented
-- [ ] Effect is appropriate (Audit vs Deny)
-- [ ] Conditions are correct
-
-### Policy Initiatives (`03_policy_set/`)
-
-- [ ] Initiative groups related policies
-- [ ] Parameters are properly mapped
-- [ ] Environment-specific configurations correct
-- [ ] Naming follows convention
-
-### Policy Assignments (`04_policy_assignments/`)
-
-- [ ] Scope is correct (MG/Subscription)
-- [ ] Parameters are properly set
-- [ ] Exemptions are documented
-- [ ] Not bypassing security controls
-
-### Terraform Files
-
-- [ ] Proper formatting (`terraform fmt`)
-- [ ] Variables have descriptions
-- [ ] No hardcoded IDs
-- [ ] Backend configuration correct
-
-## ⚠️ Red Flags
-
-- 🚨 **Immediate rejection**:
-  - Hardcoded credentials or secrets
-  - Overly permissive custom roles
-  - Policies that could break production
-  - Skipping apply order
-
-- ⚠️ **Request changes**:
-  - Unformatted Terraform code
-  - Missing policy descriptions
-  - Unclear naming
-  - Missing documentation
-
-## ✅ Approve if
-
-- All automated checks pass
-- Terraform plan shows expected changes
-- Apply order is respected
-- Policies tested in non-production
-- Naming conventions followed
-- Security impact assessed
+## Focus by area
+- Terraform: drift risk, lifecycle safety, variable typing, plan readability.
+- Workflows: SHA pinning, minimal permissions, environment protection.
+- Scripts: input validation, early returns, readable control flow, English logs.

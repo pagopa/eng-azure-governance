@@ -1,63 +1,20 @@
 ---
-applyTo: "**/*.json"
+applyTo: "**/authorizations/**/*.json,**/organization/**/*.json,**/src/**/*.json,**/data/**/*.json"
 ---
 
-# JSON Files Instructions
+# JSON Instructions
 
-## General Rules
+## Formatting
+- Use 2-space indentation.
+- Keep keys in alphabetical order when applicable.
+- Do not use trailing commas.
+- For machine-managed files (for example `package.json`, lock files), preserve ecosystem conventions.
 
-- Use 2-space indentation
-- No trailing commas
-- UTF-8 encoding
-- LF line endings
+## Authorization registries
+- Validate schema before commit.
+- Keep consistency with existing patterns in the file.
+- Use lowercase identifiers.
+- Avoid unnecessary structural changes.
 
-## Policy Rules (in Terraform)
-
-When using `jsonencode()` for policy rules:
-
-```hcl
-policy_rule = jsonencode({
-  if = {
-    allOf = [
-      {
-        field  = "type"
-        equals = "Microsoft.Storage/storageAccounts"
-      },
-      {
-        field    = "Microsoft.Storage/storageAccounts/encryption.services.blob.enabled"
-        notEquals = "true"
-      }
-    ]
-  }
-  then = {
-    effect = "Deny"
-  }
-})
-```
-
-## Common Policy Conditions
-
-### Field Conditions
-
-```json
-{
-  "field": "fieldName",
-  "equals": "value"
-}
-```
-
-### Logical Operators
-
-- `allOf`: All conditions must be true (AND)
-- `anyOf`: Any condition must be true (OR)
-- `not`: Negation
-
-### Effects
-
-| Effect | Description |
-|--------|-------------|
-| `Deny` | Prevent resource creation/modification |
-| `Audit` | Log non-compliant resources |
-| `AuditIfNotExists` | Audit if related resource missing |
-| `DeployIfNotExists` | Deploy if related resource missing |
-| `Modify` | Add/update/remove properties |
+## Language of content
+- Use technical English in descriptive/documentation fields intended for operational output.
