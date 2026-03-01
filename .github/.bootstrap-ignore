@@ -1,0 +1,6 @@
+# Purpose: Optional exclude patterns for bootstrap-copilot-config.sh
+# Add one rsync exclude pattern per line.
+
+# Example:
+# workflows/
+# dependabot.yml
