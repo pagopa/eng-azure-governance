@@ -115,63 +115,102 @@ This file is for GitHub Copilot and AI assistants working in this repository.
 ## Backlog Triggers
 - Add `instructions/docker.instructions.md` when the first Dockerfile is introduced in this repository.
 
-## Repository Inventory (Auto-generated)
-### Instructions
-- `instructions/bash.instructions.md`
-- `instructions/github-action-composite.instructions.md`
-- `instructions/github-actions.instructions.md`
-- `instructions/java.instructions.md`
-- `instructions/json.instructions.md`
-- `instructions/lambda.instructions.md`
-- `instructions/makefile.instructions.md`
-- `instructions/markdown.instructions.md`
-- `instructions/nodejs.instructions.md`
-- `instructions/python.instructions.md`
-- `instructions/scripts.instructions.md`
+
+## Repository Defaults
+- Primary focus: Azure governance repository for policy definitions, initiatives, assignments, and custom RBAC roles.
+- Profile hint: `infrastructure-heavy`
+- AGENTS.md is the external bridge for assistant behavior and naming; keep runtime references abstract.
+- Prioritize these paths:
+  - `src/01_custom_roles`
+  - `src/02_policy_*`
+  - `src/03_policy_set`
+  - `src/04_policy_assignments`
+  - `src/scripts`
+
+### Default instruction routing
 - `instructions/terraform.instructions.md`
+- `instructions/json.instructions.md`
+- `instructions/scripts.instructions.md`
+- `instructions/bash.instructions.md`
 - `instructions/yaml.instructions.md`
 
-### Prompts
-- `prompts/cicd-workflow.prompt.md`
-- `prompts/create-custom-role.prompt.md`
-- `prompts/create-initiative.prompt.md`
+### Preferred prompts
 - `prompts/create-policy.prompt.md`
-- `prompts/cs-add-unit-tests.prompt.md`
-- `prompts/cs-bash-script.prompt.md`
-- `prompts/cs-cloud-policy.prompt.md`
-- `prompts/cs-data-registry.prompt.md`
-- `prompts/cs-java.prompt.md`
-- `prompts/cs-nodejs.prompt.md`
-- `prompts/cs-python-script.prompt.md`
-- `prompts/cs-python.prompt.md`
+- `prompts/create-initiative.prompt.md`
+- `prompts/create-custom-role.prompt.md`
 - `prompts/cs-terraform.prompt.md`
-- `prompts/github-action.prompt.md`
-- `prompts/github-composite-action.prompt.md`
 - `prompts/github-pr-description.prompt.md`
-- `prompts/script-bash.prompt.md`
-- `prompts/script-python.prompt.md`
-- `prompts/terraform-module.prompt.md`
 
-### Skills
-- `skills/cicd-workflow/SKILL.md`
-- `skills/cloud-policy/SKILL.md`
-- `skills/composite-action/SKILL.md`
-- `skills/data-registry/SKILL.md`
-- `skills/pr-writing/SKILL.md`
-- `skills/project-java/SKILL.md`
-- `skills/project-nodejs/SKILL.md`
-- `skills/project-python/SKILL.md`
-- `skills/script-bash/SKILL.md`
-- `skills/script-python/SKILL.md`
+### Preferred skills
 - `skills/terraform-feature/SKILL.md`
 - `skills/terraform-module/SKILL.md`
+- `skills/cloud-policy/SKILL.md`
+- `skills/script-bash/SKILL.md`
+- `skills/script-python/SKILL.md`
+
+### Required validations before PR
+- `terraform fmt -recursive`
+- `terraform validate`
+- `non-prod terraform plan for policy/role changes`
+- `effect review for deny/modify policies`
+
+## Repository Inventory (Auto-generated)
+### Instructions
+- `.github/instructions/bash.instructions.md`
+- `.github/instructions/github-action-composite.instructions.md`
+- `.github/instructions/github-actions.instructions.md`
+- `.github/instructions/java.instructions.md`
+- `.github/instructions/json.instructions.md`
+- `.github/instructions/lambda.instructions.md`
+- `.github/instructions/makefile.instructions.md`
+- `.github/instructions/markdown.instructions.md`
+- `.github/instructions/nodejs.instructions.md`
+- `.github/instructions/python.instructions.md`
+- `.github/instructions/scripts.instructions.md`
+- `.github/instructions/terraform.instructions.md`
+- `.github/instructions/yaml.instructions.md`
+
+### Prompts
+- `.github/prompts/cicd-workflow.prompt.md`
+- `.github/prompts/create-custom-role.prompt.md`
+- `.github/prompts/create-initiative.prompt.md`
+- `.github/prompts/create-policy.prompt.md`
+- `.github/prompts/cs-add-unit-tests.prompt.md`
+- `.github/prompts/cs-bash-script.prompt.md`
+- `.github/prompts/cs-cloud-policy.prompt.md`
+- `.github/prompts/cs-data-registry.prompt.md`
+- `.github/prompts/cs-java.prompt.md`
+- `.github/prompts/cs-nodejs.prompt.md`
+- `.github/prompts/cs-python-script.prompt.md`
+- `.github/prompts/cs-python.prompt.md`
+- `.github/prompts/cs-terraform.prompt.md`
+- `.github/prompts/github-action.prompt.md`
+- `.github/prompts/github-composite-action.prompt.md`
+- `.github/prompts/github-pr-description.prompt.md`
+- `.github/prompts/script-bash.prompt.md`
+- `.github/prompts/script-python.prompt.md`
+- `.github/prompts/terraform-module.prompt.md`
+
+### Skills
+- `.github/skills/cicd-workflow/SKILL.md`
+- `.github/skills/cloud-policy/SKILL.md`
+- `.github/skills/composite-action/SKILL.md`
+- `.github/skills/data-registry/SKILL.md`
+- `.github/skills/pr-writing/SKILL.md`
+- `.github/skills/project-java/SKILL.md`
+- `.github/skills/project-nodejs/SKILL.md`
+- `.github/skills/project-python/SKILL.md`
+- `.github/skills/script-bash/SKILL.md`
+- `.github/skills/script-python/SKILL.md`
+- `.github/skills/terraform-feature/SKILL.md`
+- `.github/skills/terraform-module/SKILL.md`
 
 ### Agents
-- `agents/github-pr-writer.agent.md`
-- `agents/github-workflow-supply-chain.agent.md`
-- `agents/iam-least-privilege.agent.md`
-- `agents/implementer.agent.md`
-- `agents/planner.agent.md`
-- `agents/reviewer.agent.md`
-- `agents/security-reviewer.agent.md`
-- `agents/terraform-guardrails.agent.md`
+- `.github/agents/github-pr-writer.agent.md`
+- `.github/agents/github-workflow-supply-chain.agent.md`
+- `.github/agents/iam-least-privilege.agent.md`
+- `.github/agents/implementer.agent.md`
+- `.github/agents/planner.agent.md`
+- `.github/agents/reviewer.agent.md`
+- `.github/agents/security-reviewer.agent.md`
+- `.github/agents/terraform-guardrails.agent.md`

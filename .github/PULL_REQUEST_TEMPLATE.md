@@ -1,39 +1,34 @@
-## 📋 Description
+## Description
 
-<!-- Brief description of the changes -->
+<!-- Describe the policy/custom role/initiative change and intended control. -->
 
-## 🎯 Type of Change
+## Change Type
 
-- [ ] New custom RBAC role
-- [ ] New policy definition
-- [ ] New policy initiative
-- [ ] Policy assignment
-- [ ] Update existing governance rule
-- [ ] Remove existing governance rule
-- [ ] Documentation
-- [ ] Other: ___
+- [ ] Custom RBAC role update
+- [ ] Policy definition update
+- [ ] Initiative/policy set update
+- [ ] Policy assignment or remediation update
+- [ ] Terraform/script automation update
+- [ ] Documentation only
+- [ ] Other
 
-## 📝 Details
+## Governance Impact
 
-### What does this change do?
+- Affected management groups/subscriptions:
+- Policy effect (`audit`, `deny`, `modify`, other):
+- Blast radius:
+- Rollback strategy:
 
-<!-- Explain the change -->
+## Validation Evidence
 
-### Why is this change needed?
+- Terraform plan summary:
+- Policy evaluation/testing summary:
+- Additional validation details:
 
-<!-- Explain the motivation -->
+## Checklist
 
-## ⚠️ Risk Assessment
-
-- [ ] Low risk - Documentation/minor changes
-- [ ] Medium risk - New policies with Audit effect
-- [ ] High risk - Policies with Deny effect (requires extra review)
-
-## ✅ Checklist
-
-- [ ] I followed the apply order (01 → 02 → 03 → 04)
-- [ ] Terraform files are formatted
-- [ ] Terraform plan shows expected changes
-- [ ] Tested in non-production (if applicable)
-- [ ] Security implications considered
-
+- [ ] Apply sequence impact (01 -> 02 -> 03 -> 04) was considered
+- [ ] High-impact policy effects are explicitly documented
+- [ ] `terraform fmt -recursive` and `terraform validate` executed
+- [ ] Non-production validation performed before production scope
+- [ ] No secrets or sensitive values included
