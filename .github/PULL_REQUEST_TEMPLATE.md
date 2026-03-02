@@ -1,3 +1,8 @@
+<!-- markdownlint-disable-file MD041 -->
+<!-- PR title format: <type>(<scope>): <summary> -->
+<!-- Examples: feat(terraform): add new SCP policy -->
+<!--           fix(scripts): correct JSON validation logic -->
+
 ## Description
 
 <!-- Describe the policy/custom role/initiative change and intended control. -->
@@ -17,13 +22,25 @@
 - Affected management groups/subscriptions:
 - Policy effect (`audit`, `deny`, `modify`, other):
 - Blast radius:
+- Policy exemption impact:
 - Rollback strategy:
+
+## Testing Instructions
+
+<!-- Step-by-step instructions for reviewers to validate changes -->
+1.
+2.
 
 ## Validation Evidence
 
 - Terraform plan summary:
 - Policy evaluation/testing summary:
 - Additional validation details:
+
+## Breaking Changes
+
+- [ ] This PR contains breaking changes
+<!-- If checked, describe what breaks and migration path -->
 
 ## Checklist
 
