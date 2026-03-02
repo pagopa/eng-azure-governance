@@ -1,45 +1,38 @@
 ---
 name: script-bash
-description: Guide for creating or modifying Bash scripts in this repository. Use when asked to write or update simple operational scripts.
+description: Create or modify Bash scripts with purpose header, emoji logs, and readable guard-clause flow.
 ---
 
-# Create Bash Script
+# Bash Script Skill
 
-## Context
+## When to use
+- New Bash scripts.
+- Existing Bash scripts that need updates.
 
-I need to create a Bash script for simple operations in Azure governance management.
+## Mandatory rules
+- Use Bash (`#!/usr/bin/env bash`), never POSIX `sh`.
+- Header must include purpose and usage examples.
+- Use emoji logs for runtime states.
+- Prefer early return and guard clauses.
+- Keep logic straightforward and readable.
+- Do not add unit tests unless explicitly requested.
 
-## Input Required
-
-- **Script name**: ${input:script_name}
-- **Purpose**: ${input:purpose}
-
-## Mandatory Template
-
+## Minimal template
 ```bash
 #!/usr/bin/env bash
 #
-# 📋 {script_name}.sh
-# 🎯 Purpose: {purpose}
-# 📖 Usage: ./src/scripts/{script_name}.sh [options]
-#
+# Purpose: {description}
+# Usage examples:
+#   ./{script_name}.sh --help
 
 set -euo pipefail
 
-log_info()    { echo -e "🔍 $1"; }
-log_success() { echo -e "✅ $1"; }
-log_error()   { echo -e "❌ $1" >&2; }
-
-main() {
-    log_info "Starting script"
-    # Early return pattern
-    # ... implementation ...
-    log_success "Completed"
-}
-
-main "$@"
+log_info() { echo "ℹ️  $*"; }
+log_warn() { echo "⚠️  $*"; }
+log_success() { echo "✅ $*"; }
+log_error() { echo "❌ $*" >&2; }
 ```
 
-## References
-
-Follow conventions in `#file:.github/copilot-instructions.md`
+## Validation
+- `bash -n`
+- `shellcheck -s bash` (if available)

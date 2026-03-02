@@ -1,44 +1,17 @@
 ---
-applyTo: "scripts/**"
+description: Cross-language conventions for automation scripts with guard clauses and English runtime output.
+applyTo: "**/*.sh,**/scripts/**/*.py,**/bin/**/*.py,**/*script*.py"
 ---
 
-# Scripts Instructions
+# Script Instructions
 
-## terraform.sh Wrapper
+## Cross-language rules
+- Start with purpose and usage examples.
+- Use early return and guard clauses.
+- Keep logs and user-facing output in English.
+- Prefer readability over compact or clever code.
 
-The main script for Terraform operations:
-
-```bash
-./terraform.sh plan|apply|destroy
-```
-
-### Conventions
-
-- Use wrapper instead of direct `terraform` commands
-- Wrapper handles backend configuration
-- Wrapper sets correct subscription context
-
-## Bash Scripts
-
-### Template
-
-```bash
-#!/bin/bash
-# ==============================================================================
-# Script Name: script-name.sh
-# Description: Brief description
-# Usage: ./script-name.sh [options]
-# ==============================================================================
-
-set -euo pipefail
-
-log_info() { echo "🔍 [INFO] $*"; }
-log_success() { echo "✅ [SUCCESS] $*"; }
-log_error() { echo "❌ [ERROR] $*" >&2; }
-```
-
-### Error Handling
-
-- Use `set -euo pipefail`
-- Quote all variables
-- Handle Azure CLI errors gracefully
+## Scope
+- This file contains only cross-cutting rules.
+- Use `.github/instructions/bash.instructions.md` for Bash-specific requirements.
+- Use `.github/instructions/python.instructions.md` for Python-specific requirements.

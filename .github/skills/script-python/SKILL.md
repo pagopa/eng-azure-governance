@@ -1,56 +1,41 @@
 ---
 name: script-python
-description: Guide for creating or modifying Python scripts in this repository. Use when asked to implement complex scripts and include tests when required.
+description: Create or modify Python scripts with purpose docstring, emoji logs, tests, and pinned dependencies when needed.
 ---
 
-# Create Python Script
+# Python Script Skill
 
-## Context
+## When to use
+- New Python scripts.
+- Existing Python scripts that need updates.
 
-I need to create a Python script for complex operations in Azure governance (policies, remediation).
+## Mandatory rules
+- Module docstring must include purpose and usage examples.
+- Use emoji logs for execution states.
+- Prefer early return and guard clauses.
+- Keep implementation explicit and readable.
+- Add unit tests for testable behavior.
+- If external libraries are needed, pin `requirements.txt`.
+- For Python template tasks, use Jinja templates named `<file-name>.<extension>.j2`.
 
-## Discovery
-
-Use `#codebase` to search for existing Python scripts in `src/scripts/`.
-
-## Input Required
-
-- **Script name**: ${input:script_name}
-- **Purpose**: ${input:purpose}
-
-## Mandatory Template
-
+## Minimal template
 ```python
 #!/usr/bin/env python3
+"""Purpose: {description}
+
+Usage examples:
+  python {script_name}.py --help
 """
-📋 {script_name}.py
-
-🎯 Purpose: {purpose}
-📖 Usage: python src/scripts/{script_name}.py [options]
-"""
-
-import argparse
-import logging
-import sys
-
-logging.basicConfig(level=logging.INFO, format='%(message)s')
-logger = logging.getLogger(__name__)
-
-def main() -> int:
-    logger.info("🚀 Starting script")
-    # Early return pattern
-    # ... implementation ...
-    logger.info("✅ Completed")
-    return 0
-
-if __name__ == "__main__":
-    sys.exit(main())
 ```
 
-## Test Suite
+## Testing
+- Put tests under `tests/`.
+- Use `pytest` as default test framework.
+- Keep tests deterministic and isolated.
+- For modify tasks with existing tests: edit implementation first, run existing tests, then update tests only for intentional behavior changes.
 
-Also create `src/scripts/tests/test_{script_name}.py` with pytest.
-
-## References
-
-Follow conventions in `#file:.github/copilot-instructions.md`
+## Minimal test example
+```python
+def test_main_success() -> None:
+    assert True
+```
