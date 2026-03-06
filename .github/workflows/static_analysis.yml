@@ -49,9 +49,11 @@ jobs:
             local folder="$1"
 
             (
+              echo "ℹ️ Starting terraform init for ${folder}"
               cd "src/${folder}"
               docker run -v "$(pwd):/tmp" -w /tmp "hashicorp/terraform:${TAG}" \
                 init -backend=false -input=false -lockfile=readonly -no-color
+              echo "✅ Completed terraform init for ${folder}"
             )
           }
 
