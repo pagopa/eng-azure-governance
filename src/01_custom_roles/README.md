@@ -13,7 +13,13 @@ This custom role allows the sp or users it is associated with to be able to laun
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.63.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.63.0 |
 
 ## Modules
 
@@ -23,29 +29,29 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_role_definition.apim_list_secrets](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.apim_operator_app](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.applicationgateway_reader](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.authorization_reader](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.ddos_joiner](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.dns_takeover](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.dns_zone_reader](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.export_deployments_template](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.iac_reader](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.log_analytics_table_reader](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.opex_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.policy_exempt](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.policy_reader](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.policy_remediator](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.security_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.static_web_app_secrets](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.storage_blob_tags_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_role_definition.storage_queue_trigger](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/role_definition) | resource |
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/management_group) | data source |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/subscription) | data source |
+| [azurerm_role_definition.apim_list_secrets](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.apim_operator_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.applicationgateway_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.audit_logs_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.authorization_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.ddos_joiner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.dns_takeover](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.dns_zone_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.export_deployments_template](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.iac_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.log_analytics_table_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.opex_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.policy_exempt](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.policy_reader](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.policy_remediator](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.resource_lock_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.security_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.static_web_app_secrets](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.storage_blob_tags_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_role_definition.storage_queue_trigger](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_definition) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
+| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
+| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
 ## Inputs
 

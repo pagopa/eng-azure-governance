@@ -27,4 +27,3 @@ output "redis_allowed_sku_id" {
 output "redis_required_zone_redundant_id" {
   value = azurerm_policy_definition.redis_required_zone_redundant.id
 }
-

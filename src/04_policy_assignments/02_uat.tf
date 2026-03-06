@@ -1,24 +1,7 @@
-locals {
-  uat_subscriptions = [
-    "UAT-CSTAR",
-    "UAT-Esercenti",
-    "UAT-mil",
-    "UAT-SelfCare",
-    "UAT-pagoPA",
-    "UAT-PCI",
-    "UAT-P4PA",
-    "UAT-ARC",
-    "UAT-FATTURAZIONE",
-    "UAT-CRM",
-    "UAT-PAY-MONITORING",
-    "UAT-DEVEX",
-  ]
-}
-
 module "uat_assignments" {
   source = "./modules/uat"
 
-  for_each = toset(local.uat_subscriptions)
+  for_each = toset(var.subscriptions_by_env.uat)
 
   subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
   location       = var.location

@@ -28,4 +28,3 @@ resource "azurerm_role_definition" "applicationgateway_reader" {
     ]
   }
 }
-

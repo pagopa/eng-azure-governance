@@ -1,14 +1,19 @@
+terraform {
+  required_version = ">=1.3.0"
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 4.63.0"
+    }
+  }
+
+  backend "azurerm" {}
+}
+
 provider "azurerm" {
   subscription_id = var.subscription_id
   features {}
 }
-
-
-data "azurerm_subscription" "current" {}
-
-data "azurerm_subscriptions" "available" {}
-
-data "azurerm_client_config" "current" {}
 
 data "terraform_remote_state" "policy_set" {
   backend = "azurerm"

@@ -55,4 +55,9 @@ htmlcov/
 .venv/
 venv/
 env/
+!src/04_policy_assignments/env/
+!src/04_policy_assignments/env/org/
+!src/04_policy_assignments/env/org/backend.ini
+!src/04_policy_assignments/env/org/backend.tfvars
+!src/04_policy_assignments/env/org/terraform.tfvars
 .python-version
