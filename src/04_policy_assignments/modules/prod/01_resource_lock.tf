@@ -21,4 +21,3 @@ resource "azurerm_role_assignment" "resource_lock_contributor" {
   role_definition_name = "PagoPA Resource Lock Contributor"
   principal_id         = azurerm_subscription_policy_assignment.resource_lock.identity[0].principal_id
 }
-

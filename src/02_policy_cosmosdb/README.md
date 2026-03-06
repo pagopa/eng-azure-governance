@@ -7,7 +7,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.3.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 4.35.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 4.63.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.63.0 |
 
 ## Modules
 
@@ -17,17 +23,17 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [azurerm_policy_definition.cosmosdb_allowed_capacity_mode](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_allowed_tls](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_automatic_failover_enabled](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_dynamic_scaling_enabled](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_required_backup_policy](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_required_network](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_policy_definition.cosmosdb_required_primary_zone_redundancy](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/resources/policy_definition) | resource |
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/client_config) | data source |
-| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/management_group) | data source |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.35.0/docs/data-sources/subscription) | data source |
+| [azurerm_policy_definition.cosmosdb_allowed_capacity_mode](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_allowed_tls](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_automatic_failover_enabled](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_dynamic_scaling_enabled](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_forbidden_secondary_zone_redundancy](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_required_backup_policy](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_required_network](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_policy_definition.cosmosdb_required_primary_zone_redundancy](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_definition) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
+| [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
+| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
 ## Inputs
 

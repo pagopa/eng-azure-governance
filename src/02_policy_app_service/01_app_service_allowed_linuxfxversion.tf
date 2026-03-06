@@ -19,4 +19,3 @@ resource "azurerm_policy_definition" "app_service_allowed_linuxfxversion" {
   policy_rule = file("./policy_rules/allowed_app_service_linuxfxversion_policy.json")
 
 }
-

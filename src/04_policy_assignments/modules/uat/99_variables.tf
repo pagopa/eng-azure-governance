@@ -22,4 +22,3 @@ variable "metadata_category_name" {
   type        = string
   default     = "Custom PagoPA"
 }
-
