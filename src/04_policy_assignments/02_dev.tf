@@ -1,30 +1,7 @@
-locals {
-  dev_subscriptions = [
-    "DEV-CSTAR",
-    "DEV-FATTURAZIONE",
-    "DEV-IO",
-    "DEV-mil",
-    "DEV-SelfCare",
-    "DEV-pagoPA",
-    "DEV-PCI",
-    "DevOpsLab",
-    "DEV-Assistenza",
-    "DEV-P4PA",
-    "DEV-ARC",
-    "DEV-GRC",
-    "DEV-ICT",
-    "DEV-CRM",
-    "DEV-DEVEX",
-    "DEV-PLATFORM-SM",
-    "DEV-PAY-MONITORING",
-    "DEV-QATM",
-  ]
-}
-
 module "dev_assignments" {
   source = "./modules/dev"
 
-  for_each = toset(local.dev_subscriptions)
+  for_each = toset(var.subscriptions_by_env.dev)
 
   subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
   location       = var.location

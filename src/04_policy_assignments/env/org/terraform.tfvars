@@ -1,0 +1,68 @@
+metadata_category_name = "Custom PagoPA"
+policy_type            = "Custom"
+location               = "westeurope"
+
+subscriptions_by_env = {
+  dev = [
+    "DEV-CSTAR",
+    "DEV-FATTURAZIONE",
+    "DEV-IO",
+    "DEV-mil",
+    "DEV-SelfCare",
+    "DEV-pagoPA",
+    "DEV-PCI",
+    "DevOpsLab",
+    "DEV-Assistenza",
+    "DEV-P4PA",
+    "DEV-ARC",
+    "DEV-GRC",
+    "DEV-ICT",
+    "DEV-CRM",
+    "DEV-DEVEX",
+    "DEV-PLATFORM-SM",
+    "DEV-PAY-MONITORING",
+    "DEV-QATM",
+  ]
+  uat = [
+    "UAT-CSTAR",
+    "UAT-Esercenti",
+    "UAT-mil",
+    "UAT-SelfCare",
+    "UAT-pagoPA",
+    "UAT-PCI",
+    "UAT-P4PA",
+    "UAT-ARC",
+    "UAT-FATTURAZIONE",
+    "UAT-CRM",
+    "UAT-PAY-MONITORING",
+    "UAT-DEVEX",
+  ]
+  prod = [
+    "PROD-CSTAR",
+    "PROD-Esercenti",
+    "PROD-FATTURAZIONE",
+    "PROD-IO",
+    "PROD-mil",
+    "Prod-Sec",
+    "PROD-SITECORP",
+    "PROD-SelfCare",
+    "PROD-pagoPA",
+    "PROD-PCI",
+    "PROD-P4PA",
+    "PROD-TRIAL",
+    "PROD-ARC",
+    "PROD-GRC",
+    "PROD-PDA-BACKUP",
+    "PROD-ICT",
+    "PROD-CRM",
+    "ORG",
+    "ORG-PCI",
+    "Common",
+    "DevOpsAutomation",
+    "PROD-DEVEX",
+    "PROD-PLATFORM-SM",
+    "GitHub",
+    "PROD-PAY-MONITORING",
+    "PROD-QATM",
+  ]
+}
