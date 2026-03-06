@@ -17,6 +17,10 @@
 - [ ] Documentation only
 - [ ] Other
 
+## List of changes
+
+- <!-- Brief summary of changes -->
+
 ## Governance Impact
 
 - Affected management groups/subscriptions:
