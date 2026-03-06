@@ -22,6 +22,7 @@ subscriptions_by_env = {
     "DEV-PLATFORM-SM",
     "DEV-PAY-MONITORING",
     "DEV-QATM",
+    "DEV-PS",
   ]
   uat = [
     "UAT-CSTAR",
@@ -64,5 +65,6 @@ subscriptions_by_env = {
     "GitHub",
     "PROD-PAY-MONITORING",
     "PROD-QATM",
+    "PROD-CED",
   ]
 }
