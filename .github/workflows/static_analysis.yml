@@ -39,14 +39,34 @@ jobs:
             02_policy_virtual_machine_scale_set
             03_policy_set
             04_policy_assignments
+          INIT_PARALLELISM: "4"
         run: |
+          set -euo pipefail
+
           TAG=$(cat .terraform-version)
-          cd src/
-          for f in $FOLDERS; do
-            cd $f
-            docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init -backend=false -input=false -no-color
-            cd ..
+
+          run_init() {
+            local folder="$1"
+
+            (
+              cd "src/${folder}"
+              docker run -v "$(pwd):/tmp" -w /tmp "hashicorp/terraform:${TAG}" \
+                init -backend=false -input=false -lockfile=readonly -no-color
+            )
+          }
+
+          running_jobs=0
+          for folder in $FOLDERS; do
+            run_init "$folder" &
+            running_jobs=$((running_jobs + 1))
+
+            if [ "$running_jobs" -ge "${INIT_PARALLELISM}" ]; then
+              wait -n
+              running_jobs=$((running_jobs - 1))
+            fi
           done
+
+          wait
 
       - name: run_test
         run: |
