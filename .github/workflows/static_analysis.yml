@@ -44,9 +44,7 @@ jobs:
           cd src/
           for f in $FOLDERS; do
             cd $f
-            rm -rf 99_terraform.tf
-            mv 99_terraform.tf.ci 99_terraform.tf
-            docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init
+            docker run -v $(pwd):/tmp -w /tmp hashicorp/terraform:$TAG init -backend=false -input=false -no-color
             cd ..
           done
 
