@@ -101,26 +101,17 @@ This inventory reflects the desired managed baseline plus repository-owned inter
 - `.github/instructions/yaml.instructions.md`
 
 ### Prompts
-- `.github/prompts/create-custom-role.prompt.md`
-- `.github/prompts/create-initiative.prompt.md`
-- `.github/prompts/create-policy.prompt.md`
-- `.github/prompts/cs-add-unit-tests.prompt.md`
-- `.github/prompts/cs-python-script.prompt.md`
-- `.github/prompts/cs-python.prompt.md`
-- `.github/prompts/github-composite-action.prompt.md`
-- `.github/prompts/script-python.prompt.md`
+- `.github/prompts/internal-create-custom-role.prompt.md`
+- `.github/prompts/internal-create-initiative.prompt.md`
+- `.github/prompts/internal-create-policy.prompt.md`
 - `.github/prompts/tech-ai-bash-script.prompt.md`
 - `.github/prompts/tech-ai-cloud-policy.prompt.md`
 - `.github/prompts/tech-ai-data-registry.prompt.md`
 - `.github/prompts/tech-ai-github-action.prompt.md`
 - `.github/prompts/tech-ai-github-pr-description.prompt.md`
 - `.github/prompts/tech-ai-terraform.prompt.md`
-- `.github/prompts/terraform-module.prompt.md`
 
 ### Skills
-- `.github/skills/composite-action/SKILL.md`
-- `.github/skills/project-python/SKILL.md`
-- `.github/skills/script-python/SKILL.md`
 - `.github/skills/tech-ai-cicd-workflow/SKILL.md`
 - `.github/skills/tech-ai-cloud-policy/SKILL.md`
 - `.github/skills/tech-ai-data-registry/SKILL.md`

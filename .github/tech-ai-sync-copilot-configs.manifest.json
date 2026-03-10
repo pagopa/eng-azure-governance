@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-10T10:07:45Z",
+  "generated_at_utc": "2026-03-10T11:13:49Z",
   "managed_files": {
     ".github/DEPRECATION.md": {
       "generated": false,
@@ -183,7 +183,7 @@
     },
     "AGENTS.md": {
       "generated": true,
-      "sha256": "274329a097157a776b0f0c1cc6f7d0b8ca253f6d872e9f759983d97895fcaebd",
+      "sha256": "b39c35416ab948fad81d9e2d4482d6b642b854cae685d758b7755a328454151a",
       "source_relative_path": null
     }
   },
