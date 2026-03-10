@@ -25,4 +25,4 @@ Define a predictable process for deprecating Copilot customization assets (`inst
 Immediate removal is allowed only for security or compliance issues. The removal reason must be documented in `.github/CHANGELOG.md`.
 
 ## Current deprecations
-- None at this time.
+- `scripts/bootstrap-copilot-config.sh`: Deprecated in favor of `scripts/tech-ai-sync-copilot-configs.py`. Keep only as a legacy bootstrap fallback while older consumers migrate to sync-based alignment.
