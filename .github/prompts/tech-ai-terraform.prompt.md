@@ -1,6 +1,6 @@
 ---
 description: Create or modify Terraform resources and features
-name: cs-terraform
+name: TechAITerraform
 agent: agent
 argument-hint: action=<create|modify> type=<resource|module|variable|output|data_source> description=<text> target_dir=<path>
 ---
@@ -18,8 +18,8 @@ Create or modify Terraform resources, modules, variables, outputs, or data sourc
 
 ## Instructions
 
-1. Use `.github/skills/terraform-feature/SKILL.md` for resource-level changes.
-2. If `type=module`, also use `.github/skills/terraform-module/SKILL.md`.
+1. Use `.github/skills/tech-ai-terraform-feature/SKILL.md` for resource-level changes.
+2. If `type=module`, also use `.github/skills/tech-ai-terraform-module/SKILL.md`.
 3. Search existing `.tf` files in the target directory.
 4. Follow existing naming conventions and patterns.
 5. Apply the task with:

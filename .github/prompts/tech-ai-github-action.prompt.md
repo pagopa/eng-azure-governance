@@ -1,6 +1,6 @@
 ---
 description: Create or modify a GitHub Actions workflow
-name: cs-github-action
+name: TechAIGitHubAction
 agent: agent
 argument-hint: action=<create|modify> workflow_name=<name> purpose=<purpose> [triggers=push,pull_request]
 ---
@@ -14,7 +14,7 @@ argument-hint: action=<create|modify> workflow_name=<name> purpose=<purpose> [tr
 - **Triggers**: ${input:triggers:push,pull_request}
 
 ## Instructions
-1. Use `.github/skills/cicd-workflow/SKILL.md`.
+1. Use `.github/skills/tech-ai-cicd-workflow/SKILL.md`.
 2. Reuse existing workflow conventions in `.github/workflows/`.
 3. Enforce OIDC, minimal `permissions`, and SHA-pinned actions.
 4. For every SHA-pinned action, add an adjacent comment with release/tag and release URL.

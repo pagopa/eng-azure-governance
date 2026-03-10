@@ -1,5 +1,5 @@
 ---
-name: cicd-workflow
+name: TechAICICDWorkflow
 description: Create or modify secure GitHub Actions workflows for CI/CD pipelines.
 ---
 

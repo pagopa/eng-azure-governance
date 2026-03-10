@@ -1,5 +1,5 @@
 ---
-name: terraform-feature
+name: TechAITerraformFeature
 description: Add or modify Terraform resources, variables, outputs, and data sources.
 ---
 

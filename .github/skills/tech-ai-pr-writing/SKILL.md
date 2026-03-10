@@ -1,5 +1,5 @@
 ---
-name: pr-writing
+name: TechAIPRWriting
 description: Produce concise, complete pull request descriptions aligned with the repository PR template.
 ---
 
@@ -39,15 +39,11 @@ description: Produce concise, complete pull request descriptions aligned with th
 6. Return PR URL and a concise confirmation summary.
 7. If PR tools are unavailable, return ready-to-paste markdown plus exact CLI fallback commands.
 
-## Required section headings
-- `## Summary`
-- `## Scope`
-- `## Changes`
-- `## Validation`
-- `## Security and Compliance`
-- `## Risk and Rollback`
-- `## Related Links`
-- `## Reviewer Notes`
+## Template-derived structure
+- Use the exact section headings from the resolved repository template.
+- Keep section order unchanged.
+- Preserve checklist items and prompt questions from the template.
+- Do not add or remove template sections unless explicitly requested.
 
 ## Minimal example
 - Input:
@@ -59,7 +55,8 @@ description: Produce concise, complete pull request descriptions aligned with th
   - A brief and accurate bullet list under `Changes`.
 
 ## Validation
-- Ensure every required section heading is present.
+- Ensure every template-defined section heading is present.
 - Ensure `Changes` has concise bullets describing the real diff.
+- Ensure repository-specific scope or target fields are explicit when applicable.
 - Ensure risk and rollback are explicit and actionable.
 - Ensure final PR body is persisted when tooling supports PR updates.

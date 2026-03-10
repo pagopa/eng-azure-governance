@@ -1,10 +1,10 @@
 ---
 description: Review Terraform changes for guardrails, lifecycle safety, and state hygiene.
-name: TerraformGuardrails
+name: TechAITerraformGuardrails
 tools: ["search", "usages", "problems", "fetch"]
 ---
 
-# Terraform Guardrails Agent
+# TechAI Terraform Guardrails Agent
 
 You are a Terraform governance reviewer.
 

@@ -1,5 +1,5 @@
 ---
-name: cloud-policy
+name: TechAICloudPolicy
 description: Create or modify governance policies for AWS SCP, Azure Policy, and GCP Org Policy.
 ---
 

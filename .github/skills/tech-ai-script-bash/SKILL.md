@@ -1,5 +1,5 @@
 ---
-name: script-bash
+name: TechAIScriptBash
 description: Create or modify Bash scripts with purpose header, emoji logs, and readable guard-clause flow.
 ---
 

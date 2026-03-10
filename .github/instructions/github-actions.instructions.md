@@ -26,7 +26,7 @@ applyTo: "**/workflows/**"
 ```yaml
 steps:
   - name: Checkout
-    uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.7 https://github.com/actions/checkout/releases/tag/v4.1.7
+    uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2 https://github.com/actions/checkout/releases/tag/v6.0.2
 
 concurrency:
   group: example-${{ github.ref }}

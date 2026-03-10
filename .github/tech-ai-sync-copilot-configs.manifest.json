@@ -1,0 +1,196 @@
+{
+  "generated_at_utc": "2026-03-10T10:07:45Z",
+  "managed_files": {
+    ".github/DEPRECATION.md": {
+      "generated": false,
+      "sha256": "1991b994bc59e81ec0900e3ba808b8982f429fb7079cd80939bc0542fadbac2e",
+      "source_relative_path": ".github/DEPRECATION.md"
+    },
+    ".github/agents/tech-ai-github-pr-writer.agent.md": {
+      "generated": false,
+      "sha256": "41006031bdf76dc89ad5653d717ab0f960aac87679711a2a527cd2168301228a",
+      "source_relative_path": ".github/agents/tech-ai-github-pr-writer.agent.md"
+    },
+    ".github/agents/tech-ai-github-workflow-supply-chain.agent.md": {
+      "generated": false,
+      "sha256": "7956b47cc60c7fd5e4fdf3dab3df4c0675d86c3ba7b2e818f16a16317e27600b",
+      "source_relative_path": ".github/agents/tech-ai-github-workflow-supply-chain.agent.md"
+    },
+    ".github/agents/tech-ai-iam-least-privilege.agent.md": {
+      "generated": false,
+      "sha256": "ffd3bc7673aa5ce1c0a194e66b226db380bce0b56477a58c2d3e1f64958291ca",
+      "source_relative_path": ".github/agents/tech-ai-iam-least-privilege.agent.md"
+    },
+    ".github/agents/tech-ai-implementer.agent.md": {
+      "generated": false,
+      "sha256": "cf741c1cb6f702f478a06d756698046073d872d1fb311120f21ff5a868e81475",
+      "source_relative_path": ".github/agents/tech-ai-implementer.agent.md"
+    },
+    ".github/agents/tech-ai-planner.agent.md": {
+      "generated": false,
+      "sha256": "4eeac3bc5049369fa0ebc2d683e2f453e9663c3d6176c2e8ef5b3de57a5064e3",
+      "source_relative_path": ".github/agents/tech-ai-planner.agent.md"
+    },
+    ".github/agents/tech-ai-reviewer.agent.md": {
+      "generated": false,
+      "sha256": "2fb4085868c3834701cd74dd3794aebda1d6a622aa54666865d8e6af8061d59b",
+      "source_relative_path": ".github/agents/tech-ai-reviewer.agent.md"
+    },
+    ".github/agents/tech-ai-security-reviewer.agent.md": {
+      "generated": false,
+      "sha256": "ef87f32b2bc749f2ffb4a42249f3dec4c3278d15e0bd022919ea80deca5b8d25",
+      "source_relative_path": ".github/agents/tech-ai-security-reviewer.agent.md"
+    },
+    ".github/agents/tech-ai-terraform-guardrails.agent.md": {
+      "generated": false,
+      "sha256": "5bde4ff6e0987d1611c5ef274c1f560899155006615fc0d9193eade1d8cdc433",
+      "source_relative_path": ".github/agents/tech-ai-terraform-guardrails.agent.md"
+    },
+    ".github/copilot-code-review-instructions.md": {
+      "generated": false,
+      "sha256": "4f4a0330295f8f68ca8a9c96842d459be66b4c164c2aecb08795e6fa8b8e25b9",
+      "source_relative_path": ".github/copilot-code-review-instructions.md"
+    },
+    ".github/copilot-commit-message-instructions.md": {
+      "generated": false,
+      "sha256": "d8ebb45e2d3f31a31b2e4df057026c56248ef5729e6687cb974b29070592e434",
+      "source_relative_path": ".github/copilot-commit-message-instructions.md"
+    },
+    ".github/copilot-instructions.md": {
+      "generated": false,
+      "sha256": "4a51e58e0b862fed73830abb0df9dea4c6052a3134c22286d0f65e73ede89910",
+      "source_relative_path": ".github/copilot-instructions.md"
+    },
+    ".github/instructions/bash.instructions.md": {
+      "generated": false,
+      "sha256": "c9b11057000954dd625c4773099bb6f0f19f810823b2e95f1d1ebee5341d6047",
+      "source_relative_path": ".github/instructions/bash.instructions.md"
+    },
+    ".github/instructions/github-actions.instructions.md": {
+      "generated": false,
+      "sha256": "3e0cc3a7b4bd6e78f6e0b1be9c3aef7d0364faafdf9a9704458e29674f1527b0",
+      "source_relative_path": ".github/instructions/github-actions.instructions.md"
+    },
+    ".github/instructions/json.instructions.md": {
+      "generated": false,
+      "sha256": "9e12c53c59937912b1477b327950c0d2adb00495bfd559e33e302af1d4152c28",
+      "source_relative_path": ".github/instructions/json.instructions.md"
+    },
+    ".github/instructions/makefile.instructions.md": {
+      "generated": false,
+      "sha256": "5cd8458d3ee332069ecfcf373b735752f3203cf42f96492afcf535699c9acdee",
+      "source_relative_path": ".github/instructions/makefile.instructions.md"
+    },
+    ".github/instructions/markdown.instructions.md": {
+      "generated": false,
+      "sha256": "500b9d335480a2eabee941c90be223c026c59f5424247759e08fb98af939b2e0",
+      "source_relative_path": ".github/instructions/markdown.instructions.md"
+    },
+    ".github/instructions/scripts.instructions.md": {
+      "generated": false,
+      "sha256": "326daab639b539550db12394bf323296e8a3832b3ad267e6087819c2a69aefb3",
+      "source_relative_path": ".github/instructions/scripts.instructions.md"
+    },
+    ".github/instructions/terraform.instructions.md": {
+      "generated": false,
+      "sha256": "4aaefbee96d01ea3e2381e2fa2d3a4be40bfa100dd0ac162dbe3622aa6672857",
+      "source_relative_path": ".github/instructions/terraform.instructions.md"
+    },
+    ".github/instructions/yaml.instructions.md": {
+      "generated": false,
+      "sha256": "013ffa937dbb5b93d624156b7c98846a48116873a4108c619014b76d92bdea0c",
+      "source_relative_path": ".github/instructions/yaml.instructions.md"
+    },
+    ".github/prompts/tech-ai-bash-script.prompt.md": {
+      "generated": false,
+      "sha256": "bf6e08d0285f815cf209c508d0b121659b7713862af2db6053846c942d0e4d27",
+      "source_relative_path": ".github/prompts/tech-ai-bash-script.prompt.md"
+    },
+    ".github/prompts/tech-ai-cloud-policy.prompt.md": {
+      "generated": false,
+      "sha256": "7a327dc0b80457ccd9f9235d6fd946ba90f0784d9ee111570492c4afc1f7f9e6",
+      "source_relative_path": ".github/prompts/tech-ai-cloud-policy.prompt.md"
+    },
+    ".github/prompts/tech-ai-data-registry.prompt.md": {
+      "generated": false,
+      "sha256": "4742e0b968f4f89d7b956638448be74ee0691b363ddc8cd38be5f1f3cd3494f3",
+      "source_relative_path": ".github/prompts/tech-ai-data-registry.prompt.md"
+    },
+    ".github/prompts/tech-ai-github-action.prompt.md": {
+      "generated": false,
+      "sha256": "4685679288b2183b18640cef8f738764cfaa2da49e105c4af7e41f00ed6324de",
+      "source_relative_path": ".github/prompts/tech-ai-github-action.prompt.md"
+    },
+    ".github/prompts/tech-ai-github-pr-description.prompt.md": {
+      "generated": false,
+      "sha256": "90d80e3c8979f961a50939358c58ce3ae749308613a9ffcb91da5992c4895fe9",
+      "source_relative_path": ".github/prompts/tech-ai-github-pr-description.prompt.md"
+    },
+    ".github/prompts/tech-ai-terraform.prompt.md": {
+      "generated": false,
+      "sha256": "d523a2db58150c15c55bb60ab4ae1cfdb9a74d13e4492cec79535badf6fb712b",
+      "source_relative_path": ".github/prompts/tech-ai-terraform.prompt.md"
+    },
+    ".github/repo-profiles.yml": {
+      "generated": false,
+      "sha256": "bd85c14f452aa157689d24bf25f7406e89d3ed948296f5fa839711293eef332b",
+      "source_relative_path": ".github/repo-profiles.yml"
+    },
+    ".github/scripts/validate-copilot-customizations.sh": {
+      "generated": false,
+      "sha256": "1630408f31edc9be9c5b85741dd2bd6cb669f0cf4f6cbf1f3a4db6a00462867f",
+      "source_relative_path": ".github/scripts/validate-copilot-customizations.sh"
+    },
+    ".github/security-baseline.md": {
+      "generated": false,
+      "sha256": "5894c2e867ef5cd833bb69c0a8ce7f99383328096785634cd890264651604764",
+      "source_relative_path": ".github/security-baseline.md"
+    },
+    ".github/skills/tech-ai-cicd-workflow/SKILL.md": {
+      "generated": false,
+      "sha256": "0e797bb627860ca3b52da7d880632b50769b8260ed4f56cb90fe93acb2ec9ccb",
+      "source_relative_path": ".github/skills/tech-ai-cicd-workflow/SKILL.md"
+    },
+    ".github/skills/tech-ai-cloud-policy/SKILL.md": {
+      "generated": false,
+      "sha256": "855e1c4a0c20585ea8f454d289f2b6b13bf136c3a9372a64472a90f40157b1b2",
+      "source_relative_path": ".github/skills/tech-ai-cloud-policy/SKILL.md"
+    },
+    ".github/skills/tech-ai-data-registry/SKILL.md": {
+      "generated": false,
+      "sha256": "d1b989c1fde0c9da9d5d5e762aec9955e77dcdc3f60612fe06ad9c733411e302",
+      "source_relative_path": ".github/skills/tech-ai-data-registry/SKILL.md"
+    },
+    ".github/skills/tech-ai-pr-writing/SKILL.md": {
+      "generated": false,
+      "sha256": "773a7fc63895186617a14cf5806fb64c15d6fc534e2e74c35f850eadb8decafc",
+      "source_relative_path": ".github/skills/tech-ai-pr-writing/SKILL.md"
+    },
+    ".github/skills/tech-ai-script-bash/SKILL.md": {
+      "generated": false,
+      "sha256": "21da6fe6e438de1c5923b51af05109d567c71f2278fee0408df5264f8751b405",
+      "source_relative_path": ".github/skills/tech-ai-script-bash/SKILL.md"
+    },
+    ".github/skills/tech-ai-terraform-feature/SKILL.md": {
+      "generated": false,
+      "sha256": "1a5eb6c8237540ad336ad9cfa02be8b713a1c8e25c8c6ee76c012f35afb60de2",
+      "source_relative_path": ".github/skills/tech-ai-terraform-feature/SKILL.md"
+    },
+    ".github/skills/tech-ai-terraform-module/SKILL.md": {
+      "generated": false,
+      "sha256": "89dae9c45eae062bd6514c6cab957df1182059569c94660134a76ee343e734dd",
+      "source_relative_path": ".github/skills/tech-ai-terraform-module/SKILL.md"
+    },
+    "AGENTS.md": {
+      "generated": true,
+      "sha256": "274329a097157a776b0f0c1cc6f7d0b8ca253f6d872e9f759983d97895fcaebd",
+      "source_relative_path": null
+    }
+  },
+  "profile": "infrastructure-heavy",
+  "source_commit": "2cec345b612b7175d2c585cb2804ed084b363724",
+  "source_version": "1.0.0",
+  "target_repo": "/Users/diego.lagosmorales/code/cloud-strategy-governance/eng-azure-governance",
+  "tool": "TechAISyncCopilotConfigs",
+  "version": 1
+}

@@ -1,5 +1,5 @@
 ---
-name: terraform-module
+name: TechAITerraformModule
 description: Create or modify reusable Terraform modules with standard file layout and validation.
 ---
 

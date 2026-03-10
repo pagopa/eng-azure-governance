@@ -251,6 +251,23 @@ frontmatter_value() {
   '
 }
 
+validate_frontmatter_structure() {
+  local file="$1"
+  local severity="$2"
+
+  if [[ "$(head -n 1 "$file" 2>/dev/null)" != "---" ]]; then
+    record_issue "$severity" "File is missing opening frontmatter fence: ${file}"
+    return 1
+  fi
+
+  if [[ "$(grep -c '^---$' "$file")" -lt 2 ]]; then
+    record_issue "$severity" "File has malformed frontmatter fence: ${file}"
+    return 1
+  fi
+
+  return 0
+}
+
 check_required_keys() {
   local file="$1"
   local severity="$2"
@@ -283,20 +300,178 @@ prompt_expected_name() {
   name="$(basename "$file")"
 
   case "$name" in
-    github-action.prompt.md)
-      printf '%s' "cs-github-action"
+    tech-ai-github-action.prompt.md)
+      printf '%s' "TechAIGitHubAction"
       ;;
-    github-composite-action.prompt.md)
-      printf '%s' "cs-composite-action"
+    tech-ai-github-composite-action.prompt.md)
+      printf '%s' "TechAICompositeAction"
       ;;
-    github-pr-description.prompt.md)
-      printf '%s' "cs-pr-description"
+    tech-ai-github-pr-description.prompt.md)
+      printf '%s' "TechAIPRDescription"
+      ;;
+    tech-ai-add-platform.prompt.md)
+      printf '%s' "TechAIAddPlatform"
+      ;;
+    tech-ai-add-report-script.prompt.md)
+      printf '%s' "TechAIAddReportScript"
+      ;;
+    tech-ai-cicd-workflow.prompt.md)
+      printf '%s' "TechAICICDWorkflow"
+      ;;
+    tech-ai-terraform-module.prompt.md)
+      printf '%s' "TechAITerraformModule"
+      ;;
+    tech-ai-*.prompt.md)
+      tech_ai_prompt_name "${name%.prompt.md}"
       ;;
     *.prompt.md)
       printf '%s' "${name%.prompt.md}"
       ;;
     *)
       return 1
+      ;;
+  esac
+}
+
+tech_ai_prompt_name() {
+  local stem="$1"
+  local remainder
+  local output="TechAI"
+  local part
+  local first_char
+
+  remainder="${stem#tech-ai-}"
+  IFS='-' read -r -a parts <<< "$remainder"
+  for part in "${parts[@]}"; do
+    [[ -n "$part" ]] || continue
+    first_char="$(printf '%s' "${part:0:1}" | tr '[:lower:]' '[:upper:]')"
+    output+="${first_char}${part:1}"
+  done
+
+  printf '%s' "$output"
+}
+
+internal_asset_identifier() {
+  local file="$1"
+  local base
+  local parent
+
+  case "$file" in
+    *.prompt.md)
+      base="$(basename "$file")"
+      printf '%s' "${base%.prompt.md}"
+      ;;
+    *.agent.md)
+      base="$(basename "$file")"
+      printf '%s' "${base%.agent.md}"
+      ;;
+    */SKILL.md)
+      parent="$(basename "$(dirname "$file")")"
+      printf '%s' "$parent"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+validate_repo_local_prompt_naming() {
+  local file="$1"
+  local severity="error"
+  local actual_name=""
+  local expected_internal_name=""
+
+  [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
+
+  actual_name="$(frontmatter_value "$file" "name")"
+  expected_internal_name="$(internal_asset_identifier "$file" || true)"
+
+  case "$(basename "$file")" in
+    tech-ai-*.prompt.md)
+      return 0
+      ;;
+    internal-*.prompt.md)
+      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
+        record_issue "$severity" "Repository-internal prompt name must start with 'internal-': ${file}"
+      fi
+      if [[ -n "$actual_name" && -n "$expected_internal_name" && "$actual_name" != "$expected_internal_name" ]]; then
+        record_issue "$severity" "Repository-internal prompt name must match filename stem '${expected_internal_name}': ${file}"
+      fi
+      return 0
+      ;;
+    *)
+      record_issue "$severity" "Repository-internal prompt filename must start with 'internal-': ${file}"
+      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
+        record_issue "$severity" "Repository-internal prompt name must start with 'internal-': ${file}"
+      fi
+      ;;
+  esac
+}
+
+validate_repo_local_skill_naming() {
+  local file="$1"
+  local severity="error"
+  local actual_name=""
+  local expected_internal_name=""
+  local skill_dir
+
+  [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
+
+  actual_name="$(frontmatter_value "$file" "name")"
+  expected_internal_name="$(internal_asset_identifier "$file" || true)"
+  skill_dir="$(basename "$(dirname "$file")")"
+
+  case "$skill_dir" in
+    tech-ai-*)
+      return 0
+      ;;
+    internal-*)
+      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
+        record_issue "$severity" "Repository-internal skill name must start with 'internal-': ${file}"
+      fi
+      if [[ -n "$actual_name" && -n "$expected_internal_name" && "$actual_name" != "$expected_internal_name" ]]; then
+        record_issue "$severity" "Repository-internal skill name must match directory name '${expected_internal_name}': ${file}"
+      fi
+      return 0
+      ;;
+    *)
+      record_issue "$severity" "Repository-internal skill directory must start with 'internal-': ${file}"
+      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
+        record_issue "$severity" "Repository-internal skill name must start with 'internal-': ${file}"
+      fi
+      ;;
+  esac
+}
+
+validate_repo_local_agent_naming() {
+  local file="$1"
+  local severity="error"
+  local actual_name=""
+  local expected_internal_name=""
+
+  [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
+
+  actual_name="$(frontmatter_value "$file" "name")"
+  expected_internal_name="$(internal_asset_identifier "$file" || true)"
+
+  case "$(basename "$file")" in
+    tech-ai-*.agent.md)
+      return 0
+      ;;
+    internal-*.agent.md)
+      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
+        record_issue "$severity" "Repository-internal agent name must start with 'internal-': ${file}"
+      fi
+      if [[ -n "$actual_name" && -n "$expected_internal_name" && "$actual_name" != "$expected_internal_name" ]]; then
+        record_issue "$severity" "Repository-internal agent name must match filename stem '${expected_internal_name}': ${file}"
+      fi
+      return 0
+      ;;
+    *)
+      record_issue "$severity" "Repository-internal agent filename must start with 'internal-': ${file}"
+      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
+        record_issue "$severity" "Repository-internal agent name must start with 'internal-': ${file}"
+      fi
       ;;
   esac
 }
@@ -410,6 +585,8 @@ validate_prompt_file() {
     section_severity="warn"
   fi
 
+  validate_frontmatter_structure "$file" error || true
+
   if frontmatter "$file" | grep -Eq '^mode:[[:space:]]*'; then
     severity="error"
     [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
@@ -417,6 +594,7 @@ validate_prompt_file() {
   fi
 
   validate_prompt_name_policy "$file"
+  validate_repo_local_prompt_naming "$file"
 
   if ! has_heading_exact "$file" '## Instructions'; then
     record_issue "$section_severity" "Prompt missing '## Instructions' section: ${file}"
@@ -465,6 +643,8 @@ validate_prompt_file() {
 validate_instruction_file() {
   local file="$1"
 
+  validate_frontmatter_structure "$file" error || true
+
   if [[ "$MODE" == "strict" ]]; then
     check_required_keys "$file" error applyTo description
   else
@@ -483,7 +663,9 @@ validate_skill_file() {
 
   [[ "$MODE" == "legacy-compatible" ]] && section_severity="warn"
 
+  validate_frontmatter_structure "$file" error || true
   check_required_keys "$file" error name description
+  validate_repo_local_skill_naming "$file"
 
   if ! has_heading_regex "$file" '^## When to [Uu]se$'; then
     record_issue "$section_severity" "Skill missing '## When to use' section: ${file}"
@@ -513,7 +695,9 @@ validate_agents_dir() {
 
   while IFS= read -r file; do
     count=$((count + 1))
+    validate_frontmatter_structure "$file" error || true
     check_required_keys "$file" error name description tools
+    validate_repo_local_agent_naming "$file"
 
     if ! grep -Eq '^# ' "$file"; then
       record_error "Agent missing top heading: ${file}"
@@ -526,7 +710,7 @@ validate_agents_dir() {
     fi
 
     case "$(basename "$file")" in
-      planner.agent.md)
+      tech-ai-planner.agent.md)
         if ! has_heading_exact "$file" '## Scope guard'; then
           record_issue "$semantic_severity" "Planner agent missing '## Scope guard' section: ${file}"
         fi
@@ -540,7 +724,7 @@ validate_agents_dir() {
           record_issue "$semantic_severity" "Planner agent should reference security baseline: ${file}"
         fi
         ;;
-      implementer.agent.md)
+      tech-ai-implementer.agent.md)
         if ! has_heading_exact "$file" '## Handoff input'; then
           record_issue "$semantic_severity" "Implementer agent missing '## Handoff input' section: ${file}"
         fi
@@ -569,7 +753,7 @@ validate_agents_dir() {
           record_issue "$semantic_severity" "Implementer agent should reference customization validator: ${file}"
         fi
         ;;
-      reviewer.agent.md)
+      tech-ai-reviewer.agent.md)
         if ! has_heading_exact "$file" '## Review format'; then
           record_issue "$semantic_severity" "Reviewer agent missing '## Review format' section: ${file}"
         fi
@@ -587,6 +771,58 @@ validate_agents_dir() {
         fi
         if ! grep -Fq 'copilot-code-review-instructions.md' "$file"; then
           record_issue "$semantic_severity" "Reviewer agent should reference code review instructions: ${file}"
+        fi
+        ;;
+      tech-ai-global-customization-builder.agent.md)
+        if ! has_heading_exact "$file" '## Source of truth'; then
+          record_issue "$semantic_severity" "Global customization builder missing '## Source of truth' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Creation protocol'; then
+          record_issue "$semantic_severity" "Global customization builder missing '## Creation protocol' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Token discipline'; then
+          record_issue "$semantic_severity" "Global customization builder missing '## Token discipline' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Validation'; then
+          record_issue "$semantic_severity" "Global customization builder missing '## Validation' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Handoff'; then
+          record_issue "$semantic_severity" "Global customization builder missing '## Handoff' section: ${file}"
+        fi
+        if ! grep -Fq 'AGENTS.md' "$file"; then
+          record_issue "$semantic_severity" "Global customization builder should reference root AGENTS.md: ${file}"
+        fi
+        if ! grep -Fq 'security-baseline.md' "$file"; then
+          record_issue "$semantic_severity" "Global customization builder should reference security baseline: ${file}"
+        fi
+        if ! grep -Fq 'DEPRECATION.md' "$file"; then
+          record_issue "$semantic_severity" "Global customization builder should reference deprecation policy: ${file}"
+        fi
+        if ! grep -Fq 'scripts/validate-copilot-customizations.sh' "$file"; then
+          record_issue "$semantic_severity" "Global customization builder should reference customization validator: ${file}"
+        fi
+        if ! grep -Fq 'TechAIGlobalCustomizationAuditor' "$file"; then
+          record_issue "$semantic_severity" "Global customization builder should hand off to TechAIGlobalCustomizationAuditor: ${file}"
+        fi
+        ;;
+      tech-ai-global-customization-auditor.agent.md)
+        if ! has_heading_exact "$file" '## Audit protocol'; then
+          record_issue "$semantic_severity" "Global customization auditor missing '## Audit protocol' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Severity output'; then
+          record_issue "$semantic_severity" "Global customization auditor missing '## Severity output' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Validation'; then
+          record_issue "$semantic_severity" "Global customization auditor missing '## Validation' section: ${file}"
+        fi
+        if ! has_heading_exact "$file" '## Handoff'; then
+          record_issue "$semantic_severity" "Global customization auditor missing '## Handoff' section: ${file}"
+        fi
+        if ! grep -Fq 'scripts/validate-copilot-customizations.sh' "$file"; then
+          record_issue "$semantic_severity" "Global customization auditor should reference customization validator: ${file}"
+        fi
+        if ! grep -Fq 'TechAIGlobalCustomizationBuilder' "$file"; then
+          record_issue "$semantic_severity" "Global customization auditor should route major findings to TechAIGlobalCustomizationBuilder: ${file}"
         fi
         ;;
     esac
@@ -640,14 +876,21 @@ validate_agents_inventory() {
   local prompts_dir="$4"
   local skills_dir="$5"
   local agents_file=""
+  local root_agents_file="${target_root}/AGENTS.md"
+  local legacy_agents_file="${config_dir}/AGENTS.md"
   local file
   local rel_path
   local severity="error"
 
   [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
 
-  if ! agents_file="$(resolve_agents_file "$target_root" "$config_dir")"; then
-    record_issue "$severity" "Missing AGENTS.md for inventory validation (checked ${target_root} and ${config_dir})"
+  if [[ -f "$root_agents_file" ]]; then
+    agents_file="$root_agents_file"
+  elif [[ -f "$legacy_agents_file" ]]; then
+    record_issue "$severity" "AGENTS.md must live in repository root; found legacy ${legacy_agents_file}"
+    agents_file="$legacy_agents_file"
+  else
+    record_issue "$severity" "Missing AGENTS.md in repository root: ${root_agents_file}"
     return 0
   fi
 

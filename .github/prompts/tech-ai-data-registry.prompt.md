@@ -1,6 +1,6 @@
 ---
 description: Add or modify entries in structured JSON/YAML registry files
-name: cs-data-registry
+name: TechAIDataRegistry
 agent: agent
 argument-hint: action=<create|modify|remove> file=<path> key=<identifier> change=<summary>
 ---
@@ -14,7 +14,7 @@ argument-hint: action=<create|modify|remove> file=<path> key=<identifier> change
 - **Change summary**: ${input:change}
 
 ## Instructions
-1. Use `.github/skills/data-registry/SKILL.md`.
+1. Use `.github/skills/tech-ai-data-registry/SKILL.md`.
 2. Preserve schema and file conventions already used in the repository.
 3. Keep modifications minimal and focused on the requested records.
 4. Validate cross-file references if the changed record is linked elsewhere.

@@ -1,5 +1,5 @@
 ---
-name: data-registry
+name: TechAIDataRegistry
 description: Safely update structured JSON/YAML registry files (users, groups, teams, repositories, or policy maps).
 ---
 

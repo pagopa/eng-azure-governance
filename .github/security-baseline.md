@@ -27,6 +27,20 @@ Provide a portable baseline that teams can apply before enabling repository-wide
 - Use a deprecation window before removing prompts/skills in active use.
 - Keep a rollback path for workflow and policy changes.
 
+## Enforcement status
+| Control | Status | Tool |
+| --- | --- | --- |
+| Third-party action SHA pinning | Automated | `validate-copilot-customizations.sh` |
+| Minimal workflow permissions | Automated | `validate-copilot-customizations.sh` |
+| Validate `.github/**` in CI | Automated | `github-validate-copilot-customizations.yml` |
+| `shellcheck` on `.github/scripts/` | Automated | pre-commit + CI |
+| Secret placeholder avoidance in prompts/examples | Partial | pre-commit hooks + review |
+| OIDC over long-lived secrets | Manual review | `github-actions.instructions.md` |
+| Branch protection for `.github/**` | Manual review | repository settings |
+| Read-only agents as default | Manual review | agent review |
+| Scoped write-capable agents | Manual review | agent review |
+| CHANGELOG-based change governance | Manual review | PR review |
+
 ## Optional hardening
 - Add CODEOWNERS coverage for `.github/**`.
 - Add secret scanning and dependency update automation.

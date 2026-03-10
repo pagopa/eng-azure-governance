@@ -1,6 +1,6 @@
 ---
 description: Create or modify a cloud governance policy (AWS SCP, Azure Policy, GCP Org Policy)
-name: cs-cloud-policy
+name: TechAICloudPolicy
 agent: agent
 argument-hint: action=<create|modify> cloud=<aws|azure|gcp> policy_name=<name> purpose=<purpose> [effect=<deny|audit|modify|append|disabled>]
 ---
@@ -15,7 +15,7 @@ argument-hint: action=<create|modify> cloud=<aws|azure|gcp> policy_name=<name> p
 - **Effect (optional)**: ${input:effect:deny,audit,modify,append,disabled}
 
 ## Instructions
-1. Use `.github/skills/cloud-policy/SKILL.md`.
+1. Use `.github/skills/tech-ai-cloud-policy/SKILL.md`.
 2. Reuse existing policy patterns in the target repository.
 3. Keep policy logic explicit (scope, conditions, effect).
 4. Preserve naming and folder conventions.

@@ -12,9 +12,9 @@ profiles:
       - instructions/yaml.instructions.md
       - instructions/json.instructions.md
     recommended_prompts:
-      - prompts/github-action.prompt.md
+      - prompts/tech-ai-github-action.prompt.md
     recommended_skills:
-      - skills/cicd-workflow/SKILL.md
+      - skills/tech-ai-cicd-workflow/SKILL.md
 
   backend-java:
     description: Java service repositories.
@@ -23,11 +23,11 @@ profiles:
       - instructions/github-actions.instructions.md
       - instructions/markdown.instructions.md
     recommended_prompts:
-      - prompts/cs-java.prompt.md
-      - prompts/cs-add-unit-tests.prompt.md
+      - prompts/tech-ai-java.prompt.md
+      - prompts/tech-ai-add-unit-tests.prompt.md
     recommended_skills:
-      - skills/project-java/SKILL.md
-      - skills/cicd-workflow/SKILL.md
+      - skills/tech-ai-project-java/SKILL.md
+      - skills/tech-ai-cicd-workflow/SKILL.md
 
   backend-nodejs:
     description: Node.js service repositories.
@@ -36,11 +36,11 @@ profiles:
       - instructions/github-actions.instructions.md
       - instructions/markdown.instructions.md
     recommended_prompts:
-      - prompts/cs-nodejs.prompt.md
-      - prompts/cs-add-unit-tests.prompt.md
+      - prompts/tech-ai-nodejs.prompt.md
+      - prompts/tech-ai-add-unit-tests.prompt.md
     recommended_skills:
-      - skills/project-nodejs/SKILL.md
-      - skills/cicd-workflow/SKILL.md
+      - skills/tech-ai-project-nodejs/SKILL.md
+      - skills/tech-ai-cicd-workflow/SKILL.md
 
   backend-python:
     description: Python service repositories.
@@ -49,11 +49,11 @@ profiles:
       - instructions/github-actions.instructions.md
       - instructions/markdown.instructions.md
     recommended_prompts:
-      - prompts/cs-python.prompt.md
-      - prompts/cs-add-unit-tests.prompt.md
+      - prompts/tech-ai-python.prompt.md
+      - prompts/tech-ai-add-unit-tests.prompt.md
     recommended_skills:
-      - skills/project-python/SKILL.md
-      - skills/cicd-workflow/SKILL.md
+      - skills/tech-ai-project-python/SKILL.md
+      - skills/tech-ai-cicd-workflow/SKILL.md
 
   infrastructure-heavy:
     description: Infrastructure repositories with Terraform as primary language.
@@ -62,12 +62,12 @@ profiles:
       - instructions/github-actions.instructions.md
       - instructions/yaml.instructions.md
     recommended_prompts:
-      - prompts/cs-terraform.prompt.md
-      - prompts/cs-cloud-policy.prompt.md
+      - prompts/tech-ai-terraform.prompt.md
+      - prompts/tech-ai-cloud-policy.prompt.md
     recommended_skills:
-      - skills/terraform-feature/SKILL.md
-      - skills/terraform-module/SKILL.md
-      - skills/cloud-policy/SKILL.md
+      - skills/tech-ai-terraform-feature/SKILL.md
+      - skills/tech-ai-terraform-module/SKILL.md
+      - skills/tech-ai-cloud-policy/SKILL.md
 
   mixed-platform:
     description: Repositories mixing app code, CI/CD, and some infrastructure.
@@ -77,12 +77,12 @@ profiles:
       - instructions/github-actions.instructions.md
       - instructions/terraform.instructions.md
     recommended_prompts:
-      - prompts/cs-java.prompt.md
-      - prompts/cs-nodejs.prompt.md
-      - prompts/github-action.prompt.md
-      - prompts/cs-terraform.prompt.md
+      - prompts/tech-ai-java.prompt.md
+      - prompts/tech-ai-nodejs.prompt.md
+      - prompts/tech-ai-github-action.prompt.md
+      - prompts/tech-ai-terraform.prompt.md
     recommended_skills:
-      - skills/project-java/SKILL.md
-      - skills/project-nodejs/SKILL.md
-      - skills/cicd-workflow/SKILL.md
-      - skills/terraform-feature/SKILL.md
+      - skills/tech-ai-project-java/SKILL.md
+      - skills/tech-ai-project-nodejs/SKILL.md
+      - skills/tech-ai-cicd-workflow/SKILL.md
+      - skills/tech-ai-terraform-feature/SKILL.md
