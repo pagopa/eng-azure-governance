@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal AWS Organization Structure"
+  short_description: "AWS account, OU, and control-plane layout"
+  default_prompt: "Use $internal-aws-organization-structure to shape the AWS account, OU, delegated admin, or StackSets structure for this problem."

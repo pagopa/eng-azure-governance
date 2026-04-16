@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Spring Boot"
+  short_description: "Spring Boot app design and coding"
+  default_prompt: "Use $internal-spring-boot-development to design or refactor this Spring Boot task with the repository-owned workflow."

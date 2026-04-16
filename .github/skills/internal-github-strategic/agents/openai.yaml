@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GitHub Strategic"
+  short_description: "GitHub decision framing and tradeoff support"
+  default_prompt: "Use $internal-github-strategic to frame this GitHub platform decision, keep the answer proportional, and activate only the lenses that matter."

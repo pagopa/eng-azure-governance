@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal AWS Operations"
+  short_description: "AWS validation, monitoring, and evidence"
+  default_prompt: "Use $internal-aws-operations to define the AWS preflight, validation, monitoring, or evidence path for this change."

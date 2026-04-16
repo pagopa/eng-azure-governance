@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Docker"
+  short_description: "Help with Internal Docker tasks"
+  default_prompt: "Use $internal-docker for this task and follow the repository-owned workflow in the skill."

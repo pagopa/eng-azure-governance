@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Copilot Audit"
+  short_description: "Help with Internal Copilot Audit tasks"
+  default_prompt: "Use $internal-copilot-audit for this task and follow the repository-owned workflow in the skill."

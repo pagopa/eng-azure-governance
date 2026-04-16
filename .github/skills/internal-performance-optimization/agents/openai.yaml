@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Performance Optimization"
+  short_description: "Help with Internal Performance Optimization tasks"
+  default_prompt: "Use $internal-performance-optimization for this task and follow the repository-owned workflow in the skill."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GitHub Actions"
+  short_description: "Help with Internal GitHub Actions tasks"
+  default_prompt: "Use $internal-github-actions for this task and follow the repository-owned workflow in the skill."

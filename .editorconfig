@@ -1,31 +1,73 @@
-# EditorConfig is awesome: http://EditorConfig.org
-# Uses editorconfig to maintain consistent coding styles
+# EditorConfig is awesome: https://editorconfig.org/
+# Keep shared editing defaults predictable across source, tests, and synced repos.
 
-# top-most EditorConfig file
 root = true
 
-# Unix-style newlines with a newline ending every file
 [*]
 charset = utf-8
 end_of_line = lf
-indent_size = 2
 indent_style = space
+indent_size = 2
 insert_final_newline = true
-max_line_length = 80
 trim_trailing_whitespace = true
 
-[*.{tf,tfvars}]
+[*.{py,pyi}]
+indent_size = 4
+max_line_length = 88
+
+[*.{sh,bash,zsh}]
 indent_size = 2
-indent_style = space
+max_line_length = 100
+
+[*.{tf,tfvars,hcl}]
+indent_size = 2
+max_line_length = 100
+
+[*.{yml,yaml}]
+indent_size = 2
+max_line_length = 120
+
+[*.{json,jsonc,toml}]
+indent_size = 2
+max_line_length = 100
+
+[*.{cfg,conf,ini}]
+indent_size = 2
+max_line_length = 100
+
+[.editorconfig]
+indent_size = 2
+max_line_length = 100
 
 [*.md]
 max_line_length = 0
 trim_trailing_whitespace = false
 
-# Tab indentation (no size specified)
 [Makefile]
-tab_width = 2
 indent_style = tab
+indent_size = 4
+tab_width = 4
+
+[*.mk]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+[.gitignore]
+max_line_length = 0
+
+[.gitattributes]
+max_line_length = 0
+
+[.env]
+max_line_length = 0
+trim_trailing_whitespace = false
+
+[.env.*]
+max_line_length = 0
+trim_trailing_whitespace = false
 
 [COMMIT_EDITMSG]
-max_line_length = 0
+insert_final_newline = false
+max_line_length = 72
+trim_trailing_whitespace = false

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Agent Routing Engine"
+  short_description: "Help with Internal Agent Routing Engine tasks"
+  default_prompt: "Use $internal-agent-routing-engine for this task and follow the repository-owned workflow in the skill."

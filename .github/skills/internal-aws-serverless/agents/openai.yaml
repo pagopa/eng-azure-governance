@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal AWS Serverless"
+  short_description: "AWS Lambda implementation patterns"
+  default_prompt: "Use $internal-aws-serverless to design, implement, or review AWS Lambda handlers, triggers, and packaging decisions."

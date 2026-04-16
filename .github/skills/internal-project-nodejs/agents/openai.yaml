@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Project Nodejs"
+  short_description: "Help with Internal Project Nodejs tasks"
+  default_prompt: "Use $internal-project-nodejs for this task and follow the repository-owned workflow in the skill."

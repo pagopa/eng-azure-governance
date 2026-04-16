@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Aws MCP Research"
+  short_description: "Help with Internal Aws MCP Research tasks"
+  default_prompt: "Use $internal-aws-mcp-research for this task and follow the repository-owned workflow in the skill."

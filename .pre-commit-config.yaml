@@ -1,47 +1,89 @@
+# Pre-commit hooks configuration
+#
+# Purpose:
+#   Run automated validation before each commit.
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#
+
 repos:
-  ## general
+  # General hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0 # pre-commit-hooks v6.0.0
     hooks:
-      - id: pretty-format-json
-        args:
-          - "--autofix"
-          - "--indent=2"
-          - "--no-sort-keys"
       # Common errors
-      - id: end-of-file-fixer
-        exclude_types: [sql, csv]
-        exclude: "\\.csv$"
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
-        exclude_types: [sql, bash, shell]
+      # - id: end-of-file-fixer
+      #   exclude_types: [sql, csv]
+      #   exclude: '\.csv$'
+      # - id: trailing-whitespace
+      #   args:
+      #     - --markdown-linebreak-ext=md
+      #   exclude_types: [sql, bash, shell]
       - id: check-executables-have-shebangs
       # Cross platform
       - id: check-case-conflict
       - id: mixed-line-ending
-        args: [--fix=lf]
+        args:
+          - --fix=lf
         exclude_types: [sql]
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
       # Security
       - id: detect-aws-credentials
-        args: ['--allow-missing-credentials']
+        args:
+          - --allow-missing-credentials
       - id: detect-private-key
+
+  # Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.105.0
+    rev: v1.105.0 # pre-commit-terraform v1.105.0
     hooks:
       - id: terraform_fmt
       - id: terraform_docs
         args:
           - markdown --sort-by required
       - id: terraform_validate
+        verbose: true
         args:
+          - --hook-config=--retry-once-with-cleanup=true
           - --init-args=-backend=false
           - --init-args=-lockfile=readonly
           - --args=-json
           - --args=-no-color
-#      - id: terraform_providers_lock
-#        args:
-#          - --args=-platform=windows_amd64
-#          - --args=-platform=darwin_amd64
-#          - --args=-platform=darwin_arm64
-#          - --args=-platform=linux_amd64
-#          - --args=-platform=linux_arm64
+      # - id: terraform_providers_lock
+      #   args:
+      #     - --hook-config=--mode=always-regenerate-lockfile
+      #     - --args=-platform=windows_amd64
+      #     - --args=-platform=darwin_amd64
+      #     - --args=-platform=darwin_arm64
+      #     - --args=-platform=linux_amd64
+      #     - --args=-platform=linux_arm64
+
+  # Shell scripts
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1 # shellcheck-py v0.11.0.1
+    hooks:
+      - id: shellcheck
+        args:
+          - --severity=warning
+        exclude: '^\.github/skills/'
+
+  # Python
+  - repo: https://github.com/pycqa/isort
+    rev: 8.0.1 # isort 8.0.1
+    hooks:
+      - id: isort
+        args:
+          - --profile
+          - black
+        files: ^(scripts|tests)/.*\.py$
+
+  - repo: https://github.com/psf/black
+    rev: 26.3.1 # black 26.3.1
+    hooks:
+      - id: black
+        language_version: python3
+        files: ^(scripts|tests)/.*\.py$

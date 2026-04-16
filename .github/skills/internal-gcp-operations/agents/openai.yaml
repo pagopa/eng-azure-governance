@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GCP Operations"
+  short_description: "GCP validation, monitoring, and evidence"
+  default_prompt: "Use $internal-gcp-operations to define the GCP preflight, validation, monitoring, or evidence path for this change."

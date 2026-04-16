@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal DevOps Core Principles"
+  short_description: "DevOps lifecycle guidance for delivery health"
+  default_prompt: "Use $internal-devops-core-principles for this task and follow the repository-owned workflow in the skill."

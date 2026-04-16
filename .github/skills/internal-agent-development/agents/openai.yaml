@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agent Development"
+  short_description: "Create, refine, or realign repository-owned Copilot agents"
+  default_prompt: "Use $internal-agent-development to create or update an internal agent in .github/agents/ following the repository contract."

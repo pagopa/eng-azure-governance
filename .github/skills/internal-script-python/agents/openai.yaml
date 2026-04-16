@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Script Python"
+  short_description: "Help with Internal Script Python tasks"
+  default_prompt: "Use $internal-script-python for this task and follow the repository-owned workflow in the skill."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal DDD"
+  short_description: "Decision workflow for scoped Domain-Driven Design work"
+  default_prompt: "Use $internal-ddd to decide how much DDD this problem needs and produce the right strategic, tactical, or evented artifacts."
