@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Copilot Docs Research"
+  short_description: "Help with Internal Copilot Docs Research tasks"
+  default_prompt: "Use $internal-copilot-docs-research for this task and follow the repository-owned workflow in the skill."

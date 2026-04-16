@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal AWS Strategic"
+  short_description: "AWS decision framing and tradeoff support"
+  default_prompt: "Use $internal-aws-strategic to frame this AWS decision, keep the answer proportional, and pull in only the lenses that matter."

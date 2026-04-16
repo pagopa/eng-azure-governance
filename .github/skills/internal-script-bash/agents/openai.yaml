@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Script Bash"
+  short_description: "Help with Internal Script Bash tasks"
+  default_prompt: "Use $internal-script-bash for this task and follow the repository-owned workflow in the skill."

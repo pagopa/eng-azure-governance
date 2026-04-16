@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Azure Strategic"
+  short_description: "Azure decision framing and tradeoff support"
+  default_prompt: "Use $internal-azure-strategic to frame this Azure decision, keep the answer proportional, and activate only the lenses that matter."

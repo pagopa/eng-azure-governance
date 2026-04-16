@@ -20,4 +20,4 @@
 ## Examples
 - `feat(terraform): add policy assignment module`
 - `fix(workflows): pin checkout action by full SHA`
-- `docs(copilot): align prompt and skill references`
+- `docs(copilot): align skill and agent references`

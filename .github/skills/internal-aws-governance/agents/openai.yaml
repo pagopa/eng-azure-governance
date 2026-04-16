@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal AWS Governance"
+  short_description: "AWS IAM, SCP, and guardrail guidance"
+  default_prompt: "Use $internal-aws-governance to review the IAM, SCP, trust, or guardrail model for this AWS change."

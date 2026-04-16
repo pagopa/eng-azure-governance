@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Kubernetes"
+  short_description: "Route Kubernetes work by operating scope"
+  default_prompt: "Use $internal-kubernetes to route this Kubernetes task to the right strategic, tactical, or operational lane."

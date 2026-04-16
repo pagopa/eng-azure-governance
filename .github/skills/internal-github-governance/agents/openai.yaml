@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GitHub Governance"
+  short_description: "GitHub guardrails, permissions, and policy guidance"
+  default_prompt: "Use $internal-github-governance to review the GitHub ruleset, permissions, identity, or guardrail model for this change."

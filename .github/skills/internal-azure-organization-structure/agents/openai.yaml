@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Azure Organization Structure"
+  short_description: "Azure tenant, landing-zone, and topology layout"
+  default_prompt: "Use $internal-azure-organization-structure to shape the Azure tenant, management group, subscription, or landing-zone structure for this problem."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GCP Governance"
+  short_description: "GCP IAM, Org Policy, and guardrail guidance"
+  default_prompt: "Use $internal-gcp-governance to review the GCP IAM, Org Policy, identity, or guardrail model for this change."

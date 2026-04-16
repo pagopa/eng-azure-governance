@@ -61,3 +61,4 @@ env/
 !src/04_policy_assignments/env/org/backend.tfvars
 !src/04_policy_assignments/env/org/terraform.tfvars
 .python-version
+/tmp/superpowers/

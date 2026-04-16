@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Project Python"
+  short_description: "Help with Internal Project Python tasks"
+  default_prompt: "Use $internal-project-python for this task and follow the repository-owned workflow in the skill."

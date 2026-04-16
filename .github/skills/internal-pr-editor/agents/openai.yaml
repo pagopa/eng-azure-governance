@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal PR Editor"
+  short_description: "Help with Internal PR Editor tasks"
+  default_prompt: "Use $internal-pr-editor for this task and follow the repository-owned workflow in the skill."

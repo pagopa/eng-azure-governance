@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Change Impact Analysis"
+  short_description: "Help with internal change impact analysis tasks"
+  default_prompt: "Use $internal-change-impact-analysis for this task and follow the repository-owned workflow in the skill."

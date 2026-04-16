@@ -1,0 +1,4 @@
+interface:
+  display_name: "Copilot Baseline Sync"
+  short_description: "Mirror the managed Copilot baseline into consumer repos"
+  default_prompt: "Use $internal-agent-sync-global-copilot-configs-into-repo to plan or apply a consumer-repository baseline sync from this standards repository."

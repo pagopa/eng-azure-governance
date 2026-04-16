@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Changelog Automation"
+  short_description: "Help with Internal Changelog Automation tasks"
+  default_prompt: "Use $internal-changelog-automation for this task and follow the repository-owned workflow in the skill."

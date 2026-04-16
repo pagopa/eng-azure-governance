@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GitHub Operations"
+  short_description: "GitHub validation, runner health, and evidence"
+  default_prompt: "Use $internal-github-operations to define the GitHub preflight, validation, runner, or evidence path for this change."

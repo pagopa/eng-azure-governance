@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GitHub Action Composite"
+  short_description: "Help with Internal GitHub composite action tasks"
+  default_prompt: "Use $internal-github-action-composite for this task and follow the repository-owned workflow in the skill."

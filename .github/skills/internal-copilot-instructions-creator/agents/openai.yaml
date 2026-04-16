@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Copilot Instructions Creator"
+  short_description: "Path-scoped Copilot instruction creation"
+  default_prompt: "Use $internal-copilot-instructions-creator to create or revise this .instructions.md file with the repository-owned workflow."

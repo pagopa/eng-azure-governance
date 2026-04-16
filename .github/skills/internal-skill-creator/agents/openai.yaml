@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Skill Creator"
+  short_description: "First entrypoint for repo skill work"
+  default_prompt: "Use $internal-skill-creator first to create or revise a repository-owned skill in .github/skills/ before loading the embedded OpenAI skill-creation workflow."

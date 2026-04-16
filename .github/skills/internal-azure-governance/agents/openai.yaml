@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Azure Governance"
+  short_description: "Azure RBAC, Policy, and guardrail guidance"
+  default_prompt: "Use $internal-azure-governance to review the Azure RBAC, Policy, identity, or guardrail model for this change."

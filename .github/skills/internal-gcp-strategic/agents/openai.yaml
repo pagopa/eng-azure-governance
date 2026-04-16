@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GCP Strategic"
+  short_description: "GCP decision framing and tradeoff support"
+  default_prompt: "Use $internal-gcp-strategic to frame this GCP decision, keep the answer proportional, and activate only the lenses that matter."

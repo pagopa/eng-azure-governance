@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Terraform"
+  short_description: "Help with Internal Terraform tasks"
+  default_prompt: "Use $internal-terraform for this task and follow the repository-owned workflow in the skill."

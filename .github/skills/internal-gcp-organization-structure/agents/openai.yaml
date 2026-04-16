@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal GCP Organization Structure"
+  short_description: "GCP org, project, and topology layout"
+  default_prompt: "Use $internal-gcp-organization-structure to shape the GCP org, folder, project, or Shared VPC structure for this problem."

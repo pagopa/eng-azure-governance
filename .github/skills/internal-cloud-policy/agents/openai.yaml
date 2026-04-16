@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Cloud Policy"
+  short_description: "Help with Internal Cloud Policy tasks"
+  default_prompt: "Use $internal-cloud-policy for this task and follow the repository-owned workflow in the skill."
