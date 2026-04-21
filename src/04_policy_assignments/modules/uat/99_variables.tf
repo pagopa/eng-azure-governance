@@ -7,11 +7,6 @@ variable "subscription" {
   })
 }
 
-variable "location" {
-  description = "The Azure Region where the Policy Assignment should exist"
-  type        = string
-}
-
 variable "policy_set_ids" {
   description = "A map for each policy set id to assign"
   type        = map(string)

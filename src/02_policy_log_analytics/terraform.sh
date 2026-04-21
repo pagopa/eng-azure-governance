@@ -4,7 +4,7 @@ set -e
 
 action=$1
 shift 1
-other=$@
+other="$*"
 
 subscription="MOCK_VALUE"
 
