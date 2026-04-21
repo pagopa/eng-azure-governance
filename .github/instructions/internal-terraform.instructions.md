@@ -6,6 +6,7 @@ applyTo: "**/*.tf"
 # Terraform Instructions
 
 ## Baseline rules
+
 - Run `terraform fmt` before commit.
 - Use 2-space indentation.
 - Keep related resources grouped in predictable files such as `providers.tf`, `variables.tf`, `outputs.tf`, and domain-specific resource files when the target directory already follows that split.
@@ -25,10 +26,12 @@ applyTo: "**/*.tf"
 - Enable encryption at rest and in transit when the platform supports it.
 
 ## Use the skill for deeper guidance
+
 - Load `.github/skills/internal-terraform/SKILL.md` for feature-vs-module decisions, migration steps, state and delivery controls, templates, and common mistakes.
 - Keep this instruction as the auto-loaded baseline; keep detailed workflow and examples in the skill.
 
 ## Validation
+
 - Run `terraform validate` after changes.
 - Run `tflint` when available for the target project.
 - Review `terraform plan` before apply.

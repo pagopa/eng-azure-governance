@@ -6,12 +6,14 @@ description: Use when creating or modifying a reusable GitHub composite action u
 # GitHub Composite Action Skill
 
 ## When to use
+
 - Create a new reusable composite action under `.github/actions/`.
 - Modify an existing composite action and preserve compatibility.
 - Deepen a GitHub Actions task that has already been classified as composite-action authoring.
 - Add or revise composite-action documentation, outputs, testing guidance, or release discipline.
 
 ## Relationship to the umbrella skill
+
 - `internal-github-actions` is the default entry point for GitHub Actions authoring.
 - Load this skill when the work is specifically a composite action or when the umbrella skill decides the reusable unit should move here.
 
@@ -25,6 +27,7 @@ description: Use when creating or modifying a reusable GitHub composite action u
 | Best for | Shared validation, setup, or step logic | Pipelines with their own jobs, runners, or environments |
 
 ## Mandatory rules
+
 - Follow `.github/instructions/internal-github-action-composite.instructions.md`.
 - Pass expression inputs via `env:` instead of interpolating `${{ }}` directly in `run:`.
 - Keep `shell: bash` explicit on composite steps.

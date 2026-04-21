@@ -2,7 +2,7 @@
 
 Load this file when a pattern seems plausible but the host language should influence how heavy the solution becomes.
 
-## Java and C#
+## Java and C\#
 
 - Interfaces and explicit dependency injection are cheap when the variation point is real.
 - Prefer records or small immutable types for data carriers where the codebase already uses them.

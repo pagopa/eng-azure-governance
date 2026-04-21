@@ -7,6 +7,12 @@ description: Use when a `.github/` customization change depends on current GitHu
 
 Use this skill when a repository customization decision depends on current GitHub Copilot behavior rather than repo-local convention alone.
 
+## When to use
+
+- A `.github/` customization change depends on current GitHub Copilot platform behavior or MCP support.
+- The local repository contract is not enough to answer a frontmatter, tool-contract, prompt-file, or environment-support question.
+- Official GitHub documentation must be checked before editing a repository-owned customization asset.
+
 ## Purpose
 
 This skill standardizes how to research GitHub Copilot platform behavior before changing repository-owned customization assets.

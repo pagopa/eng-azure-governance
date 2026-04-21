@@ -1,6 +1,6 @@
 ---
 name: internal-agent-sync-global-copilot-configs-into-repo
-description: Use when aligning a consumer repository to this repository's managed GitHub Copilot baseline plus the explicitly shared repository-hygiene files and retained-learning ledger template, including mirror planning, apply runs, drift checks, and preservation of target `local-*` assets plus any `.github/local-copilot-overrides.md` layer.
+description: Use when aligning a consumer repository to this repository's managed GitHub Copilot baseline plus the explicitly shared repository-hygiene files and retained-learning ledger template, including mirror planning, apply runs, drift checks, and preservation of target `local-*` assets plus any consumer-local GitHub instructions overrides layer.
 ---
 
 # Internal Agent Sync Global Copilot Configs Into Repo
@@ -15,9 +15,9 @@ The paired agent should not restate default mode handling, preserved `local-*` b
 
 - Align a consumer repository with the managed GitHub Copilot baseline from this repository.
 - Refresh target `AGENTS.md`, `.github/copilot-instructions.md`, and `.github/INVENTORY.md` to the current bridge model after mirroring.
-- Refresh shared repository-hygiene files that are part of the managed sync baseline, currently `.editorconfig`, `.pre-commit-config.yaml`, and `.github/workflows/terraform-pre-commit.yml`.
+- Refresh shared repository-hygiene files that are part of the managed sync baseline, currently `.editorconfig`, `.pre-commit-config.yaml`, and `.github/workflows/_pre-commit.yml`.
 - Refresh repository-root `LESSONS_LEARNED.md` from the source structure while preserving and, when needed, migrating target-authored pending lesson rows.
-- Preserve or review a target `.github/local-copilot-overrides.md` file that locally overrides the synced baseline.
+- Preserve or review the target consumer-local GitHub instructions overrides file that locally overrides the synced baseline.
 - Run or interpret `.github/scripts/sync_copilot_catalog.sh` or `.github/scripts/sync_copilot_catalog.py`.
 - Audit source-target drift before or after a sync.
 
@@ -25,10 +25,12 @@ The paired agent should not restate default mode handling, preserved `local-*` b
 
 - Treat this repository as the source of truth.
 - Keep target assumptions narrow: GitHub Copilot assets live under `.github/` and `AGENTS.md` stays at repository root.
-- Preserve target `local-*` assets under mirrored categories, preserve target `.github/local-copilot-overrides.md`, and delete target-only non-local assets there during `apply`.
+- Preserve target `local-*` assets under mirrored categories, preserve the target consumer-local GitHub instructions overrides file after materialization, and delete target-only non-local assets there during `apply`.
+- When consumer-local creator bundles depend on shared runtime-critical rules, mirror those rules inside each creator bundle as source-managed files and keep the mirror paths registered in the source inventory and target manifest; do not rely on cross-bundle references or unsynced local-only resources for creator runtime behavior.
+- When the source baseline includes an approved imported-asset override registry plus replay patches, mirror that governance bundle as source-managed state instead of recreating target-local hidden forks on imported assets.
 - Exclude source resources named `internal-sync-*` from consumer mirroring and remove any target copies of those resources during `apply`.
-- Do not mirror a source `.github/local-copilot-overrides.md`; it stays consumer-owned even when the source repository has one.
-- Keep root guidance layered: `AGENTS.md` is the bridge, `.github/copilot-instructions.md` is the repo-wide projection, `.github/local-copilot-overrides.md` is the consumer-local exception layer, and `.github/INVENTORY.md` is the live catalog.
+- Materialize the source template `.github/copilot-instructions.override.md.template` into the consumer target as the consumer-local copilot instructions override file when that target file is missing, then preserve target-authored changes there on later sync runs.
+- Keep root guidance layered: `AGENTS.md` is the bridge, `.github/copilot-instructions.md` is the repo-wide projection, the consumer-local GitHub instructions overrides file is the consumer-local exception layer, and `.github/INVENTORY.md` is the live catalog.
 - Treat `LESSONS_LEARNED.md` as a source-managed retained-learning template: create it when missing, keep its structure aligned with the source contract, and preserve target-authored pending lessons instead of overwriting them with source rows.
 - Mirror only the explicitly shared repository-hygiene files declared in `references/sync-contract.md`; do not widen workflow or root-file mirroring implicitly.
 - Ensure the target repository `.gitignore` contains an ignore rule for `tmp/superpowers/`.

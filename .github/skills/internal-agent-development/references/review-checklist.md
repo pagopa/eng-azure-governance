@@ -7,7 +7,7 @@ Use this checklist before finalizing a new or revised internal agent.
 - Does `description:` start with `Use this agent when ...`?
 - Could a reader tell when this agent wins over neighboring agents?
 - Does the agent include at least one real negative boundary?
-- If the agent is not `internal-router`, does it avoid active delegation and recommend the next owner instead?
+- If the agent is a direct owner rather than a coordinator, does it avoid active delegation and recommend the next owner instead?
 - Is the route behavioral rather than prestige-based?
 - If the agent works in a fast-moving vendor domain, does the route make current-documentation verification visible?
 
@@ -23,6 +23,7 @@ Use this checklist before finalizing a new or revised internal agent.
 - Are the skill identifiers exact and canonical?
 - Do all declared skills reinforce the same operating role?
 - Does the agent need `## Skill Usage Contract`, or would that add noise?
+- If the agent cites a paired skill or reference, does the agent stay summary-level instead of repeating the same subtopic inventory?
 
 ## Output Contract
 
@@ -61,6 +62,7 @@ Use this checklist before finalizing a new or revised internal agent.
 
 - Does the filename stem match frontmatter `name:`?
 - Do all referenced local files exist?
+- Were adjacent paired skills and directly referenced local docs checked for drift?
 - Does the agent avoid making a neighboring agent redundant?
 - Have the repository validation entrypoints that currently exist been run, or has the validation gap been called out explicitly?
 

@@ -3,6 +3,7 @@
 Reference: `instructions/internal-nodejs.instructions.md`
 
 ## Critical
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | ND-C01 | Hardcoded secrets, tokens, or passwords | Credential exposure risk |
@@ -10,6 +11,7 @@ Reference: `instructions/internal-nodejs.instructions.md`
 | ND-C03 | User input in `child_process.exec()` without sanitization | Command injection |
 
 ## Major
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | ND-M01 | Unhandled promise rejection (missing `.catch()` or `try/catch` on `await`) | Silent crash or process exit |
@@ -22,6 +24,7 @@ Reference: `instructions/internal-nodejs.instructions.md`
 | ND-M08 | Callback-based patterns where async/await is available | Readability and error propagation |
 
 ## Minor
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | ND-m01 | Unused imports or variables | Dead code noise |
@@ -32,6 +35,7 @@ Reference: `instructions/internal-nodejs.instructions.md`
 | ND-m06 | Event listener without corresponding cleanup/removal | Memory leak risk |
 
 ## Nit
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | ND-N01 | Non-standard naming (camelCase for functions, PascalCase for classes/types) | Convention consistency |

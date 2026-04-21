@@ -22,7 +22,7 @@ Load this file before finalizing, replacing, or deleting an instruction file.
 
 - `INVENTORY.md` matches the live instruction list.
 - `.github/README.md` counts and family summaries match the catalog after adds or removals.
-- `.github/agents/internal-sync-control-center.agent.md` still reflects the managed imported instruction list after imported assets are replaced or retired.
+- `.github/agents/internal-sync-external-resources.agent.md` still reflects the managed imported instruction list after imported assets are replaced or retired.
 
 ## Replacement Checks
 

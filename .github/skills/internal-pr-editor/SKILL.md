@@ -6,12 +6,14 @@ description: Use when writing or updating a pull request title or body from a re
 # Internal PR Editor
 
 ## When to use
+
 - Create a new pull request description.
 - Improve an incomplete pull request body.
 - Summarize changes from modified files and checks.
 - Map a specification, issue, or template-driven request into a PR title and body without overstating what the diff actually delivers.
 
 ## Mandatory rules
+
 - Use English for all PR content.
 - Keep summary concise and outcome-oriented.
 - Include only relevant scope checkboxes.
@@ -22,9 +24,11 @@ description: Use when writing or updating a pull request title or body from a re
 - Do not modify any `README.md` file unless explicitly requested.
 
 ## Template resolution
+
 Resolve and use one existing repository template:
+
 1. `.github/PULL_REQUEST_TEMPLATE.md`
-2. `.github/pull_request_template.md`
+2. the lowercase filename under `.github/` if the repository exposes one
 3. `PULL_REQUEST_TEMPLATE.md`
 4. `pull_request_template.md`
 
@@ -40,6 +44,7 @@ If the user provides a specification, issue, or acceptance outline:
 - Keep the PR body grounded in the repository template, not in the source specification's original formatting.
 
 ## Tool-driven workflow
+
 1. Detect whether an open PR exists for the current branch.
 2. If PR exists → update title/body directly.
 3. If PR does not exist → create a draft PR first.
@@ -49,6 +54,7 @@ If the user provides a specification, issue, or acceptance outline:
 7. If PR tools are unavailable → return ready-to-paste markdown plus CLI fallback commands.
 
 ## Minimal example
+
 - Input:
   - title: "Externalize Copilot inventory"
   - changed_files: "AGENTS.md, .github/INVENTORY.md, .github/copilot-instructions.md"
@@ -67,10 +73,13 @@ If the user provides a specification, issue, or acceptance outline:
 | Not including validation commands and output | Reviewer has no confidence that code was tested | Always include the exact commands and their results |
 
 ## Cross-references
+
 - **internal-change-impact-analysis** (`.github/skills/internal-change-impact-analysis/SKILL.md`): for change-impact analysis that feeds the risk section.
 - **internal-code-review** (`.github/skills/internal-code-review/SKILL.md`): for the review that follows the PR.
+- **openai-gh-address-comments** (`.github/skills/openai-gh-address-comments/SKILL.md`): for addressing review threads and PR comments after the PR body exists; keep this skill focused on PR title/body authoring.
 
 ## Validation
+
 - Every template-defined section heading is present.
 - `Changes` has concise bullets describing the real diff.
 - Risk and rollback are explicit and actionable.

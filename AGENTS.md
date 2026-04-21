@@ -29,6 +29,7 @@ This file is the stable entrypoint for the repository instruction architecture.
 - The default authoring language for repository artifacts is English unless a scoped instruction explicitly overrides it.
 - User chat may be Italian.
 - Keep language exceptions explicit and local instead of restating broader prohibitions across the catalog.
+- Repository-owned execution-plan artifacts under `tmp/superpowers/<clear-action-or-task-name>/` may default to Italian when the local planning policy applies; this exception stays local to those plan files and does not change the repository-wide English default.
 
 ## Naming Contract
 
@@ -43,13 +44,17 @@ This file is the stable entrypoint for the repository instruction architecture.
 - `obra-*` resources are cross-cutting workflow assets. They often help with strategic framing, but may govern tactical or operational work when relevant.
 - `internal-*` resources are the canonical repository-owned layer. They are tactical by default, but may also be strategic or operational when their contract says so.
 - Imported upstream resources remain support depth by default. Overlap alone is not enough to fork or wrap them; prefer a repository-owned wrapper or replacement only when routing, governance, terminology, output shape, or safety expectations require repo-local ownership.
+- Keep imported upstream assets verbatim by default. Allow a direct in-place override only for a strong repo-specific need that the user explicitly counter-validates, and register that override in the `internal-agent-sync-external-resources` skill bundle so future refreshes can replay it safely.
 - `local-*` resources remain consumer-local extensions. They are usually tactical or operational, but may be strategic when a consumer repository needs explicit local governance.
 - When overlap exists, prefer the repository-owned internal owner as canonical and use imported depth as support unless no credible internal owner exists.
 
 ## Operational Owner Model
 
-- `internal-router` remains the only active front-door router for the canonical operational catalog.
-- `internal-router` may hand work to one selected canonical owner without becoming the domain owner itself; non-router canonical agents may be entered directly or by router handoff, but remain recommendation-only when their boundary breaks unless a narrower scoped contract explicitly allows invoking `internal-router` as a second parallel lane while keeping `internal-router` as the only router.
+- `internal-delivery-operator`, `internal-planning-leader`, `internal-review-guard`, and `internal-critical-master` remain the canonical repository-owned operational agents.
+- The canonical operational model uses direct entry instead of a repository-owned front-door router.
+- When the right lane is unclear, prefer `internal-planning-leader` as the safe fallback.
+- Canonical owners remain recommendation-only when their boundary breaks and are not subagent-invoked by default.
+- Any future automation between canonical owners must be explicit, narrow, one-directional, and must not create all-to-all dispatch or nested ping-pong.
 
 ## Projection Rules
 
@@ -62,11 +67,12 @@ This file is the stable entrypoint for the repository instruction architecture.
 
 ## Consumer Override Layer
 
-- Consumer repositories may keep a non-mirrored `.github/local-copilot-overrides.md` file as a consumer-owned local exception layer.
+- This standards repository owns the sync seed template at `.github/copilot-instructions.override.md.template`.
+- Consumer repositories may keep `.github/copilot-instructions.override.md` as the consumer-local exception layer materialized from that template by sync.
 - That file may override synced defaults from `AGENTS.md` or `.github/copilot-instructions.md` only inside the consumer repository and only when each exception states the overridden baseline rule, local scope, reason, and required disclosure.
-- If the file exists but declares no active overrides, keep the synced baseline authoritative.
-- When a response follows a local override, it must say that a consumer-local exception is in effect and cite `.github/local-copilot-overrides.md`.
-- Keep the local override file local. Do not mirror it from this standards repository, do not treat it as inventory, and do not use it to collapse the separate roles of `AGENTS.md`, `.github/copilot-instructions.md`, and `.github/INVENTORY.md`.
+- If the target file exists but declares no active overrides, keep the synced baseline authoritative.
+- When a response follows a local override, it must say that a consumer-local exception is in effect and cite `.github/copilot-instructions.override.md`.
+- Keep the target override file local in effect even when seeded by sync. Do not treat it as inventory, and do not use it to collapse the separate roles of `AGENTS.md`, `.github/copilot-instructions.md`, and `.github/INVENTORY.md`.
 - The local override layer must not redefine the ownership meaning of `internal-*`, `local-*`, or `internal-sync-*`; use it for repo-local exceptions, not for replacing the bridge model.
 
 ## Retained Learning
@@ -84,3 +90,8 @@ This file is the stable entrypoint for the repository instruction architecture.
 
 - Transient planning, brainstorming, and other Superpowers-generated working files must not be written under `docs/`.
 - When such artifacts are needed inside this repository, write them under `tmp/superpowers/`.
+- Keep planning ephemeral in chat for clear, local, quick, or banal tasks.
+- Create or reuse `tmp/superpowers/<clear-action-or-task-name>/` only for retained repository-owned planning that must survive the current turn because the work is non-banal, crosses turns, spans macro-categories, needs handoff, tracking, or provenance, or preserves tradeoffs worth review.
+- Keep retained execution plans as numbered Markdown files: a single `01-...md` file when one macro-category is enough, or multiple numbered files such as `01-contesto-e-vincoli.md`, `02-implementazione.md`, and `03-validazione.md` when the work spans multiple macro-categories.
+- Keep unresolved questions, doubts, or user decisions in `dubbi-e-domande.md`; this file stays separate from executable plan files and remains outside the plan-and-apply loop.
+- During execution, create matching `done-*` files, move completed items into them, remove them from the active numbered source file, and continue through the remaining numbered plan files until the work is finished or a real blocker requires user input.

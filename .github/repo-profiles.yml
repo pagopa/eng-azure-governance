@@ -63,6 +63,17 @@ profiles:
       - skills/internal-project-python/SKILL.md
       - skills/internal-github-actions/SKILL.md
 
+  document-heavy:
+    description: Repositories that regularly create or edit office documents and slide decks.
+    recommended_instructions:
+      - instructions/internal-markdown.instructions.md
+      - instructions/internal-yaml.instructions.md
+    recommended_skills:
+      - skills/openai-docx/SKILL.md
+      - skills/openai-pdf/SKILL.md
+      - skills/openai-slides/SKILL.md
+      - skills/openai-spreadsheet/SKILL.md
+
   infrastructure-heavy:
     description: Infrastructure repositories with Terraform as primary language.
     recommended_instructions:

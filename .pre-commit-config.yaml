@@ -53,6 +53,7 @@ repos:
           - --init-args=-lockfile=readonly
           - --args=-json
           - --args=-no-color
+      - id: terraform_tflint
       # - id: terraform_providers_lock
       #   args:
       #     - --hook-config=--mode=always-regenerate-lockfile

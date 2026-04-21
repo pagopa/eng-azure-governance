@@ -6,6 +6,7 @@ description: Use when authoring or revising GitHub Actions workflows, reusable w
 # GitHub Actions Skill
 
 ## When to use
+
 - Create or modify GitHub Actions workflows under `.github/workflows/`.
 - Create or modify reusable workflows exposed through `workflow_call`.
 - Decide whether repeated step logic should stay inline, move to a reusable workflow, or move to a composite action.
@@ -15,6 +16,7 @@ description: Use when authoring or revising GitHub Actions workflows, reusable w
 Use `internal-devops-core-principles` when the question is delivery strategy, release model, or operating-model health rather than workflow authoring.
 
 ## Mandatory rules
+
 - Follow `.github/instructions/internal-github-actions.instructions.md`.
 - Prefer OIDC for cloud authentication.
 - Pin every third-party action to a full-length SHA with adjacent release comment.

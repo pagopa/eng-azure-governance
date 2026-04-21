@@ -30,15 +30,19 @@ Use this reference when editing frontmatter, tool scope, engine-skill sections, 
 - `## Optional Support Skills` is optional. Use it only when it materially improves routing clarity, discovery, or command-center usability.
 - Prefer `## Optional Support Skills` over `## Preferred/Optional Skills` for current internal contracts.
 - Use `## Optional Support Skills` only for conditional support skills, not for the required engine.
+- When an agent depends on a paired skill or reference for detailed workflow, keep the agent summary-level and avoid re-listing the same operational subtopics.
 - When present, a skill-list section is a curated routing and discovery list. List exact canonical skill identifiers, one per bullet, in backticks.
 - Do not present a skill-list section as a native GitHub Copilot property or as a guarantee that every listed skill will be invoked automatically.
 - When expressing the resource model, treat `obra-*` as the cross-cutting workflow lane, `internal-*` as the canonical repository-owned layer, imported skills as support depth by default, and `local-*` as consumer-local extensions. Do not infer strategic, tactical, or operational role from prefix alone.
 - Do not create a 1:1 dedicated skill per agent just for symmetry. Create an engine skill only when it owns real reusable logic that would otherwise bloat the agent or drift.
+- When several neighboring repository-owned agents share the same stop-and-recommend behavior, prefer one shared boundary-recommendation engine over repeating the same next-owner matrix in every agent body. Keep the route and at least one real boundary in each agent.
 - Router agents are the strongest default candidate for a dedicated engine skill because their classification matrix, fallback rules, and ownership mapping are highly procedural.
 
 ## Delegation And Invocation Controls
 
-- Only router agents should own active downstream routing logic. Canonical non-router agents should recommend a better owner to the user instead of routing on the user's behalf, unless a narrower scoped contract explicitly allows them to invoke `internal-router` as a second parallel lane while leaving downstream owner selection to the router.
+- Only dedicated coordinator or router agents should own active downstream routing logic. Canonical direct owners should recommend a better owner to the user instead of routing on the user's behalf.
+- Prefer user-visible lane changes or direct user choice over hidden peer dispatch between canonical owners.
+- If a narrower scoped contract allows one canonical owner to invoke another, the exception must be explicit, one-directional, auditably bounded, and must not create an all-to-all mesh or nested ping-pong.
 - When an agent should dispatch to specific subagents, declare `agents:` with the explicit list of allowed targets.
 - When an agent must not dispatch subagents, declare `agents: []` to enforce the recommendation-only boundary.
 - When an agent should only be accessible as a subagent and not appear in the user dropdown, set `user-invocable: false`.
@@ -50,8 +54,10 @@ Use this reference when editing frontmatter, tool scope, engine-skill sections, 
 
 - Every agent must explain both positive routing and at least one meaningful boundary.
 - Every agent must define `## Output Expectations`.
-- Add `## Skill Usage Contract` only when the agent is a broader command center whose listed skills are used conditionally.
+- Add `## Skill Usage Contract` only when the agent is a broader command center whose listed support skills are used conditionally.
+- Do not keep `## Skill Usage Contract` on a single-paired-skill agent with no conditional support list.
 - When `## Skill Usage Contract` is present, explain selection criteria and boundaries, not a blanket execution order.
+- If an agent points to a paired skill or reference as the detailed contract owner, keep deep procedure, matrices, and templates out of the agent body.
 - When an agent can influence external actions, call out where human approval or review gates apply.
 - Keep long reusable workflows in skills, not in the agent body.
 

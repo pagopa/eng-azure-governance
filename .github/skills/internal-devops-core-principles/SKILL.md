@@ -7,6 +7,12 @@ description: Use when the task is about delivery-system strategy, release safety
 
 Use this skill for end-to-end delivery-system thinking, not for one-off YAML syntax questions or provider-specific command lookup.
 
+## When to use
+
+- The task is about delivery-system strategy, release safety, operational readiness, or incident learning across the software-delivery lifecycle.
+- The main need is DevOps tradeoff framing rather than one-off workflow syntax or provider commands.
+- A repository or platform decision must be evaluated through CALMS, DORA, rollout safety, or operational controls.
+
 ## Core Lens
 
 Apply CALMS in this order:

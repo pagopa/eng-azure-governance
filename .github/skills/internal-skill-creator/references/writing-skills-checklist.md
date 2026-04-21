@@ -31,8 +31,10 @@ This is a local distilled checklist informed by `writing-skills`. It exists to k
 ## Token discipline
 
 - Keep `SKILL.md` lean and move deeper material into `references/` or reusable tools only when justified.
+- If the skill sits behind a paired agent, keep route and boundary language out of `SKILL.md`.
 - Preserve a working `description:` during token cuts unless the baseline shows routing is wrong.
 - Cross-reference reusable material instead of restating it.
+- If local references own the deep tables, templates, or examples, point to them instead of copying them back into `SKILL.md`.
 - Prefer moving static lookup tables, starter templates, and detailed taxonomies into `references/`.
 - Prefer new `references/` over new `scripts/` unless the workflow is deterministic, repeated, and execution-heavy.
 - Prefer one strong example over several repetitive ones.

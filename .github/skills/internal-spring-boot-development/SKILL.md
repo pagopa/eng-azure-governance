@@ -7,6 +7,12 @@ description: Use when Spring Boot framework choices drive the work, such as cont
 
 Follow `.github/instructions/internal-java.instructions.md` for the baseline Java rules. Use this skill only when the Spring Boot framework choices materially affect the design, wiring, testing, or configuration.
 
+## When to use
+
+- Spring Boot framework choices drive the work, such as controllers, configuration properties, repositories, scheduled jobs, or Spring-specific tests.
+- The task depends on Spring wiring, stereotypes, test slices, or Boot configuration behavior rather than plain Java structure alone.
+- You need Spring-specific guidance after the general Java ownership boundary is already clear.
+
 ## Workflow
 
 1. Identify the Spring surface first.
@@ -39,6 +45,7 @@ Follow `.github/instructions/internal-java.instructions.md` for the baseline Jav
 - Do not choose YAML vs properties by doctrine; follow the existing project format unless the user asked for a migration.
 - Do not default to `@SpringBootTest` for controller or repository work that a slice test can cover faster.
 - Do not hide framework misconfiguration with defensive fallbacks that make failures harder to detect.
+- Read current Spring Boot documentation when the recommendation depends on framework behavior, annotation semantics, or test-slice support that may have changed across releases.
 
 ## Validation
 

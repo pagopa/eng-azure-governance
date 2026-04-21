@@ -9,6 +9,8 @@ This file is the exact path inventory for the live GitHub Copilot catalog in thi
 - `.github/instructions/awesome-copilot-kubernetes-manifests.instructions.md`
 - `.github/instructions/awesome-copilot-shell.instructions.md`
 - `.github/instructions/internal-bash.instructions.md`
+- `.github/instructions/internal-copilot-agent-authoring.instructions.md`
+- `.github/instructions/internal-copilot-skill-reference-authoring.instructions.md`
 - `.github/instructions/internal-docker.instructions.md`
 - `.github/instructions/internal-github-action-composite.instructions.md`
 - `.github/instructions/internal-github-actions.instructions.md`
@@ -40,10 +42,10 @@ This file is the exact path inventory for the live GitHub Copilot catalog in thi
 - `.github/skills/awesome-copilot-codeql/SKILL.md`
 - `.github/skills/awesome-copilot-dependabot/SKILL.md`
 - `.github/skills/awesome-copilot-secret-scanning/SKILL.md`
+- `.github/skills/internal-agent-boundary-recommendation-engine/SKILL.md`
+- `.github/skills/internal-agent-cross-lane-engine/SKILL.md`
 - `.github/skills/internal-agent-development/SKILL.md`
-- `.github/skills/internal-agent-operating-model-engine/SKILL.md`
-- `.github/skills/internal-agent-routing-engine/SKILL.md`
-- `.github/skills/internal-agent-sync-control-center/SKILL.md`
+- `.github/skills/internal-agent-sync-external-resources/SKILL.md`
 - `.github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md`
 - `.github/skills/internal-aws-governance/SKILL.md`
 - `.github/skills/internal-aws-mcp-research/SKILL.md`
@@ -65,6 +67,7 @@ This file is the exact path inventory for the live GitHub Copilot catalog in thi
 - `.github/skills/internal-ddd/SKILL.md`
 - `.github/skills/internal-devops-core-principles/SKILL.md`
 - `.github/skills/internal-docker/SKILL.md`
+- `.github/skills/internal-executing-plans/SKILL.md`
 - `.github/skills/internal-gcp-governance/SKILL.md`
 - `.github/skills/internal-gcp-operations/SKILL.md`
 - `.github/skills/internal-gcp-organization-structure/SKILL.md`
@@ -87,6 +90,7 @@ This file is the exact path inventory for the live GitHub Copilot catalog in thi
 - `.github/skills/internal-skill-creator/SKILL.md`
 - `.github/skills/internal-spring-boot-development/SKILL.md`
 - `.github/skills/internal-terraform/SKILL.md`
+- `.github/skills/internal-writing-plans/SKILL.md`
 - `.github/skills/obra-brainstorming/SKILL.md`
 - `.github/skills/obra-dispatching-parallel-agents/SKILL.md`
 - `.github/skills/obra-executing-plans/SKILL.md`
@@ -110,10 +114,13 @@ This file is the exact path inventory for the live GitHub Copilot catalog in thi
 - `.github/skills/terraform-terraform-search-import/SKILL.md`
 - `.github/skills/terraform-terraform-test/SKILL.md`
 
+### Support-only imported office skills
+
+These imported `openai-*` office skills remain support-only depth for repositories that explicitly need document workflows.
+
 ## Agents
 
-- `.github/agents/internal-critical-challenger.agent.md`
-- `.github/agents/internal-fast-executor.agent.md`
+- `.github/agents/internal-critical-master.agent.md`
+- `.github/agents/internal-delivery-operator.agent.md`
 - `.github/agents/internal-planning-leader.agent.md`
 - `.github/agents/internal-review-guard.agent.md`
-- `.github/agents/internal-router.agent.md`

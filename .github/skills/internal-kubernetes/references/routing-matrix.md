@@ -15,3 +15,4 @@ Use this reference when a request touches more than one Kubernetes concern and t
 - A request mentioning GitOps does not automatically make the task strategic; use the strategic lane only when the operating model or platform topology is changing.
 - A request mentioning Helm does not automatically make the task architectural; Helm can still be a workload-delivery concern.
 - A manifest review is not a platform-design task unless it changes shared cluster policy, tenancy, or traffic architecture.
+- If the user or an upstream operational choice already selected `internal-kubernetes-deployment` or `antigravity-kubernetes-architect`, treat that direct route as the audited winner and do not insert `internal-kubernetes` as an extra selector layer.

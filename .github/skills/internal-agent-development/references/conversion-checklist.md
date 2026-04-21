@@ -37,7 +37,7 @@ Use this checklist when converting an upstream agent or agent-authoring pattern 
 
 1. Confirm optional frontmatter is still supported by current GitHub Copilot docs and that the internal agent declares `tools:` with canonical aliases or MCP namespaces.
 2. Confirm the agent says when not to use it.
-3. If the agent is not `internal-router`, confirm it recommends other owners without actively routing or handing off.
+3. If the agent is a direct owner rather than a coordinator, confirm it recommends other owners without actively routing or handing off.
 4. Confirm output expectations are observable.
 5. Confirm the imported pattern no longer depends on stale runtime behavior or obsolete tool ids.
 6. Run repository validation before finishing.

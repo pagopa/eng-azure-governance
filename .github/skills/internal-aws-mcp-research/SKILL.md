@@ -7,6 +7,12 @@ description: Use when the task needs current AWS documentation or safe IAM inspe
 
 Use this skill when AWS decisions depend on up-to-date documentation or on safe inspection of real IAM state.
 
+## When to use
+
+- The task needs current AWS documentation, regional availability facts, or official AWS guidance that may have changed.
+- The task needs safe IAM inspection or policy simulation for Organizations, SCPs, IAM policies, roles, or delegated administrators.
+- AWS Knowledge MCP or AWS IAM MCP should be preferred when available, with an AWS-doc fallback when they are not.
+
 ## Purpose
 
 This skill standardizes an AWS research workflow that prefers AWS MCP servers when available and falls back to official AWS documentation when they are not.

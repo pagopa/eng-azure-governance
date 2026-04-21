@@ -7,7 +7,15 @@ description: Use when auditing repository-owned GitHub Copilot assets for overla
 
 Use this skill when auditing the health of the Copilot customization catalog.
 
+This skill is often invoked by planning or sync lanes, but it can also be used directly for a focused repository audit when the user explicitly wants overlap, stale-reference, or governance-drift findings.
+
 Treat the declared governance contract in the relevant agent, root `AGENTS.md`, and `.github/copilot-instructions.md` as the policy source of truth. Treat the current `.github/` catalog on disk as evidence to compare against that policy.
+
+## When to use
+
+- Audit repository-owned GitHub Copilot assets for overlap, hollow references, stale contracts, naming drift, or governance drift.
+- Run a focused `.github/` catalog audit from planning or sync work.
+- Verify whether governance files still match the live repository catalog on disk.
 
 ## Audit Goals
 
@@ -20,6 +28,7 @@ Treat the declared governance contract in the relevant agent, root `AGENTS.md`, 
 - Detect sync workflows that skip or fail to report governance review for `.github/copilot-instructions.md` and root `AGENTS.md`.
 - Detect naming violations and stale inventory references.
 - Detect governance files that still describe removed, renamed, or retired assets.
+- Detect catalog retirements or remaps that were not propagated in the same change to the supported consistency and sync entrypoints, `.github/scripts/check_catalog_consistency.sh` and `.github/scripts/sync_copilot_catalog.sh`.
 
 ## Audit Order
 
@@ -61,3 +70,4 @@ When a repository-owned internal replacement exists, prefer deleting the weaker 
 - Keeping source-side command-center assets in consumer sync scope
 - Keeping upstream assets whose only value is historical familiarity
 - Treating stale inventory references as harmless
+- Retiring or remapping managed skills or agents without updating the local sync command center, validator, and sync script in the same change

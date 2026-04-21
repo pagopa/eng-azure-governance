@@ -6,7 +6,8 @@ applyTo: "**/*.py"
 # Python Instructions
 
 ## Mandatory rules
-- Use emoji logs for key execution states.
+
+- Use emoji logs for key operator-facing execution states.
 - Prefer early return and clear guard clauses.
 - Keep code explicit and readable.
 - Prefer simple, readable, and easily modifiable code over clever abstractions.
@@ -24,9 +25,11 @@ applyTo: "**/*.py"
 - Do not add local vendored libraries, wheelhouses, copied site-packages, fallback dependency mirrors, or deprecated alternate dependency paths unless explicitly requested.
 
 ## Use the right Python skill
+
 - Load `.github/skills/internal-project-python/SKILL.md` for structured package or application code, reusable library boundaries, async judgment, and application test shape.
 - Load `.github/skills/internal-script-python/SKILL.md` for standalone operational tools, toolkit layout, launcher rules, dependency choices, and script runtime orchestration.
 - Keep this instruction as the shared auto-loaded baseline; keep the standalone-tool versus structured-package workflow detail in the paired skills.
+- Treat `excludeAgent` frontmatter differentiation as a follow-up optimization for this instruction family, not a default requirement. GitHub Docs still document `excludeAgent` for path-specific instructions; re-check the supported agent values before rolling it out here.
 
 ## Dependency lock example
 
@@ -42,6 +45,7 @@ requests==2.32.3 \
 - Generate the locked file with `pip-compile --generate-hashes` or an equivalent workflow that captures the full dependency closure.
 
 ## Minimal skeleton
+
 ```python
 #!/usr/bin/env python3
 """Purpose: Explain what this script does.
@@ -52,6 +56,7 @@ Usage examples:
 ```
 
 ## Minimal test example
+
 ```python
 def test_example() -> None:
     assert 1 + 1 == 2

@@ -3,6 +3,7 @@
 Reference: `instructions/internal-python.instructions.md`
 
 ## Critical
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | PY-C01 | Hardcoded secrets, tokens, or passwords | Credential exposure risk |
@@ -10,6 +11,7 @@ Reference: `instructions/internal-python.instructions.md`
 | PY-C03 | `pickle.load()` / `pickle.loads()` on untrusted data | Deserialization attack |
 
 ## Major
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | PY-M01 | Bare `except:` or `except Exception:` without re-raise or logging | Swallows errors silently |
@@ -23,6 +25,7 @@ Reference: `instructions/internal-python.instructions.md`
 | PY-M09 | Python tests outside repository-root `tests/` or without mirrored source paths | Breaks repository test discoverability and ownership mapping |
 
 ## Minor
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | PY-m01 | Unused imports | Dead code noise |
@@ -35,6 +38,7 @@ Reference: `instructions/internal-python.instructions.md`
 | PY-m08 | Nested functions deeper than 2 levels | Readability concern |
 
 ## Nit
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | PY-N01 | Line length > 120 characters | PEP8 / repo convention |

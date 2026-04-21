@@ -6,10 +6,12 @@ applyTo: "**/actions/**/action.y*ml"
 # Composite Action Instructions
 
 ## Scope
+
 - This instruction augments `.github/instructions/internal-github-actions.instructions.md`.
 - Keep only composite-specific rules here.
 
 ## Composite-specific rules
+
 - Define explicit `inputs` and `outputs`, and keep published names stable for existing callers.
 - Validate required values early and fail before the main logic runs.
 - Pass `${{ inputs.* }}` through `env:` before shell usage.

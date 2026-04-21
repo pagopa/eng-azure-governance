@@ -7,6 +7,12 @@ description: Use when creating, revising, splitting, replacing, or retiring repo
 
 Use this skill when the output should be an auto-applied instruction file. If the guidance is repo-wide, update `AGENTS.md` or `.github/copilot-instructions.md` instead. If the guidance is procedural or on-demand, create a skill or prompt instead of an instruction.
 
+## When to use
+
+- Create, revise, split, replace, or retire a repository-owned instruction under `.github/instructions/`.
+- Tighten `applyTo` scope or instruction precedence for a path-specific guidance file.
+- Decide whether a rule should live in an instruction instead of a repo-wide policy, skill, or prompt.
+
 ## Workflow
 
 1. Choose the right artifact first.
@@ -53,4 +59,4 @@ Use this skill when the output should be an auto-applied instruction file. If th
 - Inspect nearby instruction files and follow existing frontmatter and prose patterns.
 - Re-check that example globs, commands, and snippets are correct enough to survive direct reuse.
 - Smoke-test the replacement mentally against a representative Copilot authoring request before retiring an imported guide.
-- Re-check `.github/INVENTORY.md`, `.github/README.md`, and `.github/agents/internal-sync-control-center.agent.md` when the live instruction catalog changes.
+- Re-check `.github/INVENTORY.md`, `.github/README.md`, and `.github/agents/internal-sync-external-resources.agent.md` when the live instruction catalog changes.

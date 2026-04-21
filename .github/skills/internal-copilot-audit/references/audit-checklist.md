@@ -96,6 +96,14 @@ Flag a sync workflow when:
 - it marks work as `apply` even though governance review was skipped
 - it proceeds to `apply` while `blocking` findings remain
 
+### Volatile plan hygiene
+
+Flag a planning artifact or plan-closure audit when:
+
+- it references plan files, governance files, or workflow paths that no longer exist in the live repository tree
+- it claims a plan category is still active even though the corresponding plan file was removed or renamed
+- it treats volatile `tmp/` planning output as trustworthy without checking the current filesystem state first
+
 ## Flagging examples
 
 - `blocking` / `Patch`: a skill references a missing file under `references/`, so the documented workflow cannot actually be loaded.

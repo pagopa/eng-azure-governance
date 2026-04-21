@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Executing Plans"
+  short_description: "Repo wrapper for done-file plan execution"
+  default_prompt: "Use $internal-executing-plans to apply repository-owned numbered plans with the local done-file loop and dubbi-e-domande exclusion."

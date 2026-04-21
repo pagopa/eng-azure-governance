@@ -1,6 +1,7 @@
 # Cloud Auth Snippets for GitHub Actions
 
 ## AWS — OIDC Federation
+
 ```yaml
 permissions:
   id-token: write
@@ -17,11 +18,13 @@ steps:
 ```
 
 Prerequisites:
+
 - IAM OIDC provider for `token.actions.githubusercontent.com`
 - IAM role with trust policy scoped to repo/branch
 - No long-lived access keys
 
 ## Azure — OIDC Federation
+
 ```yaml
 permissions:
   id-token: write
@@ -39,11 +42,13 @@ steps:
 ```
 
 Prerequisites:
+
 - App registration with federated credential for GitHub Actions
 - Service principal with minimal RBAC role
 - No client secrets
 
 ## GCP — Workload Identity Federation
+
 ```yaml
 permissions:
   id-token: write
@@ -60,6 +65,7 @@ steps:
 ```
 
 Prerequisites:
+
 - Workload Identity Pool with GitHub provider
 - Service account with minimal IAM roles
 - No service account keys

@@ -24,9 +24,21 @@ When refreshing an installed external-prefixed asset:
 4. Do not add new sibling assets from the same family unless the user explicitly expands scope.
 5. Update governance files only when routing or inventory meaningfully changes.
 
+## Approved Imported Override Rules
+
+Use a direct imported in-place override only when all of these are true:
+
+- the repo-specific need is strong enough that a wrapper or replacement is not the better immediate fix
+- the user explicitly counter-validates the exception
+- the target is registered in `references/imported-asset-overrides.yaml`
+- the replay patch lives under `patches/`
+- the override can be replayed after a verbatim upstream refresh without manual guesswork
+
+Refresh upstream content first, then replay the registered patch. Prefer a clean replay first; if the registry allows `git apply --3way`, use that fallback only when upstream text drift is still compatible. If neither path applies cleanly, stop and review the exception instead of forcing it.
+
 ## Extraction Rules
 
-When `internal-sync-control-center` or a nearby sync asset is turning into a knowledge dump:
+When `internal-sync-external-resources` or a nearby sync asset is turning into a knowledge dump:
 
 1. Keep the agent cohesive around routing, managed scope, approval posture, and orchestration.
 2. Move long reusable procedures into this skill or the right existing internal skill.

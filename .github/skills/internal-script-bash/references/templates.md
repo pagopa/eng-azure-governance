@@ -64,6 +64,20 @@ while [[ $# -gt 0 ]]; do
 done
 ```
 
+## ERR Trap Pattern
+
+```bash
+set -eEuo pipefail
+
+on_error() {
+  local exit_code=$?
+  log_error "Command failed at line ${1:-unknown}: ${2:-unknown} (exit ${exit_code})"
+  exit "$exit_code"
+}
+
+trap 'on_error "${LINENO}" "${BASH_COMMAND}"' ERR
+```
+
 ## Hardening Helpers
 
 ```bash

@@ -131,6 +131,8 @@ Include:
 
 ## Relationship to adjacent skills
 
+- `antigravity-aws-cost-optimizer`
+  Use as depth support when the strategic question becomes cost analysis, spend optimization, or FinOps estimation that needs AWS-specific billing and Cost Explorer guidance.
 - `internal-aws-organization-structure`
   Use when the next need is account model, OU layout, delegated admin placement, network topology, or control-plane structure.
 - `internal-aws-governance`

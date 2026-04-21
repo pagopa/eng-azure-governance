@@ -6,6 +6,7 @@ description: Use when adding, refactoring, or reviewing Terraform or OpenTofu co
 # Terraform Skill
 
 ## When to use
+
 - Add or modify resources, variables, outputs, data sources in existing configurations.
 - Create a new reusable Terraform module from scratch.
 - Refactor inline resources into a module.
@@ -23,6 +24,7 @@ See `references/decision-guide.md` for the full decision flowchart. Quick rule:
 | One-off resource for a single environment | Feature (inline) |
 
 ## Mandatory rules
+
 - Follow `.github/instructions/internal-terraform.instructions.md` for provider and external module pinning.
 - Use `snake_case` for all Terraform identifiers.
 - Add `description` and `type` to every variable.
@@ -53,6 +55,7 @@ See `references/decision-guide.md` for the full decision flowchart. Quick rule:
 - When `variables.tf` or `outputs.tf` exist as dedicated files, keep entries deterministic and easy to scan, typically alphabetical by identifier.
 
 ## Module standard layout
+
 - `main.tf` — resources and data sources
 - `variables.tf` — input variables with `description` and `type`
 - `outputs.tf` — outputs with `description`
@@ -62,6 +65,11 @@ See `references/decision-guide.md` for the full decision flowchart. Quick rule:
 ## Templates
 
 Load `references/template-examples.md` when you need a minimal inline feature example or a starter reusable module.
+
+## Imported complements
+
+- Load `.github/skills/terraform-terraform-search-import/SKILL.md` when existing unmanaged resources must be discovered or bulk-imported into Terraform state.
+- Load `.github/skills/terraform-terraform-test/SKILL.md` when authoring `.tftest.hcl` coverage, choosing plan-vs-apply test modes, or troubleshooting Terraform test execution.
 
 ## Common mistakes
 
@@ -79,6 +87,7 @@ Load `references/template-examples.md` when you need a minimal inline feature ex
 | `default = ""` instead of `default = null` for optional strings | Empty string passes validation but means "no value" ambiguously | Use `null` for truly optional inputs |
 
 ## Validation
+
 - `terraform fmt -check -recursive`
 - `terraform validate`
 - Review `terraform plan` output for unexpected changes

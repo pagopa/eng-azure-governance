@@ -7,6 +7,14 @@ description: Use when creating or improving changelog generation, release-note w
 
 Use this skill when the repository needs deterministic release notes instead of ad hoc summaries.
 
+This skill is guidance for designing or improving changelog automation. It does not imply that the current repository already has an active changelog generator wired into CI.
+
+## When to use
+
+- Design or improve changelog generation for releases or versioned governance changes.
+- Create a repeatable release-note workflow from commits, pull requests, labels, or version boundaries.
+- Tighten changelog discipline when the repository still relies on ad hoc manual summaries.
+
 ## Principles
 
 - Prefer one canonical changelog flow for the repository.
@@ -54,6 +62,7 @@ Call out versioning mismatches explicitly when the described changes and the rel
 - Avoid duplicate entries for the same user-facing change.
 - Prefer machine-collected input plus human curation over pure free-text generation.
 - If the repo uses PR templates or labels, align the automation to them.
+- State the current activation gap explicitly when the repository still relies on manual changelog updates.
 
 ## Anti-Patterns
 
