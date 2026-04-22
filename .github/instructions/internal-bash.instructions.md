@@ -11,7 +11,10 @@ applyTo: "**/*.sh"
 
 Assume `.github/instructions/awesome-copilot-shell.instructions.md` covers the baseline shell rules for quoting, failure handling, temp resources, cleanup traps, parser choice, and general structure. This internal instruction keeps only the repository-specific Bash delta.
 
+The two instruction files intentionally co-load for `**/*.sh`: the imported file remains the generic shell baseline, while this file owns the repository-specific Bash defaults, operator-facing emoji logs, wrapper conventions, and Python-launcher rules.
+
 ## Repository-specific rules
+
 - Use Bash only: `#!/usr/bin/env bash`.
 - Add a short header comment with purpose and usage examples.
 - Use emoji logs (`ℹ️ ✅ ⚠️ ❌`) for operator-facing runtime messages.
@@ -21,6 +24,7 @@ Assume `.github/instructions/awesome-copilot-shell.instructions.md` covers the b
 - Apply these rules for both create and modify operations.
 
 ## Minimal delta example
+
 ```bash
 #!/usr/bin/env bash
 #
@@ -43,10 +47,12 @@ main "$@"
 ```
 
 ## Python launcher additions
+
 - When the Bash script is a launcher for a standalone Python tool, use it only when that tool needs external packages or an isolated local bootstrap path.
 - Python launchers must keep the common invocation path zero-argument friendly by embedding sensible default Python-script parameters and exposing only optional overrides.
 - For those Python launchers, resolve the script directory, create or reuse a sibling `.venv`, install from the local hash-locked `requirements.txt`, and execute the sibling Python entry point.
 
 ## Validation
+
 - `bash -n <script>.sh`
 - `shellcheck -s bash <script>.sh` (if available)

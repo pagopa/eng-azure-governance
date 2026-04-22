@@ -3,6 +3,7 @@
 Reference: `instructions/internal-java.instructions.md`
 
 ## Critical
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | JV-C01 | Hardcoded secrets, tokens, or passwords | Credential exposure risk |
@@ -10,6 +11,7 @@ Reference: `instructions/internal-java.instructions.md`
 | JV-C03 | SQL string concatenation instead of parameterized queries | SQL injection |
 
 ## Major
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | JV-M01 | Bare `catch (Exception e)` that swallows without re-throw or logging | Silent failures |
@@ -22,6 +24,7 @@ Reference: `instructions/internal-java.instructions.md`
 | JV-M08 | `System.out.println` in application/library code | No log level control |
 
 ## Minor
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | JV-m01 | Unused imports | Dead code noise |
@@ -32,6 +35,7 @@ Reference: `instructions/internal-java.instructions.md`
 | JV-m06 | Mutable collections returned from public API without wrapping | Encapsulation leak |
 
 ## Nit
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | JV-N01 | Non-standard naming (camelCase for methods, PascalCase for classes) | Convention consistency |

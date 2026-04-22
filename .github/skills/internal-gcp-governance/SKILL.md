@@ -41,7 +41,7 @@ This skill owns governance logic after the broad structure is known. It helps se
 - Make scope explicit: org, folder set, or project set.
 - Make exception handling explicit when a control is not universal.
 
-Load `references/guardrail-map.md` when the correct governance surface is ambiguous or when the user needs a deeper split between IAM, service accounts, federation, and Org Policy controls.
+Load `references/guardrail-map.md` when the correct governance surface is ambiguous or when the user needs a deeper split between IAM, service accounts, workload identity federation patterns, and Org Policy or CEL-backed guardrail controls.
 
 ## Use of current facts
 

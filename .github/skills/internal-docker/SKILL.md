@@ -6,11 +6,13 @@ description: Use when creating or modifying Dockerfiles, Compose assets, image b
 # Docker Skill
 
 ## When to use
+
 - Creating or updating `Dockerfile` assets.
 - Editing Compose manifests or workflow-local image references.
 - Hardening container build and runtime configuration.
 
 ## Mandatory rules
+
 - Pin images by digest (`@sha256:...`), never by floating tag alone.
 - Use multi-stage builds to separate build and runtime layers.
 - Run as non-root user in the final stage.
@@ -34,6 +36,7 @@ Load `references/dockerfile-patterns.md` when you need the canonical multi-stage
 | Missing `--no-cache-dir` on pip install | Wasted space from pip cache in layer | Always `pip install --no-cache-dir` |
 
 ## Validation
+
 - Verify image references use digests.
 - Verify non-root user in final stage.
 - Verify `.dockerignore` exists and excludes sensitive/unnecessary files.

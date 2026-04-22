@@ -6,7 +6,7 @@ They show how to convert richer external agent ideas into repository-owned inter
 
 ## Example 1: Capability-Heavy External Expert to Internal Specialist
 
-### Situation
+### Example 1 Situation
 
 An imported agent has:
 
@@ -15,19 +15,19 @@ An imported agent has:
 - long expertise catalogs
 - broad claims about being an expert in a domain
 
-### Keep
+### Example 1 Keep
 
 - the distinct domain
 - the decisions the agent should own
 - the output shape users expect
 
-### Rewrite
+### Example 1 Rewrite
 
 - make `description:` say when the route wins
 - turn expertise bullets into routing priorities or output expectations
 - normalize copied tool ids to canonical aliases and declare a short explicit `tools:` contract
 
-### Internal Pattern
+### Example 1 Internal Pattern
 
 ```markdown
 ---
@@ -56,24 +56,24 @@ You are the specialist command center for ...
 
 ## Example 2: Workflow-Heavy Scaffold Agent to Internal Control Center
 
-### Situation
+### Example 2 Situation
 
 An imported agent is organized around commands such as bootstrap, validate, migrate, or sync.
 
-### Keep
+### Example 2 Keep
 
 - the ordered workflow
 - the governing rules
 - the checkpoints that protect correctness
 
-### Rewrite
+### Example 2 Rewrite
 
 - keep one command-center role
 - use `## Core Rules` for policy guardrails
 - use `## Skill Usage Contract` only when declared skills are conditional
 - rewrite slash commands into repo-local execution steps
 
-### Internal Pattern
+### Example 2 Internal Pattern
 
 ```markdown
 ---
@@ -120,7 +120,7 @@ You are the command center for ...
 
 ## Example 3: Governance Reviewer to Agent-plus-Skill Split
 
-### Situation
+### Example 4 Situation
 
 An imported agent is mostly made of checklists, policy rules, and enforcement steps.
 
@@ -158,20 +158,20 @@ An imported cloud architect agent has:
 - a framework matrix such as Well-Architected pillars
 - a long list of clarifying questions
 
-### Keep
+### Example 4 Keep
 
 - the docs-first decision model
 - the critical requirement gate
 - the expected tradeoff-heavy output shape
 
-### Rewrite
+### Example 4 Rewrite
 
 - move stale tool dependencies into repo-local research skills, routing rules about official documentation, or a short current `tools:` list that stays explicit and role-shaped
 - turn the framework matrix into a short decision lens in routing rules or output expectations
 - compress the clarifying questions into a short list of critical constraints
 - keep the route focused on when the provider-specific agent wins
 
-### Internal Pattern
+### Example 4 Internal Pattern
 
 ```markdown
 ---

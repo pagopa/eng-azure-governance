@@ -3,6 +3,7 @@
 Reference: `instructions/internal-terraform.instructions.md`
 
 ## Critical
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | TF-C01 | Hardcoded secrets, access keys, or passwords in `.tf` files | Credential exposure |
@@ -10,6 +11,7 @@ Reference: `instructions/internal-terraform.instructions.md`
 | TF-C03 | Backend configuration with no state locking | Concurrent state corruption |
 
 ## Major
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | TF-M01 | `count` used where `for_each` with logical keys is appropriate | Index-based drift risk |
@@ -22,6 +24,7 @@ Reference: `instructions/internal-terraform.instructions.md`
 | TF-M08 | Missing tags on taggable resources | Governance and cost tracking gap |
 
 ## Minor
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | TF-m01 | Unused variables or outputs | Dead code |
@@ -32,6 +35,7 @@ Reference: `instructions/internal-terraform.instructions.md`
 | TF-m06 | Locals not grouped by domain | Organizational clarity |
 
 ## Nit
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | TF-N01 | Resource name not in `snake_case` | Naming convention |

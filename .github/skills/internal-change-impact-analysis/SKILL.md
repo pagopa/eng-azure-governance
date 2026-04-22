@@ -6,11 +6,13 @@ description: Use when the user wants to understand the ripple effects of a chang
 # Change Impact Analysis Skill
 
 ## When to use
+
 - Analyze a set of repository changes (branch diff, PR, or file list) for correctness, design, and blind spots.
 - Evaluate architectural implications and unconsidered aspects of a change.
 - Complement line-level code review with systems-level and business-level thinking.
 
 ## Relationship to other skills
+
 - **internal-code-review** (`.github/skills/internal-code-review/SKILL.md`): per-line anti-patterns, severity catalogs, nit-level scanning.
 - **This skill**: change-set-level impact, architectural implications, unconsidered aspects.
 - Use both together: run `internal-code-review` first for detailed findings, then this skill for the bigger picture.
@@ -69,6 +71,7 @@ For empty sections, state "No findings in this category."
 ## Self-questioning
 
 Before presenting findings, verify:
+
 - Is this finding based on evidence in the diff, or am I assuming?
 - Could I be wrong about the intent of this change?
 - Am I flagging something that is actually fine for this specific context?
@@ -84,6 +87,7 @@ Before presenting findings, verify:
 6. Present findings in conversation using the output structure above.
 
 ## Validation
+
 - Every finding must reference a concrete file and line number.
 - Every finding must include a *why* explanation.
 - Every error or improvement must include a *how to fix* suggestion.

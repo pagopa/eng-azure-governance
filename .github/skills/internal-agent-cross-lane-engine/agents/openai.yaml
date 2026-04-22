@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Agent Cross-Lane Engine"
+  short_description: "Help with Internal Agent Cross-Lane Engine tasks"
+  default_prompt: "Use $internal-agent-cross-lane-engine for this task and follow the repository-owned workflow in the skill."

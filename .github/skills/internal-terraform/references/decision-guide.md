@@ -6,7 +6,7 @@
 
 ## Decision flowchart
 
-```
+```text
 Is this resource group reused across 2+ root configs or repos?
 ├── YES → Create a module
 │         ├── Define interface (variables.tf + outputs.tf)
@@ -23,12 +23,14 @@ Is this resource group reused across 2+ root configs or repos?
 ```
 
 ## Signals that inline is correct
+
 - Single environment or single root config only
 - Simple resource (S3 bucket, IAM role, security group)
 - No consumers outside the current project
 - The resource lifecycle is tightly coupled to its parent
 
 ## Signals that a module is correct
+
 - Same pattern appears in multiple environments with small parameter changes
 - The resource group has 5+ resources working together
 - Multiple teams or repositories need the same infrastructure pattern
@@ -36,6 +38,7 @@ Is this resource group reused across 2+ root configs or repos?
 - You need to enforce a standard interface across projects
 
 ## Anti-patterns
+
 - **Premature module**: Creating a module "just in case" with only one consumer → adds indirection without benefit
 - **God module**: A single module that provisions 20+ resources for an entire application → loses composability
 - **Leaky module**: Module exposes internal resource attributes instead of stable output contracts → consumers break on internal refactors

@@ -51,6 +51,7 @@ Use this skill to decide how much Domain-Driven Design a problem deserves, then 
 - Use `internal-change-impact-analysis` when the challenge is incremental adoption inside an existing system.
 - Use `internal-oop-design-patterns` when a tactical model now needs implementation-level pattern choices.
 - Use `antigravity-api-design-principles` when bounded-context seams are turning into API or contract design work.
+- Treat infrastructure boundaries as legitimate bounded-context candidates when the real seams are module ownership, environment contracts, or repo-level responsibility lines rather than object-oriented code.
 - Keep evented design inside this skill until the rationale, ownership, and operational cost are explicit enough to hand off safely.
 
 ## References

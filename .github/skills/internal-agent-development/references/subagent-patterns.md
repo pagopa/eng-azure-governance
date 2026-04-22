@@ -17,6 +17,7 @@ Key rules:
 - If `agents:` is present, `agent` must be in the `tools:` list.
 - `handoffs` and `argument-hint` are VS Code only; GitHub.com ignores them.
 - `infer:` is retired. Use `user-invocable` and `disable-model-invocation` instead.
+- Context isolation does not mean a subagent starts from zero configuration. By default, a subagent inherits the main session agent, model, and tools; when the subagent is a custom agent, its own configuration overrides those inherited defaults.
 
 ## Coordinator and Worker Pattern
 
@@ -72,7 +73,7 @@ Focused instructions for domain A work.
 ### Router with explicit dispatch targets
 
 ```yaml
-agents: ['internal-fast-executor', 'internal-planning-leader', 'internal-review-guard', 'internal-critical-challenger']
+agents: ['internal-delivery-operator', 'internal-planning-leader', 'internal-review-guard', 'internal-critical-master']
 ```
 
 Only these four agents can be invoked as subagents. The platform enforces this.
@@ -85,18 +86,21 @@ agents: []
 
 This makes the "recommendation-only" boundary a platform-enforced fact, not just prose.
 
-### Canonical owner with a router-only second lane
+### Rare one-way exception between direct owners
 
 ```yaml
-agents: ['internal-router']
+agents: ['internal-target-owner']
 ```
 
 Use this only when all of these are true:
 
-- `internal-router` remains the only router and still chooses any downstream owner
-- the current agent stays in its own lane instead of turning into a router
-- the second lane is explicit, narrow, and parallel rather than a hidden handoff
-- the agent's body makes the exception and trigger conditions explicit
+- the exception is explicit, narrow, and one-directional
+- ownership remains readable and auditably bounded
+- the called owner does not re-route or call back
+- the workflow does not create an all-to-all mesh or nested ping-pong
+- a user-visible handoff would add more friction than the single bounded exception
+
+Do not use this pattern as a default operational mesh.
 
 ### Subagent-only agents
 
@@ -113,7 +117,7 @@ Handoffs create guided sequential workflows with user-visible buttons between ag
 ```yaml
 handoffs:
   - label: Start Implementation
-    agent: internal-fast-executor
+    agent: internal-delivery-operator
     prompt: Implement the plan outlined above.
     send: false
 ```

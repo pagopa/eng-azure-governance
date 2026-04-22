@@ -1,6 +1,7 @@
 # Analysis Dimensions — Detailed Checklists
 
 ## 1. Correctness analysis
+
 - Does the code do what the change claims?
 - Are edge cases handled?
 - Are error paths tested?

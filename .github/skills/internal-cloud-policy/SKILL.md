@@ -6,15 +6,18 @@ description: Use when authoring, comparing, or reviewing concrete cloud policy d
 # Cloud Policy Skill
 
 ## When to use
+
 - Create or modify governance policy definitions (AWS SCP, Azure Policy, GCP Org Policy).
 - Update policy scope, conditions, or effects.
 - Normalize policy structure for reviewability and rollout safety.
 
 ## Boundary
+
 - Use this skill for concrete policy artifacts or cross-cloud policy comparisons.
 - When the main question is IAM, RBAC, operating-model, or guardrail strategy rather than the policy definition itself, treat it as a governance-design problem instead of a policy-definition task.
 
 ## Mandatory rules
+
 - Keep scope explicit (organization / folder / subscription / project / management group).
 - Keep conditions readable and auditable.
 - Prefer deny-by-default for high-risk controls.
@@ -47,6 +50,7 @@ Load `references/policy-templates.md` for AWS SCP, Azure Policy, GCP Org Policy,
 | Hardcoded account/subscription/project IDs in policy | Non-portable across environments | Use variables or parameters |
 
 ## Validation
+
 - Validate syntax in the target format (JSON / HCL).
 - Validate policy behavior in non-production scope first.
 - Document behavioral impact and rollout scope.

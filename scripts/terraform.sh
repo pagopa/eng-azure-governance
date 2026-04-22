@@ -273,17 +273,23 @@ action=$1
 env=$2
 filetf=$3
 shift 2
-other=$@
+other="$*"
 
 if [ -n "$env" ]; then
   # shellcheck source=/dev/null
   source "./env/$env/backend.ini"
+  subscription="${subscription:-}"
+  if [ -z "$subscription" ]; then
+    echo "subscription not set in ./env/$env/backend.ini"
+    exit 1
+  fi
   if [ -z "$(command -v az)" ]; then
     echo "az not found, cannot proceed"
     exit 1
   fi
   az account set -s "${subscription}"
-  export ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id" --output tsv)
+  ARM_SUBSCRIPTION_ID=$(az account list --query "[?isDefault].id" --output tsv)
+  export ARM_SUBSCRIPTION_ID
   export TF_VAR_subscription_id="${TF_VAR_subscription_id:-$ARM_SUBSCRIPTION_ID}"
 fi
 

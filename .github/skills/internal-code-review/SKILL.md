@@ -6,6 +6,7 @@ description: Use when a code review is requested, a PR needs reviewing, or the u
 # Code Review Skill
 
 ## When to use
+
 - Perform an exhaustive, nit-level code review on Python, Bash, Terraform, Java, or Node.js/TypeScript files.
 - Provide structured findings with per-language anti-pattern detection.
 - Complement specialist reviewer agents with deep language-specific checks.
@@ -34,6 +35,7 @@ Establish these review inputs before grading the diff:
 - What is the expected validation path, and what is still unverified?
 
 ## Severity levels
+
 | Level | Meaning | Action |
 |---|---|---|
 | `Critical` | Security flaw, data loss risk, or correctness bug | Must fix before merge |
@@ -43,6 +45,7 @@ Establish these review inputs before grading the diff:
 | `Notes` | Assumptions, open questions, or follow-up suggestions | Informational only |
 
 ## Escalation rules
+
 - Any single anti-pattern repeated three or more times in the same diff escalates one severity level (e.g., `Nit` → `Minor`, `Minor` → `Major`).
 - Any deviation from the matching `instructions/*.instructions.md` is at minimum a `Nit`.
 - Any violation of `security-baseline.md` is at minimum a `Major`.
@@ -120,10 +123,23 @@ Only elevate simplification suggestions when they materially improve maintainabi
 | Generic "this could be improved" without concrete fix | Not actionable | Every finding must include a fix suggestion |
 
 ## Cross-references
+
 - **internal-change-impact-analysis** (`.github/skills/internal-change-impact-analysis/SKILL.md`): for change-set-level impact analysis, architectural evaluation, and blind-spot detection beyond line-level review.
 - Use both together: this skill for nit-level anti-patterns first, then `internal-change-impact-analysis` for the bigger picture.
 
+## Delegation
+
+Use this skill as the default review owner, then add a narrower specialist only when the evidence demands it.
+
+- Stay with `internal-code-review` when the main need is defect-first review across mixed Python, Bash, Terraform, Java, or Node.js changes.
+- Add `internal-terraform` when the review is primarily about Terraform resource modeling, module interfaces, or drift-safe HCL changes.
+- Add `antigravity-golang-pro` when the review is primarily about Go concurrency, service design, or Go performance behavior.
+- Add `awesome-copilot-codeql` when the review is primarily about CodeQL workflow setup, SARIF handling, or query-suite coverage rather than the diff itself.
+- Add `awesome-copilot-secret-scanning` when the review is primarily about GitHub-native secret scanning, push protection, alert handling, or blocked-push remediation.
+- Add language or domain specialists only when they materially improve the finding quality; do not fan out by default.
+
 ## Validation
+
 - Verify every finding references a real file path and line from the diff.
 - Verify severity assignments match the anti-pattern catalog rules.
 - Verify escalation rules are applied for repeated violations (3+ of the same kind).

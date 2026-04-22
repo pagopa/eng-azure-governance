@@ -16,7 +16,7 @@ Mirror or structurally align these source-managed paths into the consumer reposi
 - `.github/security-baseline.md`
 - `.github/DEPRECATION.md`
 - `.github/repo-profiles.yml`
-- `.github/workflows/terraform-pre-commit.yml`
+- `.github/workflows/_pre-commit.yml`
 - `.github/agents/**`
 - `.github/instructions/**`
 - `.github/skills/**`, including bundled `references/`, `assets/`, `scripts/`, `agents/`, and licenses
@@ -24,13 +24,13 @@ Mirror or structurally align these source-managed paths into the consumer reposi
 Do not sync `README.md`, changelogs, other workflows, templates, or bootstrap helpers unless the user explicitly expands scope.
 Do not sync consumer-facing resources whose file or directory name starts with `internal-sync-`; those remain source-only operational controls for the standards repository.
 Treat `LESSONS_LEARNED.md` as a structure-managed exception: sync the source template and contract, but preserve target-authored pending lesson rows instead of copying source rows into consumer repositories.
+When a consumer-local creator depends on shared runtime-critical rules, keep a self-contained mirror of those rules inside the creator bundle and track the mirror path in the source inventory plus the target `.github/copilot-sync.manifest.json`; do not assume cross-bundle references or target-local extras will be present at runtime.
 
 ## Target Rules
 
 - Preserve target `local-*` assets under mirrored categories and surface them in the plan or final report.
-- Preserve target `.github/local-copilot-overrides.md` as a consumer-owned local exception layer and surface it in the plan or final report when present.
+- Materialize `.github/copilot-instructions.override.md.template` from the standards repository into the consumer-local copilot instructions override file when that target file is missing, then preserve the target file as a consumer-owned local exception layer and surface it in the plan or final report when present.
 - Delete target-owned non-`local-*` assets inside mirrored categories during `apply`.
-- Do not mirror a source `.github/local-copilot-overrides.md` into consumer repositories.
 - Keep the target target-agnostic. The default assumptions are only `.github/` and root `AGENTS.md`.
 - Ensure target root `LESSONS_LEARNED.md` exists. If it already exists, align it to the current source structure and migrate preserved pending lesson rows when the source table shape changes.
 - Ensure the target root `.gitignore` contains an ignore entry for `tmp/superpowers/`.
@@ -43,10 +43,10 @@ When root guidance is in scope, keep the target files in these roles:
 - `AGENTS.md`: strategic bridge, precedence anchor, naming contract, and cross-surface routing guidance
 - `LESSONS_LEARNED.md`: retained-learning ledger template aligned from source structure while preserving target-authored pending lessons; it remains non-canonical and repo-local in content
 - `.github/copilot-instructions.md`: repo-wide GitHub Copilot projection
-- `.github/local-copilot-overrides.md`: consumer-local exception layer authorized by `AGENTS.md`; it may override synced defaults only when conflict, scope, reason, and disclosure are explicit
+- the consumer-local GitHub instructions overrides file: consumer-local exception layer authorized by `AGENTS.md`; it may override synced defaults only when conflict, scope, reason, and disclosure are explicit
 - `.github/INVENTORY.md`: exact live catalog generated from target filesystem state
 
-Do not flatten these roles into one file. Do not let target `AGENTS.md` become an inventory dump or a second full copy of `.github/copilot-instructions.md`. Do not let `.github/local-copilot-overrides.md` replace the bridge or catalog roles.
+Do not flatten these roles into one file. Do not let target `AGENTS.md` become an inventory dump or a second full copy of `.github/copilot-instructions.md`. Do not let the consumer-local GitHub instructions overrides file replace the bridge or catalog roles.
 
 ## Tracking Plan Lifecycle
 
@@ -80,16 +80,21 @@ Use the closest existing checks for the touched behavior:
 
 If a dedicated contract test is missing, call out the gap explicitly.
 
+After `apply`, run the closest target-local catalog or contract validation when preserved `local-*` assets, preserved consumer-local GitHub instructions overrides, or other target-owned assets can still expose latent drift. Treat any resulting fixes as consumer-local follow-up work, not as source-baseline drift, unless the same finding reproduces against the source-managed assets themselves.
+
 ## Reporting Contract
 
 Completed runs should make these facts visible:
 
 - target analysis and selected mode
 - root-guidance alignment strategy and `LESSONS_LEARNED.md` status
-- preserved `local-*` assets and `.github/local-copilot-overrides.md` status
+- preserved `local-*` assets and consumer-local GitHub instructions overrides status
 - target-only cleanup decisions
 - plan-file status and lifecycle
 - validation results and remaining blockers
 
 End completed runs with `✅ Outcome`.
-Include `🤖 Agents`, `📘 Instructions`, `📝 Prompts`, `🧩 Skills`, and `📦 Other Resources` only when those categories were actually used, and state why each listed resource mattered.
+Keep `✅ Outcome` concise by default.
+When additional provenance or execution detail would help, offer it as optional follow-up detail with a compact prompt that accepts number-only replies.
+Include `🤖 Agents`, `📘 Instructions`, `📝 Prompts`, `🧩 Skills`, and `📦 Other Resources` only when those categories were actually used and the user asked for the detail, or when a narrower scoped contract requires inline disclosure.
+State why each listed resource mattered in any included detail section.

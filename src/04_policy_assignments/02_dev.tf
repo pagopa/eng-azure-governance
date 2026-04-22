@@ -4,7 +4,6 @@ module "dev_assignments" {
   for_each = toset(var.subscriptions_by_env.dev)
 
   subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
-  location       = var.location
   policy_set_ids = data.terraform_remote_state.policy_set.outputs
 }
 

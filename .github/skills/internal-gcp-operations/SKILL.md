@@ -15,6 +15,7 @@ This skill owns the operational side of the platform: monitoring, evidence, inve
 - The user needs Cloud Monitoring, Cloud Logging, backup, restore, or DR validation guidance.
 - The user needs asset inventory, reporting, or export guidance.
 - The user needs preflight or post-rollout validation patterns.
+- The user needs operational guidance for Cloud Run or Cloud Functions after the broader GCP structure and governance choices are already settled.
 
 ## When not to use
 
@@ -73,6 +74,8 @@ For broader asks, return:
   Use when the operations question is actually about org, project, or topology placement.
 - `internal-gcp-governance`
   Use when the operations question is actually about IAM, workload identity, Org Policy, or guardrail design rather than validation.
+
+Until a dedicated GCP serverless owner is justified by real usage, keep Cloud Run and Cloud Functions operational readiness, validation, and evidence questions in this skill instead of inventing a fifth lane for symmetry alone.
 
 ## Common mistakes
 

@@ -3,11 +3,6 @@ variable "metadata_category_name" {
   description = "metadata category name"
 }
 
-variable "policy_type" {
-  type        = string
-  description = "policy type"
-}
-
 variable "location" {
   type        = string
   description = "location"

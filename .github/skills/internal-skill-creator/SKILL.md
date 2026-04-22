@@ -93,6 +93,7 @@ Do not restate the full OpenAI creation workflow here. Use this skill to decide 
 - Make descriptions searchable with concrete terms people would actually type: skill, trigger, `.github/skills/`, `SKILL.md`, create, replace, revise, update, reuse, validation.
 - Preserve a working `description:` during token optimization unless the baseline shows the route itself is the problem.
 - Keep the body lean. Put only the local contract in `SKILL.md` and move optional depth into references or reusable tools when repeated need justifies it.
+- When a skill sits behind a paired agent or local references, keep one owner per detail layer: route and boundary in the agent, reusable workflow in `SKILL.md`, and deep detail in `references/`.
 - Prefer `references/` over new `scripts/` for static tables, starter templates, and audit taxonomies. Add scripts only when the workflow is deterministic, repeated, and execution-heavy.
 - Keep cross-references explicit instead of duplicating large chunks of generic bundle guidance.
 - Do not mirror the full OpenAI bundle workflow in this skill. Point to it when the remaining task is already covered there.
@@ -132,7 +133,7 @@ After the local decision gate is complete, hand off to `openai-skill-creator` on
 7. Validate the right thing.
    Ensure OpenAI-side structural checks ran if bundle mechanics changed, then check retrieval quality plus skill-type behavior before treating the skill as done.
 8. Re-check routing fallout.
-   Update nearby references only when the visible local entrypoint or ownership meaning actually changed.
+   Update nearby references or paired agent text only when the visible local entrypoint or ownership meaning actually changed.
 
 Use `references/writing-skills-checklist.md` for the anti-rationalization rules, token-discipline reminders, and skill-type testing expectations that this wrapper should enforce.
 
@@ -148,6 +149,9 @@ Then confirm:
 - the result makes rejection, reuse, and in-place tightening as natural as creation or replacement.
 - the skill still points to the right adjacent owner when the work is actually catalog governance or agent authoring.
 - the skill reads like a reusable guide instead of a one-off narrative.
+- the edited skill does not repeat agent-owned routing or boundary language.
+- the edited skill points to reference-owned deep material instead of copying it back into `SKILL.md`.
+- any paired agent or local references still agree with the skill boundary when they exist.
 - OpenAI-side scaffolding or validation was invoked only when the remaining work actually required it.
 - the retrieval and pressure tests appropriate to the skill type have actually been run.
 - the body did not become a maintenance fork of generic OpenAI bundle documentation.

@@ -3,6 +3,7 @@
 Reference: `instructions/internal-bash.instructions.md`
 
 ## Critical
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | SH-C01 | Hardcoded secrets, tokens, or passwords | Credential exposure risk |
@@ -10,6 +11,7 @@ Reference: `instructions/internal-bash.instructions.md`
 | SH-C03 | World-writable temp files without `mktemp` | Race condition / symlink attack |
 
 ## Major
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | SH-M01 | Missing `set -euo pipefail` | Silent failures and undefined variables |
@@ -21,6 +23,7 @@ Reference: `instructions/internal-bash.instructions.md`
 | SH-M07 | Function body longer than 30 lines | Complexity concern |
 
 ## Minor
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | SH-m01 | `echo` for status messages instead of emoji logs (`ℹ️ ✅ ⚠️ ❌`) | Repo convention violation |
@@ -31,6 +34,7 @@ Reference: `instructions/internal-bash.instructions.md`
 | SH-m06 | Non-English log messages or comments | Language policy violation |
 
 ## Nit
+
 | ID | Anti-pattern | Why |
 |---|---|---|
 | SH-N01 | `[ ... ]` instead of `[[ ... ]]` | Bash convention |

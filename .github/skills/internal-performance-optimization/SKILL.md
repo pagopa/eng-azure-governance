@@ -7,6 +7,16 @@ description: Use when performance is the primary problem, such as profiling slow
 
 Use this skill when performance is the primary constraint. Start from evidence, not intuition.
 
+## When to use
+
+- The user already has profiling evidence, benchmark data, query plans, or trace data pointing to a real bottleneck.
+- The user has an explicit performance goal such as lower latency, higher throughput, or regression prevention that can be measured.
+
+## When not to use
+
+- The request is generic debugging with no evidence that performance is the dominant problem.
+- The request is network-path specific and the main need is topology, connectivity, or transport tuning rather than application or database behavior.
+
 ## Workflow
 
 1. Measure the problem.
@@ -71,6 +81,11 @@ After a fix, add at least one of:
 - Performance budget
 - Query-plan validation
 - Monitoring or alert threshold
+
+## Cross-references
+
+- Use `obra-systematic-debugging` when the first problem is still root-cause isolation rather than a confirmed performance bottleneck.
+- Use `antigravity-network-engineer` when latency, packet flow, DNS, load-balancer behavior, or network topology is the primary bottleneck.
 
 ## Anti-Patterns
 

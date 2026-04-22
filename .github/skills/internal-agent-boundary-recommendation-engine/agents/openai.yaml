@@ -1,0 +1,4 @@
+interface:
+  display_name: "Internal Agent Boundary Recommendation Engine"
+  short_description: "Shared stop-and-recommend boundary guidance"
+  default_prompt: "Use $internal-agent-boundary-recommendation-engine when a repository-owned internal agent needs the shared stop-and-recommend boundary workflow."

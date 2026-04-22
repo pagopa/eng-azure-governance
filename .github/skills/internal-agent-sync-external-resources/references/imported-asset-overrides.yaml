@@ -1,0 +1,82 @@
+version: 1
+policy:
+  default_rule: keep imported upstream assets verbatim
+  exception_rule: >-
+    Allow a direct imported-asset override only for a strong repo-specific need
+    that the user explicitly counter-validates, then register the replay patch
+    in this bundle before treating the override as active.
+  replay_rule: >-
+    Prefer a clean patch replay first, then allow a registered `git apply
+    --3way` fallback when upstream text drift is compatible. Stop for review if
+    neither path applies cleanly.
+overrides:
+  - id: obra-brainstorming-workflow-review
+    target_path: .github/skills/obra-brainstorming/SKILL.md
+    source_family: obra/superpowers
+    lifecycle_mode: post-refresh-patch
+    apply_strategy: git-apply-3way
+    approval: explicit-user-counter-validated
+    reason: >-
+      Narrow brainstorming to creative or design-ambiguous work and align
+      transient spec artifacts to tmp/superpowers.
+    patch_path: patches/obra-brainstorming.patch
+    expected_content_hash: 9e0c6c59b1138312f6cff04f33f4e56e51b442a1df68f3cf04d1a5d276e4a101
+    baseline_repo_commit: "5930521"
+    local_change_commit: "c4b33b4"
+    validation_note: Stop the refresh if the patch does not apply cleanly; review whether an internal wrapper should replace the override.
+  - id: obra-writing-plans-workflow-review
+    target_path: .github/skills/obra-writing-plans/SKILL.md
+    source_family: obra/superpowers
+    lifecycle_mode: post-refresh-patch
+    apply_strategy: git-apply-3way
+    approval: explicit-user-counter-validated
+    reason: >-
+      Remove planning as the default gate for deterministic maintenance and
+      align retained plan artifacts to tmp/superpowers.
+    patch_path: patches/obra-writing-plans.patch
+    expected_content_hash: 5d997b257b261082b03d48d4bb763140f1b4381450dec0b37639718a4fb9411f
+    baseline_repo_commit: "5930521"
+    local_change_commit: "c4b33b4"
+    validation_note: Stop the refresh if the patch does not apply cleanly; review whether an internal wrapper should replace the override.
+  - id: obra-test-driven-development-workflow-review
+    target_path: .github/skills/obra-test-driven-development/SKILL.md
+    source_family: obra/superpowers
+    lifecycle_mode: post-refresh-patch
+    apply_strategy: git-apply-3way
+    approval: explicit-user-counter-validated
+    reason: >-
+      Keep TDD strong for executable behavior without making it a rigid default
+      for textual governance authoring.
+    patch_path: patches/obra-test-driven-development.patch
+    expected_content_hash: f52f1aa7de5190cb0d881553b2a0d4dcc370085868fa78234de6178973115ab9
+    baseline_repo_commit: "5930521"
+    local_change_commit: "c4b33b4"
+    validation_note: Stop the refresh if the patch does not apply cleanly; review whether an internal wrapper should replace the override.
+  - id: obra-subagent-driven-development-workflow-review
+    target_path: .github/skills/obra-subagent-driven-development/SKILL.md
+    source_family: obra/superpowers
+    lifecycle_mode: post-refresh-patch
+    apply_strategy: git-apply-3way
+    approval: explicit-user-counter-validated
+    reason: >-
+      Keep the example plan path aligned with tmp/superpowers so imported
+      execution guidance does not reintroduce deprecated transient paths.
+    patch_path: patches/obra-subagent-driven-development.patch
+    expected_content_hash: e2f01c2c8a79b6e6a05cb3e7315f01c50daabeefce72f251dd6b86a02035180f
+    baseline_repo_commit: "5930521"
+    local_change_commit: "c4b33b4"
+    validation_note: Stop the refresh if the patch does not apply cleanly; review whether an internal wrapper should replace the override.
+  - id: obra-requesting-code-review-workflow-review
+    target_path: .github/skills/obra-requesting-code-review/SKILL.md
+    source_family: obra/superpowers
+    lifecycle_mode: post-refresh-patch
+    apply_strategy: git-apply-3way
+    approval: explicit-user-counter-validated
+    reason: >-
+      Keep the reviewer handoff aligned with the canonical internal reviewer and
+      with tmp/superpowers plan paths.
+    patch_path: patches/obra-requesting-code-review.patch
+    expected_content_hash: 404a24c62b9cf001a7b38463dab2a67fe70fb78b6c6c64ae0678697f6833675b
+    baseline_repo_commit: "5930521"
+    local_change_commit: "c4b33b4"
+    validation_note: Stop the refresh if the patch does not apply cleanly; review whether an internal wrapper should replace the override.

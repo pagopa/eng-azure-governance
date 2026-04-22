@@ -1,11 +1,12 @@
 ---
 description: Node.js project standards with DDD-oriented layering, early returns, and deterministic test practices.
-applyTo: "**/*.js,**/*.cjs,**/*.mjs,**/*.ts,**/*.tsx"
+applyTo: "**/*.js,**/*.cjs,**/*.mjs,**/*.ts,**/*.tsx,**/package.json,**/tsconfig.json"
 ---
 
 # Node.js Instructions
 
 ## Mandatory rules
+
 - Treat work as project-oriented (modules/services/handlers), not script-oriented.
 - Keep business logic in focused modules, separate from transport adapters and infrastructure wiring.
 - Use clear, domain-relevant naming for core modules and errors.
@@ -16,10 +17,18 @@ applyTo: "**/*.js,**/*.cjs,**/*.mjs,**/*.ts,**/*.tsx"
 - Add unit tests for testable logic.
 
 ## Testing defaults
+
 - Use built-in `node:test` + `node:assert/strict`.
 - Prefer BDD-like structure (`describe`/`it` where available).
 - Keep tests deterministic and isolated.
 - For modify tasks with existing tests: change implementation first, run existing tests, and update tests only for intentional behavior changes.
 
 ## Reference implementation
+
 - For module and test examples, use `.github/skills/internal-project-nodejs/SKILL.md`.
+
+## Project config files
+
+- For `package.json`, keep scripts, engines, and dependency intent explicit; avoid redundant tooling drift or placeholder metadata.
+- For `tsconfig.json`, prefer strict compiler options unless the repository has a documented compatibility reason not to.
+- Keep project config guidance scoped to Node.js or TypeScript project ownership; do not restate generic JSON formatting rules here.

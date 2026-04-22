@@ -8,7 +8,7 @@ argument-hint: domain=<api_management|app_service|container_apps|cosmosdb|dns|ev
 # Internal Policy Initiative Task
 
 ## Instructions
-1. Use `.github/skills/tech-ai-cloud-policy/SKILL.md`.
+1. Use `.github/skills/internal-cloud-policy/SKILL.md`.
 2. Create or update `src/03_policy_set/01_${input:domain}_${input:environment}.tf`.
 3. Match the current initiative pattern:
    - an environment-specific input variable such as `variable "${input:domain}_${input:environment}"`;

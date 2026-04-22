@@ -7,6 +7,12 @@ description: Use when refactoring object collaborations, replacing branching wit
 
 Use this skill as a decision and refactoring workflow, not as a mandate to add pattern ceremony. Start from the actual change pressure in the code and prefer the smallest design that removes the current problem.
 
+## When to use
+
+- Refactor object collaborations or replace branching with polymorphism when a real variation point exists.
+- Decompose god classes, isolate unstable construction logic, or decide whether an object-oriented design pattern is justified.
+- Choose a behavior-preserving design pattern response to concrete code pressure instead of adding pattern ceremony by default.
+
 ## Workflow
 
 1. Name the pressure before naming a pattern.

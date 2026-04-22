@@ -7,6 +7,12 @@ description: Use when the task involves Kubernetes but the winning lane is not o
 
 Use this skill to choose the right Kubernetes lane before drafting guidance or editing delivery assets.
 
+## When to use
+
+- The task involves Kubernetes but the winning lane between platform architecture, workload delivery, and rollout safety is not obvious yet.
+- A request mixes architecture, manifest authoring, and production-readiness concerns across the Kubernetes skill family.
+- You need to decide whether `antigravity-kubernetes-architect` or `internal-kubernetes-deployment` should own the next step.
+
 ## Workflow
 
 1. Classify the pressure.
@@ -32,6 +38,7 @@ Load `references/routing-matrix.md` when the request mixes platform, manifest, a
 - Do not describe this skill as a router for the whole catalog; it only chooses the right Kubernetes lane.
 - Do not escalate to GitOps, service mesh, or multi-cluster design unless the user is actually changing platform behavior.
 - Do not treat a manifest edit as platform architecture work just because the workload runs on Kubernetes.
+- When the user or an upstream operational choice already selected `internal-kubernetes-deployment` or `antigravity-kubernetes-architect` directly, this skill adds no value and should stay out of the turn.
 
 ## Output requirements
 

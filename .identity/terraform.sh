@@ -5,7 +5,7 @@ set -e
 ACTION=$1
 ENV=$2
 shift 2
-other="$@"
+other="$*"
 # must be subscription in lower case
 subscription=""
 BACKEND_CONFIG_PATH="./env/${ENV}/backend.tfvars"

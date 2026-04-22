@@ -8,10 +8,12 @@ description: Use when creating or modifying Node.js or TypeScript project code s
 Follow `.github/instructions/internal-nodejs.instructions.md` for the baseline Node.js rules. This skill adds project-specific guidance only.
 
 ## When to use
+
 - Services, handlers, adapters, and utility modules.
 - Refactoring or extending existing Node.js components.
 
 ## Project-specific guidance
+
 - Follow the existing module system and runtime constraints before introducing ESM/CJS or build-tool changes.
 - Validate inputs at API or function boundaries and keep async error handling explicit.
 - Keep framework wiring thin and move request-shaping logic out of transport handlers when reuse or testing would improve.
@@ -19,11 +21,13 @@ Follow `.github/instructions/internal-nodejs.instructions.md` for the baseline N
 Load `references/examples.md` when you need a minimal module or test example.
 
 ## Test stack
+
 - Follow the repository test-stack defaults from the instruction owner.
 - If the repository already uses Jest, stay with local Jest conventions instead of introducing mixed test stacks.
 - For modify tasks: edit implementation first, run existing tests, then update tests only for intentional behavior changes.
 
 ## Runtime and async guidance
+
 - Prefer `async`/`await` over promise chains unless streaming or concurrency composition clearly benefits from lower-level primitives.
 - Use `Promise.all` only for independent work; use `Promise.allSettled` when partial failure is acceptable.
 - Keep CPU-heavy work off request paths or move it to worker threads or an external service.
@@ -31,6 +35,7 @@ Load `references/examples.md` when you need a minimal module or test example.
 - Default to the current module system. Use ESM for new projects only when the repo and toolchain already support it cleanly.
 
 ## Testing guidance
+
 - Prefer unit tests and narrow integration tests over broad end-to-end coverage for every module change.
 - In Jest repos, use focused mocks and reset them between tests; do not introduce Jest where the project already standardizes on `node:test`.
 - Keep async tests explicit with `await`, `assert.rejects`, or the framework-native async helpers.
@@ -50,6 +55,7 @@ Load `references/examples.md` when you need a minimal module or test example.
 | Using `Promise.all` on dependent work | Masks ordering assumptions and makes failures harder to interpret | Keep dependent async steps sequential |
 
 ## Validation
+
 - Run tests: `node --test` or `npm test`.
 - Lint: `npx eslint .` when configured.
 - Type check: `npx tsc --noEmit` for TypeScript projects.

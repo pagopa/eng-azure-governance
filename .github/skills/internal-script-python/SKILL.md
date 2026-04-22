@@ -8,20 +8,24 @@ description: Use when creating or modifying standalone Python scripts, CLIs, or 
 Follow `.github/instructions/internal-python.instructions.md` for the baseline Python rules. This skill adds standalone-script guidance only.
 
 ## When to use
+
 - New standalone Python scripts.
 - Existing Python scripts that need updates.
 - CLI tools, one-off automation, data processing.
 - Small multi-entrypoint toolkits whose primary contract is operator-facing execution rather than reusable package APIs.
 
 ## Boundary
+
 - This skill covers standalone operational tools, CLI entrypoints, and small script toolkits whose primary contract is direct execution.
 - A tool does not become application code just because it has multiple files, a `lib/` folder, or root-level tests.
 - Move out of this lane only when the primary contract becomes imported behavior, service boundaries, or framework-owned flows.
 
 ## Script-specific guidance
+
 - Standalone tools should default to a dedicated folder or toolkit root, not a loose top-level `.py` file.
 - Keep entrypoints thin: parse arguments, resolve paths, orchestrate helpers, and return an exit code through `main() -> int` plus `raise SystemExit(main())`.
 - Prefer `argparse`, `pathlib.Path`, and small helper functions for operator-facing tools.
+- Keep emoji logs at operator-facing boundaries such as start, success, warning, and failure states; keep reusable helpers free of decorative log formatting.
 - When a tool can be called from subdirectories, resolve the repository root explicitly instead of assuming the current working directory.
 - Use type hints on non-trivial public helpers and CLI-facing boundaries.
 - Use `asyncio` only when the script truly coordinates multiple I/O-bound tasks.
@@ -29,6 +33,7 @@ Follow `.github/instructions/internal-python.instructions.md` for the baseline P
 - Add machine-readable output such as `--format json` only when the tool has a real automation consumer. Keep text output as the default operator path.
 
 ## Dependency decision note
+
 When the instruction owner requires a dependency decision note, keep it short, for example:
 
 ```text
@@ -56,12 +61,14 @@ Keep these rules visible while drafting:
 - Mirror script or toolkit coverage under the repository-root `tests/` tree; do not create ad-hoc test folders beside the tool.
 
 ## Testing
+
 - Follow the repository pytest defaults from the instruction owner.
 - Use coverage reports to inspect missing behavior on touched code, not to force blanket 100% coverage.
 - For modify tasks: edit implementation first, run existing tests, then update tests only for intentional behavior changes.
 - Prefer existing repository commands such as `make lint`, `make test`, or a shared script runner before inventing a one-off validation path.
 
 ## Runtime guidance
+
 - Prefer direct, readable orchestration over framework-like structure.
 - Keep shared helpers local to the toolkit, not promoted into application-style layering without a real need.
 - Centralize repeated environment bootstrap in one shared runner instead of copying `.venv` and `pip install` logic into every wrapper.
@@ -88,6 +95,7 @@ Keep these rules visible while drafting:
 | Forcing async or framework abstractions into a simple tool | Raises complexity without improving the script | Keep the script synchronous and direct unless concurrency is essential |
 
 ## Validation
+
 - `python -m py_compile <script_name>.py` (syntax check)
 - `bash -n run.sh` (launcher syntax check, only when `run.sh` exists)
 - `pytest tests/` (run tests)

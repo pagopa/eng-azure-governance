@@ -7,6 +7,12 @@ description: Use when authoring or reviewing Kubernetes workload manifests, serv
 
 Use this skill for operational Kubernetes delivery work after the platform direction is already known.
 
+## When to use
+
+- Author or review Kubernetes workload manifests after the platform or cluster direction is already chosen.
+- Work on service exposure, probes, autoscaling, rollout strategy, or production-readiness settings for workloads.
+- Improve operational Kubernetes delivery without turning the task into a platform-architecture discussion.
+
 ## Boundary
 
 - Use this skill only after the platform or cluster direction is already chosen.

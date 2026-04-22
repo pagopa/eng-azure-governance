@@ -1,4 +1,0 @@
-interface:
-  display_name: "Internal Agent Operating Model Engine"
-  short_description: "Help with Internal Agent Operating Model Engine tasks"
-  default_prompt: "Use $internal-agent-operating-model-engine for this task and follow the repository-owned workflow in the skill."

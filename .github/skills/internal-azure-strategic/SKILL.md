@@ -131,6 +131,8 @@ Include:
 
 ## Relationship to adjacent skills
 
+- `awesome-copilot-azure-pricing`
+  Use as depth support when the strategic question becomes SKU pricing, spend estimation, or Azure-specific cost comparison that needs current pricing data.
 - `internal-azure-organization-structure`
   Use when the next need is tenant hierarchy, management-group layout, subscription model, landing-zone placement, or platform topology.
 - `internal-azure-governance`
