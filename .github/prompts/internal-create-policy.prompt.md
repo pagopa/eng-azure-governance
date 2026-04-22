@@ -8,7 +8,7 @@ argument-hint: domain=<module_suffix> policy_stub=<slug> display_name=<text> mod
 # Internal Policy Definition Task
 
 ## Instructions
-1. Use `.github/skills/tech-ai-cloud-policy/SKILL.md`.
+1. Use `.github/skills/internal-cloud-policy/SKILL.md`.
 2. Work inside `src/02_policy_${input:domain}/`.
 3. Create or update a Terraform file such as `01_${input:policy_stub}.tf`, following the existing one-policy-per-file pattern already used in the target domain.
 4. Keep the definition aligned with the repository's current structure:

@@ -8,7 +8,7 @@ argument-hint: file_stub=<slug> role_name=<display name> description=<text> acti
 # Internal Custom Role Task
 
 ## Instructions
-1. Use `.github/skills/tech-ai-cloud-policy/SKILL.md`.
+1. Use `.github/skills/internal-cloud-policy/SKILL.md`.
 2. Create or update `src/01_custom_roles/01_${input:file_stub}.tf`.
 3. Match the repository's existing role shape:
    - `resource "azurerm_role_definition" "<resource_name>"`;
