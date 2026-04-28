@@ -25,13 +25,13 @@ This custom role allows the sp or users it is associated with to be able to laun
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_dx_app_cd_resource_group_deploy"></a> [dx\_app\_cd\_resource\_group\_deploy](#module\_dx\_app\_cd\_resource\_group\_deploy) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
-| <a name="module_dx_app_ci_resource_group_reader"></a> [dx\_app\_ci\_resource\_group\_reader](#module\_dx\_app\_ci\_resource\_group\_reader) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
-| <a name="module_dx_infra_cd_private_networking"></a> [dx\_infra\_cd\_private\_networking](#module\_dx\_infra\_cd\_private\_networking) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
-| <a name="module_dx_infra_cd_resource_group_deploy"></a> [dx\_infra\_cd\_resource\_group\_deploy](#module\_dx\_infra\_cd\_resource\_group\_deploy) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
-| <a name="module_dx_infra_cd_subscription_admin"></a> [dx\_infra\_cd\_subscription\_admin](#module\_dx\_infra\_cd\_subscription\_admin) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
-| <a name="module_dx_infra_ci_resource_group_reader"></a> [dx\_infra\_ci\_resource\_group\_reader](#module\_dx\_infra\_ci\_resource\_group\_reader) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
-| <a name="module_dx_infra_ci_subscription_reader"></a> [dx\_infra\_ci\_subscription\_reader](#module\_dx\_infra\_ci\_subscription\_reader) | git::https://github.com/pagopa/dx.git//infra/modules/azure_merge_roles | implement-merge-roles-terraform-module |
+| <a name="module_dx_app_cd_resource_group_deploy"></a> [dx\_app\_cd\_resource\_group\_deploy](#module\_dx\_app\_cd\_resource\_group\_deploy) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
+| <a name="module_dx_app_ci_resource_group_reader"></a> [dx\_app\_ci\_resource\_group\_reader](#module\_dx\_app\_ci\_resource\_group\_reader) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
+| <a name="module_dx_infra_cd_private_networking"></a> [dx\_infra\_cd\_private\_networking](#module\_dx\_infra\_cd\_private\_networking) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
+| <a name="module_dx_infra_cd_resource_group_deploy"></a> [dx\_infra\_cd\_resource\_group\_deploy](#module\_dx\_infra\_cd\_resource\_group\_deploy) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
+| <a name="module_dx_infra_cd_subscription_admin"></a> [dx\_infra\_cd\_subscription\_admin](#module\_dx\_infra\_cd\_subscription\_admin) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
+| <a name="module_dx_infra_ci_resource_group_reader"></a> [dx\_infra\_ci\_resource\_group\_reader](#module\_dx\_infra\_ci\_resource\_group\_reader) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
+| <a name="module_dx_infra_ci_subscription_reader"></a> [dx\_infra\_ci\_subscription\_reader](#module\_dx\_infra\_ci\_subscription\_reader) | pagopa-dx/azure-merge-roles/azurerm | ~> 0.0 |
 
 ## Resources
 
