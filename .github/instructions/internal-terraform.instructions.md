@@ -29,6 +29,13 @@ applyTo: "**/*.tf"
 - Prefer least-privilege IAM/RBAC and narrow network exposure in the infrastructure being declared.
 - Enable encryption at rest and in transit when the platform supports it.
 
+## Provider lock and isolation
+
+- Terraform roots validated with `terraform init -lockfile=readonly` in CI must commit a `.terraform.lock.hcl` and pre-populate provider checksums for every platform that will run validation, plan, or apply.
+- Refresh checksums with `terraform providers lock` covering at minimum `windows_amd64`, `darwin_amd64`, `darwin_arm64`, `linux_amd64`, and `linux_arm64`, for example: `terraform providers lock -platform=windows_amd64 -platform=darwin_amd64 -platform=darwin_arm64 -platform=linux_amd64 -platform=linux_arm64`.
+- Root configurations validated in isolation must declare their own `terraform { required_version, required_providers }` block so `terraform validate` and TFLint stay deterministic regardless of caller directory.
+- Child modules that read adjacent templates or query files must resolve them from `path.module` so validation stays stable across CI runners and local shells.
+
 ## Use the skill for deeper guidance
 
 - Load `.github/skills/internal-terraform/SKILL.md` for feature-vs-module decisions, migration steps, state and delivery controls, templates, and common mistakes.

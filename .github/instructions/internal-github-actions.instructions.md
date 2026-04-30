@@ -31,6 +31,7 @@ applyTo: "**/workflows/**,**/actions/**/action.y*ml"
 - Do not place runner-derived paths such as `runner.temp` in workflow-root `env` or `jobs.<job_id>.env`; resolve them in step-level keys that allow `runner`, or derive them from default runner environment variables inside `run`.
 - Treat IDE, parser, `actionlint`, and queue-time errors such as `Unrecognized named-value` as mandatory documentation-check triggers.
 - When debugging workflow logs, identify the first failed step before treating an earlier cache or setup line as the root cause; cache misses are informational unless the action or workflow explicitly makes them fatal.
+- Place same-repository composite actions under `.github/actions/<name>/action.yml`; do not nest composite actions inside `.github/workflows/` because that path is reserved for workflows and triggers `actionlint` false positives.
 - Keep cache keys deterministic from lockfiles, tool versions, or other stable inputs instead of timestamps or branch-only entropy.
 - Set explicit artifact `retention-days` when artifacts bridge review, release, or deploy stages.
 - Validate `workflow_dispatch` free-form inputs before shell, deploy, or infrastructure steps consume them.

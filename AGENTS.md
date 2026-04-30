@@ -15,6 +15,7 @@ This file is the stable entrypoint for the repository instruction architecture.
 3. Use `.github/instructions/` for path-specific or domain-specific projections.
 4. Use `.github/skills/` and `.github/agents/` only when they are relevant to the current task.
 5. Keep policy, projections, and inventory separate instead of mixing them into one file.
+6. If `docs/architecture.md` exists in the current repository, treat it as the per-repo architecture contract: read it before reasoning about repository purpose, components, system boundaries, or runtime fit, and update it in the same change when behavior, components, or boundaries move. This file is intentionally not part of the synced baseline; each repository owns its own `docs/architecture.md`. If the file is absent, fall back to inspecting the repository structure on disk and do not invent architecture facts.
 
 ## Precedence Model
 
@@ -33,8 +34,9 @@ This file is the stable entrypoint for the repository instruction architecture.
 
 ## Naming Contract
 
-- Repository-owned resources created in `cloud-strategy.github` use the `internal-*` prefix.
+- Repository-owned resources created in `cloud-strategy.github` use the `internal-*` prefix by default.
 - Repository-owned resources created in other repositories use the `local-*` prefix.
+- The `local-*` prefix is also reserved, inside this standards repository, for repo-owned tooling that must remain source-of-truth here and must NOT propagate to consumer repositories during sync (for example, the sync command-center agents and their paired engine skills). These assets stay excluded from the synced baseline by design.
 - Imported upstream resources keep the `<short-repo>-<original-resource-name>` form.
 
 ## Resource Model
@@ -45,8 +47,8 @@ This file is the stable entrypoint for the repository instruction architecture.
 - `internal-*` resources are the canonical repository-owned layer. They are tactical by default, but may also be strategic or operational when their contract says so.
 - Imported upstream resources remain support depth by default. Overlap alone is not enough to fork or wrap them; prefer a repository-owned wrapper or replacement only when routing, governance, terminology, output shape, or safety expectations require repo-local ownership.
 - During catalog review or rationalization, imported assets in domains already covered by a credible internal owner must be evaluated as `keep as depth`, `wrap under the internal owner`, or `retire`; do not collapse that decision to a binary keep/delete choice.
-- Keep imported upstream assets verbatim by default. Allow a direct in-place override only for a strong repo-specific need that the user explicitly counter-validates, and register that override in the `internal-agent-sync-external-resources` skill bundle so future refreshes can replay it safely.
-- `local-*` resources remain consumer-local extensions. They are usually tactical or operational, but may be strategic when a consumer repository needs explicit local governance.
+- Keep imported upstream assets verbatim by default. Allow a direct in-place override only for a strong repo-specific need that the user explicitly counter-validates, and register that override in the `local-agent-sync-external-resources` skill bundle so future refreshes can replay it safely.
+- `local-*` resources remain consumer-local extensions in target repositories. In this standards repository, the `local-*` prefix is also used for repo-owned tooling that intentionally must not be synced to consumers (for example, sync command centers and their paired engine skills); these assets remain source-of-truth here and are excluded from the synced baseline.
 - When overlap exists, prefer the repository-owned internal owner as canonical and use imported depth as support unless no credible internal owner exists.
 
 ## Operational Owner Model
