@@ -10,6 +10,10 @@ applyTo: "**/*.tf"
 - Run `terraform fmt` before commit.
 - Use 2-space indentation.
 - Keep related resources grouped in predictable files such as `providers.tf`, `variables.tf`, `outputs.tf`, and domain-specific resource files when the target directory already follows that split.
+- For new Terraform root directories without an established competing layout, use a numbered domain split that expresses logical hierarchy: keep `00-*` for init or fundamental data, allocate `10-97` dynamically from upstream prerequisites to downstream branches, reserve `98-locals.tf`, `99-providers.tf`, `99-variables.tf`, and `99-outputs.tf`, and keep the detailed structure aligned with `.github/skills/internal-terraform/references/structure-standard.md`.
+- Treat numbered root files as a human-facing hierarchy, not as Terraform's execution engine; real dependency order must still come from references, data sources, or explicit `depends_on`.
+- When the target directory already uses another stable structure, adapt the default instead of forcing a migration or changing business logic.
+- For root directories using the repository default runner pattern, keep environment files under `env/<account|subscription|project>/`, with `backend.ini` for `terraform.sh` backend configuration and `terraform.tfvars` for environment-specific input values.
 - Use `snake_case` for resources, variables, locals, and outputs.
 - Add `description` to variables and outputs, plus `type` to variables.
 - Prefer data sources or direct references over hardcoded IDs.

@@ -7,54 +7,101 @@
 #   pip install pre-commit
 #   pre-commit install
 #
+# Notes:
+#   - All hook repositories are pinned to immutable commit SHAs.
+#   - To update a hook, check the release or tag page referenced on its `rev` line.
 
 repos:
-  # General hooks
+  # Repository hygiene, file integrity, and security
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0 # pre-commit-hooks v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # pre-commit-hooks v6.0.0; source https://github.com/pre-commit/pre-commit-hooks/releases/tag/v6.0.0
     hooks:
-      # Common errors
-      # - id: end-of-file-fixer
+      # # Common text hygiene
+      # - id: end-of-file-fixer # Ensure files end with a trailing newline.
       #   exclude_types: [sql, csv]
       #   exclude: '\.csv$'
-      # - id: trailing-whitespace
+      # - id: trailing-whitespace # Remove accidental trailing spaces.
       #   args:
       #     - --markdown-linebreak-ext=md
       #   exclude_types: [sql, bash, shell]
-      - id: check-executables-have-shebangs
-      # Cross platform
-      - id: check-case-conflict
-      - id: mixed-line-ending
+      - id: check-executables-have-shebangs # Ensure executable files declare their interpreter.
+      - id: check-case-conflict # Prevent filename collisions on case-insensitive filesystems.
+      - id: mixed-line-ending # Normalize line endings to LF across platforms.
         args:
           - --fix=lf
         exclude_types: [sql]
-      - id: check-yaml
-      - id: check-json
-      - id: check-merge-conflict
+      - id: check-merge-conflict # Block unresolved merge markers.
+
+      # Structured data validation
+      - id: check-yaml # Validate YAML syntax before CI sees it.
+      - id: check-json # Validate JSON syntax before runtime uses it.
+
+      # Python safety rails
+      - id: check-ast # Ensure Python files are syntactically valid.
+        files: ^(scripts|src|tests)/.*\.py$
+      - id: debug-statements # Block accidental breakpoint() and debugger imports.
+        files: ^(scripts|src|tests)/.*\.py$
+
       # Security
-      - id: detect-aws-credentials
+      - id: detect-aws-credentials # Prevent committing AWS credentials by mistake.
         args:
           - --allow-missing-credentials
-      - id: detect-private-key
+      - id: detect-private-key # Prevent committing private keys.
+
+  # GitHub Actions
+  - repo: https://github.com/rhysd/actionlint
+    rev: 914e7df21a07ef503a81201c76d2b11c789d3fca # actionlint v1.7.12; source https://github.com/rhysd/actionlint/releases/tag/v1.7.12
+    hooks:
+      - id: actionlint # Validate workflow syntax, expressions, and action usage.
+
+  # Shell scripts
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: 745eface02aef23e168a8afb6b5737818efbea95 # shellcheck-py v0.11.0.1; source https://github.com/shellcheck-py/shellcheck-py/tree/v0.11.0.1
+    hooks:
+      - id: shellcheck # Lint shell scripts for portability issues and common bugs.
+        args:
+          - --severity=warning
+        exclude: '^\.github/skills/'
+
+  # Python linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: d1b833175a5d08a925900115526febd8fe71c98e # ruff-pre-commit v0.15.11; source https://github.com/astral-sh/ruff-pre-commit/releases/tag/v0.15.11
+    hooks:
+      - id: ruff-check # Auto-sort Python imports with Ruff, replacing isort.
+        name: ruff-check-imports
+        args:
+          - --fix
+          - --select
+          - I
+        files: ^(scripts|src|tests)/.*\.py$
+      - id: ruff-format # Format Python code with Ruff instead of Black.
+        files: ^(scripts|src|tests)/.*\.py$
+      - id: ruff-check # Lint Python code for correctness, style, and simplifications.
+        files: ^(scripts|src|tests)/.*\.py$
 
   # Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.105.0 # pre-commit-terraform v1.105.0
+    rev: d0e12caebb2ab0ee8bf98181c8bfe9702bca103d # pre-commit-terraform v1.105.0; source https://github.com/antonbabenko/pre-commit-terraform/releases/tag/v1.105.0
     hooks:
-      - id: terraform_fmt
-      - id: terraform_docs
+      - id: terraform_fmt # Enforce canonical Terraform formatting.
+      - id: terraform_docs # Keep Terraform module documentation aligned with code.
         args:
           - markdown --sort-by required
-      - id: terraform_validate
+      - id: terraform_validate # Validate Terraform configuration without remote backends.
         verbose: true
         args:
+          # Keep logs deterministic and readable when validate fails in CI.
+          - --hook-config=--parallelism-limit=1
           - --hook-config=--retry-once-with-cleanup=true
           - --init-args=-backend=false
           - --init-args=-lockfile=readonly
-          - --args=-json
+          # Avoid raw JSON diagnostics: the hook already switches to JSON internally
+          # only when it needs structured retry/error matching.
           - --args=-no-color
-      - id: terraform_tflint
-      # - id: terraform_providers_lock
+      - id: terraform_tflint # Lint Terraform code against provider and best-practice rules.
+      # Keep this hook commented to avoid slowing normal pre-commit runs.
+      # Treat the platform list below as the canonical `.terraform.lock.hcl` matrix.
+      # - id: terraform_providers_lock # Regenerate provider lock files for supported platforms.
       #   args:
       #     - --hook-config=--mode=always-regenerate-lockfile
       #     - --args=-platform=windows_amd64
@@ -62,29 +109,3 @@ repos:
       #     - --args=-platform=darwin_arm64
       #     - --args=-platform=linux_amd64
       #     - --args=-platform=linux_arm64
-
-  # Shell scripts
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1 # shellcheck-py v0.11.0.1
-    hooks:
-      - id: shellcheck
-        args:
-          - --severity=warning
-        exclude: '^\.github/skills/'
-
-  # Python
-  - repo: https://github.com/pycqa/isort
-    rev: 8.0.1 # isort 8.0.1
-    hooks:
-      - id: isort
-        args:
-          - --profile
-          - black
-        files: ^(scripts|tests)/.*\.py$
-
-  - repo: https://github.com/psf/black
-    rev: 26.3.1 # black 26.3.1
-    hooks:
-      - id: black
-        language_version: python3
-        files: ^(scripts|tests)/.*\.py$

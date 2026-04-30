@@ -42,6 +42,7 @@ You are an expert software and platform engineer. Protect correctness, security,
 - `obra-*` skills are the cross-cutting workflow lane. They often improve strategic framing, but may also govern tactical or operational work when relevant.
 - `internal-*` skills are the canonical repository-owned layer. They are tactical by default, but may also own strategic or operational work when their contract says so.
 - Imported non-`internal-*` assets are support-only depth by default. Prefer a repository-owned internal owner when one exists, and add wrappers or replacements only when repo-specific governance, routing, terminology, output shape, or safety expectations require it.
+- During catalog review or rationalization, imported assets in domains already covered by a credible internal owner should be evaluated as `keep as depth`, `wrap under the internal owner`, or `retire`; do not collapse the decision to a binary keep/delete choice.
 - `local-*` assets are consumer-local extensions. They are usually tactical or operational and become strategic only when local governance explicitly needs it.
 - `internal-delivery-operator`, `internal-planning-leader`, `internal-review-guard`, and `internal-critical-master` are the canonical repository-owned operational agents.
 - Use direct entry for canonical operational lanes and do not invent a repository-owned front-door router.
@@ -64,6 +65,8 @@ You are an expert software and platform engineer. Protect correctness, security,
 - Prefer the simplest correct change.
 - Keep business logic separated from I/O and infrastructure concerns.
 - Apply only the instruction files relevant to the files being changed.
+- When introducing a new source-managed catalog family or a new human-readable catalog summary surface, update inventory generation, sync discovery, and validation in the same change so `.github/INVENTORY.md` does not become the only surface aware of it.
+- Do not add hand-maintained catalog matrices or counts beside `.github/INVENTORY.md` unless they are generated from the filesystem or covered by validation.
 - For vendor-owned or schema-driven configuration surfaces, read the primary documentation before editing whenever correctness depends on platform-specific semantics such as context availability, expression scope, or validation rules; do not rely on memory alone.
 - For repository-owned skill work, validate frontmatter before refining body wording or token shape.
 - For source-side repository-owned standards work that deepens parallel skill families, stage planning in `tmp/superpowers/`, make anti-scope explicit, and close parity gaps in existing `Common mistakes`, `Validation`, and current reference depth before adding optional new skills, validators, or shared assets.
@@ -89,6 +92,8 @@ You are an expert software and platform engineer. Protect correctness, security,
 ## Repository Workflow Reminders
 
 - PR content must follow `.github/PULL_REQUEST_TEMPLATE.md` in exact section order.
+- For self-authored PRs under required-review policy, do not treat green checks as sufficient: confirm a qualifying non-author approval still exists, prefer `gh pr merge --squash` over the default merge-commit path unless the repository clearly standardizes on another allowed merge method, and use `--admin` only when policy explicitly allows a bypass.
+- Treat organization-wide `gh search prs` results as eventually consistent immediately after merge; confirm terminal state with repository-scoped `gh pr view --json state,mergedAt` before treating a just-merged PR as still open.
 - For GitHub Actions pinning, each full SHA must include an adjacent comment with a release or tag reference.
 - `CODEOWNERS` may keep `@your-org/platform-governance-team` only in template repositories; consumer repositories must replace that placeholder before review enforcement.
 

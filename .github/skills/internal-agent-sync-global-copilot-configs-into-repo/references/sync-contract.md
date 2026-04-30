@@ -53,6 +53,8 @@ Do not flatten these roles into one file. Do not let target `AGENTS.md` become a
 - Write `tmp/copilot-sync.plan.md` before any mirrored change.
 - Keep the plan in the target repository so the user can inspect pending sync work between runs.
 - A follow-up `apply` against the same target therefore needs `--allow-dirty-target` when `tmp/copilot-sync.plan.md` is the only target diff left by `plan`; do not use that flag to bypass unrelated dirty target changes.
+- When the target is dirty outside the mirrored sync scope, compare dirty paths against the planned managed mutations before deciding whether `--allow-dirty-target` is safe.
+- If dirty target paths have zero overlap with planned managed mutations, treat them as plan-scoped manual reconciliation work and do not use `--allow-dirty-target` as a blanket bypass.
 - When `apply` finishes and nothing remains pending, remove the plan file.
 - If `apply` stops early or manual follow-up remains, keep the plan file for the next run.
 - Remove legacy tracking artifacts named `internal-sync-*` from the target during `apply`.
@@ -79,6 +81,8 @@ Use the closest existing checks for the touched behavior:
 5. `pytest tests/test_sync_and_token_risks.py` when sync automation changes
 
 If a dedicated contract test is missing, call out the gap explicitly.
+
+When the target has no local catalog or contract validation script, confirm convergence from the source side with `python3 ./.github/scripts/sync_copilot_catalog.py plan --target-repo <repo> --format json` and require zero managed `create`, `update`, `ensure`, `rebuild`, or `delete` operations before treating the sync as converged. If that fallback check leaves `tmp/copilot-sync.plan.md` in an otherwise clean target and the file is not ignored, remove it after inspection.
 
 After `apply`, run the closest target-local catalog or contract validation when preserved `local-*` assets, preserved consumer-local GitHub instructions overrides, or other target-owned assets can still expose latent drift. Treat any resulting fixes as consumer-local follow-up work, not as source-baseline drift, unless the same finding reproduces against the source-managed assets themselves.
 

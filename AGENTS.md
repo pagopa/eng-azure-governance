@@ -44,6 +44,7 @@ This file is the stable entrypoint for the repository instruction architecture.
 - `obra-*` resources are cross-cutting workflow assets. They often help with strategic framing, but may govern tactical or operational work when relevant.
 - `internal-*` resources are the canonical repository-owned layer. They are tactical by default, but may also be strategic or operational when their contract says so.
 - Imported upstream resources remain support depth by default. Overlap alone is not enough to fork or wrap them; prefer a repository-owned wrapper or replacement only when routing, governance, terminology, output shape, or safety expectations require repo-local ownership.
+- During catalog review or rationalization, imported assets in domains already covered by a credible internal owner must be evaluated as `keep as depth`, `wrap under the internal owner`, or `retire`; do not collapse that decision to a binary keep/delete choice.
 - Keep imported upstream assets verbatim by default. Allow a direct in-place override only for a strong repo-specific need that the user explicitly counter-validates, and register that override in the `internal-agent-sync-external-resources` skill bundle so future refreshes can replay it safely.
 - `local-*` resources remain consumer-local extensions. They are usually tactical or operational, but may be strategic when a consumer repository needs explicit local governance.
 - When overlap exists, prefer the repository-owned internal owner as canonical and use imported depth as support unless no credible internal owner exists.
@@ -61,6 +62,8 @@ This file is the stable entrypoint for the repository instruction architecture.
 - Keep repo-wide Copilot behavior in `.github/copilot-instructions.md`.
 - Keep local self-containment in scoped instruction files only when it improves the consumer experience and does not create drift.
 - Keep volatile inventory in `.github/INVENTORY.md`, never here.
+- When introducing a new source-managed catalog family or a new human-readable catalog summary surface, update inventory generation, sync discovery, and validator coverage in the same change so `.github/INVENTORY.md` is not the only surface aware of it.
+- Do not add hand-maintained catalog matrices or counts beside `.github/INVENTORY.md` unless they are generated from the filesystem or covered by validation.
 - Keep `internal-sync-*` assets sync-specific. They may reference root governance, but they do not replace canonical ownership in this file or `.github/copilot-instructions.md`.
 - When a sync or catalog workflow changes a repository-wide default, update the canonical owner first and then realign downstream projections or sync surfaces in the same pass.
 - Do not treat removed validators, sync scripts, contract tests, or historical aliases as active policy unless they exist on disk and are reintroduced deliberately.
@@ -90,7 +93,6 @@ This file is the stable entrypoint for the repository instruction architecture.
 
 - Transient planning, brainstorming, and other Superpowers-generated working files must not be written under `docs/`.
 - When such artifacts are needed inside this repository, write them under `tmp/superpowers/`.
-- Keep planning ephemeral in chat for clear, local, quick, or banal tasks.
 - Create or reuse `tmp/superpowers/<clear-action-or-task-name>/` only for retained repository-owned planning that must survive the current turn because the work is non-banal, crosses turns, spans macro-categories, needs handoff, tracking, or provenance, or preserves tradeoffs worth review.
 - Keep retained execution plans as numbered Markdown files: a single `01-...md` file when one macro-category is enough, or multiple numbered files such as `01-contesto-e-vincoli.md`, `02-implementazione.md`, and `03-validazione.md` when the work spans multiple macro-categories.
 - Keep unresolved questions, doubts, or user decisions in `dubbi-e-domande.md`; this file stays separate from executable plan files and remains outside the plan-and-apply loop.

@@ -51,6 +51,24 @@ The paired agent should not restate default mode handling, preserved `local-*` b
 - `apply`: explicit only, after reviewing a conflict-safe plan and current source findings.
 - `audit`: use when source or target drift needs diagnosis before deciding whether to plan or apply; prefer `.github/scripts/audit_copilot_catalog.sh` plus the sync planner evidence instead of inventing a third sync mode.
 
+## Evidence Budget
+
+Collect the minimum evidence set before moving past analysis or approving `apply`:
+
+- selected mode: `plan`, `apply`, or `audit`
+- target git state, including planner-reported relevant `dirty_paths`
+- planner output, from `tmp/copilot-sync.plan.md`, JSON output, or both
+- preserved target-owned assets covered by the sync contract, including `local-*` assets and the consumer-local override file materialized from `.github/copilot-instructions.override.md.template`
+- planner-reported `managed_mutation_paths` plus any `dirty_managed_overlap`
+- latest validation result for the touched sync behavior
+
+Keep manual inspection narrow. Review only:
+
+- paths whose planned action is `create`, `update`, `ensure`, `rebuild`, or `delete`
+- dirty paths that overlap planned managed mutations
+
+If `dirty_managed_overlap` is empty, `--allow-dirty-target` can stay eligible when the other gates are green. If overlap is non-empty, reconcile those paths first or require explicit approval before `apply`.
+
 ## Load On Demand
 
 - Read `references/sync-contract.md` for exact mirrored categories, exclusions, root-guidance ownership, plan-file lifecycle, automation entrypoints, validation sequence, and reporting requirements.

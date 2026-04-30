@@ -124,3 +124,11 @@ These imported `openai-*` office skills remain support-only depth for repositori
 - `.github/agents/internal-delivery-operator.agent.md`
 - `.github/agents/internal-planning-leader.agent.md`
 - `.github/agents/internal-review-guard.agent.md`
+
+## Prompts
+
+- `.github/prompts/internal-copilot-resources-mega-review.prompt.md`
+- `.github/prompts/internal-mega-review.prompt.md`
+- `.github/prompts/internal-planning-kickoff.prompt.md`
+- `.github/prompts/internal-pre-mortem.prompt.md`
+- `.github/prompts/internal-review-kickoff.prompt.md`

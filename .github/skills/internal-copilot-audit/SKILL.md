@@ -20,6 +20,7 @@ Treat the declared governance contract in the relevant agent, root `AGENTS.md`, 
 ## Audit Goals
 
 - Detect overlapping skills and agents.
+- Detect cleanup recommendations backed only by stale plan paths or files that are absent on the current filesystem.
 - Detect hollow assets that point to missing local files or missing companion skills.
 - Detect declared skills that have no concrete workflow role in the agent or skill surface that declares them.
 - Detect retired frontmatter and stale runtime-specific wording.
@@ -29,6 +30,7 @@ Treat the declared governance contract in the relevant agent, root `AGENTS.md`, 
 - Detect naming violations and stale inventory references.
 - Detect governance files that still describe removed, renamed, or retired assets.
 - Detect catalog retirements or remaps that were not propagated in the same change to the supported consistency and sync entrypoints, `.github/scripts/check_catalog_consistency.sh` and `.github/scripts/sync_copilot_catalog.sh`.
+- Detect token-risk claims that rely on assumed runtime loading behavior instead of observable repository signals such as description length, exact trigger collisions, or repo-profile coverage.
 
 ## Audit Order
 
@@ -37,9 +39,12 @@ Treat the declared governance contract in the relevant agent, root `AGENTS.md`, 
 3. Check broken local references.
 4. Check declared skill contracts and decorative skill usage.
 5. Check trigger overlap.
-6. Check bridge coherence between `AGENTS.md` and `.github/copilot-instructions.md`.
-7. Check whether skills or agents became redundant after internal replacements were added.
-8. Check whether governance files still describe superseded or removed assets.
+6. When adding or tightening exact `applyTo` overlap validation, rerun the overlap scan across the whole repository and register every intentional co-load in the allowlist in the same pass.
+7. Check bridge coherence between `AGENTS.md` and `.github/copilot-instructions.md`.
+8. Check whether skills or agents became redundant after internal replacements were added.
+9. Check whether governance files still describe superseded or removed assets.
+
+Before classifying a cleanup as high-evidence, verify the candidate paths exist on the current filesystem. Absent paths are stale plan evidence, not executable deletion work.
 
 Load `references/audit-checklist.md` when you need the detailed issue taxonomy, flagging criteria, or example findings.
 

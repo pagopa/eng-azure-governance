@@ -1,385 +1,429 @@
 {
-  "generated_at": "2026-04-21T22:10:58.613019+00:00",
+  "generated_at": "2026-04-30T10:44:04.076058+00:00",
   "hash_algo": "sha256",
-  "local_assets": [],
+  "local_assets": [
+    ".github/copilot-instructions.override.md"
+  ],
   "managed_fingerprints": [
     {
-      "content_hash": "f857aa8ef5d54907eeb1492fe639d6c96837a82dd9eafda18c4562882258808f",
+      "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 0,
+        "normalized_bytes": 0
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/prompts/.gitkeep",
+      "source_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/prompts/.gitkeep",
+      "target_path": ".github/prompts/.gitkeep"
+    },
+    {
+      "content_hash": "3069f2f735807deff13c84327ae359e104822ae0def12e527c5856b134b01ba4",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 14331,
+        "normalized_bytes": 14331
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/prompts/internal-copilot-resources-mega-review.prompt.md",
+      "source_hash": "3069f2f735807deff13c84327ae359e104822ae0def12e527c5856b134b01ba4",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/prompts/internal-copilot-resources-mega-review.prompt.md",
+      "target_path": ".github/prompts/internal-copilot-resources-mega-review.prompt.md"
+    },
+    {
+      "content_hash": "e9774690d4bfd6b0c54a377dc70f7333a370118721a968f56ce6f26831075dab",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 11495,
+        "normalized_bytes": 11495
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/prompts/internal-mega-review.prompt.md",
+      "source_hash": "e9774690d4bfd6b0c54a377dc70f7333a370118721a968f56ce6f26831075dab",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/prompts/internal-mega-review.prompt.md",
+      "target_path": ".github/prompts/internal-mega-review.prompt.md"
+    },
+    {
+      "content_hash": "c95d07858f80ccd36a505603586dce8413db35ce0518330241a435390200c989",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1058,
+        "normalized_bytes": 1058
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/prompts/internal-planning-kickoff.prompt.md",
+      "source_hash": "c95d07858f80ccd36a505603586dce8413db35ce0518330241a435390200c989",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/prompts/internal-planning-kickoff.prompt.md",
+      "target_path": ".github/prompts/internal-planning-kickoff.prompt.md"
+    },
+    {
+      "content_hash": "c2f461ed43f0f2e8aec8e6ba4c453f92cd860e10b80d9e8a545ef77b72a7ba13",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1179,
+        "normalized_bytes": 1179
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/prompts/internal-pre-mortem.prompt.md",
+      "source_hash": "c2f461ed43f0f2e8aec8e6ba4c453f92cd860e10b80d9e8a545ef77b72a7ba13",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/prompts/internal-pre-mortem.prompt.md",
+      "target_path": ".github/prompts/internal-pre-mortem.prompt.md"
+    },
+    {
+      "content_hash": "331430cff813776dfabb843fb72b8474a19dae3292155454332af1aecbccb17e",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1119,
+        "normalized_bytes": 1119
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/prompts/internal-review-kickoff.prompt.md",
+      "source_hash": "331430cff813776dfabb843fb72b8474a19dae3292155454332af1aecbccb17e",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/prompts/internal-review-kickoff.prompt.md",
+      "target_path": ".github/prompts/internal-review-kickoff.prompt.md"
+    },
+    {
+      "content_hash": "a89f18aea94e28a838908f4e2ae9e0fa71ae2a346cebb8e63963f36ebd58222d",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 5241,
+        "normalized_bytes": 5241
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-terraform/references/structure-standard.md",
+      "source_hash": "a89f18aea94e28a838908f4e2ae9e0fa71ae2a346cebb8e63963f36ebd58222d",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-terraform/references/structure-standard.md",
+      "target_path": ".github/skills/internal-terraform/references/structure-standard.md"
+    },
+    {
+      "content_hash": "03bf2cf45d25f1f5d5e2ca789847dc6d829b440e5e0ba4d6be81b10de426da35",
       "hash_algo": "sha256",
       "kind": "agent",
       "metadata": {
-        "bytes": 6038,
-        "normalized_bytes": 6038
+        "bytes": 7320,
+        "normalized_bytes": 7320
       },
       "normalization_version": "v1",
       "resource_id": ".github/agents/internal-critical-master.agent.md",
-      "source_hash": "f857aa8ef5d54907eeb1492fe639d6c96837a82dd9eafda18c4562882258808f",
+      "source_hash": "03bf2cf45d25f1f5d5e2ca789847dc6d829b440e5e0ba4d6be81b10de426da35",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-critical-master.agent.md",
       "target_path": ".github/agents/internal-critical-master.agent.md"
     },
     {
-      "content_hash": "e741ca018b22fe3fa0b656c992fe4237e40d621d01c91bb687faffaaf2f33b35",
+      "content_hash": "07d667ba3b20397fa67f0c0b478d1a3afb4baeb2dd7ead4d0d55adaf4ac2a753",
       "hash_algo": "sha256",
       "kind": "agent",
       "metadata": {
-        "bytes": 2641,
-        "normalized_bytes": 2641
+        "bytes": 5005,
+        "normalized_bytes": 5005
       },
       "normalization_version": "v1",
-      "resource_id": ".github/agents/internal-delivery-operator.agent.md",
-      "source_hash": "e741ca018b22fe3fa0b656c992fe4237e40d621d01c91bb687faffaaf2f33b35",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-delivery-operator.agent.md",
-      "target_path": ".github/agents/internal-delivery-operator.agent.md"
+      "resource_id": ".github/agents/internal-planning-leader.agent.md",
+      "source_hash": "07d667ba3b20397fa67f0c0b478d1a3afb4baeb2dd7ead4d0d55adaf4ac2a753",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-planning-leader.agent.md",
+      "target_path": ".github/agents/internal-planning-leader.agent.md"
     },
     {
-      "content_hash": "917f80eb570dcd4226a625475c5cd4981667f94c7578aa76ba08e4b16addc858",
+      "content_hash": "1b8899030ece74fd998f28e83f4756f5649390947790626397c094bbb8446bce",
+      "hash_algo": "sha256",
+      "kind": "agent",
+      "metadata": {
+        "bytes": 2874,
+        "normalized_bytes": 2874
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/agents/internal-review-guard.agent.md",
+      "source_hash": "1b8899030ece74fd998f28e83f4756f5649390947790626397c094bbb8446bce",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-review-guard.agent.md",
+      "target_path": ".github/agents/internal-review-guard.agent.md"
+    },
+    {
+      "content_hash": "3675d9f60def92fe9e0c1c084f91eb5deb5450c30cb2390ec456a1aaece482c6",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 1714,
-        "normalized_bytes": 1714
+        "bytes": 13939,
+        "normalized_bytes": 13939
       },
       "normalization_version": "v1",
-      "resource_id": ".github/copilot-instructions.override.md",
-      "source_hash": "917f80eb570dcd4226a625475c5cd4981667f94c7578aa76ba08e4b16addc858",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/copilot-instructions.override.md",
-      "target_path": ".github/copilot-instructions.override.md"
+      "resource_id": ".github/copilot-instructions.md",
+      "source_hash": "3675d9f60def92fe9e0c1c084f91eb5deb5450c30cb2390ec456a1aaece482c6",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/copilot-instructions.md",
+      "target_path": ".github/copilot-instructions.md"
     },
     {
-      "content_hash": "4d3e6925ff79f4fdad38156a875df0e843d11c4b2c3f991e21ca5977cd3c7274",
+      "content_hash": "e4a15577a9a7bedea45eef62001958630b8a007253d1a0bcbbcb7a49685a9714",
       "hash_algo": "sha256",
       "kind": "instruction",
       "metadata": {
-        "bytes": 1405,
-        "normalized_bytes": 1405
+        "bytes": 3198,
+        "normalized_bytes": 3198
       },
       "normalization_version": "v1",
-      "resource_id": ".github/instructions/internal-copilot-agent-authoring.instructions.md",
-      "source_hash": "4d3e6925ff79f4fdad38156a875df0e843d11c4b2c3f991e21ca5977cd3c7274",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-copilot-agent-authoring.instructions.md",
-      "target_path": ".github/instructions/internal-copilot-agent-authoring.instructions.md"
+      "resource_id": ".github/instructions/internal-python.instructions.md",
+      "source_hash": "e4a15577a9a7bedea45eef62001958630b8a007253d1a0bcbbcb7a49685a9714",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-python.instructions.md",
+      "target_path": ".github/instructions/internal-python.instructions.md"
     },
     {
-      "content_hash": "9aa00236aade8b4f4300e3fe104e53c38b2b7084a7792e266b2b489fe3b8671c",
+      "content_hash": "4227a3d4ca1930a714cb3b9ae0f5f3bd4c050bdc83518f478d1790d0188a2778",
       "hash_algo": "sha256",
       "kind": "instruction",
       "metadata": {
-        "bytes": 1337,
-        "normalized_bytes": 1337
+        "bytes": 2887,
+        "normalized_bytes": 2887
       },
       "normalization_version": "v1",
-      "resource_id": ".github/instructions/internal-copilot-skill-reference-authoring.instructions.md",
-      "source_hash": "9aa00236aade8b4f4300e3fe104e53c38b2b7084a7792e266b2b489fe3b8671c",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-copilot-skill-reference-authoring.instructions.md",
-      "target_path": ".github/instructions/internal-copilot-skill-reference-authoring.instructions.md"
+      "resource_id": ".github/instructions/internal-terraform.instructions.md",
+      "source_hash": "4227a3d4ca1930a714cb3b9ae0f5f3bd4c050bdc83518f478d1790d0188a2778",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-terraform.instructions.md",
+      "target_path": ".github/instructions/internal-terraform.instructions.md"
     },
     {
-      "content_hash": "b48e8917c0acf0a1e6584994095e780942b35e98c2edd7fe60a8b96493935be5",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4669,
-        "normalized_bytes": 4669
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-boundary-recommendation-engine/SKILL.md",
-      "source_hash": "b48e8917c0acf0a1e6584994095e780942b35e98c2edd7fe60a8b96493935be5",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-boundary-recommendation-engine/SKILL.md",
-      "target_path": ".github/skills/internal-agent-boundary-recommendation-engine/SKILL.md"
-    },
-    {
-      "content_hash": "d9d385a61a6185c4ce013e619dd5f040a0eb6b3ad9aec40e4564146ff688535a",
+      "content_hash": "7c22a4e0424ea449df68e788ed84f743525f60b68d69a9e390c3126aae8aeb92",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 307,
-        "normalized_bytes": 307
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-boundary-recommendation-engine/agents/openai.yaml",
-      "source_hash": "d9d385a61a6185c4ce013e619dd5f040a0eb6b3ad9aec40e4564146ff688535a",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-boundary-recommendation-engine/agents/openai.yaml",
-      "target_path": ".github/skills/internal-agent-boundary-recommendation-engine/agents/openai.yaml"
-    },
-    {
-      "content_hash": "b42767f729ff7fc9100ad38907a0b9df8307cc493b933cc026281511a8068d22",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 8577,
-        "normalized_bytes": 8577
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-cross-lane-engine/SKILL.md",
-      "source_hash": "b42767f729ff7fc9100ad38907a0b9df8307cc493b933cc026281511a8068d22",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-cross-lane-engine/SKILL.md",
-      "target_path": ".github/skills/internal-agent-cross-lane-engine/SKILL.md"
-    },
-    {
-      "content_hash": "0e71f6bfe2429f223cee48021bb276538b2d4c9dccca975db5d02cad147c6dab",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 261,
-        "normalized_bytes": 261
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-cross-lane-engine/agents/openai.yaml",
-      "source_hash": "0e71f6bfe2429f223cee48021bb276538b2d4c9dccca975db5d02cad147c6dab",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-cross-lane-engine/agents/openai.yaml",
-      "target_path": ".github/skills/internal-agent-cross-lane-engine/agents/openai.yaml"
-    },
-    {
-      "content_hash": "065a03ffecc7e48c4a1c9630cfa6d271ccc509de07ddf4445deef9d51fc02514",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2921,
-        "normalized_bytes": 2921
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-cross-lane-engine/references/ownership-maps.md",
-      "source_hash": "065a03ffecc7e48c4a1c9630cfa6d271ccc509de07ddf4445deef9d51fc02514",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-cross-lane-engine/references/ownership-maps.md",
-      "target_path": ".github/skills/internal-agent-cross-lane-engine/references/ownership-maps.md"
-    },
-    {
-      "content_hash": "fcb974b464082e475ae02a5b812e7b54b67b727d9072414be2e828288ba64f6f",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 13486,
-        "normalized_bytes": 13486
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/SKILL.md",
-      "source_hash": "fcb974b464082e475ae02a5b812e7b54b67b727d9072414be2e828288ba64f6f",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/SKILL.md",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/SKILL.md"
-    },
-    {
-      "content_hash": "95f32a5553c909c6b4aaa0ac2b45ec162727ab08d0eb05df7a35ef8ed7b60cbc",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 363,
-        "normalized_bytes": 363
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/agents/openai.yaml",
-      "source_hash": "95f32a5553c909c6b4aaa0ac2b45ec162727ab08d0eb05df7a35ef8ed7b60cbc",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/agents/openai.yaml",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/agents/openai.yaml"
-    },
-    {
-      "content_hash": "2b7471e3ba6e5961d5a16d1bfd49aa14904ac326053828443484454d314094a3",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3893,
-        "normalized_bytes": 3893
+        "bytes": 3884,
+        "normalized_bytes": 3884
       },
       "normalization_version": "v1",
       "resource_id": ".github/skills/internal-agent-sync-external-resources/patches/obra-brainstorming.patch",
-      "source_hash": "2b7471e3ba6e5961d5a16d1bfd49aa14904ac326053828443484454d314094a3",
+      "source_hash": "7c22a4e0424ea449df68e788ed84f743525f60b68d69a9e390c3126aae8aeb92",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/patches/obra-brainstorming.patch",
       "target_path": ".github/skills/internal-agent-sync-external-resources/patches/obra-brainstorming.patch"
     },
     {
-      "content_hash": "ca843d89a6988ebb98618ba8a61dd80f1fca8e4e0ba21f166471d93fd0690ad8",
+      "content_hash": "876f7ed93ab17f3eb5588d462048805673f7854cafb846780923e7d2c0e39e15",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 1982,
-        "normalized_bytes": 1982
+        "bytes": 1974,
+        "normalized_bytes": 1974
       },
       "normalization_version": "v1",
       "resource_id": ".github/skills/internal-agent-sync-external-resources/patches/obra-requesting-code-review.patch",
-      "source_hash": "ca843d89a6988ebb98618ba8a61dd80f1fca8e4e0ba21f166471d93fd0690ad8",
+      "source_hash": "876f7ed93ab17f3eb5588d462048805673f7854cafb846780923e7d2c0e39e15",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/patches/obra-requesting-code-review.patch",
       "target_path": ".github/skills/internal-agent-sync-external-resources/patches/obra-requesting-code-review.patch"
     },
     {
-      "content_hash": "28e008c6d108c6676f45d20cf5dfbc6e0dfa0b8bcbb50e35fc6fc221b4ac9560",
+      "content_hash": "fe77d05959002e446ba53ad37bdd01de01ea96e666b0d1203245ad3e87b15a38",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 668,
-        "normalized_bytes": 668
+        "bytes": 665,
+        "normalized_bytes": 665
       },
       "normalization_version": "v1",
       "resource_id": ".github/skills/internal-agent-sync-external-resources/patches/obra-subagent-driven-development.patch",
-      "source_hash": "28e008c6d108c6676f45d20cf5dfbc6e0dfa0b8bcbb50e35fc6fc221b4ac9560",
+      "source_hash": "fe77d05959002e446ba53ad37bdd01de01ea96e666b0d1203245ad3e87b15a38",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/patches/obra-subagent-driven-development.patch",
       "target_path": ".github/skills/internal-agent-sync-external-resources/patches/obra-subagent-driven-development.patch"
     },
     {
-      "content_hash": "1c2ad251ba0641c913714f3639b58f10df28c05585a7d5e534fb1dc0bff65865",
+      "content_hash": "610a29773c70a0524dc55696eeffd3cc14dc23227cdf368c57565b9c1c3b6bb8",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 1318,
-        "normalized_bytes": 1318
+        "bytes": 1310,
+        "normalized_bytes": 1310
       },
       "normalization_version": "v1",
       "resource_id": ".github/skills/internal-agent-sync-external-resources/patches/obra-test-driven-development.patch",
-      "source_hash": "1c2ad251ba0641c913714f3639b58f10df28c05585a7d5e534fb1dc0bff65865",
+      "source_hash": "610a29773c70a0524dc55696eeffd3cc14dc23227cdf368c57565b9c1c3b6bb8",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/patches/obra-test-driven-development.patch",
       "target_path": ".github/skills/internal-agent-sync-external-resources/patches/obra-test-driven-development.patch"
     },
     {
-      "content_hash": "e588fb3ea49d02be16daf9d05db23cf0dfa1c7681bf66d13627aa1d0951d88b4",
+      "content_hash": "720d8dd1e87c04cc43d3e9987a118faa98b07baa4657ad3af4b29dc172bf7682",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 2439,
-        "normalized_bytes": 2439
+        "bytes": 2427,
+        "normalized_bytes": 2427
       },
       "normalization_version": "v1",
       "resource_id": ".github/skills/internal-agent-sync-external-resources/patches/obra-writing-plans.patch",
-      "source_hash": "e588fb3ea49d02be16daf9d05db23cf0dfa1c7681bf66d13627aa1d0951d88b4",
+      "source_hash": "720d8dd1e87c04cc43d3e9987a118faa98b07baa4657ad3af4b29dc172bf7682",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/patches/obra-writing-plans.patch",
       "target_path": ".github/skills/internal-agent-sync-external-resources/patches/obra-writing-plans.patch"
     },
     {
-      "content_hash": "4ba45be5dc736b8f3c8bf17e973c8a1022238268b9d33218c777ba88c113968c",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2415,
-        "normalized_bytes": 2415
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md",
-      "source_hash": "4ba45be5dc736b8f3c8bf17e973c8a1022238268b9d33218c777ba88c113968c",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md"
-    },
-    {
-      "content_hash": "1c4a25def0b8a55aa0fb7a4bfcbe8cd8fbfbcf2d6c8f95fdb69f897e69be2a1e",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3100,
-        "normalized_bytes": 3100
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md",
-      "source_hash": "1c4a25def0b8a55aa0fb7a4bfcbe8cd8fbfbcf2d6c8f95fdb69f897e69be2a1e",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md"
-    },
-    {
-      "content_hash": "0b50ce84518d8d2207b099931a0a82035e74cae3a855fc2372945a66a6d0dc38",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 4399,
-        "normalized_bytes": 4399
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml",
-      "source_hash": "0b50ce84518d8d2207b099931a0a82035e74cae3a855fc2372945a66a6d0dc38",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml"
-    },
-    {
-      "content_hash": "9b6f6785481748fc7096b75a052d24544b908e248232473c2aa5a6b44d352e7f",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 6874,
-        "normalized_bytes": 6874
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py",
-      "source_hash": "9b6f6785481748fc7096b75a052d24544b908e248232473c2aa5a6b44d352e7f",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py"
-    },
-    {
-      "content_hash": "da2c30f9314c242e2e7166c39832aa8e822b69aa31d95142e8080da789e0cdcf",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2846,
-        "normalized_bytes": 2846
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py",
-      "source_hash": "da2c30f9314c242e2e7166c39832aa8e822b69aa31d95142e8080da789e0cdcf",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py",
-      "target_path": ".github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py"
-    },
-    {
-      "content_hash": "57aa16aa7b73763942439c14fda7dc3d1452ea3960699076399239671ea35a85",
+      "content_hash": "23a5f2b163ccab9e2bb8648dacfad034c671b2114b8dcd3f9d8edffb5053b485",
       "hash_algo": "sha256",
       "kind": "skill",
       "metadata": {
-        "bytes": 3459,
-        "normalized_bytes": 3459
+        "bytes": 7048,
+        "normalized_bytes": 7048
       },
       "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-executing-plans/SKILL.md",
-      "source_hash": "57aa16aa7b73763942439c14fda7dc3d1452ea3960699076399239671ea35a85",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-executing-plans/SKILL.md",
-      "target_path": ".github/skills/internal-executing-plans/SKILL.md"
+      "resource_id": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md",
+      "source_hash": "23a5f2b163ccab9e2bb8648dacfad034c671b2114b8dcd3f9d8edffb5053b485",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md",
+      "target_path": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md"
     },
     {
-      "content_hash": "511315702e715f6f0a29227f1fd0f569fdf32815c0a6cca4c6130ebf7b0bc339",
+      "content_hash": "66bda2dfc709a1d505053bd44a8dfa20bef6df0b06556575d9972ab3f1086855",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 271,
-        "normalized_bytes": 271
+        "bytes": 7655,
+        "normalized_bytes": 7655
       },
       "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-executing-plans/agents/openai.yaml",
-      "source_hash": "511315702e715f6f0a29227f1fd0f569fdf32815c0a6cca4c6130ebf7b0bc339",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-executing-plans/agents/openai.yaml",
-      "target_path": ".github/skills/internal-executing-plans/agents/openai.yaml"
+      "resource_id": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md",
+      "source_hash": "66bda2dfc709a1d505053bd44a8dfa20bef6df0b06556575d9972ab3f1086855",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md",
+      "target_path": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md"
     },
     {
-      "content_hash": "f01f60735adecb5766d109af2111074bc40d76c2f351378623ebc56b5b272ab5",
+      "content_hash": "2ba545f40413bf47bca2a20e8a5a62c0ca91c908f425056ad27486e1e54ddeb1",
       "hash_algo": "sha256",
       "kind": "skill",
       "metadata": {
-        "bytes": 5519,
-        "normalized_bytes": 5519
+        "bytes": 4260,
+        "normalized_bytes": 4260
       },
       "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-writing-plans/SKILL.md",
-      "source_hash": "f01f60735adecb5766d109af2111074bc40d76c2f351378623ebc56b5b272ab5",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-writing-plans/SKILL.md",
-      "target_path": ".github/skills/internal-writing-plans/SKILL.md"
+      "resource_id": ".github/skills/internal-copilot-audit/SKILL.md",
+      "source_hash": "2ba545f40413bf47bca2a20e8a5a62c0ca91c908f425056ad27486e1e54ddeb1",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-audit/SKILL.md",
+      "target_path": ".github/skills/internal-copilot-audit/SKILL.md"
     },
     {
-      "content_hash": "fb7c4047674589d715efbf0c25ca80f91ac48b3637fc9076d3404aa6b71b9a4c",
+      "content_hash": "266640ff908bae85d54b9736855a7d05717ec62c9e3532a93970a544287fb2a3",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 6917,
+        "normalized_bytes": 6917
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-github-actions/SKILL.md",
+      "source_hash": "266640ff908bae85d54b9736855a7d05717ec62c9e3532a93970a544287fb2a3",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-actions/SKILL.md",
+      "target_path": ".github/skills/internal-github-actions/SKILL.md"
+    },
+    {
+      "content_hash": "c3dc2b0a325936548d3a98d25a061a60b26d622b2c40595a604dbba70cb3d796",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 13011,
+        "normalized_bytes": 13011
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-skill-creator/SKILL.md",
+      "source_hash": "c3dc2b0a325936548d3a98d25a061a60b26d622b2c40595a604dbba70cb3d796",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-skill-creator/SKILL.md",
+      "target_path": ".github/skills/internal-skill-creator/SKILL.md"
+    },
+    {
+      "content_hash": "2ec268bf82c433cd1a7802448f2a56046070f083f47215ee91f4afb56242a427",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 7569,
+        "normalized_bytes": 7569
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-terraform/SKILL.md",
+      "source_hash": "2ec268bf82c433cd1a7802448f2a56046070f083f47215ee91f4afb56242a427",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-terraform/SKILL.md",
+      "target_path": ".github/skills/internal-terraform/SKILL.md"
+    },
+    {
+      "content_hash": "fa0427479be344887a350800c3cb4f8d584c3d1a0f2cf6056575ac49bb9acf67",
       "hash_algo": "sha256",
       "kind": "file",
       "metadata": {
-        "bytes": 320,
-        "normalized_bytes": 320
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-writing-plans/agents/openai.yaml",
-      "source_hash": "fb7c4047674589d715efbf0c25ca80f91ac48b3637fc9076d3404aa6b71b9a4c",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-writing-plans/agents/openai.yaml",
-      "target_path": ".github/skills/internal-writing-plans/agents/openai.yaml"
-    },
-    {
-      "content_hash": "63f1e9bf565333ae2184a72e468ae78857c686f3a4a6cf5032250176cbb1a4af",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3047,
-        "normalized_bytes": 3047
+        "bytes": 3055,
+        "normalized_bytes": 3055
       },
       "normalization_version": "v1",
       "resource_id": ".github/workflows/_pre-commit.yml",
-      "source_hash": "63f1e9bf565333ae2184a72e468ae78857c686f3a4a6cf5032250176cbb1a4af",
+      "source_hash": "fa0427479be344887a350800c3cb4f8d584c3d1a0f2cf6056575ac49bb9acf67",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/workflows/_pre-commit.yml",
       "target_path": ".github/workflows/_pre-commit.yml"
+    },
+    {
+      "content_hash": "5d0c15a7c5e739fc586c705788c8baac24e5063eddf6b5c657620765de33272c",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 5101,
+        "normalized_bytes": 5101
+      },
+      "normalization_version": "v1",
+      "resource_id": ".pre-commit-config.yaml",
+      "source_hash": "5d0c15a7c5e739fc586c705788c8baac24e5063eddf6b5c657620765de33272c",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.pre-commit-config.yaml",
+      "target_path": ".pre-commit-config.yaml"
+    },
+    {
+      "content_hash": "6df92e04eb049518f09a5071a160177db25a1bd4b20f570a147a0bea7d6172f1",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 9962,
+        "normalized_bytes": 9962
+      },
+      "normalization_version": "v1",
+      "resource_id": "AGENTS.md",
+      "source_hash": "6df92e04eb049518f09a5071a160177db25a1bd4b20f570a147a0bea7d6172f1",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/AGENTS.md",
+      "target_path": "AGENTS.md"
+    },
+    {
+      "content_hash": "582173446c84cebab160915ac2e6c4a1c9182f308f858981acf7f0161caf4122",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2041,
+        "normalized_bytes": 2041
+      },
+      "normalization_version": "v1",
+      "resource_id": "LESSONS_LEARNED.md",
+      "source_hash": "582173446c84cebab160915ac2e6c4a1c9182f308f858981acf7f0161caf4122",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/LESSONS_LEARNED.md",
+      "target_path": "LESSONS_LEARNED.md"
+    },
+    {
+      "content_hash": "c67bf2e76ec10173029e64f47376166b6cb8bcf2d4cb971666977f537d0c8157",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 6862,
+        "normalized_bytes": 6862
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/INVENTORY.md",
+      "source_hash": "c67bf2e76ec10173029e64f47376166b6cb8bcf2d4cb971666977f537d0c8157",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/INVENTORY.md",
+      "target_path": ".github/INVENTORY.md"
+    },
+    {
+      "content_hash": "2a1cd1c6175157e4fe6808dfd5a338cee61ffba01a0137507b877281eaf54f24",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1155,
+        "normalized_bytes": 1155
+      },
+      "normalization_version": "v1",
+      "resource_id": ".editorconfig",
+      "source_hash": "2a1cd1c6175157e4fe6808dfd5a338cee61ffba01a0137507b877281eaf54f24",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.editorconfig",
+      "target_path": ".editorconfig"
     },
     {
       "content_hash": "f3cede3905ff89c8b5f9a453dbf37f73ef35a794d6194b216cf06fb462776aa0",
@@ -396,32 +440,18 @@
       "target_path": ".github/DEPRECATION.md"
     },
     {
-      "content_hash": "be71af9f5d93d8be58edd2472c8277c437a83fa80845776cbbe7293482005aa0",
+      "content_hash": "e741ca018b22fe3fa0b656c992fe4237e40d621d01c91bb687faffaaf2f33b35",
       "hash_algo": "sha256",
       "kind": "agent",
       "metadata": {
-        "bytes": 3657,
-        "normalized_bytes": 3657
+        "bytes": 2641,
+        "normalized_bytes": 2641
       },
       "normalization_version": "v1",
-      "resource_id": ".github/agents/internal-planning-leader.agent.md",
-      "source_hash": "be71af9f5d93d8be58edd2472c8277c437a83fa80845776cbbe7293482005aa0",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-planning-leader.agent.md",
-      "target_path": ".github/agents/internal-planning-leader.agent.md"
-    },
-    {
-      "content_hash": "b9d704982835064d9dec4f15120c5deabc6ee69dee7fb214fc4e4ddbd1c82c4d",
-      "hash_algo": "sha256",
-      "kind": "agent",
-      "metadata": {
-        "bytes": 2722,
-        "normalized_bytes": 2722
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/agents/internal-review-guard.agent.md",
-      "source_hash": "b9d704982835064d9dec4f15120c5deabc6ee69dee7fb214fc4e4ddbd1c82c4d",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-review-guard.agent.md",
-      "target_path": ".github/agents/internal-review-guard.agent.md"
+      "resource_id": ".github/agents/internal-delivery-operator.agent.md",
+      "source_hash": "e741ca018b22fe3fa0b656c992fe4237e40d621d01c91bb687faffaaf2f33b35",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/agents/internal-delivery-operator.agent.md",
+      "target_path": ".github/agents/internal-delivery-operator.agent.md"
     },
     {
       "content_hash": "57642cb197c2ee2575e5f614cfcab4ef5f6ffec9181f238abd2b60cf78350065",
@@ -452,18 +482,60 @@
       "target_path": ".github/copilot-commit-message-instructions.md"
     },
     {
-      "content_hash": "813950cb1d4e8afa620be52b8ffd84c6451a5c84447d22162017a926688761e8",
+      "content_hash": "bbdfdee27758d016803801812863ccb58ddb9db0011fda9a3034621111874d54",
       "hash_algo": "sha256",
-      "kind": "file",
+      "kind": "instruction",
       "metadata": {
-        "bytes": 12680,
-        "normalized_bytes": 12680
+        "bytes": 6900,
+        "normalized_bytes": 6900
       },
       "normalization_version": "v1",
-      "resource_id": ".github/copilot-instructions.md",
-      "source_hash": "813950cb1d4e8afa620be52b8ffd84c6451a5c84447d22162017a926688761e8",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/copilot-instructions.md",
-      "target_path": ".github/copilot-instructions.md"
+      "resource_id": ".github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md",
+      "source_hash": "bbdfdee27758d016803801812863ccb58ddb9db0011fda9a3034621111874d54",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md",
+      "target_path": ".github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md"
+    },
+    {
+      "content_hash": "49a0471a0571f2c9217f450251e99cf1b69d9d3999d7fe5f2f9481e3c6016f73",
+      "hash_algo": "sha256",
+      "kind": "instruction",
+      "metadata": {
+        "bytes": 16245,
+        "normalized_bytes": 16245
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/instructions/awesome-copilot-go.instructions.md",
+      "source_hash": "49a0471a0571f2c9217f450251e99cf1b69d9d3999d7fe5f2f9481e3c6016f73",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-go.instructions.md",
+      "target_path": ".github/instructions/awesome-copilot-go.instructions.md"
+    },
+    {
+      "content_hash": "e54ba3f60913c4f391de409f72662ba2e34fd51926c3d16317a43415a7cd3ff1",
+      "hash_algo": "sha256",
+      "kind": "instruction",
+      "metadata": {
+        "bytes": 4537,
+        "normalized_bytes": 4537
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/instructions/awesome-copilot-kubernetes-manifests.instructions.md",
+      "source_hash": "e54ba3f60913c4f391de409f72662ba2e34fd51926c3d16317a43415a7cd3ff1",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-kubernetes-manifests.instructions.md",
+      "target_path": ".github/instructions/awesome-copilot-kubernetes-manifests.instructions.md"
+    },
+    {
+      "content_hash": "171625be71f982e0bcfead23264fa568ee1f2d270ac5cfd95354c8e0c9647ee7",
+      "hash_algo": "sha256",
+      "kind": "instruction",
+      "metadata": {
+        "bytes": 4776,
+        "normalized_bytes": 4776
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/instructions/awesome-copilot-shell.instructions.md",
+      "source_hash": "171625be71f982e0bcfead23264fa568ee1f2d270ac5cfd95354c8e0c9647ee7",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-shell.instructions.md",
+      "target_path": ".github/instructions/awesome-copilot-shell.instructions.md"
     },
     {
       "content_hash": "388db4a86653e1558c39bfd5e95c46f5fc26546e0a3d564f9568a4cab2a2e45b",
@@ -478,6 +550,34 @@
       "source_hash": "388db4a86653e1558c39bfd5e95c46f5fc26546e0a3d564f9568a4cab2a2e45b",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-bash.instructions.md",
       "target_path": ".github/instructions/internal-bash.instructions.md"
+    },
+    {
+      "content_hash": "4d3e6925ff79f4fdad38156a875df0e843d11c4b2c3f991e21ca5977cd3c7274",
+      "hash_algo": "sha256",
+      "kind": "instruction",
+      "metadata": {
+        "bytes": 1405,
+        "normalized_bytes": 1405
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/instructions/internal-copilot-agent-authoring.instructions.md",
+      "source_hash": "4d3e6925ff79f4fdad38156a875df0e843d11c4b2c3f991e21ca5977cd3c7274",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-copilot-agent-authoring.instructions.md",
+      "target_path": ".github/instructions/internal-copilot-agent-authoring.instructions.md"
+    },
+    {
+      "content_hash": "9aa00236aade8b4f4300e3fe104e53c38b2b7084a7792e266b2b489fe3b8671c",
+      "hash_algo": "sha256",
+      "kind": "instruction",
+      "metadata": {
+        "bytes": 1337,
+        "normalized_bytes": 1337
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/instructions/internal-copilot-skill-reference-authoring.instructions.md",
+      "source_hash": "9aa00236aade8b4f4300e3fe104e53c38b2b7084a7792e266b2b489fe3b8671c",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-copilot-skill-reference-authoring.instructions.md",
+      "target_path": ".github/instructions/internal-copilot-skill-reference-authoring.instructions.md"
     },
     {
       "content_hash": "138c0120641a9c52ab26e7f3494060116d0cd3336e08704e67556099d404b351",
@@ -606,34 +706,6 @@
       "target_path": ".github/instructions/internal-nodejs.instructions.md"
     },
     {
-      "content_hash": "955c9edf8f786715506a7437e1d702b56096c1e88f16c47100a359103c661c4c",
-      "hash_algo": "sha256",
-      "kind": "instruction",
-      "metadata": {
-        "bytes": 2964,
-        "normalized_bytes": 2964
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/instructions/internal-python.instructions.md",
-      "source_hash": "955c9edf8f786715506a7437e1d702b56096c1e88f16c47100a359103c661c4c",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-python.instructions.md",
-      "target_path": ".github/instructions/internal-python.instructions.md"
-    },
-    {
-      "content_hash": "ada20eb33ae216128ff1a5ffbbd552cc5475cac780d344485057639be894dadb",
-      "hash_algo": "sha256",
-      "kind": "instruction",
-      "metadata": {
-        "bytes": 1835,
-        "normalized_bytes": 1835
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/instructions/internal-terraform.instructions.md",
-      "source_hash": "ada20eb33ae216128ff1a5ffbbd552cc5475cac780d344485057639be894dadb",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/internal-terraform.instructions.md",
-      "target_path": ".github/instructions/internal-terraform.instructions.md"
-    },
-    {
       "content_hash": "bffe552e48f43a420514f3c34cbde1bcce7a7c554f0fb1b9587f0ea97cf8dbe2",
       "hash_algo": "sha256",
       "kind": "instruction",
@@ -674,944 +746,6 @@
       "source_hash": "7e9fd3f1e794c4f09956ba7f7a9878516803135f9a53ded0ff680960c484ab28",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/security-baseline.md",
       "target_path": ".github/security-baseline.md"
-    },
-    {
-      "content_hash": "66ea39325b89ec81baf69066023eddd73debde8dd3717ad1758b6291e1245e8b",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 18896,
-        "normalized_bytes": 18896
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-development/SKILL.md",
-      "source_hash": "66ea39325b89ec81baf69066023eddd73debde8dd3717ad1758b6291e1245e8b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/SKILL.md",
-      "target_path": ".github/skills/internal-agent-development/SKILL.md"
-    },
-    {
-      "content_hash": "8c9f21ce4038d1374e73449d5c0d73b7f7c1f7a329c3b62276c1e0a755183cff",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 7439,
-        "normalized_bytes": 7439
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-development/references/agent-contract.md",
-      "source_hash": "8c9f21ce4038d1374e73449d5c0d73b7f7c1f7a329c3b62276c1e0a755183cff",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/agent-contract.md",
-      "target_path": ".github/skills/internal-agent-development/references/agent-contract.md"
-    },
-    {
-      "content_hash": "0535bff30d67a43693a73d89a2ee32b03e64ff00f24047630be3a71c0197343d",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2446,
-        "normalized_bytes": 2446
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-development/references/conversion-checklist.md",
-      "source_hash": "0535bff30d67a43693a73d89a2ee32b03e64ff00f24047630be3a71c0197343d",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/conversion-checklist.md",
-      "target_path": ".github/skills/internal-agent-development/references/conversion-checklist.md"
-    },
-    {
-      "content_hash": "0a1f19b9b1741794b5a6882d511ec8fabe33e8f75c5c04c1ad625243a05781d3",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 5265,
-        "normalized_bytes": 5265
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-development/references/example-transformations.md",
-      "source_hash": "0a1f19b9b1741794b5a6882d511ec8fabe33e8f75c5c04c1ad625243a05781d3",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/example-transformations.md",
-      "target_path": ".github/skills/internal-agent-development/references/example-transformations.md"
-    },
-    {
-      "content_hash": "31e693dd7a00c5c595f61f2263af854d4ee60d82dfdf132f4010adf207d23d49",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3837,
-        "normalized_bytes": 3837
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-development/references/review-checklist.md",
-      "source_hash": "31e693dd7a00c5c595f61f2263af854d4ee60d82dfdf132f4010adf207d23d49",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/review-checklist.md",
-      "target_path": ".github/skills/internal-agent-development/references/review-checklist.md"
-    },
-    {
-      "content_hash": "169adf8895e535a3ac390ce532b9c7df98784bfad7da30b8e3ac32bd96ca59ae",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 5738,
-        "normalized_bytes": 5738
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-development/references/subagent-patterns.md",
-      "source_hash": "169adf8895e535a3ac390ce532b9c7df98784bfad7da30b8e3ac32bd96ca59ae",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/subagent-patterns.md",
-      "target_path": ".github/skills/internal-agent-development/references/subagent-patterns.md"
-    },
-    {
-      "content_hash": "f137269a6f15333224cda7207086475f0549324ebbf383fc7c83dc8ac9ab941e",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 6033,
-        "normalized_bytes": 6033
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md",
-      "source_hash": "f137269a6f15333224cda7207086475f0549324ebbf383fc7c83dc8ac9ab941e",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md",
-      "target_path": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md"
-    },
-    {
-      "content_hash": "bda2770a9782b20398937fd9a7b42d9fb8b869bb82f574f93047fb7ef347b91b",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 6817,
-        "normalized_bytes": 6817
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md",
-      "source_hash": "bda2770a9782b20398937fd9a7b42d9fb8b869bb82f574f93047fb7ef347b91b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md",
-      "target_path": ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md"
-    },
-    {
-      "content_hash": "19b2323ec831fa1dca1618cacc37172f46959429a384a1fe37c484108b6543f1",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4891,
-        "normalized_bytes": 4891
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-aws-mcp-research/SKILL.md",
-      "source_hash": "19b2323ec831fa1dca1618cacc37172f46959429a384a1fe37c484108b6543f1",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-aws-mcp-research/SKILL.md",
-      "target_path": ".github/skills/internal-aws-mcp-research/SKILL.md"
-    },
-    {
-      "content_hash": "17aa67e53991cf3aa5f484de765c651761f09139800fcc8b25b4d24b093fa7c8",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 6973,
-        "normalized_bytes": 6973
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-aws-strategic/SKILL.md",
-      "source_hash": "17aa67e53991cf3aa5f484de765c651761f09139800fcc8b25b4d24b093fa7c8",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-aws-strategic/SKILL.md",
-      "target_path": ".github/skills/internal-aws-strategic/SKILL.md"
-    },
-    {
-      "content_hash": "ab25ef2e920a5670c30c250288ba985ecd51fca19af7134ea12a1c95882f08fa",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 5575,
-        "normalized_bytes": 5575
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-azure-strategic/SKILL.md",
-      "source_hash": "ab25ef2e920a5670c30c250288ba985ecd51fca19af7134ea12a1c95882f08fa",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-azure-strategic/SKILL.md",
-      "target_path": ".github/skills/internal-azure-strategic/SKILL.md"
-    },
-    {
-      "content_hash": "e806c7c32f75826cbd8c9397b881dad5637576f4a42857c80eaa6893067af312",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 5006,
-        "normalized_bytes": 5006
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-change-impact-analysis/SKILL.md",
-      "source_hash": "e806c7c32f75826cbd8c9397b881dad5637576f4a42857c80eaa6893067af312",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-change-impact-analysis/SKILL.md",
-      "target_path": ".github/skills/internal-change-impact-analysis/SKILL.md"
-    },
-    {
-      "content_hash": "0ed32a4be7f3bc26ee9bf0fead1a8d3086439e5c4506fae87caed4fb609bf229",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2372,
-        "normalized_bytes": 2372
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-change-impact-analysis/references/analysis-dimensions.md",
-      "source_hash": "0ed32a4be7f3bc26ee9bf0fead1a8d3086439e5c4506fae87caed4fb609bf229",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-change-impact-analysis/references/analysis-dimensions.md",
-      "target_path": ".github/skills/internal-change-impact-analysis/references/analysis-dimensions.md"
-    },
-    {
-      "content_hash": "f98a3884b254bff228927adb1eb8a7d4c2ddc30daee43a5e64f5ca40b7f54595",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 2442,
-        "normalized_bytes": 2442
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-changelog-automation/SKILL.md",
-      "source_hash": "f98a3884b254bff228927adb1eb8a7d4c2ddc30daee43a5e64f5ca40b7f54595",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-changelog-automation/SKILL.md",
-      "target_path": ".github/skills/internal-changelog-automation/SKILL.md"
-    },
-    {
-      "content_hash": "041abbe58adb3a473e996a72c327f49869ae390198af8783d718403cfcb4b89a",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3010,
-        "normalized_bytes": 3010
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-cloud-policy/SKILL.md",
-      "source_hash": "041abbe58adb3a473e996a72c327f49869ae390198af8783d718403cfcb4b89a",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-cloud-policy/SKILL.md",
-      "target_path": ".github/skills/internal-cloud-policy/SKILL.md"
-    },
-    {
-      "content_hash": "dd8c6172f41d895e67e5000a72b6a9726450c79affe5222e5fb8681965331037",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 8290,
-        "normalized_bytes": 8290
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-code-review/SKILL.md",
-      "source_hash": "dd8c6172f41d895e67e5000a72b6a9726450c79affe5222e5fb8681965331037",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/SKILL.md",
-      "target_path": ".github/skills/internal-code-review/SKILL.md"
-    },
-    {
-      "content_hash": "6fe747f46d09a880de3e731bd91c844669739262fff94cc61f760e0c63ae4e65",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2626,
-        "normalized_bytes": 2626
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-bash.md",
-      "source_hash": "6fe747f46d09a880de3e731bd91c844669739262fff94cc61f760e0c63ae4e65",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-bash.md",
-      "target_path": ".github/skills/internal-code-review/references/anti-patterns-bash.md"
-    },
-    {
-      "content_hash": "d63f5de0357a2102dade631a3f059945f197696a821ee552b3addb9604f4ec77",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2766,
-        "normalized_bytes": 2766
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-java.md",
-      "source_hash": "d63f5de0357a2102dade631a3f059945f197696a821ee552b3addb9604f4ec77",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-java.md",
-      "target_path": ".github/skills/internal-code-review/references/anti-patterns-java.md"
-    },
-    {
-      "content_hash": "d65ce7c3e2d26816fc8724a750b5566ddbff7f522d9164320b5a2133f2d305e5",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3052,
-        "normalized_bytes": 3052
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-nodejs.md",
-      "source_hash": "d65ce7c3e2d26816fc8724a750b5566ddbff7f522d9164320b5a2133f2d305e5",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-nodejs.md",
-      "target_path": ".github/skills/internal-code-review/references/anti-patterns-nodejs.md"
-    },
-    {
-      "content_hash": "ec8e7726bc848db5c053d2d5983dcf8c50a56d098ee236734e32a0c0098adbfc",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3462,
-        "normalized_bytes": 3462
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-python.md",
-      "source_hash": "ec8e7726bc848db5c053d2d5983dcf8c50a56d098ee236734e32a0c0098adbfc",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-python.md",
-      "target_path": ".github/skills/internal-code-review/references/anti-patterns-python.md"
-    },
-    {
-      "content_hash": "f24a0144d80e06beedbe3cc9be3073c249e2e842ec4a6c82570de6a3d5b0b29b",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2835,
-        "normalized_bytes": 2835
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-terraform.md",
-      "source_hash": "f24a0144d80e06beedbe3cc9be3073c249e2e842ec4a6c82570de6a3d5b0b29b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-terraform.md",
-      "target_path": ".github/skills/internal-code-review/references/anti-patterns-terraform.md"
-    },
-    {
-      "content_hash": "0a781afce2a5011a1f703aed8befdabaa3b973f8f6847699182f57bcb639cc33",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3583,
-        "normalized_bytes": 3583
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-copilot-audit/SKILL.md",
-      "source_hash": "0a781afce2a5011a1f703aed8befdabaa3b973f8f6847699182f57bcb639cc33",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-audit/SKILL.md",
-      "target_path": ".github/skills/internal-copilot-audit/SKILL.md"
-    },
-    {
-      "content_hash": "18af16857f064dfb28043cdbd11aa32eed194613190dec6d684faad4014b940a",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 5221,
-        "normalized_bytes": 5221
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-copilot-audit/references/audit-checklist.md",
-      "source_hash": "18af16857f064dfb28043cdbd11aa32eed194613190dec6d684faad4014b940a",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-audit/references/audit-checklist.md",
-      "target_path": ".github/skills/internal-copilot-audit/references/audit-checklist.md"
-    },
-    {
-      "content_hash": "003234bdf56f5e80560e13ef99313ccda3d63a5b4590f82d5c8966f043aff852",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4973,
-        "normalized_bytes": 4973
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-copilot-docs-research/SKILL.md",
-      "source_hash": "003234bdf56f5e80560e13ef99313ccda3d63a5b4590f82d5c8966f043aff852",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-docs-research/SKILL.md",
-      "target_path": ".github/skills/internal-copilot-docs-research/SKILL.md"
-    },
-    {
-      "content_hash": "68e02b3acb72dfa6212a923c904018bf60623d18a4a436ad3f5569e4a27377a4",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4223,
-        "normalized_bytes": 4223
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-copilot-instructions-creator/SKILL.md",
-      "source_hash": "68e02b3acb72dfa6212a923c904018bf60623d18a4a436ad3f5569e4a27377a4",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-instructions-creator/SKILL.md",
-      "target_path": ".github/skills/internal-copilot-instructions-creator/SKILL.md"
-    },
-    {
-      "content_hash": "9f4f53b5ee42d93ce9f83efafe144117d28f1f7f5b12901affd5e39ff548bfa9",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1567,
-        "normalized_bytes": 1567
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-copilot-instructions-creator/references/review-checklist.md",
-      "source_hash": "9f4f53b5ee42d93ce9f83efafe144117d28f1f7f5b12901affd5e39ff548bfa9",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-instructions-creator/references/review-checklist.md",
-      "target_path": ".github/skills/internal-copilot-instructions-creator/references/review-checklist.md"
-    },
-    {
-      "content_hash": "c22a26067e9e461bcee22c486d8c952dedc30dfadd2ff09a60e1c3a01087a780",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4499,
-        "normalized_bytes": 4499
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-ddd/SKILL.md",
-      "source_hash": "c22a26067e9e461bcee22c486d8c952dedc30dfadd2ff09a60e1c3a01087a780",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-ddd/SKILL.md",
-      "target_path": ".github/skills/internal-ddd/SKILL.md"
-    },
-    {
-      "content_hash": "59520597cd6819867fb65de7141021e87dca7b7a9f21043616790cc3365c9bbc",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4865,
-        "normalized_bytes": 4865
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-devops-core-principles/SKILL.md",
-      "source_hash": "59520597cd6819867fb65de7141021e87dca7b7a9f21043616790cc3365c9bbc",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-devops-core-principles/SKILL.md",
-      "target_path": ".github/skills/internal-devops-core-principles/SKILL.md"
-    },
-    {
-      "content_hash": "58a01791e36ddf4649ce11aaeca9e64d824495f6a17d485af4d840f08fe2856a",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 1993,
-        "normalized_bytes": 1993
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-docker/SKILL.md",
-      "source_hash": "58a01791e36ddf4649ce11aaeca9e64d824495f6a17d485af4d840f08fe2856a",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-docker/SKILL.md",
-      "target_path": ".github/skills/internal-docker/SKILL.md"
-    },
-    {
-      "content_hash": "be19a8894614da75022ba2d15a767e9ff6f70565e7051420336a0c9a0a72004b",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 5027,
-        "normalized_bytes": 5027
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-gcp-governance/SKILL.md",
-      "source_hash": "be19a8894614da75022ba2d15a767e9ff6f70565e7051420336a0c9a0a72004b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-gcp-governance/SKILL.md",
-      "target_path": ".github/skills/internal-gcp-governance/SKILL.md"
-    },
-    {
-      "content_hash": "798f255ac220ed472f05741202e972a7b400ba3032fb33929342854ea2b889f4",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 5453,
-        "normalized_bytes": 5453
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-gcp-operations/SKILL.md",
-      "source_hash": "798f255ac220ed472f05741202e972a7b400ba3032fb33929342854ea2b889f4",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-gcp-operations/SKILL.md",
-      "target_path": ".github/skills/internal-gcp-operations/SKILL.md"
-    },
-    {
-      "content_hash": "1abd73c888a581f7f1368a955054a776ee4cef6101d76edd6ffd25034643ee74",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 5141,
-        "normalized_bytes": 5141
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-github-action-composite/SKILL.md",
-      "source_hash": "1abd73c888a581f7f1368a955054a776ee4cef6101d76edd6ffd25034643ee74",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-action-composite/SKILL.md",
-      "target_path": ".github/skills/internal-github-action-composite/SKILL.md"
-    },
-    {
-      "content_hash": "cbf3549728c56437d9dbd1b75b041ce1f8788b519660483807b68e91fb300f44",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 6649,
-        "normalized_bytes": 6649
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-github-actions/SKILL.md",
-      "source_hash": "cbf3549728c56437d9dbd1b75b041ce1f8788b519660483807b68e91fb300f44",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-actions/SKILL.md",
-      "target_path": ".github/skills/internal-github-actions/SKILL.md"
-    },
-    {
-      "content_hash": "796454e8c72e5c719f59f2beac4cd7cd3b21f1800091ff26130c92c925172171",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1828,
-        "normalized_bytes": 1828
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-github-actions/references/auth-snippets.md",
-      "source_hash": "796454e8c72e5c719f59f2beac4cd7cd3b21f1800091ff26130c92c925172171",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-actions/references/auth-snippets.md",
-      "target_path": ".github/skills/internal-github-actions/references/auth-snippets.md"
-    },
-    {
-      "content_hash": "4ff432d7415ed05d055ffc3457b2464c4c86a721771ce2fbeaeb456b9887fc88",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3843,
-        "normalized_bytes": 3843
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-kubernetes-deployment/SKILL.md",
-      "source_hash": "4ff432d7415ed05d055ffc3457b2464c4c86a721771ce2fbeaeb456b9887fc88",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes-deployment/SKILL.md",
-      "target_path": ".github/skills/internal-kubernetes-deployment/SKILL.md"
-    },
-    {
-      "content_hash": "13b9328ab51e8d8e936aed086ecf7a46d95c30b2c1d9f60344210bde2e9fee3c",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 2948,
-        "normalized_bytes": 2948
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-kubernetes/SKILL.md",
-      "source_hash": "13b9328ab51e8d8e936aed086ecf7a46d95c30b2c1d9f60344210bde2e9fee3c",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes/SKILL.md",
-      "target_path": ".github/skills/internal-kubernetes/SKILL.md"
-    },
-    {
-      "content_hash": "b47784bb3b85386af21bbab311db07112e41597802c0596da3ccfd4920365d1c",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2472,
-        "normalized_bytes": 2472
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-kubernetes/references/routing-matrix.md",
-      "source_hash": "b47784bb3b85386af21bbab311db07112e41597802c0596da3ccfd4920365d1c",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes/references/routing-matrix.md",
-      "target_path": ".github/skills/internal-kubernetes/references/routing-matrix.md"
-    },
-    {
-      "content_hash": "be071006d97542d5ed297fe9e1b1dc963b56a057779445f1a5a47eafb8223a1b",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3285,
-        "normalized_bytes": 3285
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-oop-design-patterns/SKILL.md",
-      "source_hash": "be071006d97542d5ed297fe9e1b1dc963b56a057779445f1a5a47eafb8223a1b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-oop-design-patterns/SKILL.md",
-      "target_path": ".github/skills/internal-oop-design-patterns/SKILL.md"
-    },
-    {
-      "content_hash": "4e885e758dcab7100302bd26d154c1c3aa0409d3ded1c0a2ba0e23aa95510692",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1490,
-        "normalized_bytes": 1490
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-oop-design-patterns/references/language-cues.md",
-      "source_hash": "4e885e758dcab7100302bd26d154c1c3aa0409d3ded1c0a2ba0e23aa95510692",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-oop-design-patterns/references/language-cues.md",
-      "target_path": ".github/skills/internal-oop-design-patterns/references/language-cues.md"
-    },
-    {
-      "content_hash": "226f6eb97e022854b8d9bcfca9a03dd54cc6f5a9cf0bb5d0ccf7a1005981b957",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3384,
-        "normalized_bytes": 3384
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-performance-optimization/SKILL.md",
-      "source_hash": "226f6eb97e022854b8d9bcfca9a03dd54cc6f5a9cf0bb5d0ccf7a1005981b957",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-performance-optimization/SKILL.md",
-      "target_path": ".github/skills/internal-performance-optimization/SKILL.md"
-    },
-    {
-      "content_hash": "5e65861f4e7b3d422ce2b8802ca87bce4bf0f4e0bdbe2180f46dd871cb925acf",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4187,
-        "normalized_bytes": 4187
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-pr-editor/SKILL.md",
-      "source_hash": "5e65861f4e7b3d422ce2b8802ca87bce4bf0f4e0bdbe2180f46dd871cb925acf",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-pr-editor/SKILL.md",
-      "target_path": ".github/skills/internal-pr-editor/SKILL.md"
-    },
-    {
-      "content_hash": "4bf54ae9a88795d6349d12db6640a5425c3bdfa1164bbaa5535c78df0d5fcf49",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3617,
-        "normalized_bytes": 3617
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-project-java/SKILL.md",
-      "source_hash": "4bf54ae9a88795d6349d12db6640a5425c3bdfa1164bbaa5535c78df0d5fcf49",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-java/SKILL.md",
-      "target_path": ".github/skills/internal-project-java/SKILL.md"
-    },
-    {
-      "content_hash": "9f303cf6a70879f15838d90fece31b4b790828c8f043b0a16c0085b6b3708a92",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3805,
-        "normalized_bytes": 3805
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-project-nodejs/SKILL.md",
-      "source_hash": "9f303cf6a70879f15838d90fece31b4b790828c8f043b0a16c0085b6b3708a92",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-nodejs/SKILL.md",
-      "target_path": ".github/skills/internal-project-nodejs/SKILL.md"
-    },
-    {
-      "content_hash": "afd9cd63906db52834d4d65f017343c49bee276711b7279dd364922ac4292677",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1111,
-        "normalized_bytes": 1111
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-project-nodejs/references/examples.md",
-      "source_hash": "afd9cd63906db52834d4d65f017343c49bee276711b7279dd364922ac4292677",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-nodejs/references/examples.md",
-      "target_path": ".github/skills/internal-project-nodejs/references/examples.md"
-    },
-    {
-      "content_hash": "e9bdb9cc35f872ee13635b4972f3fb8a569d23b25b10ae762a7edb9a571870fe",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 4411,
-        "normalized_bytes": 4411
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-project-python/SKILL.md",
-      "source_hash": "e9bdb9cc35f872ee13635b4972f3fb8a569d23b25b10ae762a7edb9a571870fe",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-python/SKILL.md",
-      "target_path": ".github/skills/internal-project-python/SKILL.md"
-    },
-    {
-      "content_hash": "97c42c1a9fb12b4e1f75e92ec8107adeb39b73957832e2691e3a8b93dfb935dd",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 2081,
-        "normalized_bytes": 2081
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-script-bash/SKILL.md",
-      "source_hash": "97c42c1a9fb12b4e1f75e92ec8107adeb39b73957832e2691e3a8b93dfb935dd",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-bash/SKILL.md",
-      "target_path": ".github/skills/internal-script-bash/SKILL.md"
-    },
-    {
-      "content_hash": "bc3a3383754732474dfbc1876ddbca96b2c517cfea72241a46d093ee4bc3bf47",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1832,
-        "normalized_bytes": 1832
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-script-bash/references/templates.md",
-      "source_hash": "bc3a3383754732474dfbc1876ddbca96b2c517cfea72241a46d093ee4bc3bf47",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-bash/references/templates.md",
-      "target_path": ".github/skills/internal-script-bash/references/templates.md"
-    },
-    {
-      "content_hash": "461275b3c27a93b88921c443b6b80e3a57b8eff2e382ff3f1185670a76c3ea42",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 7808,
-        "normalized_bytes": 7808
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-script-python/SKILL.md",
-      "source_hash": "461275b3c27a93b88921c443b6b80e3a57b8eff2e382ff3f1185670a76c3ea42",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-python/SKILL.md",
-      "target_path": ".github/skills/internal-script-python/SKILL.md"
-    },
-    {
-      "content_hash": "dda472a8afca9f1da8d20c467933945be27f5d3936aba928171759d1e64f4064",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 12779,
-        "normalized_bytes": 12779
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-skill-creator/SKILL.md",
-      "source_hash": "dda472a8afca9f1da8d20c467933945be27f5d3936aba928171759d1e64f4064",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-skill-creator/SKILL.md",
-      "target_path": ".github/skills/internal-skill-creator/SKILL.md"
-    },
-    {
-      "content_hash": "9c6b6b99d3aeb623c527505069d96d57eac6ef8031514f1b5a65745149f53a04",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 3529,
-        "normalized_bytes": 3529
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-skill-creator/references/writing-skills-checklist.md",
-      "source_hash": "9c6b6b99d3aeb623c527505069d96d57eac6ef8031514f1b5a65745149f53a04",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-skill-creator/references/writing-skills-checklist.md",
-      "target_path": ".github/skills/internal-skill-creator/references/writing-skills-checklist.md"
-    },
-    {
-      "content_hash": "74a26bfc243ce5fa4599e4c358859d4e1da563b0aa759bbbb8e3bbaa904ef747",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 3611,
-        "normalized_bytes": 3611
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-spring-boot-development/SKILL.md",
-      "source_hash": "74a26bfc243ce5fa4599e4c358859d4e1da563b0aa759bbbb8e3bbaa904ef747",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-spring-boot-development/SKILL.md",
-      "target_path": ".github/skills/internal-spring-boot-development/SKILL.md"
-    },
-    {
-      "content_hash": "e8ca938ca5214a9bb463771aedbdf48fc73280efa525d986f767bf23048b1b91",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 5983,
-        "normalized_bytes": 5983
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-terraform/SKILL.md",
-      "source_hash": "e8ca938ca5214a9bb463771aedbdf48fc73280efa525d986f767bf23048b1b91",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-terraform/SKILL.md",
-      "target_path": ".github/skills/internal-terraform/SKILL.md"
-    },
-    {
-      "content_hash": "4caa71b43038eb62b52bd6338170e6aeb7efd53be04c40d0060c9ce21a62d83b",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2033,
-        "normalized_bytes": 2033
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/internal-terraform/references/decision-guide.md",
-      "source_hash": "4caa71b43038eb62b52bd6338170e6aeb7efd53be04c40d0060c9ce21a62d83b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-terraform/references/decision-guide.md",
-      "target_path": ".github/skills/internal-terraform/references/decision-guide.md"
-    },
-    {
-      "content_hash": "9e0c6c59b1138312f6cff04f33f4e56e51b442a1df68f3cf04d1a5d276e4a101",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 10924,
-        "normalized_bytes": 10924
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/obra-brainstorming/SKILL.md",
-      "source_hash": "9e0c6c59b1138312f6cff04f33f4e56e51b442a1df68f3cf04d1a5d276e4a101",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-brainstorming/SKILL.md",
-      "target_path": ".github/skills/obra-brainstorming/SKILL.md"
-    },
-    {
-      "content_hash": "111f4bade10c743536808f1b8eaed798d837e57136f8eecd151c91fc2775bd18",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1747,
-        "normalized_bytes": 1747
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/obra-brainstorming/spec-document-reviewer-prompt.md",
-      "source_hash": "111f4bade10c743536808f1b8eaed798d837e57136f8eecd151c91fc2775bd18",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-brainstorming/spec-document-reviewer-prompt.md",
-      "target_path": ".github/skills/obra-brainstorming/spec-document-reviewer-prompt.md"
-    },
-    {
-      "content_hash": "404a24c62b9cf001a7b38463dab2a67fe70fb78b6c6c64ae0678697f6833675b",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 2913,
-        "normalized_bytes": 2913
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/obra-requesting-code-review/SKILL.md",
-      "source_hash": "404a24c62b9cf001a7b38463dab2a67fe70fb78b6c6c64ae0678697f6833675b",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-requesting-code-review/SKILL.md",
-      "target_path": ".github/skills/obra-requesting-code-review/SKILL.md"
-    },
-    {
-      "content_hash": "e2f01c2c8a79b6e6a05cb3e7315f01c50daabeefce72f251dd6b86a02035180f",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 12087,
-        "normalized_bytes": 12087
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/obra-subagent-driven-development/SKILL.md",
-      "source_hash": "e2f01c2c8a79b6e6a05cb3e7315f01c50daabeefce72f251dd6b86a02035180f",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-subagent-driven-development/SKILL.md",
-      "target_path": ".github/skills/obra-subagent-driven-development/SKILL.md"
-    },
-    {
-      "content_hash": "f52f1aa7de5190cb0d881553b2a0d4dcc370085868fa78234de6178973115ab9",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 10259,
-        "normalized_bytes": 10259
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/obra-test-driven-development/SKILL.md",
-      "source_hash": "f52f1aa7de5190cb0d881553b2a0d4dcc370085868fa78234de6178973115ab9",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-test-driven-development/SKILL.md",
-      "target_path": ".github/skills/obra-test-driven-development/SKILL.md"
-    },
-    {
-      "content_hash": "5d997b257b261082b03d48d4bb763140f1b4381450dec0b37639718a4fb9411f",
-      "hash_algo": "sha256",
-      "kind": "skill",
-      "metadata": {
-        "bytes": 6393,
-        "normalized_bytes": 6393
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/skills/obra-writing-plans/SKILL.md",
-      "source_hash": "5d997b257b261082b03d48d4bb763140f1b4381450dec0b37639718a4fb9411f",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-writing-plans/SKILL.md",
-      "target_path": ".github/skills/obra-writing-plans/SKILL.md"
-    },
-    {
-      "content_hash": "7396ce1e39cbf6c78229ec23c9fde1f457630deeed86349986d2236db7350b49",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2451,
-        "normalized_bytes": 2451
-      },
-      "normalization_version": "v1",
-      "resource_id": ".pre-commit-config.yaml",
-      "source_hash": "7396ce1e39cbf6c78229ec23c9fde1f457630deeed86349986d2236db7350b49",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.pre-commit-config.yaml",
-      "target_path": ".pre-commit-config.yaml"
-    },
-    {
-      "content_hash": "278830be3138b209b5084139e6eef1ce7627e373055e5f12a1b2c083d2222ead",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 9363,
-        "normalized_bytes": 9363
-      },
-      "normalization_version": "v1",
-      "resource_id": "AGENTS.md",
-      "source_hash": "278830be3138b209b5084139e6eef1ce7627e373055e5f12a1b2c083d2222ead",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/AGENTS.md",
-      "target_path": "AGENTS.md"
-    },
-    {
-      "content_hash": "a9f3944afb360d3fe4b201088dcadf3edf8f274d54da392bba00d9d0810c9b53",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 6569,
-        "normalized_bytes": 6569
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/INVENTORY.md",
-      "source_hash": "a9f3944afb360d3fe4b201088dcadf3edf8f274d54da392bba00d9d0810c9b53",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/INVENTORY.md",
-      "target_path": ".github/INVENTORY.md"
-    },
-    {
-      "content_hash": "2a1cd1c6175157e4fe6808dfd5a338cee61ffba01a0137507b877281eaf54f24",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 1155,
-        "normalized_bytes": 1155
-      },
-      "normalization_version": "v1",
-      "resource_id": ".editorconfig",
-      "source_hash": "2a1cd1c6175157e4fe6808dfd5a338cee61ffba01a0137507b877281eaf54f24",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.editorconfig",
-      "target_path": ".editorconfig"
-    },
-    {
-      "content_hash": "bbdfdee27758d016803801812863ccb58ddb9db0011fda9a3034621111874d54",
-      "hash_algo": "sha256",
-      "kind": "instruction",
-      "metadata": {
-        "bytes": 6900,
-        "normalized_bytes": 6900
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md",
-      "source_hash": "bbdfdee27758d016803801812863ccb58ddb9db0011fda9a3034621111874d54",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md",
-      "target_path": ".github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md"
-    },
-    {
-      "content_hash": "49a0471a0571f2c9217f450251e99cf1b69d9d3999d7fe5f2f9481e3c6016f73",
-      "hash_algo": "sha256",
-      "kind": "instruction",
-      "metadata": {
-        "bytes": 16245,
-        "normalized_bytes": 16245
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/instructions/awesome-copilot-go.instructions.md",
-      "source_hash": "49a0471a0571f2c9217f450251e99cf1b69d9d3999d7fe5f2f9481e3c6016f73",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-go.instructions.md",
-      "target_path": ".github/instructions/awesome-copilot-go.instructions.md"
-    },
-    {
-      "content_hash": "e54ba3f60913c4f391de409f72662ba2e34fd51926c3d16317a43415a7cd3ff1",
-      "hash_algo": "sha256",
-      "kind": "instruction",
-      "metadata": {
-        "bytes": 4537,
-        "normalized_bytes": 4537
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/instructions/awesome-copilot-kubernetes-manifests.instructions.md",
-      "source_hash": "e54ba3f60913c4f391de409f72662ba2e34fd51926c3d16317a43415a7cd3ff1",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-kubernetes-manifests.instructions.md",
-      "target_path": ".github/instructions/awesome-copilot-kubernetes-manifests.instructions.md"
-    },
-    {
-      "content_hash": "171625be71f982e0bcfead23264fa568ee1f2d270ac5cfd95354c8e0c9647ee7",
-      "hash_algo": "sha256",
-      "kind": "instruction",
-      "metadata": {
-        "bytes": 4776,
-        "normalized_bytes": 4776
-      },
-      "normalization_version": "v1",
-      "resource_id": ".github/instructions/awesome-copilot-shell.instructions.md",
-      "source_hash": "171625be71f982e0bcfead23264fa568ee1f2d270ac5cfd95354c8e0c9647ee7",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/instructions/awesome-copilot-shell.instructions.md",
-      "target_path": ".github/instructions/awesome-copilot-shell.instructions.md"
     },
     {
       "content_hash": "b13b9087ca1417bb9ae9ff7c05335618144ffcb0f2cd17ecd7a6be0d125ae9d2",
@@ -2132,6 +1266,90 @@
       "target_path": ".github/skills/awesome-copilot-secret-scanning/SKILL.md"
     },
     {
+      "content_hash": "b48e8917c0acf0a1e6584994095e780942b35e98c2edd7fe60a8b96493935be5",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4669,
+        "normalized_bytes": 4669
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-boundary-recommendation-engine/SKILL.md",
+      "source_hash": "b48e8917c0acf0a1e6584994095e780942b35e98c2edd7fe60a8b96493935be5",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-boundary-recommendation-engine/SKILL.md",
+      "target_path": ".github/skills/internal-agent-boundary-recommendation-engine/SKILL.md"
+    },
+    {
+      "content_hash": "d9d385a61a6185c4ce013e619dd5f040a0eb6b3ad9aec40e4564146ff688535a",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 307,
+        "normalized_bytes": 307
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-boundary-recommendation-engine/agents/openai.yaml",
+      "source_hash": "d9d385a61a6185c4ce013e619dd5f040a0eb6b3ad9aec40e4564146ff688535a",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-boundary-recommendation-engine/agents/openai.yaml",
+      "target_path": ".github/skills/internal-agent-boundary-recommendation-engine/agents/openai.yaml"
+    },
+    {
+      "content_hash": "b42767f729ff7fc9100ad38907a0b9df8307cc493b933cc026281511a8068d22",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 8577,
+        "normalized_bytes": 8577
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-cross-lane-engine/SKILL.md",
+      "source_hash": "b42767f729ff7fc9100ad38907a0b9df8307cc493b933cc026281511a8068d22",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-cross-lane-engine/SKILL.md",
+      "target_path": ".github/skills/internal-agent-cross-lane-engine/SKILL.md"
+    },
+    {
+      "content_hash": "0e71f6bfe2429f223cee48021bb276538b2d4c9dccca975db5d02cad147c6dab",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 261,
+        "normalized_bytes": 261
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-cross-lane-engine/agents/openai.yaml",
+      "source_hash": "0e71f6bfe2429f223cee48021bb276538b2d4c9dccca975db5d02cad147c6dab",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-cross-lane-engine/agents/openai.yaml",
+      "target_path": ".github/skills/internal-agent-cross-lane-engine/agents/openai.yaml"
+    },
+    {
+      "content_hash": "065a03ffecc7e48c4a1c9630cfa6d271ccc509de07ddf4445deef9d51fc02514",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2921,
+        "normalized_bytes": 2921
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-cross-lane-engine/references/ownership-maps.md",
+      "source_hash": "065a03ffecc7e48c4a1c9630cfa6d271ccc509de07ddf4445deef9d51fc02514",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-cross-lane-engine/references/ownership-maps.md",
+      "target_path": ".github/skills/internal-agent-cross-lane-engine/references/ownership-maps.md"
+    },
+    {
+      "content_hash": "66ea39325b89ec81baf69066023eddd73debde8dd3717ad1758b6291e1245e8b",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 18896,
+        "normalized_bytes": 18896
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-development/SKILL.md",
+      "source_hash": "66ea39325b89ec81baf69066023eddd73debde8dd3717ad1758b6291e1245e8b",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/SKILL.md",
+      "target_path": ".github/skills/internal-agent-development/SKILL.md"
+    },
+    {
       "content_hash": "23c2db85ff41ba23a6d77a46878e3377473ecf2749c3d034ab4562a4ab5c08fc",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2144,6 +1362,20 @@
       "source_hash": "23c2db85ff41ba23a6d77a46878e3377473ecf2749c3d034ab4562a4ab5c08fc",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/agents/openai.yaml",
       "target_path": ".github/skills/internal-agent-development/agents/openai.yaml"
+    },
+    {
+      "content_hash": "8c9f21ce4038d1374e73449d5c0d73b7f7c1f7a329c3b62276c1e0a755183cff",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 7439,
+        "normalized_bytes": 7439
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-development/references/agent-contract.md",
+      "source_hash": "8c9f21ce4038d1374e73449d5c0d73b7f7c1f7a329c3b62276c1e0a755183cff",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/agent-contract.md",
+      "target_path": ".github/skills/internal-agent-development/references/agent-contract.md"
     },
     {
       "content_hash": "ee7cc3ef6860709f8ad6d80c62bdb4a68b602cc25c32cb90f5f2f262e64ca9e4",
@@ -2160,6 +1392,20 @@
       "target_path": ".github/skills/internal-agent-development/references/agent-template.md"
     },
     {
+      "content_hash": "0535bff30d67a43693a73d89a2ee32b03e64ff00f24047630be3a71c0197343d",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2446,
+        "normalized_bytes": 2446
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-development/references/conversion-checklist.md",
+      "source_hash": "0535bff30d67a43693a73d89a2ee32b03e64ff00f24047630be3a71c0197343d",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/conversion-checklist.md",
+      "target_path": ".github/skills/internal-agent-development/references/conversion-checklist.md"
+    },
+    {
       "content_hash": "092bd1cd3d2c306af008fb006f79ed9cf85ba083679a81adf60eac3bb529e430",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2172,6 +1418,146 @@
       "source_hash": "092bd1cd3d2c306af008fb006f79ed9cf85ba083679a81adf60eac3bb529e430",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/design-patterns.md",
       "target_path": ".github/skills/internal-agent-development/references/design-patterns.md"
+    },
+    {
+      "content_hash": "0a1f19b9b1741794b5a6882d511ec8fabe33e8f75c5c04c1ad625243a05781d3",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 5265,
+        "normalized_bytes": 5265
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-development/references/example-transformations.md",
+      "source_hash": "0a1f19b9b1741794b5a6882d511ec8fabe33e8f75c5c04c1ad625243a05781d3",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/example-transformations.md",
+      "target_path": ".github/skills/internal-agent-development/references/example-transformations.md"
+    },
+    {
+      "content_hash": "31e693dd7a00c5c595f61f2263af854d4ee60d82dfdf132f4010adf207d23d49",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 3837,
+        "normalized_bytes": 3837
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-development/references/review-checklist.md",
+      "source_hash": "31e693dd7a00c5c595f61f2263af854d4ee60d82dfdf132f4010adf207d23d49",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/review-checklist.md",
+      "target_path": ".github/skills/internal-agent-development/references/review-checklist.md"
+    },
+    {
+      "content_hash": "169adf8895e535a3ac390ce532b9c7df98784bfad7da30b8e3ac32bd96ca59ae",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 5738,
+        "normalized_bytes": 5738
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-development/references/subagent-patterns.md",
+      "source_hash": "169adf8895e535a3ac390ce532b9c7df98784bfad7da30b8e3ac32bd96ca59ae",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-development/references/subagent-patterns.md",
+      "target_path": ".github/skills/internal-agent-development/references/subagent-patterns.md"
+    },
+    {
+      "content_hash": "fcb974b464082e475ae02a5b812e7b54b67b727d9072414be2e828288ba64f6f",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 13486,
+        "normalized_bytes": 13486
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/SKILL.md",
+      "source_hash": "fcb974b464082e475ae02a5b812e7b54b67b727d9072414be2e828288ba64f6f",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/SKILL.md",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/SKILL.md"
+    },
+    {
+      "content_hash": "95f32a5553c909c6b4aaa0ac2b45ec162727ab08d0eb05df7a35ef8ed7b60cbc",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 363,
+        "normalized_bytes": 363
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/agents/openai.yaml",
+      "source_hash": "95f32a5553c909c6b4aaa0ac2b45ec162727ab08d0eb05df7a35ef8ed7b60cbc",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/agents/openai.yaml",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/agents/openai.yaml"
+    },
+    {
+      "content_hash": "4ba45be5dc736b8f3c8bf17e973c8a1022238268b9d33218c777ba88c113968c",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2415,
+        "normalized_bytes": 2415
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md",
+      "source_hash": "4ba45be5dc736b8f3c8bf17e973c8a1022238268b9d33218c777ba88c113968c",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md"
+    },
+    {
+      "content_hash": "1c4a25def0b8a55aa0fb7a4bfcbe8cd8fbfbcf2d6c8f95fdb69f897e69be2a1e",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 3100,
+        "normalized_bytes": 3100
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md",
+      "source_hash": "1c4a25def0b8a55aa0fb7a4bfcbe8cd8fbfbcf2d6c8f95fdb69f897e69be2a1e",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md"
+    },
+    {
+      "content_hash": "0b50ce84518d8d2207b099931a0a82035e74cae3a855fc2372945a66a6d0dc38",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 4399,
+        "normalized_bytes": 4399
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml",
+      "source_hash": "0b50ce84518d8d2207b099931a0a82035e74cae3a855fc2372945a66a6d0dc38",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml"
+    },
+    {
+      "content_hash": "9b6f6785481748fc7096b75a052d24544b908e248232473c2aa5a6b44d352e7f",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 6874,
+        "normalized_bytes": 6874
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py",
+      "source_hash": "9b6f6785481748fc7096b75a052d24544b908e248232473c2aa5a6b44d352e7f",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py"
+    },
+    {
+      "content_hash": "da2c30f9314c242e2e7166c39832aa8e822b69aa31d95142e8080da789e0cdcf",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2846,
+        "normalized_bytes": 2846
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py",
+      "source_hash": "da2c30f9314c242e2e7166c39832aa8e822b69aa31d95142e8080da789e0cdcf",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py",
+      "target_path": ".github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py"
     },
     {
       "content_hash": "41e8c23a3fe15377efd327f2174f650895e72020ec86e318e0a2c1c52460d9be",
@@ -2228,6 +1614,20 @@
       "source_hash": "558e1dfd25e66b51ffd9ab66dd987eddc26425431b557bae3129e353c8027c8e",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-aws-governance/references/guardrail-map.md",
       "target_path": ".github/skills/internal-aws-governance/references/guardrail-map.md"
+    },
+    {
+      "content_hash": "19b2323ec831fa1dca1618cacc37172f46959429a384a1fe37c484108b6543f1",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4891,
+        "normalized_bytes": 4891
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-aws-mcp-research/SKILL.md",
+      "source_hash": "19b2323ec831fa1dca1618cacc37172f46959429a384a1fe37c484108b6543f1",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-aws-mcp-research/SKILL.md",
+      "target_path": ".github/skills/internal-aws-mcp-research/SKILL.md"
     },
     {
       "content_hash": "9126d79f32e7bc998925a24db767a50af828d261104e19e64c029e2f1294db8c",
@@ -2412,6 +1812,20 @@
       "target_path": ".github/skills/internal-aws-serverless/references/sharp-edges.md"
     },
     {
+      "content_hash": "17aa67e53991cf3aa5f484de765c651761f09139800fcc8b25b4d24b093fa7c8",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 6973,
+        "normalized_bytes": 6973
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-aws-strategic/SKILL.md",
+      "source_hash": "17aa67e53991cf3aa5f484de765c651761f09139800fcc8b25b4d24b093fa7c8",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-aws-strategic/SKILL.md",
+      "target_path": ".github/skills/internal-aws-strategic/SKILL.md"
+    },
+    {
       "content_hash": "51e5b5fd2665da94caf1e5629063c8bdbec24416450cced09d3c7c1bf2ce1860",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2566,6 +1980,20 @@
       "target_path": ".github/skills/internal-azure-organization-structure/references/topology-map.md"
     },
     {
+      "content_hash": "ab25ef2e920a5670c30c250288ba985ecd51fca19af7134ea12a1c95882f08fa",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 5575,
+        "normalized_bytes": 5575
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-azure-strategic/SKILL.md",
+      "source_hash": "ab25ef2e920a5670c30c250288ba985ecd51fca19af7134ea12a1c95882f08fa",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-azure-strategic/SKILL.md",
+      "target_path": ".github/skills/internal-azure-strategic/SKILL.md"
+    },
+    {
       "content_hash": "8c8bd5d68b179efa2795e5522c43cb6bf9d979c4260e65a6911046fb7619b048",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2594,6 +2022,20 @@
       "target_path": ".github/skills/internal-azure-strategic/references/lens-playbook.md"
     },
     {
+      "content_hash": "e806c7c32f75826cbd8c9397b881dad5637576f4a42857c80eaa6893067af312",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 5006,
+        "normalized_bytes": 5006
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-change-impact-analysis/SKILL.md",
+      "source_hash": "e806c7c32f75826cbd8c9397b881dad5637576f4a42857c80eaa6893067af312",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-change-impact-analysis/SKILL.md",
+      "target_path": ".github/skills/internal-change-impact-analysis/SKILL.md"
+    },
+    {
       "content_hash": "25996a21ac1a0fbf8dc258f821e08429e29c53a807e8af63f73efed37118859d",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2608,6 +2050,34 @@
       "target_path": ".github/skills/internal-change-impact-analysis/agents/openai.yaml"
     },
     {
+      "content_hash": "0ed32a4be7f3bc26ee9bf0fead1a8d3086439e5c4506fae87caed4fb609bf229",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2372,
+        "normalized_bytes": 2372
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-change-impact-analysis/references/analysis-dimensions.md",
+      "source_hash": "0ed32a4be7f3bc26ee9bf0fead1a8d3086439e5c4506fae87caed4fb609bf229",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-change-impact-analysis/references/analysis-dimensions.md",
+      "target_path": ".github/skills/internal-change-impact-analysis/references/analysis-dimensions.md"
+    },
+    {
+      "content_hash": "f98a3884b254bff228927adb1eb8a7d4c2ddc30daee43a5e64f5ca40b7f54595",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 2442,
+        "normalized_bytes": 2442
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-changelog-automation/SKILL.md",
+      "source_hash": "f98a3884b254bff228927adb1eb8a7d4c2ddc30daee43a5e64f5ca40b7f54595",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-changelog-automation/SKILL.md",
+      "target_path": ".github/skills/internal-changelog-automation/SKILL.md"
+    },
+    {
       "content_hash": "799f0193bef46c40dbf1e0cf4b692eb853e63eacbe6494b6657dd11817ac68d2",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2620,6 +2090,20 @@
       "source_hash": "799f0193bef46c40dbf1e0cf4b692eb853e63eacbe6494b6657dd11817ac68d2",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-changelog-automation/agents/openai.yaml",
       "target_path": ".github/skills/internal-changelog-automation/agents/openai.yaml"
+    },
+    {
+      "content_hash": "041abbe58adb3a473e996a72c327f49869ae390198af8783d718403cfcb4b89a",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3010,
+        "normalized_bytes": 3010
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-cloud-policy/SKILL.md",
+      "source_hash": "041abbe58adb3a473e996a72c327f49869ae390198af8783d718403cfcb4b89a",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-cloud-policy/SKILL.md",
+      "target_path": ".github/skills/internal-cloud-policy/SKILL.md"
     },
     {
       "content_hash": "4892078e9071a11fedf3d8ed66f9c56584dc780417eb3d7fb0337d838a583f28",
@@ -2650,6 +2134,20 @@
       "target_path": ".github/skills/internal-cloud-policy/references/policy-templates.md"
     },
     {
+      "content_hash": "dd8c6172f41d895e67e5000a72b6a9726450c79affe5222e5fb8681965331037",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 8290,
+        "normalized_bytes": 8290
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-code-review/SKILL.md",
+      "source_hash": "dd8c6172f41d895e67e5000a72b6a9726450c79affe5222e5fb8681965331037",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/SKILL.md",
+      "target_path": ".github/skills/internal-code-review/SKILL.md"
+    },
+    {
       "content_hash": "71e30aee3430d9096853ca683a48cfbe2f7a145658643294c5525703c8b9bc05",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2664,6 +2162,76 @@
       "target_path": ".github/skills/internal-code-review/agents/openai.yaml"
     },
     {
+      "content_hash": "6fe747f46d09a880de3e731bd91c844669739262fff94cc61f760e0c63ae4e65",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2626,
+        "normalized_bytes": 2626
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-bash.md",
+      "source_hash": "6fe747f46d09a880de3e731bd91c844669739262fff94cc61f760e0c63ae4e65",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-bash.md",
+      "target_path": ".github/skills/internal-code-review/references/anti-patterns-bash.md"
+    },
+    {
+      "content_hash": "d63f5de0357a2102dade631a3f059945f197696a821ee552b3addb9604f4ec77",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2766,
+        "normalized_bytes": 2766
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-java.md",
+      "source_hash": "d63f5de0357a2102dade631a3f059945f197696a821ee552b3addb9604f4ec77",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-java.md",
+      "target_path": ".github/skills/internal-code-review/references/anti-patterns-java.md"
+    },
+    {
+      "content_hash": "d65ce7c3e2d26816fc8724a750b5566ddbff7f522d9164320b5a2133f2d305e5",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 3052,
+        "normalized_bytes": 3052
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-nodejs.md",
+      "source_hash": "d65ce7c3e2d26816fc8724a750b5566ddbff7f522d9164320b5a2133f2d305e5",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-nodejs.md",
+      "target_path": ".github/skills/internal-code-review/references/anti-patterns-nodejs.md"
+    },
+    {
+      "content_hash": "ec8e7726bc848db5c053d2d5983dcf8c50a56d098ee236734e32a0c0098adbfc",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 3462,
+        "normalized_bytes": 3462
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-python.md",
+      "source_hash": "ec8e7726bc848db5c053d2d5983dcf8c50a56d098ee236734e32a0c0098adbfc",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-python.md",
+      "target_path": ".github/skills/internal-code-review/references/anti-patterns-python.md"
+    },
+    {
+      "content_hash": "f24a0144d80e06beedbe3cc9be3073c249e2e842ec4a6c82570de6a3d5b0b29b",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2835,
+        "normalized_bytes": 2835
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-code-review/references/anti-patterns-terraform.md",
+      "source_hash": "f24a0144d80e06beedbe3cc9be3073c249e2e842ec4a6c82570de6a3d5b0b29b",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-code-review/references/anti-patterns-terraform.md",
+      "target_path": ".github/skills/internal-code-review/references/anti-patterns-terraform.md"
+    },
+    {
       "content_hash": "ee7a8fb097a9ed0f3587f7967be7ea9d5d713be1ef01ef00f636b828d2600b70",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2676,6 +2244,34 @@
       "source_hash": "ee7a8fb097a9ed0f3587f7967be7ea9d5d713be1ef01ef00f636b828d2600b70",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-audit/agents/openai.yaml",
       "target_path": ".github/skills/internal-copilot-audit/agents/openai.yaml"
+    },
+    {
+      "content_hash": "18af16857f064dfb28043cdbd11aa32eed194613190dec6d684faad4014b940a",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 5221,
+        "normalized_bytes": 5221
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-copilot-audit/references/audit-checklist.md",
+      "source_hash": "18af16857f064dfb28043cdbd11aa32eed194613190dec6d684faad4014b940a",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-audit/references/audit-checklist.md",
+      "target_path": ".github/skills/internal-copilot-audit/references/audit-checklist.md"
+    },
+    {
+      "content_hash": "003234bdf56f5e80560e13ef99313ccda3d63a5b4590f82d5c8966f043aff852",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4973,
+        "normalized_bytes": 4973
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-copilot-docs-research/SKILL.md",
+      "source_hash": "003234bdf56f5e80560e13ef99313ccda3d63a5b4590f82d5c8966f043aff852",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-docs-research/SKILL.md",
+      "target_path": ".github/skills/internal-copilot-docs-research/SKILL.md"
     },
     {
       "content_hash": "f654a87935b95bbdbe2bced9ef31afded0dac7adaa092f952ac6f148dfc75251",
@@ -2706,6 +2302,20 @@
       "target_path": ".github/skills/internal-copilot-docs-research/references/official-source-map.md"
     },
     {
+      "content_hash": "68e02b3acb72dfa6212a923c904018bf60623d18a4a436ad3f5569e4a27377a4",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4223,
+        "normalized_bytes": 4223
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-copilot-instructions-creator/SKILL.md",
+      "source_hash": "68e02b3acb72dfa6212a923c904018bf60623d18a4a436ad3f5569e4a27377a4",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-instructions-creator/SKILL.md",
+      "target_path": ".github/skills/internal-copilot-instructions-creator/SKILL.md"
+    },
+    {
       "content_hash": "a3ab8d0b5a5420b93ed2cdf5acb2a8c3994cc052d820b9d08703b6c084b97a2e",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2732,6 +2342,34 @@
       "source_hash": "897687d10e1651a2c5a89ca3190393bef0df9392aa2c9742e8b2b02a46853ac0",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-instructions-creator/references/frontmatter-and-scope.md",
       "target_path": ".github/skills/internal-copilot-instructions-creator/references/frontmatter-and-scope.md"
+    },
+    {
+      "content_hash": "9f4f53b5ee42d93ce9f83efafe144117d28f1f7f5b12901affd5e39ff548bfa9",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1567,
+        "normalized_bytes": 1567
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-copilot-instructions-creator/references/review-checklist.md",
+      "source_hash": "9f4f53b5ee42d93ce9f83efafe144117d28f1f7f5b12901affd5e39ff548bfa9",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-copilot-instructions-creator/references/review-checklist.md",
+      "target_path": ".github/skills/internal-copilot-instructions-creator/references/review-checklist.md"
+    },
+    {
+      "content_hash": "c22a26067e9e461bcee22c486d8c952dedc30dfadd2ff09a60e1c3a01087a780",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4499,
+        "normalized_bytes": 4499
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-ddd/SKILL.md",
+      "source_hash": "c22a26067e9e461bcee22c486d8c952dedc30dfadd2ff09a60e1c3a01087a780",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-ddd/SKILL.md",
+      "target_path": ".github/skills/internal-ddd/SKILL.md"
     },
     {
       "content_hash": "5abd1d09901d6755682c106377fe57914e4ea8bc90465c66144c78ee856d7ba5",
@@ -2776,6 +2414,20 @@
       "target_path": ".github/skills/internal-ddd/references/mode-selection.md"
     },
     {
+      "content_hash": "59520597cd6819867fb65de7141021e87dca7b7a9f21043616790cc3365c9bbc",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4865,
+        "normalized_bytes": 4865
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-devops-core-principles/SKILL.md",
+      "source_hash": "59520597cd6819867fb65de7141021e87dca7b7a9f21043616790cc3365c9bbc",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-devops-core-principles/SKILL.md",
+      "target_path": ".github/skills/internal-devops-core-principles/SKILL.md"
+    },
+    {
       "content_hash": "c142ca1c8a7bf1fea83b764b3e0c524f58158bb430d77993d2fb999a957e0ea1",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2788,6 +2440,20 @@
       "source_hash": "c142ca1c8a7bf1fea83b764b3e0c524f58158bb430d77993d2fb999a957e0ea1",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-devops-core-principles/agents/openai.yaml",
       "target_path": ".github/skills/internal-devops-core-principles/agents/openai.yaml"
+    },
+    {
+      "content_hash": "58a01791e36ddf4649ce11aaeca9e64d824495f6a17d485af4d840f08fe2856a",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 1993,
+        "normalized_bytes": 1993
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-docker/SKILL.md",
+      "source_hash": "58a01791e36ddf4649ce11aaeca9e64d824495f6a17d485af4d840f08fe2856a",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-docker/SKILL.md",
+      "target_path": ".github/skills/internal-docker/SKILL.md"
     },
     {
       "content_hash": "b3524cde39496e711da08f69db6b93826eefd15e7b4062a632cafd0a929fee7a",
@@ -2818,6 +2484,48 @@
       "target_path": ".github/skills/internal-docker/references/dockerfile-patterns.md"
     },
     {
+      "content_hash": "57aa16aa7b73763942439c14fda7dc3d1452ea3960699076399239671ea35a85",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3459,
+        "normalized_bytes": 3459
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-executing-plans/SKILL.md",
+      "source_hash": "57aa16aa7b73763942439c14fda7dc3d1452ea3960699076399239671ea35a85",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-executing-plans/SKILL.md",
+      "target_path": ".github/skills/internal-executing-plans/SKILL.md"
+    },
+    {
+      "content_hash": "511315702e715f6f0a29227f1fd0f569fdf32815c0a6cca4c6130ebf7b0bc339",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 271,
+        "normalized_bytes": 271
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-executing-plans/agents/openai.yaml",
+      "source_hash": "511315702e715f6f0a29227f1fd0f569fdf32815c0a6cca4c6130ebf7b0bc339",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-executing-plans/agents/openai.yaml",
+      "target_path": ".github/skills/internal-executing-plans/agents/openai.yaml"
+    },
+    {
+      "content_hash": "be19a8894614da75022ba2d15a767e9ff6f70565e7051420336a0c9a0a72004b",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 5027,
+        "normalized_bytes": 5027
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-gcp-governance/SKILL.md",
+      "source_hash": "be19a8894614da75022ba2d15a767e9ff6f70565e7051420336a0c9a0a72004b",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-gcp-governance/SKILL.md",
+      "target_path": ".github/skills/internal-gcp-governance/SKILL.md"
+    },
+    {
       "content_hash": "45746427c21915318f6f764357ebaa948fc79a0c202d40824b99a7fffbeda4d0",
       "hash_algo": "sha256",
       "kind": "file",
@@ -2844,6 +2552,20 @@
       "source_hash": "653771a8c77da73c3f625df2ff43f398528d67c7bf6691c6c02c6ef12d0f0f80",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-gcp-governance/references/guardrail-map.md",
       "target_path": ".github/skills/internal-gcp-governance/references/guardrail-map.md"
+    },
+    {
+      "content_hash": "798f255ac220ed472f05741202e972a7b400ba3032fb33929342854ea2b889f4",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 5453,
+        "normalized_bytes": 5453
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-gcp-operations/SKILL.md",
+      "source_hash": "798f255ac220ed472f05741202e972a7b400ba3032fb33929342854ea2b889f4",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-gcp-operations/SKILL.md",
+      "target_path": ".github/skills/internal-gcp-operations/SKILL.md"
     },
     {
       "content_hash": "22fb8e68841b7acbc71d61c4d66e6b53e8b586afb76f8f3cd2bb9d39b6956aaf",
@@ -2958,6 +2680,20 @@
       "target_path": ".github/skills/internal-gcp-strategic/references/lens-playbook.md"
     },
     {
+      "content_hash": "1abd73c888a581f7f1368a955054a776ee4cef6101d76edd6ffd25034643ee74",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 5141,
+        "normalized_bytes": 5141
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-github-action-composite/SKILL.md",
+      "source_hash": "1abd73c888a581f7f1368a955054a776ee4cef6101d76edd6ffd25034643ee74",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-action-composite/SKILL.md",
+      "target_path": ".github/skills/internal-github-action-composite/SKILL.md"
+    },
+    {
       "content_hash": "4f155a891bd6229efc43d5d4bef1f403a05d290cbfbca0e28b6f77bd4c70b919",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3068,6 +2804,20 @@
       "source_hash": "48afbed966ab59821c29128e0599e01792a632241bb942a2f21c94ac50c9749a",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-actions/agents/openai.yaml",
       "target_path": ".github/skills/internal-github-actions/agents/openai.yaml"
+    },
+    {
+      "content_hash": "796454e8c72e5c719f59f2beac4cd7cd3b21f1800091ff26130c92c925172171",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1828,
+        "normalized_bytes": 1828
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-github-actions/references/auth-snippets.md",
+      "source_hash": "796454e8c72e5c719f59f2beac4cd7cd3b21f1800091ff26130c92c925172171",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-github-actions/references/auth-snippets.md",
+      "target_path": ".github/skills/internal-github-actions/references/auth-snippets.md"
     },
     {
       "content_hash": "c21c8aa2a1d864f80aacb71cddd5edcaffaa689ecd6fa484560a830e72f366bb",
@@ -3280,6 +3030,20 @@
       "target_path": ".github/skills/internal-github-strategic/references/lens-playbook.md"
     },
     {
+      "content_hash": "4ff432d7415ed05d055ffc3457b2464c4c86a721771ce2fbeaeb456b9887fc88",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3843,
+        "normalized_bytes": 3843
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-kubernetes-deployment/SKILL.md",
+      "source_hash": "4ff432d7415ed05d055ffc3457b2464c4c86a721771ce2fbeaeb456b9887fc88",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes-deployment/SKILL.md",
+      "target_path": ".github/skills/internal-kubernetes-deployment/SKILL.md"
+    },
+    {
       "content_hash": "3b77cededa31a3a02a3d4fe799fe14e2ad5d08b9fdc59dbfd6302ca5256a0ac1",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3292,6 +3056,20 @@
       "source_hash": "3b77cededa31a3a02a3d4fe799fe14e2ad5d08b9fdc59dbfd6302ca5256a0ac1",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes-deployment/agents/openai.yaml",
       "target_path": ".github/skills/internal-kubernetes-deployment/agents/openai.yaml"
+    },
+    {
+      "content_hash": "13b9328ab51e8d8e936aed086ecf7a46d95c30b2c1d9f60344210bde2e9fee3c",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 2948,
+        "normalized_bytes": 2948
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-kubernetes/SKILL.md",
+      "source_hash": "13b9328ab51e8d8e936aed086ecf7a46d95c30b2c1d9f60344210bde2e9fee3c",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes/SKILL.md",
+      "target_path": ".github/skills/internal-kubernetes/SKILL.md"
     },
     {
       "content_hash": "a114f59b7a95dafe3ac845308b75ad4a9efef3b1e8e8d6af197d61baa5c0bcd6",
@@ -3308,6 +3086,34 @@
       "target_path": ".github/skills/internal-kubernetes/agents/openai.yaml"
     },
     {
+      "content_hash": "b47784bb3b85386af21bbab311db07112e41597802c0596da3ccfd4920365d1c",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2472,
+        "normalized_bytes": 2472
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-kubernetes/references/routing-matrix.md",
+      "source_hash": "b47784bb3b85386af21bbab311db07112e41597802c0596da3ccfd4920365d1c",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-kubernetes/references/routing-matrix.md",
+      "target_path": ".github/skills/internal-kubernetes/references/routing-matrix.md"
+    },
+    {
+      "content_hash": "be071006d97542d5ed297fe9e1b1dc963b56a057779445f1a5a47eafb8223a1b",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3285,
+        "normalized_bytes": 3285
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-oop-design-patterns/SKILL.md",
+      "source_hash": "be071006d97542d5ed297fe9e1b1dc963b56a057779445f1a5a47eafb8223a1b",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-oop-design-patterns/SKILL.md",
+      "target_path": ".github/skills/internal-oop-design-patterns/SKILL.md"
+    },
+    {
       "content_hash": "bbe56d269d9e540df8905d152a038e481d235cd3c0f39f61f0255cfc28f864ae",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3320,6 +3126,20 @@
       "source_hash": "bbe56d269d9e540df8905d152a038e481d235cd3c0f39f61f0255cfc28f864ae",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-oop-design-patterns/agents/openai.yaml",
       "target_path": ".github/skills/internal-oop-design-patterns/agents/openai.yaml"
+    },
+    {
+      "content_hash": "4e885e758dcab7100302bd26d154c1c3aa0409d3ded1c0a2ba0e23aa95510692",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1490,
+        "normalized_bytes": 1490
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-oop-design-patterns/references/language-cues.md",
+      "source_hash": "4e885e758dcab7100302bd26d154c1c3aa0409d3ded1c0a2ba0e23aa95510692",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-oop-design-patterns/references/language-cues.md",
+      "target_path": ".github/skills/internal-oop-design-patterns/references/language-cues.md"
     },
     {
       "content_hash": "af47b3ae8a46c4110263cd05b10ebc1cbc067b6e32dbefa53dae602164a4b8b4",
@@ -3336,6 +3156,20 @@
       "target_path": ".github/skills/internal-oop-design-patterns/references/pattern-selection.md"
     },
     {
+      "content_hash": "226f6eb97e022854b8d9bcfca9a03dd54cc6f5a9cf0bb5d0ccf7a1005981b957",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3384,
+        "normalized_bytes": 3384
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-performance-optimization/SKILL.md",
+      "source_hash": "226f6eb97e022854b8d9bcfca9a03dd54cc6f5a9cf0bb5d0ccf7a1005981b957",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-performance-optimization/SKILL.md",
+      "target_path": ".github/skills/internal-performance-optimization/SKILL.md"
+    },
+    {
       "content_hash": "48e432b37ced844cfbfea7efcc873fd0263523239abdc843800d912bfa93ab44",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3350,6 +3184,20 @@
       "target_path": ".github/skills/internal-performance-optimization/agents/openai.yaml"
     },
     {
+      "content_hash": "5e65861f4e7b3d422ce2b8802ca87bce4bf0f4e0bdbe2180f46dd871cb925acf",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4187,
+        "normalized_bytes": 4187
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-pr-editor/SKILL.md",
+      "source_hash": "5e65861f4e7b3d422ce2b8802ca87bce4bf0f4e0bdbe2180f46dd871cb925acf",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-pr-editor/SKILL.md",
+      "target_path": ".github/skills/internal-pr-editor/SKILL.md"
+    },
+    {
       "content_hash": "415faa895b5a2eb91cfd693ad1f31de1c50c9a4cd50b1a01f07242b6b98124a9",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3362,6 +3210,20 @@
       "source_hash": "415faa895b5a2eb91cfd693ad1f31de1c50c9a4cd50b1a01f07242b6b98124a9",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-pr-editor/agents/openai.yaml",
       "target_path": ".github/skills/internal-pr-editor/agents/openai.yaml"
+    },
+    {
+      "content_hash": "4bf54ae9a88795d6349d12db6640a5425c3bdfa1164bbaa5535c78df0d5fcf49",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3617,
+        "normalized_bytes": 3617
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-project-java/SKILL.md",
+      "source_hash": "4bf54ae9a88795d6349d12db6640a5425c3bdfa1164bbaa5535c78df0d5fcf49",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-java/SKILL.md",
+      "target_path": ".github/skills/internal-project-java/SKILL.md"
     },
     {
       "content_hash": "24d2001f7e60931d57f30f974239a8b960f675ca3683a088a2850d5a4b096701",
@@ -3392,6 +3254,20 @@
       "target_path": ".github/skills/internal-project-java/references/examples.md"
     },
     {
+      "content_hash": "9f303cf6a70879f15838d90fece31b4b790828c8f043b0a16c0085b6b3708a92",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3805,
+        "normalized_bytes": 3805
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-project-nodejs/SKILL.md",
+      "source_hash": "9f303cf6a70879f15838d90fece31b4b790828c8f043b0a16c0085b6b3708a92",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-nodejs/SKILL.md",
+      "target_path": ".github/skills/internal-project-nodejs/SKILL.md"
+    },
+    {
       "content_hash": "204c35addb399f72d0624cb90af18aa3fb2b506bad251aeaee7e4847d95e75be",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3404,6 +3280,34 @@
       "source_hash": "204c35addb399f72d0624cb90af18aa3fb2b506bad251aeaee7e4847d95e75be",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-nodejs/agents/openai.yaml",
       "target_path": ".github/skills/internal-project-nodejs/agents/openai.yaml"
+    },
+    {
+      "content_hash": "afd9cd63906db52834d4d65f017343c49bee276711b7279dd364922ac4292677",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1111,
+        "normalized_bytes": 1111
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-project-nodejs/references/examples.md",
+      "source_hash": "afd9cd63906db52834d4d65f017343c49bee276711b7279dd364922ac4292677",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-nodejs/references/examples.md",
+      "target_path": ".github/skills/internal-project-nodejs/references/examples.md"
+    },
+    {
+      "content_hash": "e9bdb9cc35f872ee13635b4972f3fb8a569d23b25b10ae762a7edb9a571870fe",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 4411,
+        "normalized_bytes": 4411
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-project-python/SKILL.md",
+      "source_hash": "e9bdb9cc35f872ee13635b4972f3fb8a569d23b25b10ae762a7edb9a571870fe",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-project-python/SKILL.md",
+      "target_path": ".github/skills/internal-project-python/SKILL.md"
     },
     {
       "content_hash": "b084c54c4c2d08198b8f0fc8d7796cb78cf512b9757adb6afff2920a04696257",
@@ -3434,6 +3338,20 @@
       "target_path": ".github/skills/internal-project-python/references/examples.md"
     },
     {
+      "content_hash": "97c42c1a9fb12b4e1f75e92ec8107adeb39b73957832e2691e3a8b93dfb935dd",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 2081,
+        "normalized_bytes": 2081
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-script-bash/SKILL.md",
+      "source_hash": "97c42c1a9fb12b4e1f75e92ec8107adeb39b73957832e2691e3a8b93dfb935dd",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-bash/SKILL.md",
+      "target_path": ".github/skills/internal-script-bash/SKILL.md"
+    },
+    {
       "content_hash": "033ca41eee7e622bad7eb451792d372eb00d4b029cf8318d4a05c12bced61763",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3446,6 +3364,34 @@
       "source_hash": "033ca41eee7e622bad7eb451792d372eb00d4b029cf8318d4a05c12bced61763",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-bash/agents/openai.yaml",
       "target_path": ".github/skills/internal-script-bash/agents/openai.yaml"
+    },
+    {
+      "content_hash": "bc3a3383754732474dfbc1876ddbca96b2c517cfea72241a46d093ee4bc3bf47",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1832,
+        "normalized_bytes": 1832
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-script-bash/references/templates.md",
+      "source_hash": "bc3a3383754732474dfbc1876ddbca96b2c517cfea72241a46d093ee4bc3bf47",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-bash/references/templates.md",
+      "target_path": ".github/skills/internal-script-bash/references/templates.md"
+    },
+    {
+      "content_hash": "461275b3c27a93b88921c443b6b80e3a57b8eff2e382ff3f1185670a76c3ea42",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 7808,
+        "normalized_bytes": 7808
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-script-python/SKILL.md",
+      "source_hash": "461275b3c27a93b88921c443b6b80e3a57b8eff2e382ff3f1185670a76c3ea42",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-script-python/SKILL.md",
+      "target_path": ".github/skills/internal-script-python/SKILL.md"
     },
     {
       "content_hash": "a5a240a5342082c0e83e1fd03f4796797c09ffb10d978726b85d0d58b0a4cb13",
@@ -3488,6 +3434,34 @@
       "source_hash": "ee55e1ca6a3228696b8a4fea9b725b241c3b4338f22c9a5efbb519d289b9077b",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-skill-creator/agents/openai.yaml",
       "target_path": ".github/skills/internal-skill-creator/agents/openai.yaml"
+    },
+    {
+      "content_hash": "9c6b6b99d3aeb623c527505069d96d57eac6ef8031514f1b5a65745149f53a04",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 3529,
+        "normalized_bytes": 3529
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-skill-creator/references/writing-skills-checklist.md",
+      "source_hash": "9c6b6b99d3aeb623c527505069d96d57eac6ef8031514f1b5a65745149f53a04",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-skill-creator/references/writing-skills-checklist.md",
+      "target_path": ".github/skills/internal-skill-creator/references/writing-skills-checklist.md"
+    },
+    {
+      "content_hash": "74a26bfc243ce5fa4599e4c358859d4e1da563b0aa759bbbb8e3bbaa904ef747",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 3611,
+        "normalized_bytes": 3611
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-spring-boot-development/SKILL.md",
+      "source_hash": "74a26bfc243ce5fa4599e4c358859d4e1da563b0aa759bbbb8e3bbaa904ef747",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-spring-boot-development/SKILL.md",
+      "target_path": ".github/skills/internal-spring-boot-development/SKILL.md"
     },
     {
       "content_hash": "0d3455027b52da746180109f283e9ea82f7bc8b75696a6e4d3bb74a7baa994b6",
@@ -3546,6 +3520,20 @@
       "target_path": ".github/skills/internal-terraform/agents/openai.yaml"
     },
     {
+      "content_hash": "4caa71b43038eb62b52bd6338170e6aeb7efd53be04c40d0060c9ce21a62d83b",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 2033,
+        "normalized_bytes": 2033
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-terraform/references/decision-guide.md",
+      "source_hash": "4caa71b43038eb62b52bd6338170e6aeb7efd53be04c40d0060c9ce21a62d83b",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-terraform/references/decision-guide.md",
+      "target_path": ".github/skills/internal-terraform/references/decision-guide.md"
+    },
+    {
       "content_hash": "dae6939e8cd543963c1e6fb4d5c259677c27a7264ea8e4a48b681165f1819595",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3558,6 +3546,48 @@
       "source_hash": "dae6939e8cd543963c1e6fb4d5c259677c27a7264ea8e4a48b681165f1819595",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-terraform/references/template-examples.md",
       "target_path": ".github/skills/internal-terraform/references/template-examples.md"
+    },
+    {
+      "content_hash": "f01f60735adecb5766d109af2111074bc40d76c2f351378623ebc56b5b272ab5",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 5519,
+        "normalized_bytes": 5519
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-writing-plans/SKILL.md",
+      "source_hash": "f01f60735adecb5766d109af2111074bc40d76c2f351378623ebc56b5b272ab5",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-writing-plans/SKILL.md",
+      "target_path": ".github/skills/internal-writing-plans/SKILL.md"
+    },
+    {
+      "content_hash": "fb7c4047674589d715efbf0c25ca80f91ac48b3637fc9076d3404aa6b71b9a4c",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 320,
+        "normalized_bytes": 320
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/internal-writing-plans/agents/openai.yaml",
+      "source_hash": "fb7c4047674589d715efbf0c25ca80f91ac48b3637fc9076d3404aa6b71b9a4c",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/internal-writing-plans/agents/openai.yaml",
+      "target_path": ".github/skills/internal-writing-plans/agents/openai.yaml"
+    },
+    {
+      "content_hash": "9e0c6c59b1138312f6cff04f33f4e56e51b442a1df68f3cf04d1a5d276e4a101",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 10924,
+        "normalized_bytes": 10924
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/obra-brainstorming/SKILL.md",
+      "source_hash": "9e0c6c59b1138312f6cff04f33f4e56e51b442a1df68f3cf04d1a5d276e4a101",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-brainstorming/SKILL.md",
+      "target_path": ".github/skills/obra-brainstorming/SKILL.md"
     },
     {
       "content_hash": "fb22ba9d47f3b83b56e0a95d52a3c2727db03b0d4365078d92c850293a62457b",
@@ -3630,6 +3660,20 @@
       "target_path": ".github/skills/obra-brainstorming/scripts/stop-server.sh"
     },
     {
+      "content_hash": "111f4bade10c743536808f1b8eaed798d837e57136f8eecd151c91fc2775bd18",
+      "hash_algo": "sha256",
+      "kind": "file",
+      "metadata": {
+        "bytes": 1747,
+        "normalized_bytes": 1747
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/obra-brainstorming/spec-document-reviewer-prompt.md",
+      "source_hash": "111f4bade10c743536808f1b8eaed798d837e57136f8eecd151c91fc2775bd18",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-brainstorming/spec-document-reviewer-prompt.md",
+      "target_path": ".github/skills/obra-brainstorming/spec-document-reviewer-prompt.md"
+    },
+    {
       "content_hash": "a2bc6fc47d0df1df981d02f707a16225b147f462e7059175ad2bc5e6dd29fcae",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3700,6 +3744,20 @@
       "target_path": ".github/skills/obra-receiving-code-review/SKILL.md"
     },
     {
+      "content_hash": "404a24c62b9cf001a7b38463dab2a67fe70fb78b6c6c64ae0678697f6833675b",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 2913,
+        "normalized_bytes": 2913
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/obra-requesting-code-review/SKILL.md",
+      "source_hash": "404a24c62b9cf001a7b38463dab2a67fe70fb78b6c6c64ae0678697f6833675b",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-requesting-code-review/SKILL.md",
+      "target_path": ".github/skills/obra-requesting-code-review/SKILL.md"
+    },
+    {
       "content_hash": "7f5328dca12cb200005ae9d4386f63a9b0acb735ece57f82db206b4a3189ccae",
       "hash_algo": "sha256",
       "kind": "file",
@@ -3712,6 +3770,20 @@
       "source_hash": "7f5328dca12cb200005ae9d4386f63a9b0acb735ece57f82db206b4a3189ccae",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-requesting-code-review/code-reviewer.md",
       "target_path": ".github/skills/obra-requesting-code-review/code-reviewer.md"
+    },
+    {
+      "content_hash": "e2f01c2c8a79b6e6a05cb3e7315f01c50daabeefce72f251dd6b86a02035180f",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 12087,
+        "normalized_bytes": 12087
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/obra-subagent-driven-development/SKILL.md",
+      "source_hash": "e2f01c2c8a79b6e6a05cb3e7315f01c50daabeefce72f251dd6b86a02035180f",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-subagent-driven-development/SKILL.md",
+      "target_path": ".github/skills/obra-subagent-driven-development/SKILL.md"
     },
     {
       "content_hash": "7db320bbb8c742c352d642537451dcebd018e849141bbd1f5661a415ad5fed70",
@@ -3910,6 +3982,20 @@
       "target_path": ".github/skills/obra-systematic-debugging/test-pressure-3.md"
     },
     {
+      "content_hash": "f52f1aa7de5190cb0d881553b2a0d4dcc370085868fa78234de6178973115ab9",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 10259,
+        "normalized_bytes": 10259
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/obra-test-driven-development/SKILL.md",
+      "source_hash": "f52f1aa7de5190cb0d881553b2a0d4dcc370085868fa78234de6178973115ab9",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-test-driven-development/SKILL.md",
+      "target_path": ".github/skills/obra-test-driven-development/SKILL.md"
+    },
+    {
       "content_hash": "bde453bc258f06543987477c837939afaa774ea2acbd9f308d702fc452bc4283",
       "hash_algo": "sha256",
       "kind": "file",
@@ -4006,6 +4092,20 @@
       "source_hash": "2366840324c538653571eee1eb4d96c1944f90232d4e9f3010405dcbd8e12f7f",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-verification-before-completion/SKILL.md",
       "target_path": ".github/skills/obra-verification-before-completion/SKILL.md"
+    },
+    {
+      "content_hash": "5d997b257b261082b03d48d4bb763140f1b4381450dec0b37639718a4fb9411f",
+      "hash_algo": "sha256",
+      "kind": "skill",
+      "metadata": {
+        "bytes": 6393,
+        "normalized_bytes": 6393
+      },
+      "normalization_version": "v1",
+      "resource_id": ".github/skills/obra-writing-plans/SKILL.md",
+      "source_hash": "5d997b257b261082b03d48d4bb763140f1b4381450dec0b37639718a4fb9411f",
+      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.github/skills/obra-writing-plans/SKILL.md",
+      "target_path": ".github/skills/obra-writing-plans/SKILL.md"
     },
     {
       "content_hash": "6fce2aa83c63715697e9dd86050c820716100b91efbd9f12bab8477ecc060256",
@@ -4902,34 +5002,19 @@
       "source_hash": "9d88fd04767b014cb566f35536267b66461b0eef79b64ab40ab7daf8a0c6fceb",
       "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/.gitignore",
       "target_path": ".gitignore"
-    },
-    {
-      "content_hash": "dd605c00b7c0b8e2dc38c323646cab2b0b485c696cc1da0b0b2d816bc406f309",
-      "hash_algo": "sha256",
-      "kind": "file",
-      "metadata": {
-        "bytes": 2047,
-        "normalized_bytes": 2047
-      },
-      "normalization_version": "v1",
-      "resource_id": "LESSONS_LEARNED.md",
-      "source_hash": "dd605c00b7c0b8e2dc38c323646cab2b0b485c696cc1da0b0b2d816bc406f309",
-      "source_ref": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github/LESSONS_LEARNED.md",
-      "target_path": "LESSONS_LEARNED.md"
     }
   ],
   "managed_hashes": {
     ".editorconfig": "2a1cd1c6175157e4fe6808dfd5a338cee61ffba01a0137507b877281eaf54f24",
     ".github/DEPRECATION.md": "f3cede3905ff89c8b5f9a453dbf37f73ef35a794d6194b216cf06fb462776aa0",
-    ".github/INVENTORY.md": "a9f3944afb360d3fe4b201088dcadf3edf8f274d54da392bba00d9d0810c9b53",
-    ".github/agents/internal-critical-master.agent.md": "f857aa8ef5d54907eeb1492fe639d6c96837a82dd9eafda18c4562882258808f",
+    ".github/INVENTORY.md": "c67bf2e76ec10173029e64f47376166b6cb8bcf2d4cb971666977f537d0c8157",
+    ".github/agents/internal-critical-master.agent.md": "03bf2cf45d25f1f5d5e2ca789847dc6d829b440e5e0ba4d6be81b10de426da35",
     ".github/agents/internal-delivery-operator.agent.md": "e741ca018b22fe3fa0b656c992fe4237e40d621d01c91bb687faffaaf2f33b35",
-    ".github/agents/internal-planning-leader.agent.md": "be71af9f5d93d8be58edd2472c8277c437a83fa80845776cbbe7293482005aa0",
-    ".github/agents/internal-review-guard.agent.md": "b9d704982835064d9dec4f15120c5deabc6ee69dee7fb214fc4e4ddbd1c82c4d",
+    ".github/agents/internal-planning-leader.agent.md": "07d667ba3b20397fa67f0c0b478d1a3afb4baeb2dd7ead4d0d55adaf4ac2a753",
+    ".github/agents/internal-review-guard.agent.md": "1b8899030ece74fd998f28e83f4756f5649390947790626397c094bbb8446bce",
     ".github/copilot-code-review-instructions.md": "57642cb197c2ee2575e5f614cfcab4ef5f6ffec9181f238abd2b60cf78350065",
     ".github/copilot-commit-message-instructions.md": "5553dd58f05fd050d971b91681f5b04b88ee33ead00d29d154bb1c3c599b5bb4",
-    ".github/copilot-instructions.md": "813950cb1d4e8afa620be52b8ffd84c6451a5c84447d22162017a926688761e8",
-    ".github/copilot-instructions.override.md": "917f80eb570dcd4226a625475c5cd4981667f94c7578aa76ba08e4b16addc858",
+    ".github/copilot-instructions.md": "3675d9f60def92fe9e0c1c084f91eb5deb5450c30cb2390ec456a1aaece482c6",
     ".github/instructions/awesome-copilot-azure-devops-pipelines.instructions.md": "bbdfdee27758d016803801812863ccb58ddb9db0011fda9a3034621111874d54",
     ".github/instructions/awesome-copilot-go.instructions.md": "49a0471a0571f2c9217f450251e99cf1b69d9d3999d7fe5f2f9481e3c6016f73",
     ".github/instructions/awesome-copilot-kubernetes-manifests.instructions.md": "e54ba3f60913c4f391de409f72662ba2e34fd51926c3d16317a43415a7cd3ff1",
@@ -4946,9 +5031,15 @@
     ".github/instructions/internal-makefile.instructions.md": "2d11f01dc61063ea093dd4c39e4b9d9b825b96b73966999a70692f03d631bd02",
     ".github/instructions/internal-markdown.instructions.md": "6a592108efc1eccc4ae1bf81eda397ca4695aea0400c143c350cf9c725c205fa",
     ".github/instructions/internal-nodejs.instructions.md": "bc1ad76e69c179d65e4b20bec056065f6384ab200ea857c10fc20fdd098361c0",
-    ".github/instructions/internal-python.instructions.md": "955c9edf8f786715506a7437e1d702b56096c1e88f16c47100a359103c661c4c",
-    ".github/instructions/internal-terraform.instructions.md": "ada20eb33ae216128ff1a5ffbbd552cc5475cac780d344485057639be894dadb",
+    ".github/instructions/internal-python.instructions.md": "e4a15577a9a7bedea45eef62001958630b8a007253d1a0bcbbcb7a49685a9714",
+    ".github/instructions/internal-terraform.instructions.md": "4227a3d4ca1930a714cb3b9ae0f5f3bd4c050bdc83518f478d1790d0188a2778",
     ".github/instructions/internal-yaml.instructions.md": "bffe552e48f43a420514f3c34cbde1bcce7a7c554f0fb1b9587f0ea97cf8dbe2",
+    ".github/prompts/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".github/prompts/internal-copilot-resources-mega-review.prompt.md": "3069f2f735807deff13c84327ae359e104822ae0def12e527c5856b134b01ba4",
+    ".github/prompts/internal-mega-review.prompt.md": "e9774690d4bfd6b0c54a377dc70f7333a370118721a968f56ce6f26831075dab",
+    ".github/prompts/internal-planning-kickoff.prompt.md": "c95d07858f80ccd36a505603586dce8413db35ce0518330241a435390200c989",
+    ".github/prompts/internal-pre-mortem.prompt.md": "c2f461ed43f0f2e8aec8e6ba4c453f92cd860e10b80d9e8a545ef77b72a7ba13",
+    ".github/prompts/internal-review-kickoff.prompt.md": "331430cff813776dfabb843fb72b8474a19dae3292155454332af1aecbccb17e",
     ".github/repo-profiles.yml": "f9d96191ef69182ecf2189e8524f86a622505b8eb06e8fa09c27edfa8ab67f20",
     ".github/security-baseline.md": "7e9fd3f1e794c4f09956ba7f7a9878516803135f9a53ded0ff680960c484ab28",
     ".github/skills/antigravity-api-design-principles/SKILL.md": "b13b9087ca1417bb9ae9ff7c05335618144ffcb0f2cd17ecd7a6be0d125ae9d2",
@@ -5004,19 +5095,19 @@
     ".github/skills/internal-agent-development/references/subagent-patterns.md": "169adf8895e535a3ac390ce532b9c7df98784bfad7da30b8e3ac32bd96ca59ae",
     ".github/skills/internal-agent-sync-external-resources/SKILL.md": "fcb974b464082e475ae02a5b812e7b54b67b727d9072414be2e828288ba64f6f",
     ".github/skills/internal-agent-sync-external-resources/agents/openai.yaml": "95f32a5553c909c6b4aaa0ac2b45ec162727ab08d0eb05df7a35ef8ed7b60cbc",
-    ".github/skills/internal-agent-sync-external-resources/patches/obra-brainstorming.patch": "2b7471e3ba6e5961d5a16d1bfd49aa14904ac326053828443484454d314094a3",
-    ".github/skills/internal-agent-sync-external-resources/patches/obra-requesting-code-review.patch": "ca843d89a6988ebb98618ba8a61dd80f1fca8e4e0ba21f166471d93fd0690ad8",
-    ".github/skills/internal-agent-sync-external-resources/patches/obra-subagent-driven-development.patch": "28e008c6d108c6676f45d20cf5dfbc6e0dfa0b8bcbb50e35fc6fc221b4ac9560",
-    ".github/skills/internal-agent-sync-external-resources/patches/obra-test-driven-development.patch": "1c2ad251ba0641c913714f3639b58f10df28c05585a7d5e534fb1dc0bff65865",
-    ".github/skills/internal-agent-sync-external-resources/patches/obra-writing-plans.patch": "e588fb3ea49d02be16daf9d05db23cf0dfa1c7681bf66d13627aa1d0951d88b4",
+    ".github/skills/internal-agent-sync-external-resources/patches/obra-brainstorming.patch": "7c22a4e0424ea449df68e788ed84f743525f60b68d69a9e390c3126aae8aeb92",
+    ".github/skills/internal-agent-sync-external-resources/patches/obra-requesting-code-review.patch": "876f7ed93ab17f3eb5588d462048805673f7854cafb846780923e7d2c0e39e15",
+    ".github/skills/internal-agent-sync-external-resources/patches/obra-subagent-driven-development.patch": "fe77d05959002e446ba53ad37bdd01de01ea96e666b0d1203245ad3e87b15a38",
+    ".github/skills/internal-agent-sync-external-resources/patches/obra-test-driven-development.patch": "610a29773c70a0524dc55696eeffd3cc14dc23227cdf368c57565b9c1c3b6bb8",
+    ".github/skills/internal-agent-sync-external-resources/patches/obra-writing-plans.patch": "720d8dd1e87c04cc43d3e9987a118faa98b07baa4657ad3af4b29dc172bf7682",
     ".github/skills/internal-agent-sync-external-resources/references/catalog-decision-checklist.md": "4ba45be5dc736b8f3c8bf17e973c8a1022238268b9d33218c777ba88c113968c",
     ".github/skills/internal-agent-sync-external-resources/references/fingerprinting-contract.md": "1c4a25def0b8a55aa0fb7a4bfcbe8cd8fbfbcf2d6c8f95fdb69f897e69be2a1e",
     ".github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml": "0b50ce84518d8d2207b099931a0a82035e74cae3a855fc2372945a66a6d0dc38",
     ".github/skills/internal-agent-sync-external-resources/scripts/apply_imported_asset_overrides.py": "9b6f6785481748fc7096b75a052d24544b908e248232473c2aa5a6b44d352e7f",
     ".github/skills/internal-agent-sync-external-resources/scripts/sync_resource_fingerprint.py": "da2c30f9314c242e2e7166c39832aa8e822b69aa31d95142e8080da789e0cdcf",
-    ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md": "f137269a6f15333224cda7207086475f0549324ebbf383fc7c83dc8ac9ab941e",
+    ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/SKILL.md": "23a5f2b163ccab9e2bb8648dacfad034c671b2114b8dcd3f9d8edffb5053b485",
     ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/agents/openai.yaml": "41e8c23a3fe15377efd327f2174f650895e72020ec86e318e0a2c1c52460d9be",
-    ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md": "bda2770a9782b20398937fd9a7b42d9fb8b869bb82f574f93047fb7ef347b91b",
+    ".github/skills/internal-agent-sync-global-copilot-configs-into-repo/references/sync-contract.md": "66bda2dfc709a1d505053bd44a8dfa20bef6df0b06556575d9972ab3f1086855",
     ".github/skills/internal-aws-governance/SKILL.md": "cd1f09ec7d5da8aa1ced16a9f4c1579083ea559a29a12c02110c749ac3f37fa7",
     ".github/skills/internal-aws-governance/agents/openai.yaml": "9148ce0428e98b97e6770e912ee0e044f3dc89d68dd0241b3c156d9768303882",
     ".github/skills/internal-aws-governance/references/guardrail-map.md": "558e1dfd25e66b51ffd9ab66dd987eddc26425431b557bae3129e353c8027c8e",
@@ -5064,7 +5155,7 @@
     ".github/skills/internal-code-review/references/anti-patterns-nodejs.md": "d65ce7c3e2d26816fc8724a750b5566ddbff7f522d9164320b5a2133f2d305e5",
     ".github/skills/internal-code-review/references/anti-patterns-python.md": "ec8e7726bc848db5c053d2d5983dcf8c50a56d098ee236734e32a0c0098adbfc",
     ".github/skills/internal-code-review/references/anti-patterns-terraform.md": "f24a0144d80e06beedbe3cc9be3073c249e2e842ec4a6c82570de6a3d5b0b29b",
-    ".github/skills/internal-copilot-audit/SKILL.md": "0a781afce2a5011a1f703aed8befdabaa3b973f8f6847699182f57bcb639cc33",
+    ".github/skills/internal-copilot-audit/SKILL.md": "2ba545f40413bf47bca2a20e8a5a62c0ca91c908f425056ad27486e1e54ddeb1",
     ".github/skills/internal-copilot-audit/agents/openai.yaml": "ee7a8fb097a9ed0f3587f7967be7ea9d5d713be1ef01ef00f636b828d2600b70",
     ".github/skills/internal-copilot-audit/references/audit-checklist.md": "18af16857f064dfb28043cdbd11aa32eed194613190dec6d684faad4014b940a",
     ".github/skills/internal-copilot-docs-research/SKILL.md": "003234bdf56f5e80560e13ef99313ccda3d63a5b4590f82d5c8966f043aff852",
@@ -5105,7 +5196,7 @@
     ".github/skills/internal-github-action-composite/references/output-forwarding-pattern.md": "077a419d13aefacaa9f86fd45ed9247b4b79f29a4b31f06b8ed72d916f9c9d59",
     ".github/skills/internal-github-action-composite/references/testing-pattern.md": "63645a046172ca7000e218b6427b1016f7180bfb21b6c21282e69829e8639e82",
     ".github/skills/internal-github-action-composite/references/versioning-strategy.md": "cf3ba8fc2a8f7cbe926f5b25dd052324b66d3d67da6f7e3c949536dc4c119952",
-    ".github/skills/internal-github-actions/SKILL.md": "cbf3549728c56437d9dbd1b75b041ce1f8788b519660483807b68e91fb300f44",
+    ".github/skills/internal-github-actions/SKILL.md": "266640ff908bae85d54b9736855a7d05717ec62c9e3532a93970a544287fb2a3",
     ".github/skills/internal-github-actions/agents/openai.yaml": "48afbed966ab59821c29128e0599e01792a632241bb942a2f21c94ac50c9749a",
     ".github/skills/internal-github-actions/references/auth-snippets.md": "796454e8c72e5c719f59f2beac4cd7cd3b21f1800091ff26130c92c925172171",
     ".github/skills/internal-github-actions/references/caching-and-artifacts.md": "c21c8aa2a1d864f80aacb71cddd5edcaffaa689ecd6fa484560a830e72f366bb",
@@ -5151,16 +5242,17 @@
     ".github/skills/internal-script-python/SKILL.md": "461275b3c27a93b88921c443b6b80e3a57b8eff2e382ff3f1185670a76c3ea42",
     ".github/skills/internal-script-python/agents/openai.yaml": "a5a240a5342082c0e83e1fd03f4796797c09ffb10d978726b85d0d58b0a4cb13",
     ".github/skills/internal-script-python/references/layout-and-templates.md": "7149614252611a9d91c0c5429d894d02eaac16723d072df1970141c9636c07b0",
-    ".github/skills/internal-skill-creator/SKILL.md": "dda472a8afca9f1da8d20c467933945be27f5d3936aba928171759d1e64f4064",
+    ".github/skills/internal-skill-creator/SKILL.md": "c3dc2b0a325936548d3a98d25a061a60b26d622b2c40595a604dbba70cb3d796",
     ".github/skills/internal-skill-creator/agents/openai.yaml": "ee55e1ca6a3228696b8a4fea9b725b241c3b4338f22c9a5efbb519d289b9077b",
     ".github/skills/internal-skill-creator/references/writing-skills-checklist.md": "9c6b6b99d3aeb623c527505069d96d57eac6ef8031514f1b5a65745149f53a04",
     ".github/skills/internal-spring-boot-development/SKILL.md": "74a26bfc243ce5fa4599e4c358859d4e1da563b0aa759bbbb8e3bbaa904ef747",
     ".github/skills/internal-spring-boot-development/agents/openai.yaml": "0d3455027b52da746180109f283e9ea82f7bc8b75696a6e4d3bb74a7baa994b6",
     ".github/skills/internal-spring-boot-development/references/http-config.md": "25270fd91a731918888582a3cdf559e6199413d36ff159f25667676feb7955ee",
     ".github/skills/internal-spring-boot-development/references/testing-and-data.md": "9e9e0caddcd19830cc7b40ac13ec883f8b31f2a363bb8bb5c7fe4cbd861711ed",
-    ".github/skills/internal-terraform/SKILL.md": "e8ca938ca5214a9bb463771aedbdf48fc73280efa525d986f767bf23048b1b91",
+    ".github/skills/internal-terraform/SKILL.md": "2ec268bf82c433cd1a7802448f2a56046070f083f47215ee91f4afb56242a427",
     ".github/skills/internal-terraform/agents/openai.yaml": "fa4c27d3668d0e5e1549967427aad6659e486f07881f5d6a3bd31d129207ffb4",
     ".github/skills/internal-terraform/references/decision-guide.md": "4caa71b43038eb62b52bd6338170e6aeb7efd53be04c40d0060c9ce21a62d83b",
+    ".github/skills/internal-terraform/references/structure-standard.md": "a89f18aea94e28a838908f4e2ae9e0fa71ae2a346cebb8e63963f36ebd58222d",
     ".github/skills/internal-terraform/references/template-examples.md": "dae6939e8cd543963c1e6fb4d5c259677c27a7264ea8e4a48b681165f1819595",
     ".github/skills/internal-writing-plans/SKILL.md": "f01f60735adecb5766d109af2111074bc40d76c2f351378623ebc56b5b272ab5",
     ".github/skills/internal-writing-plans/agents/openai.yaml": "fb7c4047674589d715efbf0c25ca80f91ac48b3637fc9076d3404aa6b71b9a4c",
@@ -5265,14 +5357,14 @@
     ".github/skills/terraform-terraform-search-import/references/MANUAL-IMPORT.md": "705db1d5286a090e73cec26cd308b5add4f500a8332193a4e2a2fd7e83a8f220",
     ".github/skills/terraform-terraform-search-import/scripts/list_resources.sh": "34c7cd8eab31d9c2e1b75a29bc21ff98e17565b1e79741627d751a95a29325b2",
     ".github/skills/terraform-terraform-test/SKILL.md": "36fff050c50c3f4a3cf6c951bbdb741b812812ecb16120cfa1bf12f953e2b829",
-    ".github/workflows/_pre-commit.yml": "63f1e9bf565333ae2184a72e468ae78857c686f3a4a6cf5032250176cbb1a4af",
+    ".github/workflows/_pre-commit.yml": "fa0427479be344887a350800c3cb4f8d584c3d1a0f2cf6056575ac49bb9acf67",
     ".gitignore": "9d88fd04767b014cb566f35536267b66461b0eef79b64ab40ab7daf8a0c6fceb",
-    ".pre-commit-config.yaml": "7396ce1e39cbf6c78229ec23c9fde1f457630deeed86349986d2236db7350b49",
-    "AGENTS.md": "278830be3138b209b5084139e6eef1ce7627e373055e5f12a1b2c083d2222ead",
-    "LESSONS_LEARNED.md": "dd605c00b7c0b8e2dc38c323646cab2b0b485c696cc1da0b0b2d816bc406f309"
+    ".pre-commit-config.yaml": "5d0c15a7c5e739fc586c705788c8baac24e5063eddf6b5c657620765de33272c",
+    "AGENTS.md": "6df92e04eb049518f09a5071a160177db25a1bd4b20f570a147a0bea7d6172f1",
+    "LESSONS_LEARNED.md": "582173446c84cebab160915ac2e6c4a1c9182f308f858981acf7f0161caf4122"
   },
   "normalization_version": "v1",
-  "source_revision": "dd492e8",
+  "source_revision": "8ab860e",
   "source_root": "/Users/diego.lagosmorales/code/cloud-strategy-governance/cloud-strategy.github",
   "source_version": "1.0.0",
   "target_root": "/Users/diego.lagosmorales/code/cloud-strategy-governance/eng-azure-governance"

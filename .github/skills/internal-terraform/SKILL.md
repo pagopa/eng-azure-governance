@@ -35,6 +35,9 @@ See `references/decision-guide.md` for the full decision flowchart. Quick rule:
 - Avoid hardcoded values (IDs, ARNs, subscription IDs, secrets).
 - Apply tags on all taggable resources.
 - Preserve naming and folder conventions of the target repository.
+- For new root configurations without an established competing layout, use the numbered root structure from `references/structure-standard.md`.
+- Treat numbered root files as a logical hierarchy for humans only; actual Terraform ordering must still be expressed in the dependency graph.
+- Do not proactively migrate an existing root only to match the default structure; use the default as the migration target only when migration is explicitly requested.
 - Preserve stable module input/output contracts when modifying existing modules.
 - Keep Terraform formatting and file splits consistent with the target directory; when the repo already separates `providers.tf`, `terraform.tf`, `variables.tf`, or `outputs.tf`, preserve that structure.
 
@@ -44,6 +47,7 @@ See `references/decision-guide.md` for the full decision flowchart. Quick rule:
 - Treat `terraform import`, `terraform state mv`, and `terraform state rm` as explicit migration steps that must be documented alongside address or module refactors.
 - Review drift before structural changes, especially when renaming resources, changing `for_each` keys, or splitting code into modules.
 - Pin external modules and provider versions intentionally; when changing constraints, state the upgrade or compatibility reason.
+- When the repository validates Terraform with `terraform init -lockfile=readonly`, treat the commented `terraform_providers_lock` block in the repo `.pre-commit-config.yaml` as the canonical lock platform matrix and regenerate `.terraform.lock.hcl` with checksums for every listed platform when providers change or CI reports checksum mismatches.
 - Run policy or compliance gates when the repository or delivery pipeline already depends on them.
 - Stay Terraform/OpenTofu compatible unless the target repository explicitly standardizes on OpenTofu-only features.
 
@@ -53,6 +57,13 @@ See `references/decision-guide.md` for the full decision flowchart. Quick rule:
 - Place meta-arguments before normal arguments, keep arguments before nested blocks, and keep lifecycle-style control blocks last.
 - Use descriptive singular `snake_case` identifiers; use `main` only when there is one obvious instance and a more specific name adds no clarity.
 - When `variables.tf` or `outputs.tf` exist as dedicated files, keep entries deterministic and easy to scan, typically alphabetical by identifier.
+
+## Root configuration standard layout
+
+- Load `references/structure-standard.md` when creating or reorganizing a root configuration.
+- Use the numbered root layout as the default for new root configurations unless the target repository or folder already has another established structure, keeping `00-*` for init or fundamental data and allocating `10-97` dynamically from upstream prerequisites to downstream branches.
+- Keep environment selection under `env/<account|subscription|project>/` when the root uses the repository default `terraform.sh` runner pattern.
+- Do not apply the numbered root layout to reusable modules.
 
 ## Module standard layout
 
@@ -90,5 +101,6 @@ Load `references/template-examples.md` when you need a minimal inline feature ex
 
 - `terraform fmt -check -recursive`
 - `terraform validate`
+- If `.terraform.lock.hcl` changes or checksum mismatches appear, confirm the lockfile still covers every platform declared in the repository lock matrix.
 - Review `terraform plan` output for unexpected changes
 - For modules: run example/consumer plan review
