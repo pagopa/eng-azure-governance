@@ -5,8 +5,9 @@ resource "azurerm_role_definition" "storage_blob_tags_contributor" {
 
   permissions {
     data_actions = [
-      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/tags/read", # read tags of blobs in storage
-      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/tags/write" # write tags of blobs in storage
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/tags/read",    # read tags of blobs in storage
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/tags/write",   # write tags of blobs in storage
+      "Microsoft.Storage/storageAccounts/blobServices/containers/blobs/filter/action" # filter tags of blobs in storage
     ]
   }
 }
