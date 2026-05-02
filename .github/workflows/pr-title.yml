@@ -8,6 +8,9 @@ on:
       - synchronize
       - auto_merge_enabled
 
+permissions:
+  pull-requests: read
+
 jobs:
   main:
     name: Validate PR title

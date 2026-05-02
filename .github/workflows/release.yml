@@ -11,6 +11,9 @@ on:
       - '**.md'
       - '.**'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     name: Release

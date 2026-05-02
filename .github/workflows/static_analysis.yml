@@ -3,6 +3,9 @@ name: 🛂 Static Analysis
 on:
   push:
 
+permissions:
+  contents: read
+
 jobs:
   static_analysis:
     runs-on: ubuntu-22.04
