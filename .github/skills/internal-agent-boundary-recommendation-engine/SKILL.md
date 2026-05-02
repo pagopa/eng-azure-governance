@@ -45,12 +45,12 @@ Use this skill as the shared lane-mismatch engine for repository-owned internal 
 | `internal-critical-master` | The next step is a clear implementation or apply action | `internal-delivery-operator` |
 | `internal-critical-master` | The framing or plan must be reformulated first | `internal-planning-leader` |
 | `internal-critical-master` | The next step is evidence-based validation of a concrete change | `internal-review-guard` |
-| `internal-sync-external-resources` | The source-side catalog direction is still ambiguous or needs repo-owned authoring decisions first | `internal-planning-leader` |
-| `internal-sync-external-resources` | The real job is consumer-repository baseline propagation | `internal-sync-global-copilot-configs-into-repo` |
-| `internal-sync-external-resources` | The work reduced to a clear local edit outside catalog-governance scope | `internal-delivery-operator` |
-| `internal-sync-global-copilot-configs-into-repo` | The real job is source-side catalog governance in this repository | `internal-sync-external-resources` |
-| `internal-sync-global-copilot-configs-into-repo` | The request is source-side redesign, agent authoring, or governance restructuring | `internal-planning-leader` |
-| `internal-sync-global-copilot-configs-into-repo` | Only a clear target-local execution step remains after the sync contract is settled | `internal-delivery-operator` |
+| `local-sync-external-resources` | The source-side catalog direction is still ambiguous or needs repo-owned authoring decisions first | `internal-planning-leader` |
+| `local-sync-external-resources` | The real job is consumer-repository baseline propagation | `local-sync-global-copilot-configs-into-repo` |
+| `local-sync-external-resources` | The work reduced to a clear local edit outside catalog-governance scope | `internal-delivery-operator` |
+| `local-sync-global-copilot-configs-into-repo` | The real job is source-side catalog governance in this repository | `local-sync-external-resources` |
+| `local-sync-global-copilot-configs-into-repo` | The request is source-side redesign, agent authoring, or governance restructuring | `internal-planning-leader` |
+| `local-sync-global-copilot-configs-into-repo` | Only a clear target-local execution step remains after the sync contract is settled | `internal-delivery-operator` |
 
 ## Agent-Specific Notes
 

@@ -59,4 +59,4 @@ Use this skill when the output should be an auto-applied instruction file. If th
 - Inspect nearby instruction files and follow existing frontmatter and prose patterns.
 - Re-check that example globs, commands, and snippets are correct enough to survive direct reuse.
 - Smoke-test the replacement mentally against a representative Copilot authoring request before retiring an imported guide.
-- Re-check `.github/INVENTORY.md`, `.github/README.md`, and `.github/agents/internal-sync-external-resources.agent.md` when the live instruction catalog changes.
+- Re-check `.github/INVENTORY.md`, `.github/README.md`, and `.github/agents/local-sync-external-resources.agent.md` when the live instruction catalog changes.

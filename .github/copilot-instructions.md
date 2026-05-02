@@ -8,7 +8,7 @@ You are an expert software and platform engineer. Protect correctness, security,
 - Inspect nearby files before editing and follow the existing naming, frontmatter, and directory patterns.
 - Use only repository evidence that exists on disk. Do not invent runtimes, validators, sync flows, or test suites.
 - Treat imported non-`internal-*` assets as upstream resources; keep them verbatim unless the user explicitly asks for a refresh, replacement, or local fork.
-- Do not edit imported upstream assets in place unless the need is strong, the user explicitly counter-validates the exception, and the replay patch is registered in the `internal-agent-sync-external-resources` bundle in the same change.
+- Do not edit imported upstream assets in place unless the need is strong, the user explicitly counter-validates the exception, and the replay patch is registered in the `local-agent-sync-external-resources` bundle in the same change.
 
 ## Precedence And Projections
 
@@ -19,6 +19,7 @@ You are an expert software and platform engineer. Protect correctness, security,
 5. Skills and agents are on-demand operational assets; use them only when relevant.
 6. `.github/INVENTORY.md` is the live catalog of managed assets and is never replaced by `AGENTS.md`.
 7. If `.github/copilot-instructions.override.md` exists, read it before relying on synced repo-wide defaults; it is the consumer-local exception layer authorized by `AGENTS.md`.
+8. If `docs/architecture.md` exists in the current repository, read it as the per-repo architecture contract before reasoning about repository purpose, components, or boundaries; this file is intentionally per-repo and not synced from the standards repository.
 
 - `internal-sync-*` assets stay sync-specific and must not become second canonical homes for repository-wide policy.
 - When repository-wide defaults change, update `AGENTS.md` first, then refresh this file, then realign narrower governance assets that reference the change.
@@ -42,7 +43,8 @@ You are an expert software and platform engineer. Protect correctness, security,
 - `obra-*` skills are the cross-cutting workflow lane. They often improve strategic framing, but may also govern tactical or operational work when relevant.
 - `internal-*` skills are the canonical repository-owned layer. They are tactical by default, but may also own strategic or operational work when their contract says so.
 - Imported non-`internal-*` assets are support-only depth by default. Prefer a repository-owned internal owner when one exists, and add wrappers or replacements only when repo-specific governance, routing, terminology, output shape, or safety expectations require it.
-- `local-*` assets are consumer-local extensions. They are usually tactical or operational and become strategic only when local governance explicitly needs it.
+- During catalog review or rationalization, imported assets in domains already covered by a credible internal owner should be evaluated as `keep as depth`, `wrap under the internal owner`, or `retire`; do not collapse the decision to a binary keep/delete choice.
+- `local-*` assets are consumer-local extensions in target repositories. In this standards repository, the `local-*` prefix is also used for repo-owned tooling that must not be synced to consumers (for example, sync command centers and their paired engine skills); these assets remain source-of-truth here and are excluded from the synced baseline.
 - `internal-delivery-operator`, `internal-planning-leader`, `internal-review-guard`, and `internal-critical-master` are the canonical repository-owned operational agents.
 - Use direct entry for canonical operational lanes and do not invent a repository-owned front-door router.
 - `internal-planning-leader` is the safe fallback when the right operational lane is still ambiguous.
@@ -64,6 +66,8 @@ You are an expert software and platform engineer. Protect correctness, security,
 - Prefer the simplest correct change.
 - Keep business logic separated from I/O and infrastructure concerns.
 - Apply only the instruction files relevant to the files being changed.
+- When introducing a new source-managed catalog family or a new human-readable catalog summary surface, update inventory generation, sync discovery, and validation in the same change so `.github/INVENTORY.md` does not become the only surface aware of it.
+- Do not add hand-maintained catalog matrices or counts beside `.github/INVENTORY.md` unless they are generated from the filesystem or covered by validation.
 - For vendor-owned or schema-driven configuration surfaces, read the primary documentation before editing whenever correctness depends on platform-specific semantics such as context availability, expression scope, or validation rules; do not rely on memory alone.
 - For repository-owned skill work, validate frontmatter before refining body wording or token shape.
 - For source-side repository-owned standards work that deepens parallel skill families, stage planning in `tmp/superpowers/`, make anti-scope explicit, and close parity gaps in existing `Common mistakes`, `Validation`, and current reference depth before adding optional new skills, validators, or shared assets.
@@ -84,11 +88,13 @@ You are an expert software and platform engineer. Protect correctness, security,
 - Keep doubts, open questions, and user decisions in `dubbi-e-domande.md`. This file stays outside the plan-and-apply loop and must not be treated as an executable plan file.
 - During execution, maintain matching `done-*` files. Move completed items into the corresponding `done-*` file, remove them from the active source file, delete an emptied source plan file, and continue through the remaining numbered plan files until the work is finished or a real blocker requires user input.
 - Preserve imported `obra-*`, `awesome-*`, `openai-*`, and other upstream assets; express this repository's planning policy through repository-owned internal wrappers instead of editing upstream planning skills.
-- If an imported asset still requires a direct repo-local exception, register the replay patch in `.github/skills/internal-agent-sync-external-resources/references/imported-asset-overrides.yaml` instead of leaving an undocumented fork.
+- If an imported asset still requires a direct repo-local exception, register the replay patch in `.github/skills/local-agent-sync-external-resources/references/imported-asset-overrides.yaml` instead of leaving an undocumented fork.
 
 ## Repository Workflow Reminders
 
 - PR content must follow `.github/PULL_REQUEST_TEMPLATE.md` in exact section order.
+- For self-authored PRs under required-review policy, do not treat green checks as sufficient: confirm a qualifying non-author approval still exists, prefer `gh pr merge --squash` over the default merge-commit path unless the repository clearly standardizes on another allowed merge method, and use `--admin` only when policy explicitly allows a bypass.
+- Treat organization-wide `gh search prs` results as eventually consistent immediately after merge; confirm terminal state with repository-scoped `gh pr view --json state,mergedAt` before treating a just-merged PR as still open.
 - For GitHub Actions pinning, each full SHA must include an adjacent comment with a release or tag reference.
 - `CODEOWNERS` may keep `@your-org/platform-governance-team` only in template repositories; consumer repositories must replace that placeholder before review enforcement.
 

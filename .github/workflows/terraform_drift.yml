@@ -27,7 +27,7 @@ jobs:
       - name: Set Terraform Version
         id: env_tf_version
         run: |
-          echo "terraform_version=$(cat .terraform-version)" >> $GITHUB_OUTPUT
+          echo "terraform_version=$(cat .terraform-version)" >> "$GITHUB_OUTPUT"
 
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd
         id: terraform_setup
@@ -52,12 +52,12 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZ_SUBSCRIPTION_ID }}
           ARM_USE_OIDC: 'true'
         run: |
-          cd $DIR
-
-          export result=0
+          cd "$DIR"
 
           # Loop through each folder under /src dynamically
-          for folder in $(ls -d */); do
+          for folder in */; do
+            [ -d "$folder" ] || continue
+
             if [ "$folder" == "scripts/" ]; then
               echo "Skipping $folder"
               continue
@@ -66,23 +66,24 @@ jobs:
             echo "Running Terraform plan for $folder"
 
             # Change into the directory
-            cd $folder
+            cd "$folder"
 
-            ./terraform.sh plan -detailed-exitcode -lock=false || export result=$?
+            result=0
+            ./terraform.sh plan -detailed-exitcode -lock=false || result=$?
 
-            if [ $result -eq 2 ]; then
+            if [ "$result" -eq 2 ]; then
               echo "Terraform drift detected in $folder."
               exit 1
-            elif [ $result -eq 1 ]; then
+            elif [ "$result" -eq 1 ]; then
               echo "Terraform error in $folder."
               exit 1  # This will cause the job to fail immediately on drift detection
-            elif [ $result -eq 0 ]; then
+            elif [ "$result" -eq 0 ]; then
               echo "No drift detected in $folder."
             else
               echo "Other error in $folder."
               exit 1  # This will cause the job to fail immediately on drift detection
             fi
-          cd ..
+            cd ..
           done
 
       - name: Notify Slack on Failure

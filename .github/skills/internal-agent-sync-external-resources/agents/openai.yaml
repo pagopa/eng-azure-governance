@@ -1,4 +1,0 @@
-interface:
-  display_name: "Internal Agent Sync External Resources"
-  short_description: "Govern sync catalog decisions safely."
-  default_prompt: "Use $internal-agent-sync-external-resources to audit the managed .github catalog, decide keep/update/extract/retire outcomes, and use the bundled fingerprinting script when deterministic change evidence is needed."

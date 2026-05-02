@@ -14,6 +14,7 @@ applyTo: "**/*.py"
 - Unit tests are required for testable logic.
 - Python tests must live under the repository-root `tests/` directory, never beside source files or inside standalone tool folders.
 - Mirror the covered source path under `tests/` so the owning script or module is obvious from the test location.
+- When a test must modify `sys.path` before importing a standalone script, keep the affected import after that setup and mark only that import with `# noqa: E402`; remove truly unused imports or variables instead of suppressing them.
 - Apply these rules for both create and modify operations.
 - For Python template tasks, use Jinja templates named `<file-name>.<extension>.j2`.
 - Keep template content complete and externalize only values intentionally passed by the caller.
