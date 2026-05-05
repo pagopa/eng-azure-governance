@@ -48,6 +48,11 @@ resource "azurerm_policy_set_definition" "app_service_dev" {
     })
   }
 
+  policy_definition_reference {
+    policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_disable_ftp_id
+    parameter_values     = jsonencode({})
+  }
+
   # Function app slots should use the latest TLS version
   # https://www.azadvertizer.net/azpolicyadvertizer/deb528de-8f89-4101-881c-595899253102.html
   policy_definition_reference {
