@@ -85,6 +85,58 @@ def _schema_only(
     return advisor_rows, service_rows, counts_by_source, counts_by_file
 
 
+def _add_live_empty_output_diagnostics(
+    *,
+    diagnostics: DiagnosticsCollector,
+    reporter: ExecutionReporter,
+    advisor_rows: list[dict[str, str]],
+    service_rows: list[dict[str, str]],
+    counts_by_source: dict[str, int],
+) -> None:
+    advisor_source_count = (
+        counts_by_source["advisor_metadata"]
+        + counts_by_source["advisor_recommendations"]
+        + counts_by_source["resource_graph_advisorresources"]
+    )
+    service_source_count = counts_by_source["resource_health_events"]
+
+    if not advisor_rows:
+        severity = "warning" if advisor_source_count == 0 else "error"
+        diagnostics.add(
+            severity=severity,
+            check_id="advisor_rows_empty",
+            source_system="advisor_joined",
+            scope="global",
+            message="Advisor aggregate contains no rows",
+            action_required=(
+                "No Advisor source rows were returned for the resolved scope"
+                if advisor_source_count == 0
+                else "Fix Advisor normalization or joins before using this export"
+            ),
+            observed_count=len(advisor_rows),
+            expected_count=advisor_source_count,
+        )
+        reporter.warning("Advisor aggregate produced zero rows")
+
+    if not service_rows:
+        severity = "warning" if service_source_count == 0 else "error"
+        diagnostics.add(
+            severity=severity,
+            check_id="service_rows_empty",
+            source_system="resource_health_events",
+            scope="global",
+            message="Service Health aggregate contains no rows",
+            action_required=(
+                "No Service Health source rows were returned for the resolved scope"
+                if service_source_count == 0
+                else "Fix Service Health normalization before using this export"
+            ),
+            observed_count=len(service_rows),
+            expected_count=service_source_count,
+        )
+        reporter.warning("Service Health aggregate produced zero rows")
+
+
 def _load_fixture(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -102,7 +154,14 @@ def _fixture_mode(
     run_id: str,
     output_dir: Path,
     diagnostics: DiagnosticsCollector,
-) -> tuple[list[dict[str, str]], list[dict[str, str]], dict[str, int], dict[str, int], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    list[dict[str, str]],
+    list[dict[str, str]],
+    dict[str, int],
+    dict[str, int],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
     assert cfg.fixture_dir is not None
 
     advisor_metadata = _load_fixture(cfg.fixture_dir / "advisor_metadata.json")
@@ -176,7 +235,15 @@ def _live_mode(
     output_dir: Path,
     diagnostics: DiagnosticsCollector,
     reporter: ExecutionReporter,
-) -> tuple[list[dict[str, str]], list[dict[str, str]], dict[str, int], dict[str, int], list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+) -> tuple[
+    list[dict[str, str]],
+    list[dict[str, str]],
+    dict[str, int],
+    dict[str, int],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[str],
+]:
     reporter.section("🔐", "Authentication", "Acquire the ARM token and prepare the resilient HTTP session")
     reporter.step("Requesting Azure ARM bearer token")
     token = get_management_token()
@@ -199,7 +266,11 @@ def _live_mode(
             always=True,
         )
 
-    reporter.section("📦", "Advisor Collection", "Fetch Advisor metadata, recommendations, and Resource Graph enrichment")
+    reporter.section(
+        "📦",
+        "Advisor Collection",
+        "Fetch Advisor metadata, recommendations, and Resource Graph enrichment",
+    )
     advisor_metadata, advisor_metadata_pages = collect_advisor_metadata(client)
     advisor_recommendations, recommendation_pages = collect_advisor_recommendations(client, subscriptions)
     advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = collect_advisor_resource_graph(
@@ -304,34 +375,19 @@ def _live_mode(
         )
         reporter.warning("Resource Graph returned truncated results; validate output counts carefully")
 
-    if not advisor_rows:
-        diagnostics.add(
-            severity="warning",
-            check_id="advisor_rows_empty",
-            source_system="advisor_joined",
-            scope="global",
-            message="Advisor aggregate contains no rows",
-            action_required="Validate scope, permissions, and recommendation availability",
-        )
-        reporter.warning("Advisor aggregate produced zero rows")
-
-    if not service_rows:
-        diagnostics.add(
-            severity="warning",
-            check_id="service_rows_empty",
-            source_system="resource_health_events",
-            scope="global",
-            message="Service Health aggregate contains no rows",
-            action_required="Validate query window and provider access",
-        )
-        reporter.warning("Service Health aggregate produced zero rows")
-
     counts_by_source = {
         "advisor_metadata": len(advisor_metadata),
         "advisor_recommendations": len(advisor_recommendations),
         "resource_graph_advisorresources": len(advisor_graph_rows),
         "resource_health_events": len(service_events),
     }
+    _add_live_empty_output_diagnostics(
+        diagnostics=diagnostics,
+        reporter=reporter,
+        advisor_rows=advisor_rows,
+        service_rows=service_rows,
+        counts_by_source=counts_by_source,
+    )
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
         "azure_service_health_advisories_aggregate.tsv": len(service_rows),
@@ -387,7 +443,11 @@ def main() -> int:
             )
             reporter.success("Schema-only artifacts generated")
         elif cfg.mode == "fixture":
-            reporter.section("🧰", "Fixture Mode", "Load local fixture payloads and normalize them into runtime outputs")
+            reporter.section(
+                "🧰",
+                "Fixture Mode",
+                "Load local fixture payloads and normalize them into runtime outputs",
+            )
             reporter.detail("Fixture directory", str(cfg.fixture_dir), always=True)
             (
                 advisor_rows,

@@ -61,7 +61,7 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    mode = args.mode or os.getenv("AZURE_RETIREMENTS_MODE", "schema-only")
+    mode = args.mode or os.getenv("AZURE_RETIREMENTS_MODE") or "live"
 
     subscriptions = _split_csv(args.subscriptions or os.getenv("AZURE_SUBSCRIPTIONS"))
     management_groups = _split_csv(args.management_groups or os.getenv("AZURE_MANAGEMENT_GROUPS"))

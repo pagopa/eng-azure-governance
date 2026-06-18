@@ -198,6 +198,51 @@ def test_schema_only_returns_empty_rows_and_info_diagnostic(monkeypatch: pytest.
     assert diagnostic_rows[0]["check_id"] == "schema_only_mode"
 
 
+def test_live_empty_output_guardrails_error_when_source_rows_exist(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_live_guardrail_error")
+    diagnostics = module.DiagnosticsCollector("run-1")
+
+    module._add_live_empty_output_diagnostics(
+        diagnostics=diagnostics,
+        reporter=module.ExecutionReporter(verbose=False),
+        advisor_rows=[],
+        service_rows=[],
+        counts_by_source={
+            "advisor_metadata": 1,
+            "advisor_recommendations": 1,
+            "resource_graph_advisorresources": 1,
+            "resource_health_events": 1,
+        },
+    )
+
+    assert diagnostics.summary()["error"] == 2
+    assert {row["check_id"] for row in diagnostics.rows()} == {
+        "advisor_rows_empty",
+        "service_rows_empty",
+    }
+
+
+def test_live_empty_output_guardrails_warn_when_source_rows_are_absent(monkeypatch: pytest.MonkeyPatch) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_live_guardrail_warning")
+    diagnostics = module.DiagnosticsCollector("run-1")
+
+    module._add_live_empty_output_diagnostics(
+        diagnostics=diagnostics,
+        reporter=module.ExecutionReporter(verbose=False),
+        advisor_rows=[],
+        service_rows=[],
+        counts_by_source={
+            "advisor_metadata": 0,
+            "advisor_recommendations": 0,
+            "resource_graph_advisorresources": 0,
+            "resource_health_events": 0,
+        },
+    )
+
+    assert diagnostics.summary()["warning"] == 2
+    assert diagnostics.summary()["error"] == 0
+
+
 def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_fixture_mode")
     fixture_dir = tmp_path / "fixtures"
