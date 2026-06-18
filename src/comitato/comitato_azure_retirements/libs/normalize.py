@@ -1,0 +1,394 @@
+"""Normalization logic for Advisor and Service Health rows."""
+
+from __future__ import annotations
+
+from datetime import date
+from typing import Any
+
+from .dates import (
+    days_to_retirement,
+    months_to_retirement,
+    normalize_datetime,
+    parse_possible_date,
+)
+from .tsv import compact_json
+
+
+def _extract_resource_name(resource_id: str) -> str:
+    if not resource_id:
+        return ""
+    parts = [part for part in resource_id.split("/") if part]
+    return parts[-1] if parts else ""
+
+
+def _extract_resource_group(resource_id: str) -> str:
+    if not resource_id:
+        return ""
+    parts = [part for part in resource_id.split("/") if part]
+    for idx, part in enumerate(parts):
+        if part.lower() == "resourcegroups" and idx + 1 < len(parts):
+            return parts[idx + 1]
+    return ""
+
+
+def _description_quality(description: str, short_problem: str, feature: str, link: str) -> str:
+    if description:
+        return "full"
+    if short_problem:
+        return "short"
+    if feature:
+        return "feature_only"
+    if link:
+        return "link_only"
+    return "missing"
+
+
+def normalize_advisor_rows(
+    *,
+    run_id: str,
+    as_of_date: date,
+    scope_mode: str,
+    recommendations: list[dict[str, Any]],
+    metadata_by_key: dict[str, dict[str, Any]],
+    resource_graph_by_key: dict[tuple[str, str], dict[str, Any]],
+) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    used_metadata_keys: set[str] = set()
+
+    for recommendation in recommendations:
+        properties = recommendation.get("properties", {})
+        recommendation_type_id = str(properties.get("recommendationTypeId") or "")
+        resource_id = str(
+            properties.get("resourceMetadata", {}).get("resourceId")
+            or properties.get("resourceMetadata", {}).get("id")
+            or ""
+        ).lower()
+
+        metadata = metadata_by_key.get(recommendation_type_id) or metadata_by_key.get(recommendation.get("id", ""))
+        if metadata:
+            meta_id = str(metadata.get("id") or "")
+            if meta_id:
+                used_metadata_keys.add(meta_id)
+
+        resource_graph = resource_graph_by_key.get((recommendation_type_id, resource_id))
+
+        source_properties = metadata.get("properties", {}).get("sourceProperties", {}) if metadata else {}
+        service_retirement = source_properties.get("serviceRetirement", {}) if isinstance(source_properties, dict) else {}
+
+        retirement_raw = (
+            str(service_retirement.get("retirementDate") or "")
+            or str(properties.get("retirementDate") or "")
+            or ""
+        )
+        retirement_date = parse_possible_date(retirement_raw)
+        retirement_date_text = retirement_date.isoformat() if retirement_date else ""
+
+        date_quality = "exact"
+        if not retirement_raw:
+            date_quality = "missing"
+        elif retirement_date is None:
+            date_quality = "unparseable"
+        elif retirement_date < as_of_date:
+            date_quality = "past"
+
+        d_days = days_to_retirement(as_of_date, retirement_date)
+        d_months = months_to_retirement(as_of_date, retirement_date)
+
+        short_problem = str(properties.get("shortDescription", {}).get("problem") or "")
+        short_solution = str(properties.get("shortDescription", {}).get("solution") or "")
+        description = str(properties.get("description") or "")
+        feature_name = str(service_retirement.get("retirementFeatureName") or "")
+        learn_more_link = str(properties.get("learnMoreLink") or metadata.get("properties", {}).get("learnMoreLink") if metadata else "")
+
+        row_flags: list[str] = []
+        join_quality = "metadata_and_resource"
+        if metadata is None and resource_graph is None:
+            join_quality = "recommendation_only"
+            row_flags.append("recommendation_without_metadata")
+        elif metadata is None:
+            join_quality = "arg_only"
+            row_flags.append("metadata_without_resource")
+        elif resource_graph is None:
+            join_quality = "recommendation_only"
+            row_flags.append("resource_without_metadata")
+
+        if not description and not short_problem and not feature_name:
+            row_flags.append("missing_description")
+        if not retirement_date_text:
+            row_flags.append("missing_retirement_date")
+        if retirement_raw and not retirement_date_text:
+            row_flags.append("unparseable_date")
+
+        tags_json = ""
+        resource_type = ""
+        location = ""
+        subscription_name = ""
+        resource_name = _extract_resource_name(resource_id)
+        resource_group = _extract_resource_group(resource_id)
+        platform_state = ""
+
+        if resource_graph:
+            tags_json = compact_json(resource_graph.get("tags", {}))
+            resource_type = str(resource_graph.get("type") or "")
+            location = str(resource_graph.get("location") or "")
+            subscription_name = str(resource_graph.get("subscriptionName") or "")
+            resource_name = str(resource_graph.get("name") or resource_name)
+            resource_group = str(resource_graph.get("resourceGroup") or resource_group)
+            platform_state = str(resource_graph.get("platformState") or "")
+
+        actions = properties.get("actions", [])
+        action_link = ""
+        action_caption = ""
+        if isinstance(actions, list) and actions:
+            first_action = actions[0]
+            if isinstance(first_action, dict):
+                action_link = str(first_action.get("link") or first_action.get("url") or "")
+                action_caption = str(first_action.get("caption") or first_action.get("name") or "")
+
+        service_name = ""
+        if metadata:
+            service_name = str(metadata.get("properties", {}).get("resourceMetadata", {}).get("singular") or "")
+        if not service_name:
+            service_name = str(properties.get("resourceMetadata", {}).get("singular") or "")
+
+        row = {
+            "run_id": run_id,
+            "as_of_date": as_of_date.isoformat(),
+            "scope_mode": scope_mode,
+            "record_type": "advisor_resource_retirement" if resource_id else "advisor_subscription_retirement",
+            "source_system": "advisor_joined",
+            "source_id": str(recommendation.get("id") or recommendation.get("name") or ""),
+            "recommendation_type_id": recommendation_type_id,
+            "advisor_recommendation_id": str(recommendation.get("id") or ""),
+            "advisor_metadata_id": str(metadata.get("id") or "") if metadata else "",
+            "service_name": service_name,
+            "retiring_feature": feature_name,
+            "retirement_date": retirement_date_text,
+            "days_to_retirement": "" if d_days is None else str(d_days),
+            "months_to_retirement": "" if d_months is None else str(d_months),
+            "retirement_date_quality": date_quality,
+            "subscription_id": str(recommendation.get("_subscriptionId") or ""),
+            "subscription_name": subscription_name,
+            "resource_id": resource_id,
+            "resource_name": resource_name,
+            "resource_group": resource_group,
+            "resource_type": resource_type.lower(),
+            "location": location,
+            "tags_json": tags_json,
+            "environment_hint": "",
+            "platform_hint": "",
+            "impact": str(properties.get("impact") or ""),
+            "risk": str(properties.get("risk") or ""),
+            "category": str(properties.get("category") or ""),
+            "sub_category": str(properties.get("subCategory") or ""),
+            "platform_state": platform_state,
+            "last_updated": normalize_datetime(str(properties.get("lastUpdated") or "")),
+            "label": str(properties.get("label") or ""),
+            "short_description_problem": short_problem,
+            "short_description_solution": short_solution,
+            "description": description,
+            "potential_benefits": str(properties.get("potentialBenefits") or ""),
+            "learn_more_link": learn_more_link,
+            "action_link": action_link,
+            "action_caption": action_caption,
+            "description_quality": _description_quality(description, short_problem, feature_name, learn_more_link),
+            "join_quality": join_quality,
+            "diagnostic_flags": ",".join(sorted(set(row_flags))),
+            "provenance_json": compact_json(
+                {
+                    "recommendation_source": "advisor_recommendations",
+                    "metadata_joined": metadata is not None,
+                    "resource_graph_joined": resource_graph is not None,
+                    "resource_graph_key": [recommendation_type_id, resource_id],
+                }
+            ),
+            "raw_json": compact_json(
+                {
+                    "recommendation": recommendation,
+                    "metadata": metadata,
+                    "resource_graph": resource_graph,
+                }
+            ),
+        }
+        rows.append(row)
+
+    for metadata_key, metadata in metadata_by_key.items():
+        meta_id = str(metadata.get("id") or "")
+        if not meta_id or meta_id in used_metadata_keys:
+            continue
+
+        source_properties = metadata.get("properties", {}).get("sourceProperties", {})
+        service_retirement = source_properties.get("serviceRetirement", {}) if isinstance(source_properties, dict) else {}
+        retirement_raw = str(service_retirement.get("retirementDate") or "")
+        retirement_date = parse_possible_date(retirement_raw)
+
+        rows.append(
+            {
+                "run_id": run_id,
+                "as_of_date": as_of_date.isoformat(),
+                "scope_mode": scope_mode,
+                "record_type": "advisor_catalog_retirement",
+                "source_system": "advisor_metadata",
+                "source_id": meta_id,
+                "recommendation_type_id": metadata_key,
+                "advisor_recommendation_id": "",
+                "advisor_metadata_id": meta_id,
+                "service_name": str(metadata.get("properties", {}).get("resourceMetadata", {}).get("singular") or ""),
+                "retiring_feature": str(service_retirement.get("retirementFeatureName") or ""),
+                "retirement_date": retirement_date.isoformat() if retirement_date else "",
+                "days_to_retirement": "",
+                "months_to_retirement": "",
+                "retirement_date_quality": "exact" if retirement_date else ("missing" if not retirement_raw else "unparseable"),
+                "subscription_id": "",
+                "subscription_name": "",
+                "resource_id": "",
+                "resource_name": "",
+                "resource_group": "",
+                "resource_type": "",
+                "location": "",
+                "tags_json": "",
+                "environment_hint": "",
+                "platform_hint": "",
+                "impact": "",
+                "risk": "",
+                "category": "HighAvailability",
+                "sub_category": "ServiceUpgradeAndRetirement",
+                "platform_state": "",
+                "last_updated": "",
+                "label": "",
+                "short_description_problem": "",
+                "short_description_solution": "",
+                "description": "",
+                "potential_benefits": "",
+                "learn_more_link": str(metadata.get("properties", {}).get("learnMoreLink") or ""),
+                "action_link": "",
+                "action_caption": "",
+                "description_quality": _description_quality(
+                    "",
+                    "",
+                    str(service_retirement.get("retirementFeatureName") or ""),
+                    str(metadata.get("properties", {}).get("learnMoreLink") or ""),
+                ),
+                "join_quality": "catalog_only",
+                "diagnostic_flags": "catalog_only_without_subscription",
+                "provenance_json": compact_json({"metadata_source": "advisor_metadata"}),
+                "raw_json": compact_json({"metadata": metadata}),
+            }
+        )
+
+    return rows
+
+
+def _service_description_quality(description: str, summary: str, sensitive: bool) -> str:
+    if sensitive and not description:
+        return "sensitive_blocked"
+    if description:
+        return "full"
+    if summary:
+        return "short"
+    return "missing"
+
+
+def normalize_service_health_rows(
+    *,
+    run_id: str,
+    as_of_date: date,
+    scope_mode: str,
+    events: list[dict[str, Any]],
+    subscription_name_map: dict[str, str],
+    event_impacted_services,
+    event_impacted_regions,
+    build_recommended_actions,
+) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+
+    for event in events:
+        properties = event.get("properties", {})
+        subscription_id = str(event.get("_subscriptionId") or "")
+        event_id = str(event.get("name") or event.get("id") or "")
+        source_id = str(event.get("id") or event_id)
+
+        event_level = str(properties.get("level") or "")
+        status = str(properties.get("status") or "")
+        event_type = str(properties.get("eventType") or "")
+        event_sub_type = str(properties.get("eventSubType") or "")
+        event_source = str(properties.get("eventSource") or "")
+        tracking_id = str(properties.get("trackingId") or "")
+
+        title = str(properties.get("title") or properties.get("header") or "")
+        summary = str(properties.get("summary") or "")
+        article = properties.get("article", {})
+        description = str(article.get("articleContent") or properties.get("description") or "")
+        actions_text = build_recommended_actions(event)
+
+        impact_start = normalize_datetime(str(properties.get("impactStartTime") or ""))
+        impact_mitigation = normalize_datetime(str(properties.get("impactMitigationTime") or ""))
+        last_update = normalize_datetime(str(properties.get("lastUpdateTime") or ""))
+
+        date_for_window = ""
+        for candidate in [impact_start, last_update]:
+            if candidate:
+                date_for_window = candidate[:10]
+                break
+
+        is_sensitive = bool(properties.get("isSensitive") or False)
+        details_fetch_status = "not_needed"
+        if is_sensitive:
+            details_fetch_status = "not_supported"
+
+        services = event_impacted_services(event)
+        regions = event_impacted_regions(event)
+
+        for service in services:
+            for region in regions:
+                flags: list[str] = []
+                if not region:
+                    flags.append("service_health_no_region")
+                if is_sensitive:
+                    flags.append("service_health_sensitive")
+                if not description and not summary:
+                    flags.append("missing_description")
+
+                row = {
+                    "run_id": run_id,
+                    "as_of_date": as_of_date.isoformat(),
+                    "scope_mode": scope_mode,
+                    "record_type": "service_health_event_region" if region else "service_health_event_subscription",
+                    "source_system": "resource_health_events",
+                    "source_id": source_id,
+                    "event_id": event_id,
+                    "tracking_id": tracking_id,
+                    "event_type": event_type,
+                    "event_sub_type": event_sub_type,
+                    "event_source": event_source,
+                    "event_level": event_level,
+                    "level": event_level,
+                    "status": status,
+                    "priority": "",
+                    "title": title,
+                    "summary": summary,
+                    "description": description,
+                    "recommended_actions": actions_text,
+                    "impact_start_time": impact_start,
+                    "impact_mitigation_time": impact_mitigation,
+                    "last_update_time": last_update,
+                    "date_for_window": date_for_window,
+                    "impacted_service": service.get("name", ""),
+                    "impacted_service_guid": service.get("guid", ""),
+                    "impacted_region": region,
+                    "subscription_id": subscription_id,
+                    "subscription_name": subscription_name_map.get(subscription_id, ""),
+                    "resource_granularity": "not_available",
+                    "resource_id": "",
+                    "resource_group": "",
+                    "resource_type": "",
+                    "is_sensitive": "true" if is_sensitive else "false",
+                    "details_fetch_status": details_fetch_status,
+                    "description_quality": _service_description_quality(description, summary, is_sensitive),
+                    "diagnostic_flags": ",".join(sorted(set(flags))),
+                    "provenance_json": compact_json({"event_source": "resource_health_events"}),
+                    "raw_json": compact_json({"event": event}),
+                }
+                rows.append(row)
+
+    return rows

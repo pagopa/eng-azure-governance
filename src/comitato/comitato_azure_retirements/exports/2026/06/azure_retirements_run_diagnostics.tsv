@@ -1,0 +1,2 @@
+run_id	severity	check_id	source_system	scope	observed_count	expected_count	message	action_required	raw_context_json
+azure-retirements-f2ce82c4-b4ad-4909-b3aa-f00933411be0	info	schema_only_mode	global	global			Schema-only mode generated headers without live Azure data rows	Run fixture or live mode for populated aggregates	
