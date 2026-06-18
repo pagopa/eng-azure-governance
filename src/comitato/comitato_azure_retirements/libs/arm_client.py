@@ -1,13 +1,16 @@
-"""Minimal ARM REST client with pagination support."""
+"""ARM REST client with resilient retries and pagination support."""
 
 from __future__ import annotations
 
-import json
-import urllib.error
-import urllib.parse
-import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
+
+import requests
+from requests import Response, Session
+from requests.adapters import HTTPAdapter
+from requests.exceptions import HTTPError, RequestException
+from urllib3.util.retry import Retry
 
 
 @dataclass
@@ -16,65 +19,130 @@ class ArmPageResult:
     page_count: int
 
 
+@dataclass(frozen=True)
+class ArmRequestTrace:
+    method: str
+    url: str
+    status_code: int
+    retry_count: int
+
+
+@dataclass(frozen=True)
+class ArmClientSettings:
+    timeout_seconds: int = 60
+    retry_attempts: int = 5
+    backoff_factor: float = 1.0
+    backoff_jitter: float = 0.5
+    pool_connections: int = 8
+    pool_maxsize: int = 8
+
+
+DEFAULT_RETRY_STATUS_CODES = (408, 429, 500, 502, 503, 504)
+DEFAULT_ALLOWED_METHODS = frozenset({"GET", "POST"})
+DEFAULT_USER_AGENT = "eng-azure-governance/comitato-azure-retirements"
+
+
+def build_retry_policy(settings: ArmClientSettings | None = None) -> Retry:
+    cfg = settings or ArmClientSettings()
+    return Retry(
+        total=cfg.retry_attempts,
+        connect=cfg.retry_attempts,
+        read=cfg.retry_attempts,
+        status=cfg.retry_attempts,
+        allowed_methods=DEFAULT_ALLOWED_METHODS,
+        status_forcelist=DEFAULT_RETRY_STATUS_CODES,
+        backoff_factor=cfg.backoff_factor,
+        backoff_jitter=cfg.backoff_jitter,
+        respect_retry_after_header=True,
+        raise_on_status=False,
+    )
+
+
+def build_session(bearer_token: str, settings: ArmClientSettings | None = None) -> Session:
+    cfg = settings or ArmClientSettings()
+    session = requests.Session()
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {bearer_token}",
+            "Content-Type": "application/json",
+            "User-Agent": DEFAULT_USER_AGENT,
+        }
+    )
+    adapter = HTTPAdapter(
+        max_retries=build_retry_policy(cfg),
+        pool_connections=cfg.pool_connections,
+        pool_maxsize=cfg.pool_maxsize,
+    )
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
+
 class ArmClient:
-    def __init__(self, bearer_token: str, timeout_seconds: int = 60) -> None:
-        self._token = bearer_token
+    def __init__(
+        self,
+        bearer_token: str,
+        timeout_seconds: int = 60,
+        session: Session | None = None,
+        trace_handler: Callable[[ArmRequestTrace], None] | None = None,
+    ) -> None:
+        self._settings = ArmClientSettings(timeout_seconds=timeout_seconds)
         self._timeout_seconds = timeout_seconds
+        self._session = session or build_session(bearer_token, self._settings)
+        self._trace_handler = trace_handler
+
+    def _request_json(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        try:
+            response = self._session.request(
+                method,
+                url,
+                params=params,
+                json=payload,
+                timeout=self._timeout_seconds,
+            )
+        except RequestException as exc:
+            target = exc.request.url if exc.request is not None else url
+            raise RuntimeError(f"Network error for {target}: {exc}") from exc
+
+        self._emit_trace(method, response)
+
+        try:
+            response.raise_for_status()
+        except HTTPError as exc:
+            raise RuntimeError(
+                f"HTTP {response.status_code} for {response.url}: {response.text}"
+            ) from exc
+
+        try:
+            return response.json()
+        except ValueError as exc:
+            raise RuntimeError(f"Invalid JSON response from {response.url}") from exc
+
+    def _emit_trace(self, method: str, response: Response) -> None:
+        if self._trace_handler is None:
+            return
+        retries = getattr(getattr(response.raw, "retries", None), "history", ())
+        self._trace_handler(
+            ArmRequestTrace(
+                method=method,
+                url=response.url,
+                status_code=response.status_code,
+                retry_count=len(retries),
+            )
+        )
 
     def get_json(self, url: str, params: dict[str, str] | None = None) -> dict[str, Any]:
-        if params:
-            query = urllib.parse.urlencode(params)
-            separator = "&" if "?" in url else "?"
-            target = f"{url}{separator}{query}"
-        else:
-            target = url
-
-        request = urllib.request.Request(
-            target,
-            headers={
-                "Authorization": f"Bearer {self._token}",
-                "Content-Type": "application/json",
-            },
-            method="GET",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=self._timeout_seconds) as response:
-                content = response.read().decode("utf-8")
-        except urllib.error.HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"HTTP {exc.code} for {target}: {body}") from exc
-        except urllib.error.URLError as exc:
-            raise RuntimeError(f"Network error for {target}: {exc.reason}") from exc
-
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(f"Invalid JSON response from {target}") from exc
+        return self._request_json("GET", url, params=params)
 
     def post_json(self, url: str, payload: dict[str, Any]) -> dict[str, Any]:
-        data = json.dumps(payload).encode("utf-8")
-        request = urllib.request.Request(
-            url,
-            data=data,
-            headers={
-                "Authorization": f"Bearer {self._token}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=self._timeout_seconds) as response:
-                content = response.read().decode("utf-8")
-        except urllib.error.HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
-            raise RuntimeError(f"HTTP {exc.code} for {url}: {body}") from exc
-        except urllib.error.URLError as exc:
-            raise RuntimeError(f"Network error for {url}: {exc.reason}") from exc
-
-        try:
-            return json.loads(content)
-        except json.JSONDecodeError as exc:
-            raise RuntimeError(f"Invalid JSON response from {url}") from exc
+        return self._request_json("POST", url, payload=payload)
 
     def list_with_nextlink(
         self,

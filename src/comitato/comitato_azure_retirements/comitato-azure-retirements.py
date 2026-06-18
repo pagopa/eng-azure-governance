@@ -22,6 +22,7 @@ from libs.auth import get_management_token
 from libs.config import RuntimeConfig, parse_args
 from libs.diagnostics import DiagnosticsCollector, build_manifest, utc_now
 from libs.normalize import normalize_advisor_rows, normalize_service_health_rows
+from libs.runtime_logging import ExecutionReporter
 from libs.schemas import ADVISOR_HEADERS, DIAGNOSTICS_HEADERS, SERVICE_HEALTH_HEADERS
 from libs.service_health import (
     RESOURCE_HEALTH_API_VERSION,
@@ -32,10 +33,6 @@ from libs.service_health import (
 )
 from libs.subscriptions import build_subscription_name_map, resolve_scope_subscriptions
 from libs.tsv import compact_json, write_json, write_jsonl, write_tsv
-
-
-def _log(message: str) -> None:
-    print(message)
 
 
 def _build_output_dir(root: Path, as_of_date) -> Path:
@@ -178,10 +175,15 @@ def _live_mode(
     run_id: str,
     output_dir: Path,
     diagnostics: DiagnosticsCollector,
+    reporter: ExecutionReporter,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]], dict[str, int], dict[str, int], list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    reporter.section("🔐", "Authentication", "Acquire the ARM token and prepare the resilient HTTP session")
+    reporter.step("Requesting Azure ARM bearer token")
     token = get_management_token()
-    client = ArmClient(token)
+    client = ArmClient(token, trace_handler=reporter.observe_request)
+    reporter.success("ARM client ready with retry-aware HTTP session")
 
+    reporter.section("🧭", "Scope Resolution", "Resolve explicit subscriptions and management group descendants")
     subscriptions, mg_resolution = resolve_scope_subscriptions(
         client,
         explicit_subscriptions=cfg.subscriptions,
@@ -189,7 +191,15 @@ def _live_mode(
     )
     if not subscriptions:
         raise RuntimeError("No subscriptions resolved from provided scope")
+    reporter.step(f"Resolved {len(subscriptions)} subscription(s) for live collection")
+    if mg_resolution:
+        reporter.mapping(
+            "Management group descendants",
+            {group: len(items) for group, items in mg_resolution.items()},
+            always=True,
+        )
 
+    reporter.section("📦", "Advisor Collection", "Fetch Advisor metadata, recommendations, and Resource Graph enrichment")
     advisor_metadata, advisor_metadata_pages = collect_advisor_metadata(client)
     advisor_recommendations, recommendation_pages = collect_advisor_recommendations(client, subscriptions)
     advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = collect_advisor_resource_graph(
@@ -202,6 +212,19 @@ def _live_mode(
         subscriptions=subscriptions,
         query_start_time=cfg.health_query_start.isoformat(),
     )
+    reporter.step(f"Advisor metadata rows: {len(advisor_metadata)} across {advisor_metadata_pages} page(s)")
+    reporter.step(
+        "Advisor recommendation rows: "
+        f"{len(advisor_recommendations)} across {sum(recommendation_pages.values())} page(s)"
+    )
+    reporter.step(f"Resource Graph rows: {len(advisor_graph_rows)} across {advisor_graph_pages} page(s)")
+    reporter.mapping("Advisor pages by subscription", recommendation_pages)
+
+    reporter.section("🏥", "Service Health Collection", "Fetch Service Health events for the resolved subscriptions")
+    reporter.step(
+        f"Service Health rows: {len(service_events)} across {sum(service_pages.values())} page(s)"
+    )
+    reporter.mapping("Service Health pages by subscription", service_pages)
 
     metadata_by_key = index_metadata(advisor_metadata)
     graph_by_key = index_resource_graph(advisor_graph_rows)
@@ -279,6 +302,7 @@ def _live_mode(
                 else "Proceed in degraded mode and validate counts manually"
             ),
         )
+        reporter.warning("Resource Graph returned truncated results; validate output counts carefully")
 
     if not advisor_rows:
         diagnostics.add(
@@ -289,6 +313,7 @@ def _live_mode(
             message="Advisor aggregate contains no rows",
             action_required="Validate scope, permissions, and recommendation availability",
         )
+        reporter.warning("Advisor aggregate produced zero rows")
 
     if not service_rows:
         diagnostics.add(
@@ -299,6 +324,7 @@ def _live_mode(
             message="Service Health aggregate contains no rows",
             action_required="Validate query window and provider access",
         )
+        reporter.warning("Service Health aggregate produced zero rows")
 
     counts_by_source = {
         "advisor_metadata": len(advisor_metadata),
@@ -327,11 +353,19 @@ def main() -> int:
     started_at = utc_now()
     output_dir = _build_output_dir(cfg.output_root, cfg.as_of_date)
     output_dir.mkdir(parents=True, exist_ok=True)
+    scope_mode = _scope_mode(cfg)
+    reporter = ExecutionReporter(verbose=cfg.verbose)
 
     diagnostics = DiagnosticsCollector(run_id)
-
-    _log("ℹ️ Starting Azure retirements export")
-    _log(f"ℹ️ Mode: {cfg.mode}")
+    reporter.banner(
+        run_id=run_id,
+        mode=cfg.mode,
+        scope_mode=scope_mode,
+        output_dir=output_dir,
+        subscriptions=cfg.subscriptions,
+        management_groups=cfg.management_groups,
+        write_raw_jsonl=cfg.write_raw_jsonl,
+    )
 
     try:
         advisor_rows: list[dict[str, str]]
@@ -343,13 +377,18 @@ def main() -> int:
         resolved_subscriptions: list[str] = cfg.subscriptions
 
         if cfg.mode == "schema-only":
+            reporter.section("🧪", "Schema-only Mode", "Write empty aggregates with headers and runtime diagnostics")
+            reporter.step("Skipping Azure API calls and generating schema artifacts only")
             advisor_rows, service_rows, counts_by_source, counts_by_file = _schema_only(
                 cfg=cfg,
                 run_id=run_id,
                 output_dir=output_dir,
                 diagnostics=diagnostics,
             )
+            reporter.success("Schema-only artifacts generated")
         elif cfg.mode == "fixture":
+            reporter.section("🧰", "Fixture Mode", "Load local fixture payloads and normalize them into runtime outputs")
+            reporter.detail("Fixture directory", str(cfg.fixture_dir), always=True)
             (
                 advisor_rows,
                 service_rows,
@@ -359,6 +398,7 @@ def main() -> int:
                 service_raw_items,
             ) = _fixture_mode(cfg=cfg, run_id=run_id, output_dir=output_dir, diagnostics=diagnostics)
             resolved_subscriptions = cfg.subscriptions
+            reporter.success("Fixture inputs normalized successfully")
         else:
             (
                 advisor_rows,
@@ -368,18 +408,29 @@ def main() -> int:
                 advisor_raw_items,
                 service_raw_items,
                 resolved_subscriptions,
-            ) = _live_mode(cfg=cfg, run_id=run_id, output_dir=output_dir, diagnostics=diagnostics)
+            ) = _live_mode(
+                cfg=cfg,
+                run_id=run_id,
+                output_dir=output_dir,
+                diagnostics=diagnostics,
+                reporter=reporter,
+            )
 
         diagnostics_rows = diagnostics.rows()
         counts_by_file["azure_retirements_run_diagnostics.tsv"] = len(diagnostics_rows)
 
+        reporter.section("📝", "Artifact Writing", "Persist normalized TSV, JSONL, and manifest outputs")
         write_tsv(output_dir / "azure_advisor_retirements_aggregate.tsv", ADVISOR_HEADERS, advisor_rows)
+        reporter.step("Wrote advisor aggregate TSV")
         write_tsv(output_dir / "azure_service_health_advisories_aggregate.tsv", SERVICE_HEALTH_HEADERS, service_rows)
+        reporter.step("Wrote Service Health aggregate TSV")
         write_tsv(output_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics_rows)
+        reporter.step("Wrote diagnostics TSV")
 
         if cfg.write_raw_jsonl:
             write_jsonl(output_dir / "azure_advisor_retirements_raw.jsonl", advisor_raw_items)
             write_jsonl(output_dir / "azure_service_health_advisories_raw.jsonl", service_raw_items)
+            reporter.step("Wrote raw JSONL traces")
 
         finished_at = utc_now()
         manifest = build_manifest(
@@ -409,11 +460,17 @@ def main() -> int:
             command_line=" ".join(sys.argv),
         )
         write_json(output_dir / "azure_retirements_run_manifest.json", manifest)
-
-        _log(f"✅ Export completed. Output directory: {output_dir}")
-        _log(f"✅ Advisor rows: {len(advisor_rows)}")
-        _log(f"✅ Service Health rows: {len(service_rows)}")
-        _log(f"✅ Diagnostics rows: {len(diagnostics_rows)}")
+        reporter.step("Wrote run manifest JSON")
+        reporter.summary(
+            output_dir=output_dir,
+            counts_by_file={
+                "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
+                "azure_service_health_advisories_aggregate.tsv": len(service_rows),
+                "azure_retirements_run_diagnostics.tsv": len(diagnostics_rows),
+            },
+            counts_by_source=counts_by_source,
+            diagnostic_summary=diagnostics.summary(),
+        )
         return 0
     except Exception as exc:  # pragma: no cover - terminal guard
         diagnostics.add(
@@ -425,7 +482,7 @@ def main() -> int:
             action_required="Inspect traceback and rerun after remediation",
         )
         write_tsv(output_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics.rows())
-        _log(f"❌ Export failed: {exc}")
+        reporter.error(f"Export failed: {exc}")
         return 1
 
 

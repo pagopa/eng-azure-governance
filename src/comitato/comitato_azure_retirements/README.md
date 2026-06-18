@@ -22,10 +22,11 @@ This project does not:
 
 - Candidates compared:
   - Python standard library (`urllib`, `subprocess`, `csv`, `json`) with `az` CLI token acquisition.
-  - `requests` plus `azure-identity` (`DefaultAzureCredential`).
+  - `requests` plus `urllib3` retry handling and `rich` console rendering.
+  - `httpx` plus `tenacity` and `rich`.
   - Azure management SDK packages.
-- Final choice: standard library plus `az` CLI.
-- Why: the tool remains auditable and lightweight while avoiding third-party Python runtime dependencies in this repository.
+- Final choice: `requests`, `urllib3`, and `rich`, while keeping `az` CLI token acquisition.
+- Why: this keeps the authentication path explicit, adds robust retry handling for `429` and transient `5xx` responses, and produces clean sectioned console logs with emoji and readable summaries.
 
 ## Python Version
 
@@ -60,6 +61,8 @@ Live mode refuses to run with empty scope.
 
 ## CLI
 
+The Bash launcher bootstraps a local `.venv` and installs the hash-locked dependencies from `requirements.txt` before execution.
+
 ```bash
 bash src/comitato/comitato_azure_retirements/run.sh --help
 python3 src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help
@@ -80,6 +83,12 @@ bash src/comitato/comitato_azure_retirements/run.sh \
   --as-of-date 2026-06-18 \
   --health-query-start 2025-01-01
 ```
+
+## Runtime Output
+
+- Console execution is split into sections for authentication, scope resolution, data collection, artifact writing, and final summary.
+- Operator-facing logs use emoji markers to highlight progress, warnings, retries, and terminal failures.
+- When `--verbose` is enabled, the exporter also prints per-subscription page counts and management group resolution details.
 
 ## Environment Variables
 

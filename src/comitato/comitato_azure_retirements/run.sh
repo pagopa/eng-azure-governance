@@ -12,6 +12,9 @@ PYTHON_SCRIPT="${SCRIPT_DIR}/comitato-azure-retirements.py"
 ENV_FILE="${SCRIPT_DIR}/.env"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 PYTHON_VERSION_FILE="${REPO_ROOT}/.python-version"
+VENV_DIR="${SCRIPT_DIR}/.venv"
+REQUIREMENTS_FILE="${SCRIPT_DIR}/requirements.txt"
+REQUIREMENTS_STAMP="${VENV_DIR}/.requirements.sha256"
 
 log_info() {
     printf 'ℹ️  %s\n' "$1"
@@ -27,6 +30,10 @@ log_warn() {
 
 log_error() {
     printf '❌ %s\n' "$1" >&2
+}
+
+venv_python() {
+    printf '%s' "${VENV_DIR}/bin/python"
 }
 
 resolve_python_bin() {
@@ -73,6 +80,46 @@ assert_python_version() {
     log_info "Using Python ${detected_version} (from .python-version)"
 }
 
+ensure_virtualenv() {
+    local python_bin
+    python_bin="$(resolve_python_bin)"
+    
+    if [[ ! -x "$(venv_python)" ]]; then
+        log_info "Creating local virtual environment at ${VENV_DIR}"
+        "${python_bin}" -m venv "${VENV_DIR}"
+    fi
+}
+
+requirements_digest() {
+    if [[ ! -f "${REQUIREMENTS_FILE}" ]]; then
+        log_error "Requirements file not found: ${REQUIREMENTS_FILE}"
+        return 1
+    fi
+    
+    shasum -a 256 "${REQUIREMENTS_FILE}" | awk '{print $1}'
+}
+
+install_requirements_if_needed() {
+    local current_digest
+    current_digest="$(requirements_digest)"
+    
+    local installed_digest=""
+    if [[ -f "${REQUIREMENTS_STAMP}" ]]; then
+        installed_digest="$(<"${REQUIREMENTS_STAMP}")"
+    fi
+    
+    if [[ "${current_digest}" == "${installed_digest}" ]]; then
+        log_info "Python dependencies already synchronized"
+        return 0
+    fi
+    
+    log_info "Installing locked Python dependencies"
+    "$(venv_python)" -m pip install --upgrade pip >/dev/null
+    "$(venv_python)" -m pip install --require-hashes -r "${REQUIREMENTS_FILE}"
+    printf '%s\n' "${current_digest}" > "${REQUIREMENTS_STAMP}"
+    log_success "Python dependencies synchronized"
+}
+
 load_env_file() {
     if [[ -f "${ENV_FILE}" ]]; then
         log_info "Loading environment from ${ENV_FILE}"
@@ -84,28 +131,24 @@ load_env_file() {
 }
 
 run_python() {
-    local python_bin
-    python_bin="$(resolve_python_bin)"
-    
     if [[ ! -f "${PYTHON_SCRIPT}" ]]; then
         log_error "Python entrypoint not found: ${PYTHON_SCRIPT}"
         return 1
     fi
     
     log_info "Launching exporter"
-    "${python_bin}" "${PYTHON_SCRIPT}" "$@"
+    "$(venv_python)" "${PYTHON_SCRIPT}" "$@"
     log_success "Exporter finished"
 }
 
 main() {
     load_env_file
     assert_python_version
-    
-    local python_bin
-    python_bin="$(resolve_python_bin)"
+    ensure_virtualenv
+    install_requirements_if_needed
     
     if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-        "${python_bin}" "${PYTHON_SCRIPT}" --help
+        "$(venv_python)" "${PYTHON_SCRIPT}" --help
         exit 0
     fi
     

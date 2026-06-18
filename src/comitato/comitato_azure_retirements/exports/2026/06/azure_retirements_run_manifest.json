@@ -6,7 +6,7 @@
     "resource_health_events": "2025-05-01"
   },
   "as_of_date": "2026-06-18",
-  "command_line": "src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --mode schema-only",
+  "command_line": "/Users/diego.lagosmorales/code/cloud-strategy-governance/eng-azure-governance/src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --mode schema-only",
   "counts_by_file": {
     "azure_advisor_retirements_aggregate.tsv": 0,
     "azure_retirements_run_diagnostics.tsv": 1,
@@ -24,12 +24,12 @@
     "info": 1,
     "warning": 0
   },
-  "finished_at_utc": "2026-06-18T19:52:31Z",
+  "finished_at_utc": "2026-06-18T20:09:00Z",
   "management_groups": [],
   "output_dir": "/Users/diego.lagosmorales/code/cloud-strategy-governance/eng-azure-governance/src/comitato/comitato_azure_retirements/exports/2026/06",
   "query_start_time": "2024-12-18",
-  "run_id": "azure-retirements-f2ce82c4-b4ad-4909-b3aa-f00933411be0",
+  "run_id": "azure-retirements-74d7673e-dcb4-4070-b802-812cddf4759f",
   "scope_mode": "schema_only",
-  "started_at_utc": "2026-06-18T19:52:31Z",
+  "started_at_utc": "2026-06-18T20:09:00Z",
   "subscriptions": []
 }
