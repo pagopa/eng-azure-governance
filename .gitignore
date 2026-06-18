@@ -54,4 +54,5 @@ __pycache__/
 htmlcov/
 .venv/
 venv/
+/src/comitato/comitato_azure_retirements/exports/
 /tmp/superpowers/
