@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from datetime import date
 from pathlib import Path
@@ -25,26 +26,44 @@ def _load_entrypoint_module(script_path: Path, module_name: str) -> ModuleType:
     return module
 
 
-def _runtime_config(output_root: Path) -> RuntimeConfig:
+def _entrypoint_path() -> Path:
+    return Path("src/comitato/comitato_azure_retirements/comitato-azure-retirements.py").resolve()
+
+
+def _load_entrypoint(monkeypatch: pytest.MonkeyPatch, module_name: str) -> ModuleType:
+    script_path = _entrypoint_path()
+    monkeypatch.syspath_prepend(str(script_path.parent))
+    return _load_entrypoint_module(script_path, module_name)
+
+
+def _runtime_config(
+    output_root: Path,
+    *,
+    mode: str = "schema-only",
+    subscriptions: list[str] | None = None,
+    management_groups: list[str] | None = None,
+    fixture_dir: Path | None = None,
+) -> RuntimeConfig:
     return RuntimeConfig(
-        mode="schema-only",
-        subscriptions=[],
-        management_groups=[],
+        mode=mode,
+        subscriptions=subscriptions or [],
+        management_groups=management_groups or [],
         output_root=output_root,
         as_of_date=date(2026, 6, 18),
         health_query_start=date(2025, 1, 1),
-        fixture_dir=None,
+        fixture_dir=fixture_dir,
         write_raw_jsonl=False,
         allow_degraded=False,
         verbose=False,
     )
 
 
-def test_main_fails_when_error_diagnostic_exists(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    script_path = Path("src/comitato/comitato_azure_retirements/comitato-azure-retirements.py").resolve()
-    monkeypatch.syspath_prepend(str(script_path.parent))
+def _write_json_payload(path: Path, payload: object) -> None:
+    path.write_text(json.dumps(payload), encoding="utf-8")
 
-    module = _load_entrypoint_module(script_path, "comitato_azure_retirements_entrypoint_error")
+
+def test_main_fails_when_error_diagnostic_exists(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_entrypoint_error")
     monkeypatch.setattr(module, "parse_args", lambda: _runtime_config(tmp_path))
 
     def fake_schema_only(*, cfg, run_id, output_dir, diagnostics):  # type: ignore[no-untyped-def]
@@ -77,10 +96,7 @@ def test_main_fails_when_error_diagnostic_exists(monkeypatch: pytest.MonkeyPatch
 
 
 def test_main_succeeds_when_diagnostics_have_no_errors(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    script_path = Path("src/comitato/comitato_azure_retirements/comitato-azure-retirements.py").resolve()
-    monkeypatch.syspath_prepend(str(script_path.parent))
-
-    module = _load_entrypoint_module(script_path, "comitato_azure_retirements_entrypoint_success")
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_entrypoint_success")
     monkeypatch.setattr(module, "parse_args", lambda: _runtime_config(tmp_path))
 
     def fake_schema_only(*, cfg, run_id, output_dir, diagnostics):  # type: ignore[no-untyped-def]
@@ -110,3 +126,213 @@ def test_main_succeeds_when_diagnostics_have_no_errors(monkeypatch: pytest.Monke
     monkeypatch.setattr(module, "write_json", lambda *args, **kwargs: None)
 
     assert module.main() == 0
+
+
+def test_build_output_dir_uses_year_and_month(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_output_dir")
+
+    output_dir = module._build_output_dir(tmp_path, date(2026, 6, 18))
+
+    assert output_dir == tmp_path / "2026" / "06"
+
+
+def test_scope_mode_handles_fixture_schema_and_live_scope(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_scope_mode")
+
+    fixture_cfg = _runtime_config(tmp_path, mode="fixture", fixture_dir=tmp_path / "fixtures")
+    schema_cfg = _runtime_config(tmp_path, mode="schema-only")
+    live_subscriptions_cfg = _runtime_config(tmp_path, mode="live", subscriptions=["sub-1"])
+    live_management_groups_cfg = _runtime_config(tmp_path, mode="live", management_groups=["mg-1"])
+
+    assert module._scope_mode(fixture_cfg) == "fixture"
+    assert module._scope_mode(schema_cfg) == "schema_only"
+    assert module._scope_mode(live_subscriptions_cfg) == "subscriptions"
+    assert module._scope_mode(live_management_groups_cfg) == "management_groups"
+
+
+def test_load_fixture_supports_list_and_value_payloads(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_load_fixture")
+
+    missing = tmp_path / "missing.json"
+    list_payload = tmp_path / "list_payload.json"
+    value_payload = tmp_path / "value_payload.json"
+    invalid_payload = tmp_path / "invalid_payload.json"
+
+    _write_json_payload(list_payload, [{"id": "row-list"}])
+    _write_json_payload(value_payload, {"value": [{"id": "row-value"}]})
+    _write_json_payload(invalid_payload, {"items": [{"id": "row-invalid"}]})
+
+    assert module._load_fixture(missing) == []
+    assert module._load_fixture(list_payload) == [{"id": "row-list"}]
+    assert module._load_fixture(value_payload) == [{"id": "row-value"}]
+    assert module._load_fixture(invalid_payload) == []
+
+
+def test_schema_only_returns_empty_rows_and_info_diagnostic(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_schema_only")
+    diagnostics = module.DiagnosticsCollector("run-1")
+
+    advisor_rows, service_rows, counts_by_source, counts_by_file = module._schema_only(
+        cfg=_runtime_config(tmp_path, mode="schema-only"),
+        run_id="run-1",
+        output_dir=tmp_path,
+        diagnostics=diagnostics,
+    )
+
+    assert advisor_rows == []
+    assert service_rows == []
+    assert counts_by_source == {
+        "advisor_metadata": 0,
+        "advisor_recommendations": 0,
+        "resource_graph_advisorresources": 0,
+        "resource_health_events": 0,
+    }
+    assert counts_by_file == {
+        "azure_advisor_retirements_aggregate.tsv": 0,
+        "azure_service_health_advisories_aggregate.tsv": 0,
+        "azure_retirements_run_diagnostics.tsv": 1,
+    }
+
+    diagnostic_rows = diagnostics.rows()
+    assert len(diagnostic_rows) == 1
+    assert diagnostic_rows[0]["check_id"] == "schema_only_mode"
+
+
+def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_fixture_mode")
+    fixture_dir = tmp_path / "fixtures"
+    fixture_dir.mkdir()
+
+    recommendation_resource_id = (
+        "/subscriptions/sub-1/resourceGroups/rg-test/providers/Microsoft.Storage/storageAccounts/storage01"
+    )
+
+    _write_json_payload(
+        fixture_dir / "advisor_metadata.json",
+        [
+            {
+                "id": "metadata-1",
+                "properties": {
+                    "sourceProperties": {
+                        "serviceRetirement": {
+                            "serviceId": "rec-type-1",
+                            "retirementFeatureName": "Storage Feature",
+                            "retirementDate": "2026-12-31",
+                        }
+                    },
+                    "resourceMetadata": {"singular": "Storage Account"},
+                    "learnMoreLink": "https://example.com/metadata",
+                },
+            }
+        ],
+    )
+    _write_json_payload(
+        fixture_dir / "advisor_recommendations.json",
+        [
+            {
+                "id": "recommendation-1",
+                "_subscriptionId": "sub-1",
+                "properties": {
+                    "recommendationTypeId": "rec-type-1",
+                    "resourceMetadata": {"resourceId": recommendation_resource_id},
+                    "description": "Retirement detected",
+                },
+            }
+        ],
+    )
+    _write_json_payload(
+        fixture_dir / "advisor_resource_graph.json",
+        [
+            {
+                "ServiceID": "rec-type-1",
+                "resourceId": recommendation_resource_id.lower(),
+                "subscriptionName": "Subscription One",
+                "resourceGroup": "rg-test",
+                "type": "microsoft.storage/storageaccounts",
+                "location": "westeurope",
+                "name": "storage01",
+                "platformState": "New",
+                "tags": {"env": "prod"},
+            }
+        ],
+    )
+    _write_json_payload(
+        fixture_dir / "service_health_events.json",
+        [
+            {
+                "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-1",
+                "name": "event-1",
+                "_subscriptionId": "sub-1",
+                "properties": {
+                    "title": "Planned maintenance",
+                    "summary": "Service maintenance event",
+                    "lastUpdateTime": "2026-06-17T10:00:00Z",
+                    "impact": {
+                        "impactedService": [{"serviceName": "Storage", "serviceGuid": "guid-1"}],
+                        "impactedRegion": [{"regionName": "westeurope"}],
+                    },
+                    "recommendedActions": [{"actionText": "Review mitigation plan"}],
+                },
+            }
+        ],
+    )
+    _write_json_payload(
+        fixture_dir / "subscriptions.json",
+        [{"subscriptionId": "sub-1", "subscriptionName": "Subscription One"}],
+    )
+
+    diagnostics = module.DiagnosticsCollector("run-1")
+
+    advisor_rows, service_rows, counts_by_source, counts_by_file, advisor_raw, service_raw = module._fixture_mode(
+        cfg=_runtime_config(
+            tmp_path,
+            mode="fixture",
+            fixture_dir=fixture_dir,
+            subscriptions=["sub-1"],
+        ),
+        run_id="run-1",
+        output_dir=tmp_path,
+        diagnostics=diagnostics,
+    )
+
+    assert len(advisor_rows) == 1
+    assert len(service_rows) == 1
+    assert counts_by_source == {
+        "advisor_metadata": 1,
+        "advisor_recommendations": 1,
+        "resource_graph_advisorresources": 1,
+        "resource_health_events": 1,
+    }
+    assert counts_by_file["azure_advisor_retirements_aggregate.tsv"] == 1
+    assert counts_by_file["azure_service_health_advisories_aggregate.tsv"] == 1
+    assert counts_by_file["azure_retirements_run_diagnostics.tsv"] == 1
+
+    assert {item["kind"] for item in advisor_raw} == {"advisor_metadata", "advisor_recommendation"}
+    assert {item["kind"] for item in service_raw} == {"service_health_event"}
+
+    diagnostic_rows = diagnostics.rows()
+    assert len(diagnostic_rows) == 1
+    assert diagnostic_rows[0]["check_id"] == "fixture_mode"
+
+
+def test_main_writes_runtime_failure_diagnostic_on_unhandled_error(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_runtime_failure")
+    monkeypatch.setattr(module, "parse_args", lambda: _runtime_config(tmp_path))
+
+    def fake_schema_only(*, cfg, run_id, output_dir, diagnostics):  # type: ignore[no-untyped-def]
+        raise RuntimeError("forced runtime failure")
+
+    writes: dict[str, list[dict[str, str]]] = {}
+
+    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+        del headers
+        writes[path.name] = rows
+
+    monkeypatch.setattr(module, "_schema_only", fake_schema_only)
+    monkeypatch.setattr(module, "write_tsv", fake_write_tsv)
+
+    assert module.main() == 1
+    assert "azure_retirements_run_diagnostics.tsv" in writes
+    assert writes["azure_retirements_run_diagnostics.tsv"][0]["check_id"] == "runtime_failure"
