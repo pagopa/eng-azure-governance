@@ -98,7 +98,9 @@ def normalize_advisor_rows(
         short_solution = str(properties.get("shortDescription", {}).get("solution") or "")
         description = str(properties.get("description") or "")
         feature_name = str(service_retirement.get("retirementFeatureName") or "")
-        learn_more_link = str(properties.get("learnMoreLink") or metadata.get("properties", {}).get("learnMoreLink") if metadata else "")
+        recommendation_link = str(properties.get("learnMoreLink") or "")
+        metadata_link = str(metadata.get("properties", {}).get("learnMoreLink") or "") if metadata else ""
+        learn_more_link = recommendation_link or metadata_link
 
         row_flags: list[str] = []
         join_quality = "metadata_and_resource"
@@ -107,10 +109,10 @@ def normalize_advisor_rows(
             row_flags.append("recommendation_without_metadata")
         elif metadata is None:
             join_quality = "arg_only"
-            row_flags.append("metadata_without_resource")
+            row_flags.append("resource_without_metadata")
         elif resource_graph is None:
             join_quality = "recommendation_only"
-            row_flags.append("resource_without_metadata")
+            row_flags.append("metadata_without_resource")
 
         if not description and not short_problem and not feature_name:
             row_flags.append("missing_description")
@@ -212,13 +214,16 @@ def normalize_advisor_rows(
         }
         rows.append(row)
 
-    for metadata_key, metadata in metadata_by_key.items():
+    emitted_catalog_metadata_ids: set[str] = set()
+    for metadata in metadata_by_key.values():
         meta_id = str(metadata.get("id") or "")
-        if not meta_id or meta_id in used_metadata_keys:
+        if not meta_id or meta_id in used_metadata_keys or meta_id in emitted_catalog_metadata_ids:
             continue
+        emitted_catalog_metadata_ids.add(meta_id)
 
         source_properties = metadata.get("properties", {}).get("sourceProperties", {})
         service_retirement = source_properties.get("serviceRetirement", {}) if isinstance(source_properties, dict) else {}
+        recommendation_type_id = str(service_retirement.get("serviceId") or meta_id)
         retirement_raw = str(service_retirement.get("retirementDate") or "")
         retirement_date = parse_possible_date(retirement_raw)
 
@@ -230,7 +235,7 @@ def normalize_advisor_rows(
                 "record_type": "advisor_catalog_retirement",
                 "source_system": "advisor_metadata",
                 "source_id": meta_id,
-                "recommendation_type_id": metadata_key,
+                "recommendation_type_id": recommendation_type_id,
                 "advisor_recommendation_id": "",
                 "advisor_metadata_id": meta_id,
                 "service_name": str(metadata.get("properties", {}).get("resourceMetadata", {}).get("singular") or ""),

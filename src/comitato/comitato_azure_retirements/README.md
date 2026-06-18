@@ -111,6 +111,8 @@ Runtime outputs are written under:
 src/comitato/comitato_azure_retirements/exports/YYYY/MM/
 ```
 
+These files are runtime artifacts and are intentionally Git-ignored.
+
 Required files:
 
 - `azure_advisor_retirements_aggregate.tsv`
@@ -135,9 +137,9 @@ Service Health output is event/subscription/service/region oriented by default. 
 
 Minimum checks before considering data for executive review:
 
-1. `python3 -m compileall src/comitato/comitato_azure_retirements`
-2. `bash src/comitato/comitato_azure_retirements/run.sh --help`
-3. `python3 src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help`
-4. Run `schema-only`, then inspect diagnostics and manifest.
-5. If fixtures are available, run `fixture` mode.
-6. If approved and credentialed, run `live` mode on explicit scope and verify diagnostics before any merge-phase work.
+1. `src/comitato/comitato_azure_retirements/.venv/bin/python -m py_compile src/comitato/comitato_azure_retirements/comitato-azure-retirements.py src/comitato/comitato_azure_retirements/libs/*.py`
+2. `src/comitato/comitato_azure_retirements/.venv/bin/python -m pytest -q tests/comitato/comitato_azure_retirements`
+3. `bash -n src/comitato/comitato_azure_retirements/run.sh`
+4. `shellcheck -s bash src/comitato/comitato_azure_retirements/run.sh`
+5. `env PYTHON_BIN=src/comitato/comitato_azure_retirements/.venv/bin/python bash src/comitato/comitato_azure_retirements/run.sh --help`
+6. `src/comitato/comitato_azure_retirements/.venv/bin/python src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help`

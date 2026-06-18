@@ -1,0 +1,43 @@
+from __future__ import annotations
+
+from datetime import date
+
+import pytest
+
+from src.comitato.comitato_azure_retirements.libs.config import parse_args
+from src.comitato.comitato_azure_retirements.libs.dates import add_calendar_months
+
+
+def test_parse_args_uses_schema_only_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AZURE_RETIREMENTS_MODE", raising=False)
+    monkeypatch.delenv("AZURE_RETIREMENTS_OUTPUT_ROOT", raising=False)
+    monkeypatch.setenv("AZURE_RETIREMENTS_AS_OF_DATE", "2026-06-18")
+
+    cfg = parse_args([])
+
+    assert cfg.mode == "schema-only"
+    assert cfg.output_root.as_posix().endswith("/src/comitato/comitato_azure_retirements/exports")
+    assert cfg.as_of_date == date(2026, 6, 18)
+    assert cfg.health_query_start == add_calendar_months(date(2026, 6, 18), -18)
+
+
+def test_parse_args_reads_boolean_env_flags(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AZURE_RETIREMENTS_WRITE_RAW_JSONL", "true")
+    monkeypatch.setenv("AZURE_RETIREMENTS_ALLOW_DEGRADED", "yes")
+    monkeypatch.setenv("AZURE_RETIREMENTS_VERBOSE", "1")
+
+    cfg = parse_args([])
+
+    assert cfg.write_raw_jsonl is True
+    assert cfg.allow_degraded is True
+    assert cfg.verbose is True
+
+
+def test_parse_args_live_mode_requires_scope() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--mode", "live"])
+
+
+def test_parse_args_fixture_mode_requires_fixture_dir() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--mode", "fixture"])

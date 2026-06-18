@@ -471,6 +471,9 @@ def main() -> int:
             counts_by_source=counts_by_source,
             diagnostic_summary=diagnostics.summary(),
         )
+        if any(row["severity"] == "error" for row in diagnostics_rows):
+            reporter.error("Run completed with error diagnostics; treating execution as failed")
+            return 1
         return 0
     except Exception as exc:  # pragma: no cover - terminal guard
         diagnostics.add(
