@@ -13,6 +13,8 @@ The runtime supports stage selection through `--workflow` (or `AZURE_RETIREMENTS
 - `slide`: project aggregate rows into the committee-facing subset.
 - `full`: shorthand for `raw,aggregate,slide`.
 
+When `--mode schema-only` is used, the `raw` stage is valid and writes header-only artifacts without requiring live or fixture rows.
+
 When `aggregate` runs without `raw`, the runtime reuses existing raw files for the selected month.
 When `slide` runs without `aggregate`, the runtime reuses the existing aggregate file for the selected month.
 
@@ -20,11 +22,14 @@ When `slide` runs without `aggregate`, the runtime reuses the existing aggregate
 
 The exporter writes these required TSV files:
 
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_advisor_retirements_aggregate.tsv`
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_service_health_advisories_aggregate.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/01_azure_advisor_retirements_raw.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/01_azure_service_health_advisories_raw.tsv`
 - `src/comitato/comitato_azure_retirements/exports/YYYY/MM/02_azure_retirements_aggregate.tsv`
 - `src/comitato/comitato_azure_retirements/exports/YYYY/MM/03_azure_retirements_slide.tsv`
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_diagnostics.tsv`
+
+Compatibility fallback: when aggregate/slide workflows run without raw, the runtime can still reuse legacy raw filenames
+(`azure_advisor_retirements_aggregate.tsv` and `azure_service_health_advisories_aggregate.tsv`) if they are present.
 
 The runtime directory also contains:
 
@@ -48,6 +53,12 @@ Safety behavior:
 
 - In strict mode (`--allow-degraded` not set), one subscription failure fails the run.
 - In degraded mode (`--allow-degraded` set), subscription failures are recorded in diagnostics and collection continues.
+
+Manifest behavior:
+
+- `azure_retirements_run_manifest.json` sets `degraded_mode: true` when degraded evidence is present
+  (`advisor_subscription_failures`, `service_health_subscription_failures`, or `resource_graph_truncated`),
+  even when those diagnostics are warnings.
 
 ## Debug Log Contract
 

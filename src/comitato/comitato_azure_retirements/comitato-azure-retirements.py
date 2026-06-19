@@ -51,6 +51,11 @@ from libs.workflow_exports import (
 ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME = RAW_ADVISOR_FILENAME
 SERVICE_HEALTH_ADVISORIES_RAW_FILENAME = RAW_SERVICE_HEALTH_FILENAME
 PLATFORMS_SOURCE_PATH = Path(__file__).resolve().parents[2] / "_source_of_truth" / "platforms.yaml"
+MANIFEST_DEGRADED_CHECK_IDS = {
+    "advisor_subscription_failures",
+    "service_health_subscription_failures",
+    "resource_graph_truncated",
+}
 
 
 def _build_output_dir(root: Path, as_of_date) -> Path:
@@ -83,6 +88,10 @@ def _diagnostic_summary(rows: list[dict[str, str]]) -> dict[str, int]:
         if severity in summary:
             summary[severity] += 1
     return summary
+
+
+def _manifest_degraded_mode(rows: list[dict[str, str]]) -> bool:
+    return any(row.get("check_id", "") in MANIFEST_DEGRADED_CHECK_IDS for row in rows)
 
 
 def _empty_rows(headers: list[str]) -> list[dict[str, str]]:
@@ -760,12 +769,13 @@ def main() -> int:
 
             advisor_rows = unique_tsv_rows(ADVISOR_HEADERS, advisor_rows)
             service_rows = unique_tsv_rows(SERVICE_HEALTH_HEADERS, service_rows)
-            _enforce_mandatory_raw_rows(
-                diagnostics=diagnostics,
-                reporter=reporter,
-                advisor_rows=advisor_rows,
-                service_rows=service_rows,
-            )
+            if cfg.mode != "schema-only":
+                _enforce_mandatory_raw_rows(
+                    diagnostics=diagnostics,
+                    reporter=reporter,
+                    advisor_rows=advisor_rows,
+                    service_rows=service_rows,
+                )
 
             reporter.section("📝", "Raw Stage", "Persist source Advisor and Service Health TSV artifacts")
             advisor_report_path = output_dir / ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME
@@ -893,7 +903,7 @@ def main() -> int:
             counts_by_file=counts_by_file,
             counts_by_source=counts_by_source,
             diagnostic_summary=diagnostic_summary,
-            degraded_mode=any(row["severity"] == "error" for row in diagnostics_rows),
+            degraded_mode=_manifest_degraded_mode(diagnostics_rows),
             command_line=" ".join(sys.argv),
             debug_log_path=str(debug_logger.file_path),
         )
