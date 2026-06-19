@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlparse
@@ -90,7 +90,7 @@ class ExecutionReporter:
         if self._debug_logger is not None:
             self._debug_logger.info("detail", "Runtime detail", label=label, value=value)
 
-    def mapping(self, title: str, values: dict[str, object], *, always: bool = False) -> None:
+    def mapping(self, title: str, values: Mapping[str, object], *, always: bool = False) -> None:
         if not values:
             return
         if not always and not self._verbose:

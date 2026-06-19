@@ -142,6 +142,14 @@ def test_build_runtime_dir_uses_repo_tmp_tree(monkeypatch: pytest.MonkeyPatch) -
     assert runtime_dir == Path("tmp/comitato/comitato_azure_retirements/run/2026/06").resolve()
 
 
+def test_build_debug_log_path_uses_run_id(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_debug_log_path")
+
+    debug_log_path = module._build_debug_log_path(tmp_path, "azure-retirements-run-1")
+
+    assert debug_log_path == tmp_path / "azure-retirements-run-1_debug.log"
+
+
 def test_scope_mode_handles_fixture_schema_and_live_scope(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_scope_mode")
 
@@ -195,6 +203,7 @@ def test_schema_only_returns_empty_rows_and_info_diagnostic(monkeypatch: pytest.
     }
     assert counts_by_file == {
         "azure_advisor_retirements_aggregate.tsv": 0,
+        "azure_service_health_advisories_aggregate.tsv": 0,
         "azure_retirements_run_diagnostics.tsv": 1,
     }
 
@@ -357,6 +366,7 @@ def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyP
         "resource_health_events": 1,
     }
     assert counts_by_file["azure_advisor_retirements_aggregate.tsv"] == 1
+    assert counts_by_file["azure_service_health_advisories_aggregate.tsv"] == 1
     assert counts_by_file["azure_retirements_run_diagnostics.tsv"] == 1
 
     assert {item["kind"] for item in advisor_raw} == {"advisor_metadata", "advisor_recommendation"}
@@ -393,7 +403,7 @@ def test_main_writes_runtime_failure_diagnostic_on_unhandled_error(
     )
 
 
-def test_main_writes_runtime_artifacts_under_tmp_and_skips_service_health_aggregate(
+def test_main_writes_runtime_artifacts_under_tmp_and_service_health_aggregate(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_runtime_paths")
@@ -417,11 +427,17 @@ def test_main_writes_runtime_artifacts_under_tmp_and_skips_service_health_aggreg
 
     tsv_names = {path.name for path in tsv_paths}
     assert "azure_advisor_retirements_aggregate.tsv" in tsv_names
+    assert "azure_service_health_advisories_aggregate.tsv" in tsv_names
     assert "azure_retirements_run_diagnostics.tsv" in tsv_names
-    assert "azure_service_health_advisories_aggregate.tsv" not in tsv_names
 
+    advisor_path = next(path for path in tsv_paths if path.name == "azure_advisor_retirements_aggregate.tsv")
+    service_health_path = next(
+        path for path in tsv_paths if path.name == "azure_service_health_advisories_aggregate.tsv"
+    )
     diagnostics_path = next(path for path in tsv_paths if path.name == "azure_retirements_run_diagnostics.tsv")
     manifest_path = next(path for path in json_paths if path.name == "azure_retirements_run_manifest.json")
 
+    assert advisor_path == tmp_path / "2026" / "06" / "azure_advisor_retirements_aggregate.tsv"
+    assert service_health_path == tmp_path / "2026" / "06" / "azure_service_health_advisories_aggregate.tsv"
     assert diagnostics_path == Path("tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_diagnostics.tsv").resolve()
     assert manifest_path == Path("tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_manifest.json").resolve()

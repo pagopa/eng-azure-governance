@@ -46,6 +46,10 @@ def _build_runtime_dir(as_of_date) -> Path:
     return repo_root / "tmp" / "comitato" / "comitato_azure_retirements" / "run" / as_of_date.strftime("%Y") / as_of_date.strftime("%m")
 
 
+def _build_debug_log_path(runtime_dir: Path, run_id: str) -> Path:
+    return runtime_dir / f"{run_id}_debug.log"
+
+
 def _scope_mode(cfg: RuntimeConfig) -> str:
     if cfg.mode == "fixture":
         return "fixture"
@@ -102,6 +106,7 @@ def _schema_only(
     }
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
+        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -237,6 +242,7 @@ def _fixture_mode(
     }
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
+        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -517,6 +523,7 @@ def _live_mode(
     )
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
+        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -538,7 +545,7 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     runtime_dir.mkdir(parents=True, exist_ok=True)
     scope_mode = _scope_mode(cfg)
-    debug_logger = DebugRunLogger(file_path=runtime_dir / "azure_retirements_debug.log", run_id=run_id)
+    debug_logger = DebugRunLogger(file_path=_build_debug_log_path(runtime_dir, run_id), run_id=run_id)
     reporter = ExecutionReporter(verbose=cfg.verbose, debug_logger=debug_logger)
 
     diagnostics = DiagnosticsCollector(run_id)
@@ -627,20 +634,45 @@ def main() -> int:
             )
 
         advisor_rows = unique_tsv_rows(ADVISOR_HEADERS, advisor_rows)
+        service_rows = unique_tsv_rows(SERVICE_HEALTH_HEADERS, service_rows)
         diagnostics_rows = unique_tsv_rows(DIAGNOSTICS_HEADERS, diagnostics.rows())
         diagnostic_summary = _diagnostic_summary(diagnostics_rows)
         counts_by_file["azure_advisor_retirements_aggregate.tsv"] = len(advisor_rows)
+        counts_by_file["azure_service_health_advisories_aggregate.tsv"] = len(service_rows)
         counts_by_file["azure_retirements_run_diagnostics.tsv"] = len(diagnostics_rows)
 
         reporter.section("📝", "Artifact Writing", "Persist normalized TSV, JSONL, and manifest outputs")
-        write_tsv(output_dir / "azure_advisor_retirements_aggregate.tsv", ADVISOR_HEADERS, advisor_rows)
-        reporter.step("Wrote advisor aggregate TSV")
-        write_tsv(runtime_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics_rows)
-        reporter.step(f"Wrote diagnostics TSV to {runtime_dir}")
+        advisor_report_path = output_dir / "azure_advisor_retirements_aggregate.tsv"
+        service_health_report_path = output_dir / "azure_service_health_advisories_aggregate.tsv"
+        diagnostics_path = runtime_dir / "azure_retirements_run_diagnostics.tsv"
+        manifest_path = runtime_dir / "azure_retirements_run_manifest.json"
+
+        write_tsv(advisor_report_path, ADVISOR_HEADERS, advisor_rows)
+        reporter.step(f"Wrote Advisor retirements report: {advisor_report_path} ({len(advisor_rows)} row(s))")
+        debug_logger.info(
+            "advisor_report_written",
+            "Advisor retirements report written",
+            report_path=str(advisor_report_path),
+            rows=len(advisor_rows),
+        )
+
+        write_tsv(service_health_report_path, SERVICE_HEALTH_HEADERS, service_rows)
+        reporter.step(
+            f"Wrote Service Health advisories report: {service_health_report_path} ({len(service_rows)} row(s))"
+        )
+        debug_logger.info(
+            "service_health_report_written",
+            "Service Health advisories report written",
+            report_path=str(service_health_report_path),
+            rows=len(service_rows),
+        )
+
+        write_tsv(diagnostics_path, DIAGNOSTICS_HEADERS, diagnostics_rows)
+        reporter.step(f"Wrote run diagnostics: {diagnostics_path} ({len(diagnostics_rows)} row(s))")
         debug_logger.info(
             "diagnostics_written",
             "Diagnostics TSV written",
-            diagnostics_path=str(runtime_dir / "azure_retirements_run_diagnostics.tsv"),
+            diagnostics_path=str(diagnostics_path),
             diagnostics_rows=len(diagnostics_rows),
         )
 
@@ -677,13 +709,14 @@ def main() -> int:
             command_line=" ".join(sys.argv),
             debug_log_path=str(debug_logger.file_path),
         )
-        write_json(runtime_dir / "azure_retirements_run_manifest.json", manifest)
-        reporter.step(f"Wrote run manifest JSON to {runtime_dir}")
+        write_json(manifest_path, manifest)
+        reporter.step(f"Wrote run manifest: {manifest_path}")
         debug_logger.info(
             "run_manifest_written",
             "Runtime manifest written",
-            manifest_path=str(runtime_dir / "azure_retirements_run_manifest.json"),
+            manifest_path=str(manifest_path),
         )
+        reporter.step(f"Runtime debug log: {debug_logger.file_path}")
         reporter.summary(
             output_dir=output_dir,
             counts_by_file=counts_by_file,

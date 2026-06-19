@@ -9,12 +9,13 @@ This document describes runtime behavior for `src/comitato/comitato_azure_retire
 The exporter writes these required TSV files:
 
 - `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_advisor_retirements_aggregate.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_service_health_advisories_aggregate.tsv`
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_diagnostics.tsv`
 
 The runtime directory also contains:
 
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_manifest.json`
-- `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_debug.log`
+- `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/<run_id>_debug.log`
 
 ## Parallel Collection
 
@@ -36,7 +37,7 @@ Safety behavior:
 
 ## Debug Log Contract
 
-`azure_retirements_debug.log` is JSON Lines, one event per line.
+`<run_id>_debug.log` is JSON Lines, one event per line. Each exporter run writes its own debug log and prints the path during artifact writing.
 
 Core fields:
 
@@ -55,6 +56,13 @@ Core fields:
 3. Filter `azure_retirements_debug.log` by `run_id` and inspect event timeline.
 4. Correlate diagnostics failures with debug events for the same subscription or collector.
 5. Tune worker count if retries or throttling increase.
+
+Useful debug events for artifact checks:
+
+- `advisor_report_written`: Advisor TSV path and row count.
+- `service_health_report_written`: Service Health TSV path and row count.
+- `diagnostics_written`: diagnostics TSV path and row count.
+- `run_manifest_written`: manifest path.
 
 Example commands:
 
