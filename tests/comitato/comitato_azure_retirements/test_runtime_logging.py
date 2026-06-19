@@ -65,3 +65,37 @@ def test_reporter_summary_renders_tables() -> None:
     assert "Run Summary" in output
     assert "a.tsv" in output
     assert "advisor" in output
+
+
+def test_subscription_progress_renders_bar_updates() -> None:
+    reporter, buffer = build_reporter()
+
+    with reporter.subscription_progress("Advisor recommendations", 2) as update:
+        update("sub-1", 1, 2, "ok", None)
+        update("sub-2", 2, 2, "warning", "HTTP 502")
+
+    output = buffer.getvalue()
+    assert "Advisor recommendations" in output
+    assert "100%" in output
+
+
+def test_problem_determination_report_renders_rows() -> None:
+    reporter, buffer = build_reporter()
+
+    reporter.problem_determination_report(
+        "Problem Determination",
+        [
+            {
+                "collector": "advisor_recommendations",
+                "subscription": "sub-1",
+                "severity": "warning",
+                "detail": "HTTP 502",
+            }
+        ],
+    )
+
+    output = buffer.getvalue()
+    assert "Problem Determination" in output
+    assert "advisor_recommendations" in output
+    assert "sub-1" in output
+    assert "warning" in output

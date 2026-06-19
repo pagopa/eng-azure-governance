@@ -38,6 +38,25 @@ def test_collect_events_for_subscriptions_tags_rows_with_subscription() -> None:
     assert failures == []
 
 
+def test_collect_events_for_subscriptions_emits_progress_updates() -> None:
+    client = FakeArmClient()
+    updates: list[tuple[str, int, int, str, str | None]] = []
+
+    collect_events_for_subscriptions(
+        client,
+        subscriptions=["sub-1", "sub-2"],
+        query_start_time="2025-01-01T00:00:00",
+        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
+            (subscription, completed, total, status, error)
+        ),
+    )
+
+    assert updates == [
+        ("sub-1", 1, 2, "ok", None),
+        ("sub-2", 2, 2, "ok", None),
+    ]
+
+
 class FailingServiceHealthClient(FakeArmClient):
     def list_with_nextlink(
         self,
@@ -65,6 +84,26 @@ def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() ->
     assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
     assert pages == {"sub-1": 1}
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
+
+
+def test_collect_events_for_subscriptions_marks_degraded_failures_as_warning() -> None:
+    client = FailingServiceHealthClient()
+    updates: list[tuple[str, int, int, str, str | None]] = []
+
+    collect_events_for_subscriptions(
+        client,
+        subscriptions=["sub-1", "sub-2"],
+        query_start_time="2025-01-01T00:00:00",
+        allow_degraded=True,
+        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
+            (subscription, completed, total, status, error)
+        ),
+    )
+
+    assert updates == [
+        ("sub-1", 1, 2, "ok", None),
+        ("sub-2", 2, 2, "warning", "HTTP 502 for sub-2"),
+    ]
 
 
 def test_event_impacted_services_uses_structured_service_list() -> None:

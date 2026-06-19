@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from urllib.parse import urlparse
 
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
+from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressColumn, TextColumn, TimeElapsedColumn
 from rich.table import Table
 
 from .arm_client import ArmRequestTrace
+
+
+SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
 class ExecutionReporter:
@@ -65,6 +71,80 @@ class ExecutionReporter:
         table.add_column("Value")
         for key, value in values.items():
             table.add_row(str(key), str(value))
+        self._console.print(table)
+
+    @contextmanager
+    def subscription_progress(self, title: str, total: int) -> Iterator[SubscriptionProgressCallback]:
+        if total <= 0:
+            yield lambda *_args, **_kwargs: None
+            return
+
+        progress = Progress(
+            TextColumn("{task.description}"),
+            BarColumn(bar_width=28),
+            TaskProgressColumn(),
+            MofNCompleteColumn(),
+            TimeElapsedColumn(),
+            console=self._console,
+            transient=False,
+        )
+
+        with progress:
+            task_id = progress.add_task(f"{escape(title)} · starting", total=total)
+
+            def _update(
+                subscription_id: str,
+                completed: int,
+                overall_total: int,
+                status: str,
+                error: str | None,
+            ) -> None:
+                total_units = max(overall_total, 1)
+                completed_units = max(0, min(completed, total_units))
+                percent = int((completed_units / total_units) * 100)
+                short_subscription = subscription_id if len(subscription_id) <= 12 else f"…{subscription_id[-12:]}"
+                status_icon = {
+                    "ok": "✅",
+                    "warning": "⚠️",
+                    "error": "❌",
+                }.get(status, "•")
+                description = (
+                    f"{escape(title)} · {status_icon} {escape(status)} · "
+                    f"{escape(short_subscription)} · {percent}%"
+                )
+                progress.update(task_id, total=total_units, completed=completed_units, description=description)
+
+                if error and status in {"warning", "error"} and self._verbose:
+                    self.detail(
+                        "Subscription issue",
+                        f"{subscription_id}: {error}",
+                        always=True,
+                    )
+
+            yield _update
+            progress.update(task_id, completed=total, description=f"{escape(title)} · ✅ completed · 100%")
+
+    def problem_determination_report(self, title: str, rows: list[dict[str, str]]) -> None:
+        if not rows:
+            return
+
+        table = Table(title=title, header_style="bold yellow")
+        table.add_column("Collector")
+        table.add_column("Subscription")
+        table.add_column("Severity")
+        table.add_column("Detail")
+
+        for row in rows:
+            detail = row.get("detail", "")
+            if len(detail) > 140:
+                detail = f"{detail[:137]}..."
+            table.add_row(
+                row.get("collector", ""),
+                row.get("subscription", ""),
+                row.get("severity", ""),
+                detail,
+            )
+
         self._console.print(table)
 
     def success(self, message: str) -> None:

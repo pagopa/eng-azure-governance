@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from .arm_client import ArmClient
 
 RESOURCE_HEALTH_API_VERSION = "2025-05-01"
+
+SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
 def _impact_items(event: dict[str, Any]) -> list[dict[str, Any]]:
@@ -47,12 +50,14 @@ def collect_events_for_subscriptions(
     subscriptions: list[str],
     query_start_time: str,
     allow_degraded: bool = False,
+    on_subscription_update: SubscriptionProgressCallback | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     rows: list[dict[str, Any]] = []
     page_by_subscription: dict[str, int] = {}
     failures: list[dict[str, str]] = []
+    total_subscriptions = len(subscriptions)
 
-    for subscription in subscriptions:
+    for index, subscription in enumerate(subscriptions, start=1):
         url = (
             "https://management.azure.com/subscriptions/"
             f"{subscription}/providers/Microsoft.ResourceHealth/events"
@@ -64,6 +69,14 @@ def collect_events_for_subscriptions(
         try:
             page = client.list_with_nextlink(url, params=params)
         except RuntimeError as exc:
+            if on_subscription_update is not None:
+                on_subscription_update(
+                    subscription,
+                    index,
+                    total_subscriptions,
+                    "warning" if allow_degraded else "error",
+                    str(exc),
+                )
             if not allow_degraded:
                 raise
             failures.append({"subscription_id": subscription, "error": str(exc)})
@@ -73,6 +86,8 @@ def collect_events_for_subscriptions(
         for event in page.items:
             event["_subscriptionId"] = subscription
         rows.extend(page.items)
+        if on_subscription_update is not None:
+            on_subscription_update(subscription, index, total_subscriptions, "ok", None)
 
     return rows, page_by_subscription, failures
 

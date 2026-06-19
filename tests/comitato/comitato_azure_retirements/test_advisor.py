@@ -35,6 +35,24 @@ def test_collect_advisor_recommendations_tags_subscription_id() -> None:
     assert failures == []
 
 
+def test_collect_advisor_recommendations_emits_progress_updates() -> None:
+    client = FakeArmClient()
+    updates: list[tuple[str, int, int, str, str | None]] = []
+
+    collect_advisor_recommendations(
+        cast(Any, client),
+        ["sub-1", "sub-2"],
+        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
+            (subscription, completed, total, status, error)
+        ),
+    )
+
+    assert updates == [
+        ("sub-1", 1, 2, "ok", None),
+        ("sub-2", 2, 2, "ok", None),
+    ]
+
+
 class FailingAdvisorArmClient(FakeArmClient):
     def list_with_nextlink(
         self,
@@ -61,6 +79,25 @@ def test_collect_advisor_recommendations_records_failures_in_degraded_mode() -> 
     assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
     assert pages == {"sub-1": 1}
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
+
+
+def test_collect_advisor_recommendations_marks_degraded_failures_as_warning() -> None:
+    client = FailingAdvisorArmClient()
+    updates: list[tuple[str, int, int, str, str | None]] = []
+
+    collect_advisor_recommendations(
+        cast(Any, client),
+        ["sub-1", "sub-2"],
+        allow_degraded=True,
+        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
+            (subscription, completed, total, status, error)
+        ),
+    )
+
+    assert updates == [
+        ("sub-1", 1, 2, "ok", None),
+        ("sub-2", 2, 2, "warning", "HTTP 502 for sub-2"),
+    ]
 
 
 def test_index_metadata_maps_id_and_service_id_keys() -> None:

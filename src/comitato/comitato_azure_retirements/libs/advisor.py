@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from .arm_client import ArmClient
 from .resource_graph import query_resource_graph
 
 ADVISOR_API_VERSION = "2025-01-01"
+
+SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
 def collect_advisor_metadata(client: ArmClient) -> tuple[list[dict[str, Any]], int]:
@@ -26,12 +29,14 @@ def collect_advisor_recommendations(
     subscriptions: list[str],
     *,
     allow_degraded: bool = False,
+    on_subscription_update: SubscriptionProgressCallback | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     all_rows: list[dict[str, Any]] = []
     page_by_subscription: dict[str, int] = {}
     failures: list[dict[str, str]] = []
+    total_subscriptions = len(subscriptions)
 
-    for subscription in subscriptions:
+    for index, subscription in enumerate(subscriptions, start=1):
         url = (
             "https://management.azure.com/subscriptions/"
             f"{subscription}/providers/Microsoft.Advisor/recommendations"
@@ -43,6 +48,14 @@ def collect_advisor_recommendations(
         try:
             page = client.list_with_nextlink(url, params=params)
         except RuntimeError as exc:
+            if on_subscription_update is not None:
+                on_subscription_update(
+                    subscription,
+                    index,
+                    total_subscriptions,
+                    "warning" if allow_degraded else "error",
+                    str(exc),
+                )
             if not allow_degraded:
                 raise
             failures.append({"subscription_id": subscription, "error": str(exc)})
@@ -52,6 +65,8 @@ def collect_advisor_recommendations(
         for item in page.items:
             item["_subscriptionId"] = subscription
         all_rows.extend(page.items)
+        if on_subscription_update is not None:
+            on_subscription_update(subscription, index, total_subscriptions, "ok", None)
 
     return all_rows, page_by_subscription, failures
 
