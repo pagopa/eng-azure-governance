@@ -37,6 +37,10 @@ from libs.subscriptions import build_subscription_name_map, resolve_scope_subscr
 from libs.tsv import compact_json, unique_tsv_rows, write_json, write_jsonl, write_tsv
 
 
+ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME = "azure_advisor_service_retirements_raw.tsv"
+SERVICE_HEALTH_ADVISORIES_RAW_FILENAME = "azure_service_health_advisories_raw.tsv"
+
+
 def _build_output_dir(root: Path, as_of_date) -> Path:
     return root / as_of_date.strftime("%Y") / as_of_date.strftime("%m")
 
@@ -105,8 +109,8 @@ def _schema_only(
         "resource_health_events": 0,
     }
     counts_by_file = {
-        "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
+        ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME: len(advisor_rows),
+        SERVICE_HEALTH_ADVISORIES_RAW_FILENAME: len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -241,8 +245,8 @@ def _fixture_mode(
         "resource_health_events": len(service_health_events),
     }
     counts_by_file = {
-        "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
+        ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME: len(advisor_rows),
+        SERVICE_HEALTH_ADVISORIES_RAW_FILENAME: len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -637,13 +641,13 @@ def main() -> int:
         service_rows = unique_tsv_rows(SERVICE_HEALTH_HEADERS, service_rows)
         diagnostics_rows = unique_tsv_rows(DIAGNOSTICS_HEADERS, diagnostics.rows())
         diagnostic_summary = _diagnostic_summary(diagnostics_rows)
-        counts_by_file["azure_advisor_retirements_aggregate.tsv"] = len(advisor_rows)
-        counts_by_file["azure_service_health_advisories_aggregate.tsv"] = len(service_rows)
+        counts_by_file[ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME] = len(advisor_rows)
+        counts_by_file[SERVICE_HEALTH_ADVISORIES_RAW_FILENAME] = len(service_rows)
         counts_by_file["azure_retirements_run_diagnostics.tsv"] = len(diagnostics_rows)
 
         reporter.section("📝", "Artifact Writing", "Persist normalized TSV, JSONL, and manifest outputs")
-        advisor_report_path = output_dir / "azure_advisor_retirements_aggregate.tsv"
-        service_health_report_path = output_dir / "azure_service_health_advisories_aggregate.tsv"
+        advisor_report_path = output_dir / ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME
+        service_health_report_path = output_dir / SERVICE_HEALTH_ADVISORIES_RAW_FILENAME
         diagnostics_path = runtime_dir / "azure_retirements_run_diagnostics.tsv"
         manifest_path = runtime_dir / "azure_retirements_run_manifest.json"
 
@@ -699,8 +703,8 @@ def main() -> int:
                 "resource_health_events": RESOURCE_HEALTH_API_VERSION,
             },
             counts_by_file={
-                "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-                "azure_service_health_advisories_aggregate.tsv": len(service_rows),
+                ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME: len(advisor_rows),
+                SERVICE_HEALTH_ADVISORIES_RAW_FILENAME: len(service_rows),
                 "azure_retirements_run_diagnostics.tsv": len(diagnostics_rows),
             },
             counts_by_source=counts_by_source,

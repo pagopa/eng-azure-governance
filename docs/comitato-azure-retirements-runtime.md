@@ -8,8 +8,8 @@ This document describes runtime behavior for `src/comitato/comitato_azure_retire
 
 The exporter writes these required TSV files:
 
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_advisor_retirements_aggregate.tsv`
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_service_health_advisories_aggregate.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_advisor_service_retirements_raw.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_service_health_advisories_raw.tsv`
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_diagnostics.tsv`
 
 The runtime directory also contains:
