@@ -2,12 +2,15 @@
 
 ## Purpose
 
-This toolkit exports Azure retirements data into two independent TSV aggregates:
+This toolkit exports Azure retirements evidence for committee review.
+
+Persisted outputs currently include:
 
 - `azure_advisor_retirements_aggregate.tsv`
-- `azure_service_health_advisories_aggregate.tsv`
+- `azure_retirements_run_diagnostics.tsv`
+- `azure_retirements_run_manifest.json`
 
-The two outputs intentionally stay separate. They answer different questions and should not be merged until a later review phase validates merge rules.
+Service Health collection remains part of the runtime flow, but the normalized `azure_service_health_advisories_aggregate.tsv` file is not currently persisted.
 
 ## Non-Purpose
 
@@ -17,6 +20,7 @@ This project does not:
 - Produce a final executive merged table.
 - Automate portal interactions.
 - Infer resource-level impact for Service Health when the source does not provide resource IDs.
+- Persist a normalized Service Health TSV aggregate in the current output contract.
 
 ## Dependency Decision Note
 
@@ -46,7 +50,7 @@ For `--mode live`, the caller needs:
 
 ## Modes
 
-- `schema-only`: writes headers, diagnostics, and manifest with no live Azure calls.
+- `schema-only`: writes advisor headers, diagnostics, and manifest with no live Azure calls.
 - `fixture`: reads JSON fixtures from `--fixture-dir`.
 - `live`: queries Azure APIs.
 
@@ -103,24 +107,34 @@ CLI flags override environment values.
 - `AZURE_RETIREMENTS_ALLOW_DEGRADED`
 - `AZURE_BEARER_TOKEN` (optional explicit bearer token; otherwise `az` CLI token is used)
 
+`AZURE_RETIREMENTS_OUTPUT_ROOT` controls only export artifacts such as the advisor aggregate and optional raw JSONL traces. Runtime diagnostics and manifest files are always written under `tmp/`.
+
 ## Output Path
 
-Runtime outputs are written under:
+Export artifacts are written under:
 
 ```text
 src/comitato/comitato_azure_retirements/exports/YYYY/MM/
 ```
 
-These files are runtime artifacts and are intentionally Git-ignored.
+Runtime diagnostics are written under:
 
-Required files:
+```text
+tmp/comitato/comitato_azure_retirements/run/YYYY/MM/
+```
+
+These paths are runtime artifacts and are intentionally Git-ignored.
+
+Required export files:
 
 - `azure_advisor_retirements_aggregate.tsv`
-- `azure_service_health_advisories_aggregate.tsv`
+
+Required runtime files:
+
 - `azure_retirements_run_diagnostics.tsv`
 - `azure_retirements_run_manifest.json`
 
-Optional files with `--write-raw-jsonl`:
+Optional export files with `--write-raw-jsonl`:
 
 - `azure_advisor_retirements_raw.jsonl`
 - `azure_service_health_advisories_raw.jsonl`
