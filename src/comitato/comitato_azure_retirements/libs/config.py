@@ -24,6 +24,7 @@ class RuntimeConfig:
     write_raw_jsonl: bool
     allow_degraded: bool
     verbose: bool
+    max_workers: int | None = None
 
 
 def _split_csv(value: str | None) -> list[str]:
@@ -37,6 +38,18 @@ def _env_bool(value: str | None) -> bool:
     if value is None:
         return False
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _parse_positive_int(raw_value: str | None, *, argument_name: str, parser: argparse.ArgumentParser) -> int | None:
+    if raw_value is None or raw_value == "":
+        return None
+    try:
+        value = int(raw_value)
+    except ValueError:
+        parser.error(f"{argument_name} must be an integer")
+    if value < 1:
+        parser.error(f"{argument_name} must be greater than zero")
+    return value
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -54,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--write-raw-jsonl", action="store_true")
     parser.add_argument("--allow-degraded", action="store_true")
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--max-workers", type=int, default=None)
     return parser
 
 
@@ -87,6 +101,15 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
     write_raw_jsonl = args.write_raw_jsonl or _env_bool(os.getenv("AZURE_RETIREMENTS_WRITE_RAW_JSONL"))
     allow_degraded = args.allow_degraded or _env_bool(os.getenv("AZURE_RETIREMENTS_ALLOW_DEGRADED"))
     verbose = args.verbose or _env_bool(os.getenv("AZURE_RETIREMENTS_VERBOSE"))
+    max_workers: int | None
+    if args.max_workers is not None:
+        max_workers = _parse_positive_int(str(args.max_workers), argument_name="--max-workers", parser=parser)
+    else:
+        max_workers = _parse_positive_int(
+            os.getenv("AZURE_RETIREMENTS_MAX_WORKERS"),
+            argument_name="AZURE_RETIREMENTS_MAX_WORKERS",
+            parser=parser,
+        )
 
     if mode == "live" and not subscriptions and not management_groups:
         parser.error("live mode requires --subscriptions or --management-groups")
@@ -105,4 +128,5 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
         write_raw_jsonl=write_raw_jsonl,
         allow_degraded=allow_degraded,
         verbose=verbose,
+        max_workers=max_workers,
     )

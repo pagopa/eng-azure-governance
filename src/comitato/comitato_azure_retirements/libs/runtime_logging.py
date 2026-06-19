@@ -14,15 +14,23 @@ from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressC
 from rich.table import Table
 
 from .arm_client import ArmRequestTrace
+from .debug_log import DebugRunLogger
 
 
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
 class ExecutionReporter:
-    def __init__(self, *, verbose: bool, console: Console | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        verbose: bool,
+        console: Console | None = None,
+        debug_logger: DebugRunLogger | None = None,
+    ) -> None:
         self._verbose = verbose
         self._console = console or Console(soft_wrap=True)
+        self._debug_logger = debug_logger
         self._reported_retries: set[str] = set()
 
     def banner(
@@ -45,20 +53,42 @@ class ExecutionReporter:
         summary.add_row("Raw JSONL", "enabled" if write_raw_jsonl else "disabled")
         summary.add_row("Output", str(output_dir))
         self._console.print(Panel.fit(summary, title="🚀 Azure Retirements Export", border_style="cyan"))
+        if self._debug_logger is not None:
+            self._debug_logger.info(
+                "run_banner",
+                "Runtime banner emitted",
+                mode=mode,
+                scope_mode=scope_mode,
+                output_dir=str(output_dir),
+                subscriptions_count=len(subscriptions),
+                management_groups_count=len(management_groups),
+                write_raw_jsonl=write_raw_jsonl,
+            )
 
     def section(self, emoji: str, title: str, description: str = "") -> None:
         self._console.print()
         self._console.rule(f"[bold cyan]{emoji} {escape(title)}[/bold cyan]")
         if description:
             self._console.print(f"[dim]{escape(description)}[/dim]")
+        if self._debug_logger is not None:
+            self._debug_logger.info(
+                "section",
+                "Runtime section started",
+                section_title=title,
+                section_description=description,
+            )
 
     def step(self, message: str) -> None:
         self._console.print(f"• {escape(message)}")
+        if self._debug_logger is not None:
+            self._debug_logger.info("step", message)
 
     def detail(self, label: str, value: str, *, always: bool = False) -> None:
         if not always and not self._verbose:
             return
         self._console.print(f"  [dim]{escape(label)}:[/] {escape(value)}")
+        if self._debug_logger is not None:
+            self._debug_logger.info("detail", "Runtime detail", label=label, value=value)
 
     def mapping(self, title: str, values: dict[str, object], *, always: bool = False) -> None:
         if not values:
@@ -72,6 +102,8 @@ class ExecutionReporter:
         for key, value in values.items():
             table.add_row(str(key), str(value))
         self._console.print(table)
+        if self._debug_logger is not None:
+            self._debug_logger.info("mapping", "Runtime mapping emitted", title=title, values=values)
 
     @contextmanager
     def subscription_progress(self, title: str, total: int) -> Iterator[SubscriptionProgressCallback]:
@@ -113,6 +145,17 @@ class ExecutionReporter:
                     f"{escape(short_subscription)} · {percent}%"
                 )
                 progress.update(task_id, total=total_units, completed=completed_units, description=description)
+                if self._debug_logger is not None:
+                    self._debug_logger.info(
+                        "subscription_progress",
+                        "Subscription progress update",
+                        collector=title,
+                        subscription_id=subscription_id,
+                        completed=completed_units,
+                        total=total_units,
+                        status=status,
+                        error=error,
+                    )
 
                 if error and status in {"warning", "error"} and self._verbose:
                     self.detail(
@@ -146,15 +189,28 @@ class ExecutionReporter:
             )
 
         self._console.print(table)
+        if self._debug_logger is not None:
+            self._debug_logger.warning(
+                "problem_determination",
+                "Problem determination table emitted",
+                title=title,
+                rows=rows,
+            )
 
     def success(self, message: str) -> None:
         self._console.print(f"✅ {escape(message)}", style="green")
+        if self._debug_logger is not None:
+            self._debug_logger.info("success", message)
 
     def warning(self, message: str) -> None:
         self._console.print(f"⚠️  {escape(message)}", style="yellow")
+        if self._debug_logger is not None:
+            self._debug_logger.warning("warning", message)
 
     def error(self, message: str) -> None:
         self._console.print(f"❌ {escape(message)}", style="red")
+        if self._debug_logger is not None:
+            self._debug_logger.error("error", message)
 
     def observe_request(self, trace: ArmRequestTrace) -> None:
         if trace.retry_count < 1:
@@ -169,6 +225,15 @@ class ExecutionReporter:
         self.warning(
             f"HTTP retry applied {trace.retry_count} time(s) before {trace.status_code} on {path}"
         )
+        if self._debug_logger is not None:
+            self._debug_logger.warning(
+                "http_retry",
+                "HTTP retry applied",
+                method=trace.method,
+                url=trace.url,
+                status_code=trace.status_code,
+                retry_count=trace.retry_count,
+            )
         if not self._verbose:
             self._reported_retries.add(dedupe_key)
 
@@ -203,3 +268,12 @@ class ExecutionReporter:
         for severity in ("info", "warning", "error"):
             diagnostics_table.add_row(severity, str(diagnostic_summary.get(severity, 0)))
         self._console.print(diagnostics_table)
+        if self._debug_logger is not None:
+            self._debug_logger.info(
+                "run_summary",
+                "Run summary emitted",
+                output_dir=str(output_dir),
+                counts_by_file=counts_by_file,
+                counts_by_source=counts_by_source,
+                diagnostic_summary=diagnostic_summary,
+            )

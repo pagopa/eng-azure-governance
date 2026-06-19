@@ -84,6 +84,7 @@ def build_manifest(
     diagnostic_summary: dict[str, int],
     degraded_mode: bool,
     command_line: str,
+    debug_log_path: str = "",
 ) -> dict[str, Any]:
     return {
         "run_id": run_id,
@@ -101,4 +102,5 @@ def build_manifest(
         "diagnostic_summary": diagnostic_summary,
         "degraded_mode": degraded_mode,
         "command_line": command_line,
+        "debug_log_path": debug_log_path,
     }

@@ -3,13 +3,48 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from time import perf_counter
 from typing import Any
 
 from .arm_client import ArmClient
+from .debug_log import DebugRunLogger
 
 RESOURCE_HEALTH_API_VERSION = "2025-05-01"
 
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
+
+
+def _resolve_worker_count(total_subscriptions: int, requested_workers: int | None) -> int:
+    if total_subscriptions <= 1:
+        return 1
+    if requested_workers is None:
+        return min(16, total_subscriptions)
+    return max(1, min(requested_workers, total_subscriptions))
+
+
+def _collect_subscription_events(
+    client: ArmClient,
+    *,
+    subscription: str,
+    query_start_time: str,
+) -> tuple[list[dict[str, Any]], int, int]:
+    started_at = perf_counter()
+    url = (
+        "https://management.azure.com/subscriptions/"
+        f"{subscription}/providers/Microsoft.ResourceHealth/events"
+    )
+    params = {
+        "api-version": RESOURCE_HEALTH_API_VERSION,
+        "queryStartTime": query_start_time,
+    }
+    page = client.list_with_nextlink(url, params=params)
+
+    elapsed_ms = int((perf_counter() - started_at) * 1000)
+    rows = page.items
+    for event in rows:
+        event["_subscriptionId"] = subscription
+    return rows, page.page_count, elapsed_ms
 
 
 def _impact_items(event: dict[str, Any]) -> list[dict[str, Any]]:
@@ -51,43 +86,98 @@ def collect_events_for_subscriptions(
     query_start_time: str,
     allow_degraded: bool = False,
     on_subscription_update: SubscriptionProgressCallback | None = None,
+    max_workers: int | None = None,
+    debug_logger: DebugRunLogger | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     rows: list[dict[str, Any]] = []
+    rows_by_subscription: dict[str, list[dict[str, Any]]] = {}
     page_by_subscription: dict[str, int] = {}
     failures: list[dict[str, str]] = []
     total_subscriptions = len(subscriptions)
 
-    for index, subscription in enumerate(subscriptions, start=1):
-        url = (
-            "https://management.azure.com/subscriptions/"
-            f"{subscription}/providers/Microsoft.ResourceHealth/events"
+    worker_count = _resolve_worker_count(total_subscriptions, max_workers)
+    if debug_logger is not None:
+        debug_logger.info(
+            "service_health_parallel_collection_started",
+            "Service Health collection started",
+            subscriptions_count=total_subscriptions,
+            max_workers=worker_count,
+            allow_degraded=allow_degraded,
         )
-        params = {
-            "api-version": RESOURCE_HEALTH_API_VERSION,
-            "queryStartTime": query_start_time,
-        }
-        try:
-            page = client.list_with_nextlink(url, params=params)
-        except RuntimeError as exc:
-            if on_subscription_update is not None:
-                on_subscription_update(
-                    subscription,
-                    index,
-                    total_subscriptions,
-                    "warning" if allow_degraded else "error",
-                    str(exc),
-                )
-            if not allow_degraded:
-                raise
-            failures.append({"subscription_id": subscription, "error": str(exc)})
-            continue
 
-        page_by_subscription[subscription] = page.page_count
-        for event in page.items:
-            event["_subscriptionId"] = subscription
-        rows.extend(page.items)
-        if on_subscription_update is not None:
-            on_subscription_update(subscription, index, total_subscriptions, "ok", None)
+    completed = 0
+    with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="health-sub") as executor:
+        future_to_subscription = {
+            executor.submit(
+                _collect_subscription_events,
+                client,
+                subscription=subscription,
+                query_start_time=query_start_time,
+            ): subscription
+            for subscription in subscriptions
+        }
+
+        for future in as_completed(future_to_subscription):
+            subscription = future_to_subscription[future]
+            completed += 1
+            try:
+                subscription_rows, page_count, elapsed_ms = future.result()
+            except RuntimeError as exc:
+                status = "warning" if allow_degraded else "error"
+                error_text = str(exc)
+                if on_subscription_update is not None:
+                    on_subscription_update(
+                        subscription,
+                        completed,
+                        total_subscriptions,
+                        status,
+                        error_text,
+                    )
+                if debug_logger is not None:
+                    debug_logger.warning(
+                        "service_health_subscription_failed",
+                        "Service Health collection failed for subscription",
+                        subscription_id=subscription,
+                        status=status,
+                        error=error_text,
+                        completed=completed,
+                        total=total_subscriptions,
+                    )
+                if not allow_degraded:
+                    for pending in future_to_subscription:
+                        if pending is not future and not pending.done():
+                            pending.cancel()
+                    raise
+                failures.append({"subscription_id": subscription, "error": error_text})
+                continue
+
+            page_by_subscription[subscription] = page_count
+            rows_by_subscription[subscription] = subscription_rows
+            if on_subscription_update is not None:
+                on_subscription_update(subscription, completed, total_subscriptions, "ok", None)
+            if debug_logger is not None:
+                debug_logger.info(
+                    "service_health_subscription_completed",
+                    "Service Health collection completed for subscription",
+                    subscription_id=subscription,
+                    page_count=page_count,
+                    rows_count=len(subscription_rows),
+                    elapsed_ms=elapsed_ms,
+                    completed=completed,
+                    total=total_subscriptions,
+                )
+
+    for subscription in subscriptions:
+        rows.extend(rows_by_subscription.get(subscription, []))
+
+    if debug_logger is not None:
+        debug_logger.info(
+            "service_health_parallel_collection_finished",
+            "Service Health collection finished",
+            success_subscriptions=len(page_by_subscription),
+            failures=len(failures),
+            total_rows=len(rows),
+        )
 
     return rows, page_by_subscription, failures
 

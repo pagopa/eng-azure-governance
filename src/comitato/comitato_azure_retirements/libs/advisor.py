@@ -3,14 +3,47 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from time import perf_counter
 from typing import Any
 
 from .arm_client import ArmClient
+from .debug_log import DebugRunLogger
 from .resource_graph import query_resource_graph
 
 ADVISOR_API_VERSION = "2025-01-01"
 
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
+
+
+def _resolve_worker_count(total_subscriptions: int, requested_workers: int | None) -> int:
+    if total_subscriptions <= 1:
+        return 1
+    if requested_workers is None:
+        return min(16, total_subscriptions)
+    return max(1, min(requested_workers, total_subscriptions))
+
+
+def _collect_subscription_recommendations(
+    client: ArmClient,
+    subscription: str,
+) -> tuple[list[dict[str, Any]], int, int]:
+    started_at = perf_counter()
+    url = (
+        "https://management.azure.com/subscriptions/"
+        f"{subscription}/providers/Microsoft.Advisor/recommendations"
+    )
+    params = {
+        "api-version": ADVISOR_API_VERSION,
+        "$filter": "SubCategory eq 'ServiceUpgradeAndRetirement'",
+    }
+    page = client.list_with_nextlink(url, params=params)
+
+    elapsed_ms = int((perf_counter() - started_at) * 1000)
+    rows = page.items
+    for item in rows:
+        item["_subscriptionId"] = subscription
+    return rows, page.page_count, elapsed_ms
 
 
 def collect_advisor_metadata(client: ArmClient) -> tuple[list[dict[str, Any]], int]:
@@ -30,43 +63,93 @@ def collect_advisor_recommendations(
     *,
     allow_degraded: bool = False,
     on_subscription_update: SubscriptionProgressCallback | None = None,
+    max_workers: int | None = None,
+    debug_logger: DebugRunLogger | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     all_rows: list[dict[str, Any]] = []
+    rows_by_subscription: dict[str, list[dict[str, Any]]] = {}
     page_by_subscription: dict[str, int] = {}
     failures: list[dict[str, str]] = []
     total_subscriptions = len(subscriptions)
 
-    for index, subscription in enumerate(subscriptions, start=1):
-        url = (
-            "https://management.azure.com/subscriptions/"
-            f"{subscription}/providers/Microsoft.Advisor/recommendations"
+    worker_count = _resolve_worker_count(total_subscriptions, max_workers)
+    if debug_logger is not None:
+        debug_logger.info(
+            "advisor_parallel_collection_started",
+            "Advisor recommendation collection started",
+            subscriptions_count=total_subscriptions,
+            max_workers=worker_count,
+            allow_degraded=allow_degraded,
         )
-        params = {
-            "api-version": ADVISOR_API_VERSION,
-            "$filter": "SubCategory eq 'ServiceUpgradeAndRetirement'",
-        }
-        try:
-            page = client.list_with_nextlink(url, params=params)
-        except RuntimeError as exc:
-            if on_subscription_update is not None:
-                on_subscription_update(
-                    subscription,
-                    index,
-                    total_subscriptions,
-                    "warning" if allow_degraded else "error",
-                    str(exc),
-                )
-            if not allow_degraded:
-                raise
-            failures.append({"subscription_id": subscription, "error": str(exc)})
-            continue
 
-        page_by_subscription[subscription] = page.page_count
-        for item in page.items:
-            item["_subscriptionId"] = subscription
-        all_rows.extend(page.items)
-        if on_subscription_update is not None:
-            on_subscription_update(subscription, index, total_subscriptions, "ok", None)
+    completed = 0
+    with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="advisor-sub") as executor:
+        future_to_subscription = {
+            executor.submit(_collect_subscription_recommendations, client, subscription): subscription
+            for subscription in subscriptions
+        }
+
+        for future in as_completed(future_to_subscription):
+            subscription = future_to_subscription[future]
+            completed += 1
+            try:
+                rows, page_count, elapsed_ms = future.result()
+            except RuntimeError as exc:
+                status = "warning" if allow_degraded else "error"
+                error_text = str(exc)
+                if on_subscription_update is not None:
+                    on_subscription_update(
+                        subscription,
+                        completed,
+                        total_subscriptions,
+                        status,
+                        error_text,
+                    )
+                if debug_logger is not None:
+                    debug_logger.warning(
+                        "advisor_subscription_failed",
+                        "Advisor recommendation collection failed for subscription",
+                        subscription_id=subscription,
+                        status=status,
+                        error=error_text,
+                        completed=completed,
+                        total=total_subscriptions,
+                    )
+                if not allow_degraded:
+                    for pending in future_to_subscription:
+                        if pending is not future and not pending.done():
+                            pending.cancel()
+                    raise
+                failures.append({"subscription_id": subscription, "error": error_text})
+                continue
+
+            page_by_subscription[subscription] = page_count
+            rows_by_subscription[subscription] = rows
+            if on_subscription_update is not None:
+                on_subscription_update(subscription, completed, total_subscriptions, "ok", None)
+            if debug_logger is not None:
+                debug_logger.info(
+                    "advisor_subscription_completed",
+                    "Advisor recommendation collection completed for subscription",
+                    subscription_id=subscription,
+                    page_count=page_count,
+                    rows_count=len(rows),
+                    elapsed_ms=elapsed_ms,
+                    completed=completed,
+                    total=total_subscriptions,
+                )
+
+    for subscription in subscriptions:
+        all_rows.extend(rows_by_subscription.get(subscription, []))
+
+    if debug_logger is not None:
+        debug_logger.info(
+            "advisor_parallel_collection_finished",
+            "Advisor recommendation collection finished",
+            success_subscriptions=len(page_by_subscription),
+            failures=len(failures),
+            total_rows=len(all_rows),
+        )
 
     return all_rows, page_by_subscription, failures
 

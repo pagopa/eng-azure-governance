@@ -51,9 +51,11 @@ def test_collect_events_for_subscriptions_emits_progress_updates() -> None:
         ),
     )
 
-    assert updates == [
-        ("sub-1", 1, 2, "ok", None),
-        ("sub-2", 2, 2, "ok", None),
+    assert len(updates) == 2
+    assert {subscription for subscription, *_ in updates} == {"sub-1", "sub-2"}
+    assert sorted((completed, total, status, error) for _, completed, total, status, error in updates) == [
+        (1, 2, "ok", None),
+        (2, 2, "ok", None),
     ]
 
 
@@ -100,10 +102,11 @@ def test_collect_events_for_subscriptions_marks_degraded_failures_as_warning() -
         ),
     )
 
-    assert updates == [
-        ("sub-1", 1, 2, "ok", None),
-        ("sub-2", 2, 2, "warning", "HTTP 502 for sub-2"),
-    ]
+    assert len(updates) == 2
+    status_by_subscription = {subscription: (status, error) for subscription, _, _, status, error in updates}
+    assert status_by_subscription["sub-1"] == ("ok", None)
+    assert status_by_subscription["sub-2"] == ("warning", "HTTP 502 for sub-2")
+    assert sorted(completed for _, completed, *_ in updates) == [1, 2]
 
 
 def test_event_impacted_services_uses_structured_service_list() -> None:

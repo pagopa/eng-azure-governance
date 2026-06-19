@@ -20,6 +20,7 @@ from libs.advisor import (
 from libs.arm_client import ArmClient
 from libs.auth import get_management_token
 from libs.config import RuntimeConfig, parse_args
+from libs.debug_log import DebugRunLogger
 from libs.diagnostics import DiagnosticsCollector, build_manifest, utc_now
 from libs.normalize import normalize_advisor_rows, normalize_service_health_rows
 from libs.runtime_logging import ExecutionReporter
@@ -66,6 +67,14 @@ def _diagnostic_summary(rows: list[dict[str, str]]) -> dict[str, int]:
 
 def _empty_rows(headers: list[str]) -> list[dict[str, str]]:
     return [] if headers else []
+
+
+def _effective_worker_count(subscriptions_count: int, requested_workers: int | None) -> int:
+    if subscriptions_count <= 1:
+        return 1
+    if requested_workers is None:
+        return min(16, subscriptions_count)
+    return max(1, min(requested_workers, subscriptions_count))
 
 
 def _schema_only(
@@ -250,6 +259,7 @@ def _live_mode(
     output_dir: Path,
     diagnostics: DiagnosticsCollector,
     reporter: ExecutionReporter,
+    debug_logger: DebugRunLogger,
 ) -> tuple[
     list[dict[str, str]],
     list[dict[str, str]],
@@ -281,28 +291,61 @@ def _live_mode(
             always=True,
         )
 
+    effective_worker_count = _effective_worker_count(len(subscriptions), cfg.max_workers)
+    diagnostics.add(
+        severity="info",
+        check_id="collector_parallelism",
+        source_system="global",
+        scope="global",
+        message="Collector parallelism configured",
+        action_required="Tune AZURE_RETIREMENTS_MAX_WORKERS if throttling increases",
+        raw_context_json=compact_json(
+            {
+                "requested_max_workers": cfg.max_workers,
+                "effective_max_workers": effective_worker_count,
+                "subscriptions_count": len(subscriptions),
+            }
+        ),
+    )
+    debug_logger.info(
+        "collector_parallelism",
+        "Parallel worker configuration resolved",
+        requested_max_workers=cfg.max_workers,
+        effective_max_workers=effective_worker_count,
+        subscriptions_count=len(subscriptions),
+    )
+
     reporter.section(
         "📦",
         "Advisor Collection",
         "Fetch Advisor metadata, recommendations, and Resource Graph enrichment",
     )
+    problem_rows: list[dict[str, str]] = []
     advisor_metadata, advisor_metadata_pages = collect_advisor_metadata(client)
-    advisor_recommendations, recommendation_pages, recommendation_failures = collect_advisor_recommendations(
-        client,
-        subscriptions,
-        allow_degraded=cfg.allow_degraded,
-    )
+    with reporter.subscription_progress("Advisor recommendations", len(subscriptions)) as advisor_progress:
+        advisor_recommendations, recommendation_pages, recommendation_failures = collect_advisor_recommendations(
+            client,
+            subscriptions,
+            allow_degraded=cfg.allow_degraded,
+            on_subscription_update=advisor_progress,
+            max_workers=effective_worker_count,
+            debug_logger=debug_logger,
+        )
     advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = collect_advisor_resource_graph(
         client,
         subscriptions=subscriptions,
         management_groups=cfg.management_groups,
     )
-    service_events, service_pages, service_failures = collect_events_for_subscriptions(
-        client,
-        subscriptions=subscriptions,
-        query_start_time=cfg.health_query_start.isoformat(),
-        allow_degraded=cfg.allow_degraded,
-    )
+    with reporter.subscription_progress("Service Health", len(subscriptions)) as service_progress:
+        service_events, service_pages, service_failures = collect_events_for_subscriptions(
+            client,
+            subscriptions=subscriptions,
+            query_start_time=cfg.health_query_start.isoformat(),
+            allow_degraded=cfg.allow_degraded,
+            on_subscription_update=service_progress,
+            max_workers=effective_worker_count,
+            debug_logger=debug_logger,
+        )
     service_events = filter_health_advisory_events(service_events)
     reporter.step(f"Advisor metadata rows: {len(advisor_metadata)} across {advisor_metadata_pages} page(s)")
     reporter.step(
@@ -399,6 +442,15 @@ def _live_mode(
         reporter.warning(
             f"Advisor recommendation collection failed for {len(recommendation_failures)} subscription(s)"
         )
+        for failure in recommendation_failures:
+            problem_rows.append(
+                {
+                    "collector": "advisor_recommendations",
+                    "subscription": failure.get("subscription_id", ""),
+                    "severity": severity,
+                    "detail": failure.get("error", ""),
+                }
+            )
 
     if service_failures:
         severity = "warning" if cfg.allow_degraded else "error"
@@ -417,6 +469,22 @@ def _live_mode(
             raw_context_json=compact_json(service_failures),
         )
         reporter.warning(f"Service Health collection failed for {len(service_failures)} subscription(s)")
+        for failure in service_failures:
+            problem_rows.append(
+                {
+                    "collector": "resource_health_events",
+                    "subscription": failure.get("subscription_id", ""),
+                    "severity": severity,
+                    "detail": failure.get("error", ""),
+                }
+            )
+
+    if problem_rows:
+        reporter.warning("Problem determination mini-report generated for warning/error subscriptions")
+        reporter.problem_determination_report(
+            "🧪 Problem Determination (subscription outcomes)",
+            problem_rows,
+        )
 
     if advisor_graph_truncated:
         severity = "warning" if cfg.allow_degraded else "error"
@@ -470,9 +538,19 @@ def main() -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     runtime_dir.mkdir(parents=True, exist_ok=True)
     scope_mode = _scope_mode(cfg)
-    reporter = ExecutionReporter(verbose=cfg.verbose)
+    debug_logger = DebugRunLogger(file_path=runtime_dir / "azure_retirements_debug.log", run_id=run_id)
+    reporter = ExecutionReporter(verbose=cfg.verbose, debug_logger=debug_logger)
 
     diagnostics = DiagnosticsCollector(run_id)
+    diagnostics.add(
+        severity="info",
+        check_id="debug_log_enabled",
+        source_system="global",
+        scope="global",
+        message="Persistent debug log enabled for this run",
+        action_required="Use debug log for timeline-based problem determination",
+        raw_context_json=compact_json({"debug_log_path": str(debug_logger.file_path)}),
+    )
     reporter.banner(
         run_id=run_id,
         mode=cfg.mode,
@@ -481,6 +559,17 @@ def main() -> int:
         subscriptions=cfg.subscriptions,
         management_groups=cfg.management_groups,
         write_raw_jsonl=cfg.write_raw_jsonl,
+    )
+    debug_logger.info(
+        "run_started",
+        "Azure retirements run started",
+        mode=cfg.mode,
+        scope_mode=scope_mode,
+        subscriptions=cfg.subscriptions,
+        management_groups=cfg.management_groups,
+        output_dir=str(output_dir),
+        runtime_dir=str(runtime_dir),
+        command_line=" ".join(sys.argv),
     )
 
     try:
@@ -534,6 +623,7 @@ def main() -> int:
                 output_dir=output_dir,
                 diagnostics=diagnostics,
                 reporter=reporter,
+                debug_logger=debug_logger,
             )
 
         advisor_rows = unique_tsv_rows(ADVISOR_HEADERS, advisor_rows)
@@ -547,6 +637,12 @@ def main() -> int:
         reporter.step("Wrote advisor aggregate TSV")
         write_tsv(runtime_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics_rows)
         reporter.step(f"Wrote diagnostics TSV to {runtime_dir}")
+        debug_logger.info(
+            "diagnostics_written",
+            "Diagnostics TSV written",
+            diagnostics_path=str(runtime_dir / "azure_retirements_run_diagnostics.tsv"),
+            diagnostics_rows=len(diagnostics_rows),
+        )
 
         if cfg.write_raw_jsonl:
             write_jsonl(output_dir / "azure_advisor_retirements_raw.jsonl", advisor_raw_items)
@@ -579,9 +675,15 @@ def main() -> int:
             diagnostic_summary=diagnostic_summary,
             degraded_mode=any(row["severity"] == "error" for row in diagnostics_rows),
             command_line=" ".join(sys.argv),
+            debug_log_path=str(debug_logger.file_path),
         )
         write_json(runtime_dir / "azure_retirements_run_manifest.json", manifest)
         reporter.step(f"Wrote run manifest JSON to {runtime_dir}")
+        debug_logger.info(
+            "run_manifest_written",
+            "Runtime manifest written",
+            manifest_path=str(runtime_dir / "azure_retirements_run_manifest.json"),
+        )
         reporter.summary(
             output_dir=output_dir,
             counts_by_file=counts_by_file,
@@ -590,7 +692,19 @@ def main() -> int:
         )
         if any(row["severity"] == "error" for row in diagnostics_rows):
             reporter.error("Run completed with error diagnostics; treating execution as failed")
+            debug_logger.error(
+                "run_completed_with_errors",
+                "Run completed with diagnostics severity error",
+                diagnostic_summary=diagnostic_summary,
+            )
             return 1
+        debug_logger.info(
+            "run_completed_success",
+            "Run completed successfully",
+            diagnostic_summary=diagnostic_summary,
+            counts_by_file=counts_by_file,
+            counts_by_source=counts_by_source,
+        )
         return 0
     except Exception as exc:  # pragma: no cover - terminal guard
         diagnostics.add(
@@ -603,7 +717,10 @@ def main() -> int:
         )
         write_tsv(runtime_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics.rows())
         reporter.error(f"Export failed: {exc}")
+        debug_logger.error("run_failed", "Unhandled runtime failure", error=str(exc))
         return 1
+    finally:
+        debug_logger.close()
 
 
 if __name__ == "__main__":

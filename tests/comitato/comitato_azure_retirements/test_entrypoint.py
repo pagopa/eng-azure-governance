@@ -387,7 +387,10 @@ def test_main_writes_runtime_failure_diagnostic_on_unhandled_error(
 
     assert module.main() == 1
     assert "azure_retirements_run_diagnostics.tsv" in writes
-    assert writes["azure_retirements_run_diagnostics.tsv"][0]["check_id"] == "runtime_failure"
+    assert any(
+        row["check_id"] == "runtime_failure"
+        for row in writes["azure_retirements_run_diagnostics.tsv"]
+    )
 
 
 def test_main_writes_runtime_artifacts_under_tmp_and_skips_service_health_aggregate(

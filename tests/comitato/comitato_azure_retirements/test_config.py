@@ -57,3 +57,22 @@ def test_parse_args_live_mode_requires_scope() -> None:
 def test_parse_args_fixture_mode_requires_fixture_dir() -> None:
     with pytest.raises(SystemExit):
         parse_args(["--mode", "fixture"])
+
+
+def test_parse_args_accepts_max_workers_from_cli() -> None:
+    cfg = parse_args(["--mode", "schema-only", "--max-workers", "4"])
+
+    assert cfg.max_workers == 4
+
+
+def test_parse_args_reads_max_workers_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("AZURE_RETIREMENTS_MAX_WORKERS", "6")
+
+    cfg = parse_args(["--mode", "schema-only"])
+
+    assert cfg.max_workers == 6
+
+
+def test_parse_args_rejects_non_positive_max_workers() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--mode", "schema-only", "--max-workers", "0"])
