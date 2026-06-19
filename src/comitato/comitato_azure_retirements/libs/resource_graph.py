@@ -6,7 +6,6 @@ from typing import Any
 
 from .arm_client import ArmClient
 
-
 RESOURCE_GRAPH_URL = "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2024-04-01"
 
 
@@ -51,7 +50,9 @@ def query_resource_graph(
             rows.extend(page_rows)
 
         skip_token = response.get("$skipToken") or response.get("skipToken")
-        result_truncated = result_truncated or _response_bool(response.get("resultTruncated"))
+        result_truncated = result_truncated or _response_bool(
+            response.get("resultTruncated")
+        )
 
         if not skip_token:
             break

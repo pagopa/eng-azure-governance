@@ -15,7 +15,9 @@ RESOURCE_HEALTH_API_VERSION = "2025-05-01"
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
-def _resolve_worker_count(total_subscriptions: int, requested_workers: int | None) -> int:
+def _resolve_worker_count(
+    total_subscriptions: int, requested_workers: int | None
+) -> int:
     if total_subscriptions <= 1:
         return 1
     if requested_workers is None:
@@ -105,7 +107,9 @@ def _impact_item_services(impact_item: dict[str, Any]) -> list[dict[str, str]]:
         )
         return output
 
-    service_name = str(services or impact_item.get("serviceName") or impact_item.get("name") or "")
+    service_name = str(
+        services or impact_item.get("serviceName") or impact_item.get("name") or ""
+    )
     service_guid = str(impact_item.get("serviceGuid") or impact_item.get("id") or "")
     if service_name:
         _append_service(output, seen, name=service_name, guid=service_guid)
@@ -180,7 +184,9 @@ def collect_events_for_subscriptions(
         )
 
     completed = 0
-    with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="health-sub") as executor:
+    with ThreadPoolExecutor(
+        max_workers=worker_count, thread_name_prefix="health-sub"
+    ) as executor:
         future_to_subscription = {
             executor.submit(
                 _collect_subscription_events,
@@ -228,7 +234,9 @@ def collect_events_for_subscriptions(
             page_by_subscription[subscription] = page_count
             rows_by_subscription[subscription] = subscription_rows
             if on_subscription_update is not None:
-                on_subscription_update(subscription, completed, total_subscriptions, "ok", None)
+                on_subscription_update(
+                    subscription, completed, total_subscriptions, "ok", None
+                )
             if debug_logger is not None:
                 debug_logger.info(
                     "service_health_subscription_completed",
@@ -357,12 +365,20 @@ def event_impacted_service_regions(event: dict[str, Any]) -> list[dict[str, str]
 
 def build_recommended_actions(event: dict[str, Any]) -> str:
     properties = event.get("properties", {})
-    values = properties.get("recommendedActions") or properties.get("recommendedAction") or []
+    values = (
+        properties.get("recommendedActions")
+        or properties.get("recommendedAction")
+        or []
+    )
     if isinstance(values, list):
         clean_values = []
         for value in values:
             if isinstance(value, dict):
-                text = value.get("actionText") or value.get("description") or value.get("name")
+                text = (
+                    value.get("actionText")
+                    or value.get("description")
+                    or value.get("name")
+                )
                 if text:
                     clean_values.append(str(text))
             elif value:

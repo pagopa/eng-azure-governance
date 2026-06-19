@@ -17,8 +17,14 @@ class FakeArmClient:
     ) -> ArmPageResult:
         return ArmPageResult(
             items=[
-                {"type": "microsoft.management/managementgroups/subscriptions", "name": "sub-b"},
-                {"type": "microsoft.management/managementGroups/subscriptions", "name": "sub-a"},
+                {
+                    "type": "microsoft.management/managementgroups/subscriptions",
+                    "name": "sub-b",
+                },
+                {
+                    "type": "microsoft.management/managementGroups/subscriptions",
+                    "name": "sub-a",
+                },
                 {"type": "microsoft.management/managementgroups", "name": "mg-child"},
             ],
             page_count=1,

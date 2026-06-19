@@ -29,7 +29,9 @@ class FakeResponse:
         self._payload = payload if payload is not None else {}
         self.text = text
         self._json_error = json_error
-        self.raw = SimpleNamespace(retries=SimpleNamespace(history=[object()] * retry_count))
+        self.raw = SimpleNamespace(
+            retries=SimpleNamespace(history=[object()] * retry_count)
+        )
 
     def raise_for_status(self) -> None:
         if self.status_code >= 400:
@@ -79,7 +81,13 @@ def test_build_retry_policy_handles_429_and_retry_after() -> None:
 
 
 def test_get_json_uses_session_with_params_and_timeout() -> None:
-    session = FakeSession([FakeResponse(url="https://example.test/items?api-version=1", payload={"value": 1})])
+    session = FakeSession(
+        [
+            FakeResponse(
+                url="https://example.test/items?api-version=1", payload={"value": 1}
+            )
+        ]
+    )
     client = ArmClient("token", timeout_seconds=33, session=session)
 
     payload = client.get_json("https://example.test/items", params={"api-version": "1"})
@@ -101,9 +109,15 @@ def test_list_with_nextlink_collects_all_pages() -> None:
         [
             FakeResponse(
                 url="https://example.test/items?page=1",
-                payload={"value": [{"id": "a"}], "nextLink": "https://example.test/items?page=2"},
+                payload={
+                    "value": [{"id": "a"}],
+                    "nextLink": "https://example.test/items?page=2",
+                },
             ),
-            FakeResponse(url="https://example.test/items?page=2", payload={"value": [{"id": "b"}]}),
+            FakeResponse(
+                url="https://example.test/items?page=2",
+                payload={"value": [{"id": "b"}]},
+            ),
         ]
     )
     client = ArmClient("token", session=session)
@@ -116,7 +130,13 @@ def test_list_with_nextlink_collects_all_pages() -> None:
 
 def test_get_json_wraps_http_errors() -> None:
     session = FakeSession(
-        [FakeResponse(url="https://example.test/items", status_code=429, text="Too Many Requests")]
+        [
+            FakeResponse(
+                url="https://example.test/items",
+                status_code=429,
+                text="Too Many Requests",
+            )
+        ]
     )
     client = ArmClient("token", session=session)
 
@@ -125,7 +145,9 @@ def test_get_json_wraps_http_errors() -> None:
 
 
 def test_get_json_wraps_invalid_json() -> None:
-    session = FakeSession([FakeResponse(url="https://example.test/items", json_error=True)])
+    session = FakeSession(
+        [FakeResponse(url="https://example.test/items", json_error=True)]
+    )
     client = ArmClient("token", session=session)
 
     with pytest.raises(RuntimeError, match="Invalid JSON response"):
@@ -135,7 +157,11 @@ def test_get_json_wraps_invalid_json() -> None:
 def test_trace_handler_receives_retry_history() -> None:
     traces: list[ArmRequestTrace] = []
     session = FakeSession(
-        [FakeResponse(url="https://example.test/items", payload={"value": []}, retry_count=2)]
+        [
+            FakeResponse(
+                url="https://example.test/items", payload={"value": []}, retry_count=2
+            )
+        ]
     )
     client = ArmClient("token", session=session, trace_handler=traces.append)
 

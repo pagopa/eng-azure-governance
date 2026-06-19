@@ -58,7 +58,9 @@ def build_retry_policy(settings: ArmClientSettings | None = None) -> Retry:
     )
 
 
-def build_session(bearer_token: str, settings: ArmClientSettings | None = None) -> Session:
+def build_session(
+    bearer_token: str, settings: ArmClientSettings | None = None
+) -> Session:
     cfg = settings or ArmClientSettings()
     session = requests.Session()
     session.headers.update(
@@ -138,7 +140,9 @@ class ArmClient:
             )
         )
 
-    def get_json(self, url: str, params: dict[str, str] | None = None) -> dict[str, Any]:
+    def get_json(
+        self, url: str, params: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         return self._request_json("GET", url, params=params)
 
     def post_json(self, url: str, payload: dict[str, Any]) -> dict[str, Any]:

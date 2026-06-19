@@ -28,7 +28,9 @@ def compact_json(value: Any) -> str:
     return json.dumps(value, separators=(",", ":"), sort_keys=True, ensure_ascii=True)
 
 
-def unique_tsv_rows(headers: list[str], rows: list[dict[str, str]]) -> list[dict[str, str]]:
+def unique_tsv_rows(
+    headers: list[str], rows: list[dict[str, str]]
+) -> list[dict[str, str]]:
     unique_rows: list[dict[str, str]] = []
     seen_fingerprints: set[tuple[str, ...]] = set()
 
@@ -82,7 +84,13 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
         reader = csv.DictReader(handle, delimiter="\t")
         rows: list[dict[str, str]] = []
         for row in reader:
-            rows.append({str(key): sanitize_cell(value) for key, value in row.items() if key is not None})
+            rows.append(
+                {
+                    str(key): sanitize_cell(value)
+                    for key, value in row.items()
+                    if key is not None
+                }
+            )
         return rows
 
 

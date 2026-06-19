@@ -41,7 +41,9 @@ def _env_bool(value: str | None) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
-def _parse_positive_int(raw_value: str | None, *, argument_name: str, parser: argparse.ArgumentParser) -> int | None:
+def _parse_positive_int(
+    raw_value: str | None, *, argument_name: str, parser: argparse.ArgumentParser
+) -> int | None:
     if raw_value is None or raw_value == "":
         return None
     try:
@@ -53,7 +55,9 @@ def _parse_positive_int(raw_value: str | None, *, argument_name: str, parser: ar
     return value
 
 
-def _parse_workflows(raw_value: str | None, *, parser: argparse.ArgumentParser) -> list[str]:
+def _parse_workflows(
+    raw_value: str | None, *, parser: argparse.ArgumentParser
+) -> list[str]:
     allowed_workflows = {"raw", "aggregate", "slide", "full"}
     full_workflow = ["raw", "aggregate", "slide"]
 
@@ -87,7 +91,9 @@ def build_parser() -> argparse.ArgumentParser:
         prog="comitato-azure-retirements",
         description="Export Azure Advisor retirements and Service Health advisories into separate TSV files.",
     )
-    parser.add_argument("--mode", choices=["live", "schema-only", "fixture"], default=None)
+    parser.add_argument(
+        "--mode", choices=["live", "schema-only", "fixture"], default=None
+    )
     parser.add_argument(
         "--workflow",
         default=None,
@@ -111,10 +117,14 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
     args = parser.parse_args(argv)
 
     mode = args.mode or os.getenv("AZURE_RETIREMENTS_MODE") or "live"
-    workflows = _parse_workflows(args.workflow or os.getenv("AZURE_RETIREMENTS_WORKFLOW"), parser=parser)
+    workflows = _parse_workflows(
+        args.workflow or os.getenv("AZURE_RETIREMENTS_WORKFLOW"), parser=parser
+    )
 
     subscriptions = _split_csv(args.subscriptions or os.getenv("AZURE_SUBSCRIPTIONS"))
-    management_groups = _split_csv(args.management_groups or os.getenv("AZURE_MANAGEMENT_GROUPS"))
+    management_groups = _split_csv(
+        args.management_groups or os.getenv("AZURE_MANAGEMENT_GROUPS")
+    )
 
     output_root_raw = args.output_root or os.getenv("AZURE_RETIREMENTS_OUTPUT_ROOT")
     if output_root_raw:
@@ -125,21 +135,31 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
     as_of_raw = args.as_of_date or os.getenv("AZURE_RETIREMENTS_AS_OF_DATE")
     as_of_date = parse_iso_date(as_of_raw) if as_of_raw else date.today()
 
-    health_query_start_raw = args.health_query_start or os.getenv("AZURE_HEALTH_QUERY_START")
+    health_query_start_raw = args.health_query_start or os.getenv(
+        "AZURE_HEALTH_QUERY_START"
+    )
     if health_query_start_raw:
         health_query_start = parse_iso_date(health_query_start_raw)
     else:
         health_query_start = add_calendar_months(as_of_date, -18)
 
     fixture_dir_raw = args.fixture_dir or os.getenv("AZURE_RETIREMENTS_FIXTURE_DIR")
-    fixture_dir = Path(fixture_dir_raw).expanduser().resolve() if fixture_dir_raw else None
+    fixture_dir = (
+        Path(fixture_dir_raw).expanduser().resolve() if fixture_dir_raw else None
+    )
 
-    write_raw_jsonl = args.write_raw_jsonl or _env_bool(os.getenv("AZURE_RETIREMENTS_WRITE_RAW_JSONL"))
-    allow_degraded = args.allow_degraded or _env_bool(os.getenv("AZURE_RETIREMENTS_ALLOW_DEGRADED"))
+    write_raw_jsonl = args.write_raw_jsonl or _env_bool(
+        os.getenv("AZURE_RETIREMENTS_WRITE_RAW_JSONL")
+    )
+    allow_degraded = args.allow_degraded or _env_bool(
+        os.getenv("AZURE_RETIREMENTS_ALLOW_DEGRADED")
+    )
     verbose = args.verbose or _env_bool(os.getenv("AZURE_RETIREMENTS_VERBOSE"))
     max_workers: int | None
     if args.max_workers is not None:
-        max_workers = _parse_positive_int(str(args.max_workers), argument_name="--max-workers", parser=parser)
+        max_workers = _parse_positive_int(
+            str(args.max_workers), argument_name="--max-workers", parser=parser
+        )
     else:
         max_workers = _parse_positive_int(
             os.getenv("AZURE_RETIREMENTS_MAX_WORKERS"),
@@ -151,7 +171,9 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
         parser.error("live mode requires --subscriptions or --management-groups")
 
     if mode == "fixture" and fixture_dir is None:
-        parser.error("fixture mode requires --fixture-dir or AZURE_RETIREMENTS_FIXTURE_DIR")
+        parser.error(
+            "fixture mode requires --fixture-dir or AZURE_RETIREMENTS_FIXTURE_DIR"
+        )
 
     return RuntimeConfig(
         mode=mode,

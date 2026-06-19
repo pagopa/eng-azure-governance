@@ -8,7 +8,9 @@ from src.comitato.comitato_azure_retirements.libs.config import parse_args
 from src.comitato.comitato_azure_retirements.libs.dates import add_calendar_months
 
 
-def test_parse_args_defaults_to_live_when_scope_is_provided(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_parse_args_defaults_to_live_when_scope_is_provided(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("AZURE_RETIREMENTS_MODE", raising=False)
     monkeypatch.delenv("AZURE_RETIREMENTS_OUTPUT_ROOT", raising=False)
     monkeypatch.setenv("AZURE_RETIREMENTS_AS_OF_DATE", "2026-06-18")
@@ -18,12 +20,16 @@ def test_parse_args_defaults_to_live_when_scope_is_provided(monkeypatch: pytest.
     assert cfg.mode == "live"
     assert cfg.workflows == ["raw", "aggregate", "slide"]
     assert cfg.subscriptions == ["sub-1"]
-    assert cfg.output_root.as_posix().endswith("/src/comitato/comitato_azure_retirements/exports")
+    assert cfg.output_root.as_posix().endswith(
+        "/src/comitato/comitato_azure_retirements/exports"
+    )
     assert cfg.as_of_date == date(2026, 6, 18)
     assert cfg.health_query_start == add_calendar_months(date(2026, 6, 18), -18)
 
 
-def test_parse_args_requires_scope_when_mode_is_implicit_live(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_parse_args_requires_scope_when_mode_is_implicit_live(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("AZURE_RETIREMENTS_MODE", raising=False)
 
     with pytest.raises(SystemExit):

@@ -9,7 +9,9 @@ from src.comitato.comitato_azure_retirements.libs.normalize import (
 from src.comitato.comitato_azure_retirements.libs.schemas import SERVICE_HEALTH_HEADERS
 
 
-def _recommendation(*, recommendation_type_id: str, resource_id: str, learn_more_link: str = "") -> dict[str, object]:
+def _recommendation(
+    *, recommendation_type_id: str, resource_id: str, learn_more_link: str = ""
+) -> dict[str, object]:
     return {
         "id": "rec-1",
         "properties": {
@@ -21,9 +23,13 @@ def _recommendation(*, recommendation_type_id: str, resource_id: str, learn_more
     }
 
 
-def test_normalize_advisor_rows_marks_missing_metadata_as_resource_without_metadata() -> None:
+def test_normalize_advisor_rows_marks_missing_metadata_as_resource_without_metadata() -> (
+    None
+):
     resource_id = "/subscriptions/SUB-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1"
-    recommendation = _recommendation(recommendation_type_id="service-1", resource_id=resource_id)
+    recommendation = _recommendation(
+        recommendation_type_id="service-1", resource_id=resource_id
+    )
 
     rows = normalize_advisor_rows(
         run_id="run-1",
@@ -44,7 +50,9 @@ def test_normalize_advisor_rows_marks_missing_metadata_as_resource_without_metad
     assert "metadata_without_resource" not in flags
 
 
-def test_normalize_advisor_rows_marks_missing_resource_graph_as_metadata_without_resource() -> None:
+def test_normalize_advisor_rows_marks_missing_resource_graph_as_metadata_without_resource() -> (
+    None
+):
     recommendation = _recommendation(
         recommendation_type_id="service-1",
         resource_id="/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Storage/storageAccounts/stg1",
@@ -71,7 +79,9 @@ def test_normalize_advisor_rows_marks_missing_resource_graph_as_metadata_without
     assert "resource_without_metadata" not in flags
 
 
-def test_normalize_advisor_rows_keeps_recommendation_learn_more_link_without_metadata() -> None:
+def test_normalize_advisor_rows_keeps_recommendation_learn_more_link_without_metadata() -> (
+    None
+):
     recommendation = _recommendation(
         recommendation_type_id="service-1",
         resource_id="/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1",
@@ -90,7 +100,9 @@ def test_normalize_advisor_rows_keeps_recommendation_learn_more_link_without_met
     assert rows[0]["learn_more_link"] == "https://learn.example/retirement"
 
 
-def test_normalize_advisor_rows_uses_extended_properties_when_metadata_is_missing() -> None:
+def test_normalize_advisor_rows_uses_extended_properties_when_metadata_is_missing() -> (
+    None
+):
     resource_id = "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.KeyVault/vaults/kv-1"
     recommendation = {
         "id": "rec-1",
@@ -189,7 +201,9 @@ def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
     assert all("raw_json" not in row for row in rows)
 
 
-def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dates() -> None:
+def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dates() -> (
+    None
+):
     event = {
         "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-1",
         "name": "event-1",
@@ -221,7 +235,9 @@ def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dat
     assert rows[0]["date_for_window"] == "2027-06-30"
 
 
-def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start() -> None:
+def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start() -> (
+    None
+):
     event = {
         "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-2",
         "name": "event-2",
@@ -253,7 +269,9 @@ def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start(
     assert rows[0]["date_for_window"] == "2027-01-15"
 
 
-def test_normalize_service_health_rows_preserves_service_region_pairs_from_callback() -> None:
+def test_normalize_service_health_rows_preserves_service_region_pairs_from_callback() -> (
+    None
+):
     event = {
         "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-3",
         "name": "event-3",

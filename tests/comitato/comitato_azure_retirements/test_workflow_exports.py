@@ -78,7 +78,10 @@ def test_build_aggregate_rows_groups_platforms_and_unknown_bucket() -> None:
     assert row["retirement_date"] == "2026-12-31"
     assert row["impacted_platforms"] == "IO, Unknown Platform"
     assert '"IO":["PROD-IO"]' in row["impacted_platforms_subscriptions_json"]
-    assert f'"{UNKNOWN_PLATFORM}":["SUB-NOT-MAPPED"]' in row["impacted_platforms_subscriptions_json"]
+    assert (
+        f'"{UNKNOWN_PLATFORM}":["SUB-NOT-MAPPED"]'
+        in row["impacted_platforms_subscriptions_json"]
+    )
 
 
 def test_build_slide_rows_projects_expected_fields() -> None:

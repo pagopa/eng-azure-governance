@@ -15,7 +15,6 @@ from dateutil import parser as date_parser
 from .dates import parse_possible_date
 from .tsv import compact_json
 
-
 RAW_ADVISOR_FILENAME = "01_azure_advisor_retirements_raw.tsv"
 RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
 LEGACY_RAW_ADVISOR_FILENAME = "azure_advisor_retirements_aggregate.tsv"
@@ -70,7 +69,9 @@ def build_aggregate_rows(
 
     frame = pd.DataFrame.from_records(records).fillna("")
     frame["canonical_title"] = frame["retiring_feature"].map(_canonical_title)
-    frame["canonical_date"] = frame["retirement_date"].map(lambda value: value if value else "na")
+    frame["canonical_date"] = frame["retirement_date"].map(
+        lambda value: value if value else "na"
+    )
     frame["advisory_key"] = frame.apply(
         lambda row: _build_advisory_key(
             advice_type=str(row["advice_type"]),
@@ -104,10 +105,13 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
             {
                 "priority_label": row.get("priority_label", ""),
                 "retiring_feature": row.get("retiring_feature", ""),
-                "action_required": row.get("action_required", "") or row.get("summary_text", ""),
+                "action_required": row.get("action_required", "")
+                or row.get("summary_text", ""),
                 "retirement_date": row.get("retirement_date", ""),
                 "platforms": row.get("impacted_platforms", ""),
-                "platforms_subscriptions_json": row.get("impacted_platforms_subscriptions_json", ""),
+                "platforms_subscriptions_json": row.get(
+                    "impacted_platforms_subscriptions_json", ""
+                ),
                 "advice_type": row.get("advice_type", ""),
                 "source_links": row.get("source_links", ""),
             }
@@ -137,14 +141,18 @@ def _advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, objec
             source_texts=[row.get("short_description_problem", "")],
             exact_quality=True,
         )
-        links = _extract_links([row.get("action_link", ""), row.get("learn_more_link", "")])
+        links = _extract_links(
+            [row.get("action_link", ""), row.get("learn_more_link", "")]
+        )
         source_identifiers = _sorted_unique(
             [row.get("source_id", ""), row.get("advisor_recommendation_id", "")]
         )
         records.append(
             {
                 "advice_type": "advisor_retirement",
-                "retiring_feature": _first_non_empty([row.get("retiring_feature", ""), row.get("service_name", "")]),
+                "retiring_feature": _first_non_empty(
+                    [row.get("retiring_feature", ""), row.get("service_name", "")]
+                ),
                 "action_required": _first_non_empty(
                     [
                         row.get("short_description_solution", ""),
@@ -155,10 +163,16 @@ def _advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, objec
                 "retirement_date": retirement_date,
                 "retirement_date_quality": retirement_quality,
                 "subscription_name": row.get("subscription_name", ""),
-                "source_system": row.get("source_system", "advisor_joined") or "advisor_joined",
+                "source_system": row.get("source_system", "advisor_joined")
+                or "advisor_joined",
                 "source_identifiers": source_identifiers,
                 "source_links": links,
-                "summary_text": _first_non_empty([row.get("short_description_problem", ""), row.get("retiring_feature", "")]),
+                "summary_text": _first_non_empty(
+                    [
+                        row.get("short_description_problem", ""),
+                        row.get("retiring_feature", ""),
+                    ]
+                ),
                 "details_text": row.get("description", ""),
                 "as_of_date": row.get("as_of_date", ""),
             }
@@ -167,7 +181,9 @@ def _advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, objec
     return records
 
 
-def _service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str, object]]:
+def _service_health_records(
+    service_rows: list[dict[str, str]],
+) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     for row in service_rows:
         retirement_date, retirement_quality = _normalize_retirement_date(
@@ -180,9 +196,15 @@ def _service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str
             ],
             exact_quality=False,
         )
-        links = _extract_links([row.get("description", ""), row.get("recommended_actions", "")])
+        links = _extract_links(
+            [row.get("description", ""), row.get("recommended_actions", "")]
+        )
         source_identifiers = _sorted_unique(
-            [row.get("event_id", ""), row.get("tracking_id", ""), row.get("source_id", "")]
+            [
+                row.get("event_id", ""),
+                row.get("tracking_id", ""),
+                row.get("source_id", ""),
+            ]
         )
         records.append(
             {
@@ -192,15 +214,22 @@ def _service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str
                     description=row.get("description", ""),
                     event_sub_type=row.get("event_sub_type", ""),
                 ),
-                "retiring_feature": _first_non_empty([row.get("title", ""), row.get("summary", "")]),
-                "action_required": _first_non_empty([row.get("recommended_actions", ""), row.get("summary", "")]),
+                "retiring_feature": _first_non_empty(
+                    [row.get("title", ""), row.get("summary", "")]
+                ),
+                "action_required": _first_non_empty(
+                    [row.get("recommended_actions", ""), row.get("summary", "")]
+                ),
                 "retirement_date": retirement_date,
                 "retirement_date_quality": retirement_quality,
                 "subscription_name": row.get("subscription_name", ""),
-                "source_system": row.get("source_system", "resource_health_events") or "resource_health_events",
+                "source_system": row.get("source_system", "resource_health_events")
+                or "resource_health_events",
                 "source_identifiers": source_identifiers,
                 "source_links": links,
-                "summary_text": _first_non_empty([row.get("summary", ""), row.get("title", "")]),
+                "summary_text": _first_non_empty(
+                    [row.get("summary", ""), row.get("title", "")]
+                ),
                 "details_text": row.get("description", ""),
                 "as_of_date": row.get("as_of_date", ""),
             }
@@ -216,16 +245,24 @@ def _aggregate_group(
     active_platform_map: dict[str, str],
     as_of_date: date,
 ) -> dict[str, str]:
-    source_identifiers = _sorted_unique(item for row in rows for item in _as_string_list(row.get("source_identifiers")))
-    source_links = _sorted_unique(item for row in rows for item in _as_string_list(row.get("source_links")))
+    source_identifiers = _sorted_unique(
+        item for row in rows for item in _as_string_list(row.get("source_identifiers"))
+    )
+    source_links = _sorted_unique(
+        item for row in rows for item in _as_string_list(row.get("source_links"))
+    )
     source_systems = _sorted_unique(str(row.get("source_system", "")) for row in rows)
-    subscription_names = _sorted_unique(str(row.get("subscription_name", "")) for row in rows)
+    subscription_names = _sorted_unique(
+        str(row.get("subscription_name", "")) for row in rows
+    )
 
     platform_subscriptions: dict[str, set[str]] = defaultdict(set)
     for subscription_name in subscription_names:
         if not subscription_name:
             continue
-        platform_name = active_platform_map.get(_normalize_key(subscription_name), UNKNOWN_PLATFORM)
+        platform_name = active_platform_map.get(
+            _normalize_key(subscription_name), UNKNOWN_PLATFORM
+        )
         platform_subscriptions[platform_name].add(subscription_name)
 
     ordered_platforms = sorted(
@@ -240,8 +277,14 @@ def _aggregate_group(
         }
     }
 
-    retirement_candidates = _sorted_unique(str(row.get("retirement_date", "")) for row in rows)
-    parsed_dates = [candidate for candidate in retirement_candidates if parse_possible_date(candidate)]
+    retirement_candidates = _sorted_unique(
+        str(row.get("retirement_date", "")) for row in rows
+    )
+    parsed_dates = [
+        candidate
+        for candidate in retirement_candidates
+        if parse_possible_date(candidate)
+    ]
     chosen_retirement_date = ""
     retirement_quality = "missing"
     if parsed_dates:
@@ -256,15 +299,21 @@ def _aggregate_group(
     first_seen_date = _min_iso_date(str(row.get("as_of_date", "")) for row in rows)
     last_seen_date = _max_iso_date(str(row.get("as_of_date", "")) for row in rows)
 
-    retiring_feature = _pick_human_text(str(row.get("retiring_feature", "")) for row in rows)
+    retiring_feature = _pick_human_text(
+        str(row.get("retiring_feature", "")) for row in rows
+    )
     summary_text = _pick_human_text(str(row.get("summary_text", "")) for row in rows)
     details_text = _pick_human_text(str(row.get("details_text", "")) for row in rows)
-    action_required = _pick_human_text(str(row.get("action_required", "")) for row in rows)
+    action_required = _pick_human_text(
+        str(row.get("action_required", "")) for row in rows
+    )
     if not action_required:
         action_required = summary_text
 
     advice_type = _first_non_empty([str(row.get("advice_type", "")) for row in rows])
-    priority_label = _priority_label(retirement_date=chosen_retirement_date, as_of_date=as_of_date)
+    priority_label = _priority_label(
+        retirement_date=chosen_retirement_date, as_of_date=as_of_date
+    )
 
     return {
         "advice_type": advice_type,
@@ -313,13 +362,19 @@ def _normalize_retirement_date(
     return "", "missing"
 
 
-def _classify_service_health_type(*, title: str, summary: str, description: str, event_sub_type: str) -> str:
+def _classify_service_health_type(
+    *, title: str, summary: str, description: str, event_sub_type: str
+) -> str:
     joined_text = " ".join([title, summary, description, event_sub_type]).lower()
     if "deprecat" in joined_text:
         return "service_health_deprecation"
     if event_sub_type.strip().lower() == "retirement":
         return "service_health_retirement"
-    if "retire" in joined_text or "end of support" in joined_text or "sunset" in joined_text:
+    if (
+        "retire" in joined_text
+        or "end of support" in joined_text
+        or "sunset" in joined_text
+    ):
         return "service_health_retirement"
     return "other_advisory"
 
@@ -330,7 +385,7 @@ def _extract_links(texts: list[str]) -> list[str]:
         if not text:
             continue
         for link in _URL_PATTERN.findall(text):
-            clean_link = link.rstrip(".,);\"]")
+            clean_link = link.rstrip('.,);"]')
             if clean_link:
                 links.append(clean_link)
     return _sorted_unique(links)

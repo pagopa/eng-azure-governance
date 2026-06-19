@@ -11,7 +11,6 @@ import pytest
 
 from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
 
-
 RAW_ADVISOR_FILENAME = "01_azure_advisor_retirements_raw.tsv"
 RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
 LEGACY_RAW_ADVISOR_FILENAME = "azure_advisor_retirements_aggregate.tsv"
@@ -35,7 +34,9 @@ def _load_entrypoint_module(script_path: Path, module_name: str) -> ModuleType:
 
 
 def _entrypoint_path() -> Path:
-    return Path("src/comitato/comitato_azure_retirements/comitato-azure-retirements.py").resolve()
+    return Path(
+        "src/comitato/comitato_azure_retirements/comitato-azure-retirements.py"
+    ).resolve()
 
 
 def _load_entrypoint(monkeypatch: pytest.MonkeyPatch, module_name: str) -> ModuleType:
@@ -73,8 +74,12 @@ def _write_json_payload(path: Path, payload: object) -> None:
     path.write_text(json.dumps(payload), encoding="utf-8")
 
 
-def test_main_fails_when_error_diagnostic_exists(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_entrypoint_error")
+def test_main_fails_when_error_diagnostic_exists(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_entrypoint_error"
+    )
     monkeypatch.setattr(module, "parse_args", lambda: _runtime_config(tmp_path))
 
     def fake_schema_only(*, cfg, run_id, output_dir, diagnostics):  # type: ignore[no-untyped-def]
@@ -105,8 +110,12 @@ def test_main_fails_when_error_diagnostic_exists(monkeypatch: pytest.MonkeyPatch
     assert module.main() == 1
 
 
-def test_main_succeeds_when_diagnostics_have_no_errors(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_entrypoint_success")
+def test_main_succeeds_when_diagnostics_have_no_errors(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_entrypoint_success"
+    )
     monkeypatch.setattr(module, "parse_args", lambda: _runtime_config(tmp_path))
 
     def fake_schema_only(*, cfg, run_id, output_dir, diagnostics):  # type: ignore[no-untyped-def]
@@ -140,7 +149,9 @@ def test_main_succeeds_when_diagnostics_have_no_errors(monkeypatch: pytest.Monke
 def test_manifest_marks_degraded_mode_when_degraded_checks_are_warnings(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_manifest_degraded_mode")
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_manifest_degraded_mode"
+    )
     monkeypatch.setattr(
         module,
         "parse_args",
@@ -186,7 +197,9 @@ def test_manifest_marks_degraded_mode_when_degraded_checks_are_warnings(
     assert manifest_payload["degraded_mode"] is True
 
 
-def test_build_output_dir_uses_year_and_month(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_output_dir_uses_year_and_month(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_output_dir")
 
     output_dir = module._build_output_dir(tmp_path, date(2026, 6, 18))
@@ -199,10 +212,15 @@ def test_build_runtime_dir_uses_repo_tmp_tree(monkeypatch: pytest.MonkeyPatch) -
 
     runtime_dir = module._build_runtime_dir(date(2026, 6, 18))
 
-    assert runtime_dir == Path("tmp/comitato/comitato_azure_retirements/run/2026/06").resolve()
+    assert (
+        runtime_dir
+        == Path("tmp/comitato/comitato_azure_retirements/run/2026/06").resolve()
+    )
 
 
-def test_build_debug_log_path_uses_run_id(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_debug_log_path_uses_run_id(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_debug_log_path")
 
     debug_log_path = module._build_debug_log_path(tmp_path, "azure-retirements-run-1")
@@ -210,13 +228,21 @@ def test_build_debug_log_path_uses_run_id(monkeypatch: pytest.MonkeyPatch, tmp_p
     assert debug_log_path == tmp_path / "azure-retirements-run-1_debug.log"
 
 
-def test_scope_mode_handles_fixture_schema_and_live_scope(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_scope_mode_handles_fixture_schema_and_live_scope(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_scope_mode")
 
-    fixture_cfg = _runtime_config(tmp_path, mode="fixture", fixture_dir=tmp_path / "fixtures")
+    fixture_cfg = _runtime_config(
+        tmp_path, mode="fixture", fixture_dir=tmp_path / "fixtures"
+    )
     schema_cfg = _runtime_config(tmp_path, mode="schema-only")
-    live_subscriptions_cfg = _runtime_config(tmp_path, mode="live", subscriptions=["sub-1"])
-    live_management_groups_cfg = _runtime_config(tmp_path, mode="live", management_groups=["mg-1"])
+    live_subscriptions_cfg = _runtime_config(
+        tmp_path, mode="live", subscriptions=["sub-1"]
+    )
+    live_management_groups_cfg = _runtime_config(
+        tmp_path, mode="live", management_groups=["mg-1"]
+    )
 
     assert module._scope_mode(fixture_cfg) == "fixture"
     assert module._scope_mode(schema_cfg) == "schema_only"
@@ -224,7 +250,9 @@ def test_scope_mode_handles_fixture_schema_and_live_scope(monkeypatch: pytest.Mo
     assert module._scope_mode(live_management_groups_cfg) == "management_groups"
 
 
-def test_load_fixture_supports_list_and_value_payloads(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_load_fixture_supports_list_and_value_payloads(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_load_fixture")
 
     missing = tmp_path / "missing.json"
@@ -242,7 +270,9 @@ def test_load_fixture_supports_list_and_value_payloads(monkeypatch: pytest.Monke
     assert module._load_fixture(invalid_payload) == []
 
 
-def test_schema_only_returns_empty_rows_and_info_diagnostic(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_schema_only_returns_empty_rows_and_info_diagnostic(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_schema_only")
     diagnostics = module.DiagnosticsCollector("run-1")
 
@@ -272,8 +302,12 @@ def test_schema_only_returns_empty_rows_and_info_diagnostic(monkeypatch: pytest.
     assert diagnostic_rows[0]["check_id"] == "schema_only_mode"
 
 
-def test_live_empty_output_guardrails_error_when_source_rows_exist(monkeypatch: pytest.MonkeyPatch) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_live_guardrail_error")
+def test_live_empty_output_guardrails_error_when_source_rows_exist(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_live_guardrail_error"
+    )
     diagnostics = module.DiagnosticsCollector("run-1")
 
     module._add_live_empty_output_diagnostics(
@@ -296,8 +330,12 @@ def test_live_empty_output_guardrails_error_when_source_rows_exist(monkeypatch: 
     }
 
 
-def test_live_empty_output_guardrails_warn_when_source_rows_are_absent(monkeypatch: pytest.MonkeyPatch) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_live_guardrail_warning")
+def test_live_empty_output_guardrails_warn_when_source_rows_are_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_live_guardrail_warning"
+    )
     diagnostics = module.DiagnosticsCollector("run-1")
 
     module._add_live_empty_output_diagnostics(
@@ -317,14 +355,14 @@ def test_live_empty_output_guardrails_warn_when_source_rows_are_absent(monkeypat
     assert diagnostics.summary()["error"] == 0
 
 
-def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_fixture_mode_reads_files_and_builds_outputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_fixture_mode")
     fixture_dir = tmp_path / "fixtures"
     fixture_dir.mkdir()
 
-    recommendation_resource_id = (
-        "/subscriptions/sub-1/resourceGroups/rg-test/providers/Microsoft.Storage/storageAccounts/storage01"
-    )
+    recommendation_resource_id = "/subscriptions/sub-1/resourceGroups/rg-test/providers/Microsoft.Storage/storageAccounts/storage01"
 
     _write_json_payload(
         fixture_dir / "advisor_metadata.json",
@@ -390,7 +428,9 @@ def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyP
                     "summary": "Service maintenance event",
                     "lastUpdateTime": "2026-06-17T10:00:00Z",
                     "impact": {
-                        "impactedService": [{"serviceName": "Storage", "serviceGuid": "guid-1"}],
+                        "impactedService": [
+                            {"serviceName": "Storage", "serviceGuid": "guid-1"}
+                        ],
                         "impactedRegion": [{"regionName": "westeurope"}],
                     },
                     "recommendedActions": [{"actionText": "Review mitigation plan"}],
@@ -405,7 +445,14 @@ def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyP
 
     diagnostics = module.DiagnosticsCollector("run-1")
 
-    advisor_rows, service_rows, counts_by_source, counts_by_file, advisor_raw, service_raw = module._fixture_mode(
+    (
+        advisor_rows,
+        service_rows,
+        counts_by_source,
+        counts_by_file,
+        advisor_raw,
+        service_raw,
+    ) = module._fixture_mode(
         cfg=_runtime_config(
             tmp_path,
             mode="fixture",
@@ -429,7 +476,10 @@ def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyP
     assert counts_by_file[RAW_SERVICE_HEALTH_FILENAME] == 1
     assert counts_by_file["azure_retirements_run_diagnostics.tsv"] == 1
 
-    assert {item["kind"] for item in advisor_raw} == {"advisor_metadata", "advisor_recommendation"}
+    assert {item["kind"] for item in advisor_raw} == {
+        "advisor_metadata",
+        "advisor_recommendation",
+    }
     assert {item["kind"] for item in service_raw} == {"service_health_event"}
 
     diagnostic_rows = diagnostics.rows()
@@ -448,7 +498,9 @@ def test_main_writes_runtime_failure_diagnostic_on_unhandled_error(
 
     writes: dict[str, list[dict[str, str]]] = {}
 
-    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+    def fake_write_tsv(
+        path: Path, headers: list[str], rows: list[dict[str, str]]
+    ) -> None:
         del headers
         writes[path.name] = rows
 
@@ -472,7 +524,9 @@ def test_main_writes_runtime_artifacts_under_tmp_and_service_health_aggregate(
     tsv_paths: list[Path] = []
     json_paths: list[Path] = []
 
-    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+    def fake_write_tsv(
+        path: Path, headers: list[str], rows: list[dict[str, str]]
+    ) -> None:
         del headers, rows
         tsv_paths.append(path)
 
@@ -493,17 +547,39 @@ def test_main_writes_runtime_artifacts_under_tmp_and_service_health_aggregate(
     assert "azure_retirements_run_diagnostics.tsv" in tsv_names
 
     advisor_path = next(path for path in tsv_paths if path.name == RAW_ADVISOR_FILENAME)
-    service_health_path = next(path for path in tsv_paths if path.name == RAW_SERVICE_HEALTH_FILENAME)
-    diagnostics_path = next(path for path in tsv_paths if path.name == "azure_retirements_run_diagnostics.tsv")
-    manifest_path = next(path for path in json_paths if path.name == "azure_retirements_run_manifest.json")
+    service_health_path = next(
+        path for path in tsv_paths if path.name == RAW_SERVICE_HEALTH_FILENAME
+    )
+    diagnostics_path = next(
+        path
+        for path in tsv_paths
+        if path.name == "azure_retirements_run_diagnostics.tsv"
+    )
+    manifest_path = next(
+        path
+        for path in json_paths
+        if path.name == "azure_retirements_run_manifest.json"
+    )
 
     assert advisor_path == tmp_path / "2026" / "06" / RAW_ADVISOR_FILENAME
     assert service_health_path == tmp_path / "2026" / "06" / RAW_SERVICE_HEALTH_FILENAME
-    assert diagnostics_path == Path("tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_diagnostics.tsv").resolve()
-    assert manifest_path == Path("tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_manifest.json").resolve()
+    assert (
+        diagnostics_path
+        == Path(
+            "tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_diagnostics.tsv"
+        ).resolve()
+    )
+    assert (
+        manifest_path
+        == Path(
+            "tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_manifest.json"
+        ).resolve()
+    )
 
 
-def test_main_raw_workflow_writes_only_raw_artifacts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_main_raw_workflow_writes_only_raw_artifacts(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_workflow_raw")
     monkeypatch.setattr(
         module,
@@ -513,7 +589,9 @@ def test_main_raw_workflow_writes_only_raw_artifacts(monkeypatch: pytest.MonkeyP
 
     tsv_paths: list[Path] = []
 
-    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+    def fake_write_tsv(
+        path: Path, headers: list[str], rows: list[dict[str, str]]
+    ) -> None:
         del headers, rows
         tsv_paths.append(path)
 
@@ -533,7 +611,9 @@ def test_main_raw_workflow_writes_only_raw_artifacts(monkeypatch: pytest.MonkeyP
 def test_main_aggregate_and_slide_workflows_reuse_existing_raw_inputs(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_workflow_aggregate_slide")
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_workflow_aggregate_slide"
+    )
     monkeypatch.setattr(
         module,
         "parse_args",
@@ -563,7 +643,9 @@ def test_main_aggregate_and_slide_workflows_reuse_existing_raw_inputs(
 
     tsv_paths: list[Path] = []
 
-    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+    def fake_write_tsv(
+        path: Path, headers: list[str], rows: list[dict[str, str]]
+    ) -> None:
         del headers, rows
         tsv_paths.append(path)
 
@@ -583,7 +665,9 @@ def test_main_aggregate_and_slide_workflows_reuse_existing_raw_inputs(
 def test_main_aggregate_and_slide_workflows_accept_legacy_raw_input_filenames(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_workflow_aggregate_slide_legacy")
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_workflow_aggregate_slide_legacy"
+    )
     monkeypatch.setattr(
         module,
         "parse_args",
@@ -613,7 +697,9 @@ def test_main_aggregate_and_slide_workflows_accept_legacy_raw_input_filenames(
 
     tsv_paths: list[Path] = []
 
-    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+    def fake_write_tsv(
+        path: Path, headers: list[str], rows: list[dict[str, str]]
+    ) -> None:
         del headers, rows
         tsv_paths.append(path)
 

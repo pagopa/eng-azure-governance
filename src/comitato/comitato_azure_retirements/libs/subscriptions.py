@@ -8,7 +8,9 @@ from typing import Any
 from .arm_client import ArmClient
 
 
-def discover_subscriptions_for_management_group(client: ArmClient, management_group_id: str) -> list[str]:
+def discover_subscriptions_for_management_group(
+    client: ArmClient, management_group_id: str
+) -> list[str]:
     url = (
         "https://management.azure.com/providers/Microsoft.Management/managementGroups/"
         f"{management_group_id}/descendants?api-version=2023-04-01"
@@ -16,7 +18,10 @@ def discover_subscriptions_for_management_group(client: ArmClient, management_gr
     page = client.list_with_nextlink(url)
     output: list[str] = []
     for item in page.items:
-        if str(item.get("type", "")).lower() != "microsoft.management/managementgroups/subscriptions":
+        if (
+            str(item.get("type", "")).lower()
+            != "microsoft.management/managementgroups/subscriptions"
+        ):
             continue
         name = item.get("name") or ""
         if name:

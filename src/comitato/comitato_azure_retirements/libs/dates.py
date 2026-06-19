@@ -69,7 +69,9 @@ def days_to_retirement(as_of_date: date, retirement: date | None) -> int | None:
 def months_to_retirement(as_of_date: date, retirement: date | None) -> int | None:
     if retirement is None:
         return None
-    delta = (retirement.year - as_of_date.year) * 12 + (retirement.month - as_of_date.month)
+    delta = (retirement.year - as_of_date.year) * 12 + (
+        retirement.month - as_of_date.month
+    )
     if retirement.day < as_of_date.day:
         delta -= 1
     return delta

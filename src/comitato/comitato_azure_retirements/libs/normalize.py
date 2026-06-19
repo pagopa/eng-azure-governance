@@ -16,7 +16,6 @@ from .dates import (
 )
 from .tsv import compact_json
 
-
 RESOURCE_TYPE_LABELS = {
     "microsoft.cache/redis": "Redis Cache Server",
     "microsoft.cdn/profiles": "Front Door Profile",
@@ -37,7 +36,9 @@ RESOURCE_TYPE_LABELS = {
     "microsoft.apimanagement/service": "API Management",
 }
 
-RETIREMENT_KEYWORD_PATTERN = re.compile(r"retire|deprecat|end of support|sunset", re.IGNORECASE)
+RETIREMENT_KEYWORD_PATTERN = re.compile(
+    r"retire|deprecat|end of support|sunset", re.IGNORECASE
+)
 DATE_CANDIDATE_PATTERN = re.compile(
     r"(\d{4}-\d{2}-\d{2}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|[A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})"
 )
@@ -60,7 +61,9 @@ def _extract_resource_group(resource_id: str) -> str:
     return ""
 
 
-def _description_quality(description: str, short_problem: str, feature: str, link: str) -> str:
+def _description_quality(
+    description: str, short_problem: str, feature: str, link: str
+) -> str:
     if description:
         return "full"
     if short_problem:
@@ -93,8 +96,12 @@ def _humanize_provider_segment(segment: str) -> str:
     return words.strip().title()
 
 
-def _fallback_service_name(*, resource_type: str, impacted_field: str, resource_id: str) -> str:
-    normalized_resource_type = resource_type.strip().lower() or _resource_type_from_resource_id(resource_id)
+def _fallback_service_name(
+    *, resource_type: str, impacted_field: str, resource_id: str
+) -> str:
+    normalized_resource_type = (
+        resource_type.strip().lower() or _resource_type_from_resource_id(resource_id)
+    )
     if normalized_resource_type in RESOURCE_TYPE_LABELS:
         return RESOURCE_TYPE_LABELS[normalized_resource_type]
 
@@ -189,16 +196,28 @@ def normalize_advisor_rows(
             or ""
         ).lower()
 
-        metadata = metadata_by_key.get(recommendation_type_id) or metadata_by_key.get(recommendation.get("id", ""))
+        metadata = metadata_by_key.get(recommendation_type_id) or metadata_by_key.get(
+            recommendation.get("id", "")
+        )
         if metadata:
             meta_id = str(metadata.get("id") or "")
             if meta_id:
                 used_metadata_keys.add(meta_id)
 
-        resource_graph = resource_graph_by_key.get((recommendation_type_id, resource_id))
+        resource_graph = resource_graph_by_key.get(
+            (recommendation_type_id, resource_id)
+        )
 
-        source_properties = metadata.get("properties", {}).get("sourceProperties", {}) if metadata else {}
-        service_retirement = source_properties.get("serviceRetirement", {}) if isinstance(source_properties, dict) else {}
+        source_properties = (
+            metadata.get("properties", {}).get("sourceProperties", {})
+            if metadata
+            else {}
+        )
+        service_retirement = (
+            source_properties.get("serviceRetirement", {})
+            if isinstance(source_properties, dict)
+            else {}
+        )
         extended_properties = properties.get("extendedProperties", {})
         if not isinstance(extended_properties, dict):
             extended_properties = {}
@@ -224,11 +243,21 @@ def normalize_advisor_rows(
         d_months = months_to_retirement(as_of_date, retirement_date)
 
         short_problem = str(properties.get("shortDescription", {}).get("problem") or "")
-        short_solution = str(properties.get("shortDescription", {}).get("solution") or "")
+        short_solution = str(
+            properties.get("shortDescription", {}).get("solution") or ""
+        )
         description = str(properties.get("description") or "")
-        feature_name = str(service_retirement.get("retirementFeatureName") or extended_properties.get("retirementFeatureName") or "")
+        feature_name = str(
+            service_retirement.get("retirementFeatureName")
+            or extended_properties.get("retirementFeatureName")
+            or ""
+        )
         recommendation_link = str(properties.get("learnMoreLink") or "")
-        metadata_link = str(metadata.get("properties", {}).get("learnMoreLink") or "") if metadata else ""
+        metadata_link = (
+            str(metadata.get("properties", {}).get("learnMoreLink") or "")
+            if metadata
+            else ""
+        )
         learn_more_link = recommendation_link or metadata_link
 
         row_flags: list[str] = []
@@ -273,14 +302,25 @@ def normalize_advisor_rows(
         if isinstance(actions, list) and actions:
             first_action = actions[0]
             if isinstance(first_action, dict):
-                action_link = str(first_action.get("link") or first_action.get("url") or "")
-                action_caption = str(first_action.get("caption") or first_action.get("name") or "")
+                action_link = str(
+                    first_action.get("link") or first_action.get("url") or ""
+                )
+                action_caption = str(
+                    first_action.get("caption") or first_action.get("name") or ""
+                )
 
         service_name = ""
         if metadata:
-            service_name = str(metadata.get("properties", {}).get("resourceMetadata", {}).get("singular") or "")
+            service_name = str(
+                metadata.get("properties", {})
+                .get("resourceMetadata", {})
+                .get("singular")
+                or ""
+            )
         if not service_name:
-            service_name = str(properties.get("resourceMetadata", {}).get("singular") or "")
+            service_name = str(
+                properties.get("resourceMetadata", {}).get("singular") or ""
+            )
         if not service_name:
             service_name = _fallback_service_name(
                 resource_type=resource_type,
@@ -292,9 +332,13 @@ def normalize_advisor_rows(
             "run_id": run_id,
             "as_of_date": as_of_date.isoformat(),
             "scope_mode": scope_mode,
-            "record_type": "advisor_resource_retirement" if resource_id else "advisor_subscription_retirement",
+            "record_type": "advisor_resource_retirement"
+            if resource_id
+            else "advisor_subscription_retirement",
             "source_system": "advisor_joined",
-            "source_id": str(recommendation.get("id") or recommendation.get("name") or ""),
+            "source_id": str(
+                recommendation.get("id") or recommendation.get("name") or ""
+            ),
             "recommendation_type_id": recommendation_type_id,
             "advisor_recommendation_id": str(recommendation.get("id") or ""),
             "advisor_metadata_id": str(metadata.get("id") or "") if metadata else "",
@@ -319,7 +363,9 @@ def normalize_advisor_rows(
             "category": str(properties.get("category") or ""),
             "sub_category": str(properties.get("subCategory") or ""),
             "platform_state": platform_state,
-            "last_updated": normalize_datetime(str(properties.get("lastUpdated") or "")),
+            "last_updated": normalize_datetime(
+                str(properties.get("lastUpdated") or "")
+            ),
             "label": str(properties.get("label") or ""),
             "short_description_problem": short_problem,
             "short_description_solution": short_solution,
@@ -328,7 +374,9 @@ def normalize_advisor_rows(
             "learn_more_link": learn_more_link,
             "action_link": action_link,
             "action_caption": action_caption,
-            "description_quality": _description_quality(description, short_problem, feature_name, learn_more_link),
+            "description_quality": _description_quality(
+                description, short_problem, feature_name, learn_more_link
+            ),
             "join_quality": join_quality,
             "diagnostic_flags": ",".join(sorted(set(row_flags))),
             "provenance_json": compact_json(
@@ -352,12 +400,20 @@ def normalize_advisor_rows(
     emitted_catalog_metadata_ids: set[str] = set()
     for metadata in metadata_by_key.values():
         meta_id = str(metadata.get("id") or "")
-        if not meta_id or meta_id in used_metadata_keys or meta_id in emitted_catalog_metadata_ids:
+        if (
+            not meta_id
+            or meta_id in used_metadata_keys
+            or meta_id in emitted_catalog_metadata_ids
+        ):
             continue
         emitted_catalog_metadata_ids.add(meta_id)
 
         source_properties = metadata.get("properties", {}).get("sourceProperties", {})
-        service_retirement = source_properties.get("serviceRetirement", {}) if isinstance(source_properties, dict) else {}
+        service_retirement = (
+            source_properties.get("serviceRetirement", {})
+            if isinstance(source_properties, dict)
+            else {}
+        )
         recommendation_type_id = str(service_retirement.get("serviceId") or meta_id)
         retirement_raw = str(service_retirement.get("retirementDate") or "")
         retirement_date = parse_possible_date(retirement_raw)
@@ -373,12 +429,23 @@ def normalize_advisor_rows(
                 "recommendation_type_id": recommendation_type_id,
                 "advisor_recommendation_id": "",
                 "advisor_metadata_id": meta_id,
-                "service_name": str(metadata.get("properties", {}).get("resourceMetadata", {}).get("singular") or ""),
-                "retiring_feature": str(service_retirement.get("retirementFeatureName") or ""),
-                "retirement_date": retirement_date.isoformat() if retirement_date else "",
+                "service_name": str(
+                    metadata.get("properties", {})
+                    .get("resourceMetadata", {})
+                    .get("singular")
+                    or ""
+                ),
+                "retiring_feature": str(
+                    service_retirement.get("retirementFeatureName") or ""
+                ),
+                "retirement_date": retirement_date.isoformat()
+                if retirement_date
+                else "",
                 "days_to_retirement": "",
                 "months_to_retirement": "",
-                "retirement_date_quality": "exact" if retirement_date else ("missing" if not retirement_raw else "unparseable"),
+                "retirement_date_quality": "exact"
+                if retirement_date
+                else ("missing" if not retirement_raw else "unparseable"),
                 "subscription_id": "",
                 "subscription_name": "",
                 "resource_id": "",
@@ -400,7 +467,9 @@ def normalize_advisor_rows(
                 "short_description_solution": "",
                 "description": "",
                 "potential_benefits": "",
-                "learn_more_link": str(metadata.get("properties", {}).get("learnMoreLink") or ""),
+                "learn_more_link": str(
+                    metadata.get("properties", {}).get("learnMoreLink") or ""
+                ),
                 "action_link": "",
                 "action_caption": "",
                 "description_quality": _description_quality(
@@ -411,7 +480,9 @@ def normalize_advisor_rows(
                 ),
                 "join_quality": "catalog_only",
                 "diagnostic_flags": "catalog_only_without_subscription",
-                "provenance_json": compact_json({"metadata_source": "advisor_metadata"}),
+                "provenance_json": compact_json(
+                    {"metadata_source": "advisor_metadata"}
+                ),
                 "raw_json": compact_json({"metadata": metadata}),
             }
         )
@@ -419,7 +490,9 @@ def normalize_advisor_rows(
     return rows
 
 
-def _service_description_quality(description: str, summary: str, sensitive: bool) -> str:
+def _service_description_quality(
+    description: str, summary: str, sensitive: bool
+) -> str:
     if sensitive and not description:
         return "sensitive_blocked"
     if description:
@@ -459,11 +532,15 @@ def normalize_service_health_rows(
         title = str(properties.get("title") or properties.get("header") or "")
         summary = str(properties.get("summary") or "")
         article = properties.get("article", {})
-        description = str(article.get("articleContent") or properties.get("description") or "")
+        description = str(
+            article.get("articleContent") or properties.get("description") or ""
+        )
         actions_text = build_recommended_actions(event)
 
         impact_start = normalize_datetime(str(properties.get("impactStartTime") or ""))
-        impact_mitigation = normalize_datetime(str(properties.get("impactMitigationTime") or ""))
+        impact_mitigation = normalize_datetime(
+            str(properties.get("impactMitigationTime") or "")
+        )
         last_update = normalize_datetime(str(properties.get("lastUpdateTime") or ""))
 
         is_sensitive = bool(properties.get("isSensitive") or False)
@@ -513,7 +590,9 @@ def normalize_service_health_rows(
                 "run_id": run_id,
                 "as_of_date": as_of_date.isoformat(),
                 "scope_mode": scope_mode,
-                "record_type": "service_health_event_region" if region else "service_health_event_subscription",
+                "record_type": "service_health_event_region"
+                if region
+                else "service_health_event_subscription",
                 "source_system": "resource_health_events",
                 "source_id": source_id,
                 "event_id": event_id,
@@ -544,9 +623,13 @@ def normalize_service_health_rows(
                 "resource_type": "",
                 "is_sensitive": "true" if is_sensitive else "false",
                 "details_fetch_status": details_fetch_status,
-                "description_quality": _service_description_quality(description, summary, is_sensitive),
+                "description_quality": _service_description_quality(
+                    description, summary, is_sensitive
+                ),
                 "diagnostic_flags": ",".join(sorted(set(flags))),
-                "provenance_json": compact_json({"event_source": "resource_health_events"}),
+                "provenance_json": compact_json(
+                    {"event_source": "resource_health_events"}
+                ),
             }
             rows.append(row)
 

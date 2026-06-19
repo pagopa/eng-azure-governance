@@ -4,8 +4,8 @@ from src.comitato.comitato_azure_retirements.libs.arm_client import ArmPageResul
 from src.comitato.comitato_azure_retirements.libs.service_health import (
     build_recommended_actions,
     collect_events_for_subscriptions,
-    event_impacted_service_regions,
     event_impacted_regions,
+    event_impacted_service_regions,
     event_impacted_services,
     filter_health_advisory_events,
 )
@@ -47,14 +47,17 @@ def test_collect_events_for_subscriptions_emits_progress_updates() -> None:
         client,
         subscriptions=["sub-1", "sub-2"],
         query_start_time="2025-01-01T00:00:00",
-        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
-            (subscription, completed, total, status, error)
+        on_subscription_update=lambda subscription, completed, total, status, error: (
+            updates.append((subscription, completed, total, status, error))
         ),
     )
 
     assert len(updates) == 2
     assert {subscription for subscription, *_ in updates} == {"sub-1", "sub-2"}
-    assert sorted((completed, total, status, error) for _, completed, total, status, error in updates) == [
+    assert sorted(
+        (completed, total, status, error)
+        for _, completed, total, status, error in updates
+    ) == [
         (1, 2, "ok", None),
         (2, 2, "ok", None),
     ]
@@ -69,7 +72,9 @@ class FailingServiceHealthClient(FakeArmClient):
     ) -> ArmPageResult:
         del params, items_key
         self.calls.append((url, None))
-        if url.endswith("/subscriptions/sub-2/providers/Microsoft.ResourceHealth/events"):
+        if url.endswith(
+            "/subscriptions/sub-2/providers/Microsoft.ResourceHealth/events"
+        ):
             raise RuntimeError("HTTP 502 for sub-2")
         return ArmPageResult(items=[{"name": "event-a"}], page_count=1)
 
@@ -98,13 +103,15 @@ def test_collect_events_for_subscriptions_marks_degraded_failures_as_warning() -
         subscriptions=["sub-1", "sub-2"],
         query_start_time="2025-01-01T00:00:00",
         allow_degraded=True,
-        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
-            (subscription, completed, total, status, error)
+        on_subscription_update=lambda subscription, completed, total, status, error: (
+            updates.append((subscription, completed, total, status, error))
         ),
     )
 
     assert len(updates) == 2
-    status_by_subscription = {subscription: (status, error) for subscription, _, _, status, error in updates}
+    status_by_subscription = {
+        subscription: (status, error) for subscription, _, _, status, error in updates
+    }
     assert status_by_subscription["sub-1"] == ("ok", None)
     assert status_by_subscription["sub-2"] == ("warning", "HTTP 502 for sub-2")
     assert sorted(completed for _, completed, *_ in updates) == [1, 2]
@@ -212,13 +219,50 @@ def test_build_recommended_actions_joins_multiple_entries() -> None:
     assert build_recommended_actions(event) == "Migrate now | Review impact"
 
 
-def test_filter_health_advisory_events_keeps_only_active_warning_or_critical_advisories() -> None:
+def test_filter_health_advisory_events_keeps_only_active_warning_or_critical_advisories() -> (
+    None
+):
     events = [
-        {"name": "keep-warning", "properties": {"eventType": "HealthAdvisory", "level": "Warning", "status": "Active"}},
-        {"name": "keep-critical", "properties": {"eventType": "HealthAdvisory", "level": "Critical", "status": "Active"}},
-        {"name": "drop-info", "properties": {"eventType": "HealthAdvisory", "level": "Informational", "status": "Active"}},
-        {"name": "drop-resolved", "properties": {"eventType": "HealthAdvisory", "level": "Warning", "status": "Resolved"}},
-        {"name": "drop-issue", "properties": {"eventType": "ServiceIssue", "level": "Critical", "status": "Active"}},
+        {
+            "name": "keep-warning",
+            "properties": {
+                "eventType": "HealthAdvisory",
+                "level": "Warning",
+                "status": "Active",
+            },
+        },
+        {
+            "name": "keep-critical",
+            "properties": {
+                "eventType": "HealthAdvisory",
+                "level": "Critical",
+                "status": "Active",
+            },
+        },
+        {
+            "name": "drop-info",
+            "properties": {
+                "eventType": "HealthAdvisory",
+                "level": "Informational",
+                "status": "Active",
+            },
+        },
+        {
+            "name": "drop-resolved",
+            "properties": {
+                "eventType": "HealthAdvisory",
+                "level": "Warning",
+                "status": "Resolved",
+            },
+        },
+        {
+            "name": "drop-issue",
+            "properties": {
+                "eventType": "ServiceIssue",
+                "level": "Critical",
+                "status": "Active",
+            },
+        },
     ]
 
     filtered = filter_health_advisory_events(events)

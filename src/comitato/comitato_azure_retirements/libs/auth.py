@@ -15,7 +15,9 @@ def get_management_token() -> str:
 
     az_cli = shutil.which("az")
     if not az_cli:
-        raise RuntimeError("az CLI is required for live mode unless AZURE_BEARER_TOKEN is provided")
+        raise RuntimeError(
+            "az CLI is required for live mode unless AZURE_BEARER_TOKEN is provided"
+        )
 
     result = subprocess.run(
         [

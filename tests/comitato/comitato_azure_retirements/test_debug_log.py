@@ -10,7 +10,9 @@ def test_debug_logger_writes_jsonl_with_required_fields(tmp_path: Path) -> None:
     log_file = tmp_path / "azure_retirements_debug.log"
     logger = DebugRunLogger(file_path=log_file, run_id="run-1")
 
-    logger.info("collector_start", "Collector started", subscription_id="sub-1", retries=0)
+    logger.info(
+        "collector_start", "Collector started", subscription_id="sub-1", retries=0
+    )
     logger.warning("collector_warning", "Collector warning", error="HTTP 429")
     logger.close()
 

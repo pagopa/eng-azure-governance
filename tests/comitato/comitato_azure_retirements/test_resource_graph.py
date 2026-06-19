@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from src.comitato.comitato_azure_retirements.libs.resource_graph import query_resource_graph
+from src.comitato.comitato_azure_retirements.libs.resource_graph import (
+    query_resource_graph,
+)
 
 
 class FakeArmClient:

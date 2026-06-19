@@ -51,7 +51,10 @@ def test_write_tsv_skips_duplicate_rows(tmp_path: Path) -> None:
 def test_write_jsonl_writes_one_item_per_line(tmp_path: Path) -> None:
     output = tmp_path / "items.jsonl"
     write_jsonl(output, [{"b": 2, "a": 1}, {"c": 3}])
-    assert output.read_text(encoding="utf-8").splitlines() == ['{"a":1,"b":2}', '{"c":3}']
+    assert output.read_text(encoding="utf-8").splitlines() == [
+        '{"a":1,"b":2}',
+        '{"c":3}',
+    ]
 
 
 def test_read_tsv_returns_rows_by_header(tmp_path: Path) -> None:

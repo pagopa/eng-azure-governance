@@ -28,7 +28,9 @@ class FakeArmClient:
 def test_collect_advisor_recommendations_tags_subscription_id() -> None:
     client = FakeArmClient()
 
-    rows, pages, failures = collect_advisor_recommendations(cast(Any, client), ["sub-1", "sub-2"])
+    rows, pages, failures = collect_advisor_recommendations(
+        cast(Any, client), ["sub-1", "sub-2"]
+    )
 
     assert pages == {"sub-1": 2, "sub-2": 2}
     assert [row["_subscriptionId"] for row in rows] == ["sub-1", "sub-2"]
@@ -42,14 +44,17 @@ def test_collect_advisor_recommendations_emits_progress_updates() -> None:
     collect_advisor_recommendations(
         cast(Any, client),
         ["sub-1", "sub-2"],
-        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
-            (subscription, completed, total, status, error)
+        on_subscription_update=lambda subscription, completed, total, status, error: (
+            updates.append((subscription, completed, total, status, error))
         ),
     )
 
     assert len(updates) == 2
     assert {subscription for subscription, *_ in updates} == {"sub-1", "sub-2"}
-    assert sorted((completed, total, status, error) for _, completed, total, status, error in updates) == [
+    assert sorted(
+        (completed, total, status, error)
+        for _, completed, total, status, error in updates
+    ) == [
         (1, 2, "ok", None),
         (2, 2, "ok", None),
     ]
@@ -64,7 +69,9 @@ class FailingAdvisorArmClient(FakeArmClient):
     ) -> ArmPageResult:
         del params, items_key
         self.calls.append((url, None))
-        if url.endswith("/subscriptions/sub-2/providers/Microsoft.Advisor/recommendations"):
+        if url.endswith(
+            "/subscriptions/sub-2/providers/Microsoft.Advisor/recommendations"
+        ):
             raise RuntimeError("HTTP 502 for sub-2")
         return ArmPageResult(items=[{"id": "rec-sub-1"}], page_count=1)
 
@@ -91,13 +98,15 @@ def test_collect_advisor_recommendations_marks_degraded_failures_as_warning() ->
         cast(Any, client),
         ["sub-1", "sub-2"],
         allow_degraded=True,
-        on_subscription_update=lambda subscription, completed, total, status, error: updates.append(
-            (subscription, completed, total, status, error)
+        on_subscription_update=lambda subscription, completed, total, status, error: (
+            updates.append((subscription, completed, total, status, error))
         ),
     )
 
     assert len(updates) == 2
-    status_by_subscription = {subscription: (status, error) for subscription, _, _, status, error in updates}
+    status_by_subscription = {
+        subscription: (status, error) for subscription, _, _, status, error in updates
+    }
     assert status_by_subscription["sub-1"] == ("ok", None)
     assert status_by_subscription["sub-2"] == ("warning", "HTTP 502 for sub-2")
     assert sorted(completed for _, completed, *_ in updates) == [1, 2]
@@ -132,5 +141,8 @@ def test_index_resource_graph_uses_lowercase_resource_id_key() -> None:
 
     indexed = index_resource_graph(rows)
 
-    key = ("service-1", "/subscriptions/sub-1/resourcegroups/rg/providers/microsoft.compute/virtualmachines/vm1")
+    key = (
+        "service-1",
+        "/subscriptions/sub-1/resourcegroups/rg/providers/microsoft.compute/virtualmachines/vm1",
+    )
     assert indexed[key]["name"] == "vm1"

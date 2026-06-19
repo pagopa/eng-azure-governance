@@ -16,7 +16,9 @@ ADVISOR_API_VERSION = "2025-01-01"
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
-def _resolve_worker_count(total_subscriptions: int, requested_workers: int | None) -> int:
+def _resolve_worker_count(
+    total_subscriptions: int, requested_workers: int | None
+) -> int:
     if total_subscriptions <= 1:
         return 1
     if requested_workers is None:
@@ -83,9 +85,13 @@ def collect_advisor_recommendations(
         )
 
     completed = 0
-    with ThreadPoolExecutor(max_workers=worker_count, thread_name_prefix="advisor-sub") as executor:
+    with ThreadPoolExecutor(
+        max_workers=worker_count, thread_name_prefix="advisor-sub"
+    ) as executor:
         future_to_subscription = {
-            executor.submit(_collect_subscription_recommendations, client, subscription): subscription
+            executor.submit(
+                _collect_subscription_recommendations, client, subscription
+            ): subscription
             for subscription in subscriptions
         }
 
@@ -126,7 +132,9 @@ def collect_advisor_recommendations(
             page_by_subscription[subscription] = page_count
             rows_by_subscription[subscription] = rows
             if on_subscription_update is not None:
-                on_subscription_update(subscription, completed, total_subscriptions, "ok", None)
+                on_subscription_update(
+                    subscription, completed, total_subscriptions, "ok", None
+                )
             if debug_logger is not None:
                 debug_logger.info(
                     "advisor_subscription_completed",
@@ -223,7 +231,9 @@ def index_metadata(metadata_rows: list[dict[str, Any]]) -> dict[str, dict[str, A
     return indexed
 
 
-def index_resource_graph(resource_rows: list[dict[str, Any]]) -> dict[tuple[str, str], dict[str, Any]]:
+def index_resource_graph(
+    resource_rows: list[dict[str, Any]],
+) -> dict[tuple[str, str], dict[str, Any]]:
     indexed: dict[tuple[str, str], dict[str, Any]] = {}
     for row in resource_rows:
         recommendation_type_id = str(row.get("ServiceID") or "").strip()

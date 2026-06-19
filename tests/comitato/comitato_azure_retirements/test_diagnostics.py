@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from src.comitato.comitato_azure_retirements.libs.diagnostics import DiagnosticsCollector, build_manifest
+from src.comitato.comitato_azure_retirements.libs.diagnostics import (
+    DiagnosticsCollector,
+    build_manifest,
+)
 
 
 def test_diagnostics_summary_counts_by_severity() -> None:

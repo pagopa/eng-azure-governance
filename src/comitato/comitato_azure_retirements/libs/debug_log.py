@@ -77,7 +77,9 @@ class DebugRunLogger:
             handler.close()
             self._logger.removeHandler(handler)
 
-    def _emit(self, level: int, *, event: str, message: str, context: dict[str, Any]) -> None:
+    def _emit(
+        self, level: int, *, event: str, message: str, context: dict[str, Any]
+    ) -> None:
         self._logger.log(
             level,
             message,

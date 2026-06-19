@@ -6,7 +6,9 @@ from pathlib import Path
 from rich.console import Console
 
 from src.comitato.comitato_azure_retirements.libs.arm_client import ArmRequestTrace
-from src.comitato.comitato_azure_retirements.libs.runtime_logging import ExecutionReporter
+from src.comitato.comitato_azure_retirements.libs.runtime_logging import (
+    ExecutionReporter,
+)
 
 
 def build_reporter(*, verbose: bool = False) -> tuple[ExecutionReporter, StringIO]:

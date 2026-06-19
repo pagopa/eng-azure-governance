@@ -10,12 +10,18 @@ from urllib.parse import urlparse
 from rich.console import Console
 from rich.markup import escape
 from rich.panel import Panel
-from rich.progress import BarColumn, MofNCompleteColumn, Progress, TaskProgressColumn, TextColumn, TimeElapsedColumn
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    TaskProgressColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 from rich.table import Table
 
 from .arm_client import ArmRequestTrace
 from .debug_log import DebugRunLogger
-
 
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
@@ -52,7 +58,9 @@ class ExecutionReporter:
         summary.add_row("Management Groups", str(len(management_groups)))
         summary.add_row("Raw JSONL", "enabled" if write_raw_jsonl else "disabled")
         summary.add_row("Output", str(output_dir))
-        self._console.print(Panel.fit(summary, title="🚀 Azure Retirements Export", border_style="cyan"))
+        self._console.print(
+            Panel.fit(summary, title="🚀 Azure Retirements Export", border_style="cyan")
+        )
         if self._debug_logger is not None:
             self._debug_logger.info(
                 "run_banner",
@@ -88,9 +96,13 @@ class ExecutionReporter:
             return
         self._console.print(f"  [dim]{escape(label)}:[/] {escape(value)}")
         if self._debug_logger is not None:
-            self._debug_logger.info("detail", "Runtime detail", label=label, value=value)
+            self._debug_logger.info(
+                "detail", "Runtime detail", label=label, value=value
+            )
 
-    def mapping(self, title: str, values: Mapping[str, object], *, always: bool = False) -> None:
+    def mapping(
+        self, title: str, values: Mapping[str, object], *, always: bool = False
+    ) -> None:
         if not values:
             return
         if not always and not self._verbose:
@@ -103,10 +115,14 @@ class ExecutionReporter:
             table.add_row(str(key), str(value))
         self._console.print(table)
         if self._debug_logger is not None:
-            self._debug_logger.info("mapping", "Runtime mapping emitted", title=title, values=values)
+            self._debug_logger.info(
+                "mapping", "Runtime mapping emitted", title=title, values=values
+            )
 
     @contextmanager
-    def subscription_progress(self, title: str, total: int) -> Iterator[SubscriptionProgressCallback]:
+    def subscription_progress(
+        self, title: str, total: int
+    ) -> Iterator[SubscriptionProgressCallback]:
         if total <= 0:
             yield lambda *_args, **_kwargs: None
             return
@@ -134,7 +150,11 @@ class ExecutionReporter:
                 total_units = max(overall_total, 1)
                 completed_units = max(0, min(completed, total_units))
                 percent = int((completed_units / total_units) * 100)
-                short_subscription = subscription_id if len(subscription_id) <= 12 else f"…{subscription_id[-12:]}"
+                short_subscription = (
+                    subscription_id
+                    if len(subscription_id) <= 12
+                    else f"…{subscription_id[-12:]}"
+                )
                 status_icon = {
                     "ok": "✅",
                     "warning": "⚠️",
@@ -144,7 +164,12 @@ class ExecutionReporter:
                     f"{escape(title)} · {status_icon} {escape(status)} · "
                     f"{escape(short_subscription)} · {percent}%"
                 )
-                progress.update(task_id, total=total_units, completed=completed_units, description=description)
+                progress.update(
+                    task_id,
+                    total=total_units,
+                    completed=completed_units,
+                    description=description,
+                )
                 if self._debug_logger is not None:
                     self._debug_logger.info(
                         "subscription_progress",
@@ -165,9 +190,15 @@ class ExecutionReporter:
                     )
 
             yield _update
-            progress.update(task_id, completed=total, description=f"{escape(title)} · ✅ completed · 100%")
+            progress.update(
+                task_id,
+                completed=total,
+                description=f"{escape(title)} · ✅ completed · 100%",
+            )
 
-    def problem_determination_report(self, title: str, rows: list[dict[str, str]]) -> None:
+    def problem_determination_report(
+        self, title: str, rows: list[dict[str, str]]
+    ) -> None:
         if not rows:
             return
 
@@ -266,7 +297,9 @@ class ExecutionReporter:
         diagnostics_table.add_column("Severity")
         diagnostics_table.add_column("Count", justify="right")
         for severity in ("info", "warning", "error"):
-            diagnostics_table.add_row(severity, str(diagnostic_summary.get(severity, 0)))
+            diagnostics_table.add_row(
+                severity, str(diagnostic_summary.get(severity, 0))
+            )
         self._console.print(diagnostics_table)
         if self._debug_logger is not None:
             self._debug_logger.info(
