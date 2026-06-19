@@ -79,6 +79,80 @@ def _append_region(output: list[str], seen: set[str], region: str) -> None:
     output.append(region)
 
 
+def _impact_item_services(impact_item: dict[str, Any]) -> list[dict[str, str]]:
+    output: list[dict[str, str]] = []
+    seen: set[tuple[str, str]] = set()
+
+    services = impact_item.get("impactedService", [])
+    if isinstance(services, list):
+        for service in services:
+            if not isinstance(service, dict):
+                continue
+            _append_service(
+                output,
+                seen,
+                name=str(service.get("serviceName") or service.get("name") or ""),
+                guid=str(service.get("serviceGuid") or service.get("id") or ""),
+            )
+        return output
+
+    if isinstance(services, dict):
+        _append_service(
+            output,
+            seen,
+            name=str(services.get("serviceName") or services.get("name") or ""),
+            guid=str(services.get("serviceGuid") or services.get("id") or ""),
+        )
+        return output
+
+    service_name = str(services or impact_item.get("serviceName") or impact_item.get("name") or "")
+    service_guid = str(impact_item.get("serviceGuid") or impact_item.get("id") or "")
+    if service_name:
+        _append_service(output, seen, name=service_name, guid=service_guid)
+    return output
+
+
+def _impact_item_regions(impact_item: dict[str, Any]) -> list[str]:
+    output: list[str] = []
+    seen: set[str] = set()
+
+    regions = impact_item.get("impactedRegions")
+    if regions is None:
+        regions = impact_item.get("impactedRegion", [])
+
+    if isinstance(regions, list):
+        for region in regions:
+            if isinstance(region, dict):
+                candidate = (
+                    region.get("impactedRegion")
+                    or region.get("regionName")
+                    or region.get("name")
+                    or region.get("location")
+                    or ""
+                )
+                if candidate:
+                    _append_region(output, seen, str(candidate))
+            elif region:
+                _append_region(output, seen, str(region))
+        return output
+
+    if isinstance(regions, dict):
+        candidate = (
+            regions.get("impactedRegion")
+            or regions.get("regionName")
+            or regions.get("name")
+            or regions.get("location")
+            or ""
+        )
+        if candidate:
+            _append_region(output, seen, str(candidate))
+        return output
+
+    if regions:
+        _append_region(output, seen, str(regions))
+    return output
+
+
 def collect_events_for_subscriptions(
     client: ArmClient,
     *,
@@ -211,32 +285,13 @@ def event_impacted_services(event: dict[str, Any]) -> list[dict[str, str]]:
     seen: set[tuple[str, str]] = set()
 
     for impact_item in _impact_items(event):
-        services = impact_item.get("impactedService", [])
-        if isinstance(services, list):
-            for service in services:
-                if not isinstance(service, dict):
-                    continue
-                _append_service(
-                    output,
-                    seen,
-                    name=str(service.get("serviceName") or service.get("name") or ""),
-                    guid=str(service.get("serviceGuid") or service.get("id") or ""),
-                )
-            continue
-
-        if isinstance(services, dict):
+        for service in _impact_item_services(impact_item):
             _append_service(
                 output,
                 seen,
-                name=str(services.get("serviceName") or services.get("name") or ""),
-                guid=str(services.get("serviceGuid") or services.get("id") or ""),
+                name=service.get("name", ""),
+                guid=service.get("guid", ""),
             )
-            continue
-
-        service_name = str(services or impact_item.get("serviceName") or impact_item.get("name") or "")
-        service_guid = str(impact_item.get("serviceGuid") or impact_item.get("id") or "")
-        if service_name:
-            _append_service(output, seen, name=service_name, guid=service_guid)
 
     if output:
         return output
@@ -253,40 +308,8 @@ def event_impacted_regions(event: dict[str, Any]) -> list[str]:
     seen: set[str] = set()
 
     for impact_item in _impact_items(event):
-        regions = impact_item.get("impactedRegions")
-        if regions is None:
-            regions = impact_item.get("impactedRegion", [])
-
-        if isinstance(regions, list):
-            for region in regions:
-                if isinstance(region, dict):
-                    candidate = (
-                        region.get("impactedRegion")
-                        or region.get("regionName")
-                        or region.get("name")
-                        or region.get("location")
-                        or ""
-                    )
-                    if candidate:
-                        _append_region(output, seen, str(candidate))
-                elif region:
-                    _append_region(output, seen, str(region))
-            continue
-
-        if isinstance(regions, dict):
-            candidate = (
-                regions.get("impactedRegion")
-                or regions.get("regionName")
-                or regions.get("name")
-                or regions.get("location")
-                or ""
-            )
-            if candidate:
-                _append_region(output, seen, str(candidate))
-            continue
-
-        if regions:
-            _append_region(output, seen, str(regions))
+        for region in _impact_item_regions(impact_item):
+            _append_region(output, seen, region)
 
     if output:
         return output
@@ -295,6 +318,41 @@ def event_impacted_regions(event: dict[str, Any]) -> list[str]:
     if fallback:
         return [str(fallback)]
     return [""]
+
+
+def event_impacted_service_regions(event: dict[str, Any]) -> list[dict[str, str]]:
+    output: list[dict[str, str]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for impact_item in _impact_items(event):
+        services = _impact_item_services(impact_item)
+        regions = _impact_item_regions(impact_item)
+
+        if not services:
+            services = [{"name": "", "guid": ""}]
+        if not regions:
+            regions = [""]
+
+        for service in services:
+            for region in regions:
+                pair = (service.get("name", ""), service.get("guid", ""), region)
+                if pair in seen:
+                    continue
+                seen.add(pair)
+                output.append({"name": pair[0], "guid": pair[1], "region": pair[2]})
+
+    if output:
+        return output
+
+    for service in event_impacted_services(event):
+        for region in event_impacted_regions(event):
+            pair = (service.get("name", ""), service.get("guid", ""), region)
+            if pair in seen:
+                continue
+            seen.add(pair)
+            output.append({"name": pair[0], "guid": pair[1], "region": pair[2]})
+
+    return output
 
 
 def build_recommended_actions(event: dict[str, Any]) -> str:

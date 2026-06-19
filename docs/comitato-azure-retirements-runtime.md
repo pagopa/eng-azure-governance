@@ -28,6 +28,12 @@ The exporter writes these required TSV files:
 - `src/comitato/comitato_azure_retirements/exports/YYYY/MM/03_azure_retirements_slide.tsv`
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_diagnostics.tsv`
 
+Generated-data policy:
+
+- Files under `src/comitato/comitato_azure_retirements/exports/` are runtime outputs and are ignored by Git.
+- Keep this path untracked; use `--output-root tmp/comitato/...` for local review snapshots.
+- If a tracked fixture is required, sanitize it first and document the reason in the related plan or PR notes.
+
 Compatibility fallback: when aggregate/slide workflows run without raw, the runtime can still reuse legacy raw filenames
 (`azure_advisor_retirements_aggregate.tsv` and `azure_service_health_advisories_aggregate.tsv`) if they are present.
 
@@ -35,6 +41,18 @@ The runtime directory also contains:
 
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_manifest.json`
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/<run_id>_debug.log`
+
+## Service Health Normalization Rules
+
+Service Health rows follow this precedence for `date_for_window`:
+
+1. Explicit retirement or deprecation deadlines parsed from advisory text (title, summary, actions, description).
+2. `impactMitigationTime`.
+3. `impactStartTime`.
+4. `lastUpdateTime`.
+
+Impacted service and region values preserve the source `impact` item pairing. The runtime must not fabricate
+cross-product combinations that do not exist in the source event shape.
 
 ## Parallel Collection
 
@@ -94,4 +112,17 @@ Example commands:
 ```bash
 bash src/comitato/comitato_azure_retirements/run.sh --mode schema-only
 bash src/comitato/comitato_azure_retirements/run.sh --mode live --max-workers 8 --allow-degraded
+```
+
+## Validation Commands
+
+Use these focused checks before closeout:
+
+```bash
+src/comitato/comitato_azure_retirements/.venv/bin/python -m compileall -q src/comitato/comitato_azure_retirements tests/comitato/comitato_azure_retirements
+src/comitato/comitato_azure_retirements/.venv/bin/python -m pytest -q tests/comitato/comitato_azure_retirements
+bash -n src/comitato/comitato_azure_retirements/run.sh
+shellcheck -s bash src/comitato/comitato_azure_retirements/run.sh
+bash src/comitato/comitato_azure_retirements/run.sh --mode schema-only --output-root tmp/comitato/review-schema-only-output
+git diff --check origin/main...HEAD
 ```

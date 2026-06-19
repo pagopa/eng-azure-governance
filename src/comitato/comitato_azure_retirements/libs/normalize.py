@@ -6,6 +6,8 @@ import re
 from datetime import date
 from typing import Any
 
+from dateutil import parser as date_parser
+
 from .dates import (
     days_to_retirement,
     months_to_retirement,
@@ -34,6 +36,11 @@ RESOURCE_TYPE_LABELS = {
     "microsoft.web/sites": "App service",
     "microsoft.apimanagement/service": "API Management",
 }
+
+RETIREMENT_KEYWORD_PATTERN = re.compile(r"retire|deprecat|end of support|sunset", re.IGNORECASE)
+DATE_CANDIDATE_PATTERN = re.compile(
+    r"(\d{4}-\d{2}-\d{2}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}|[A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})"
+)
 
 
 def _extract_resource_name(resource_id: str) -> str:
@@ -99,6 +106,65 @@ def _fallback_service_name(*, resource_type: str, impacted_field: str, resource_
         return _humanize_provider_segment(normalized_resource_type.split("/", 1)[0])
     if normalized_impacted_field:
         return _humanize_provider_segment(normalized_impacted_field.split("/", 1)[0])
+    return ""
+
+
+def _extract_retirement_deadline_from_text(
+    *,
+    title: str,
+    summary: str,
+    description: str,
+    recommended_actions: str,
+) -> str:
+    for text in [title, summary, recommended_actions, description]:
+        if not text or not RETIREMENT_KEYWORD_PATTERN.search(text):
+            continue
+
+        for candidate in DATE_CANDIDATE_PATTERN.findall(text):
+            parsed_candidate = parse_possible_date(candidate)
+            if parsed_candidate:
+                return parsed_candidate.isoformat()
+            try:
+                parsed_any = date_parser.parse(candidate, fuzzy=True)
+            except (TypeError, ValueError, date_parser.ParserError):
+                continue
+            return parsed_any.date().isoformat()
+
+    return ""
+
+
+def _date_from_normalized_datetime(raw: str) -> str:
+    if not raw:
+        return ""
+    return raw[:10]
+
+
+def _service_health_date_for_window(
+    *,
+    title: str,
+    summary: str,
+    description: str,
+    recommended_actions: str,
+    impact_mitigation: str,
+    impact_start: str,
+    last_update: str,
+) -> str:
+    explicit_deadline = _extract_retirement_deadline_from_text(
+        title=title,
+        summary=summary,
+        description=description,
+        recommended_actions=recommended_actions,
+    )
+
+    for candidate in [
+        explicit_deadline,
+        _date_from_normalized_datetime(impact_mitigation),
+        _date_from_normalized_datetime(impact_start),
+        _date_from_normalized_datetime(last_update),
+    ]:
+        if candidate:
+            return candidate
+
     return ""
 
 
@@ -372,6 +438,7 @@ def normalize_service_health_rows(
     subscription_name_map: dict[str, str],
     event_impacted_services,
     event_impacted_regions,
+    event_impacted_service_regions=None,
     build_recommended_actions,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
@@ -399,69 +466,88 @@ def normalize_service_health_rows(
         impact_mitigation = normalize_datetime(str(properties.get("impactMitigationTime") or ""))
         last_update = normalize_datetime(str(properties.get("lastUpdateTime") or ""))
 
-        date_for_window = ""
-        for candidate in [impact_start, last_update]:
-            if candidate:
-                date_for_window = candidate[:10]
-                break
-
         is_sensitive = bool(properties.get("isSensitive") or False)
         details_fetch_status = "not_needed"
         if is_sensitive:
             details_fetch_status = "not_supported"
 
-        services = event_impacted_services(event)
-        regions = event_impacted_regions(event)
+        date_for_window = _service_health_date_for_window(
+            title=title,
+            summary=summary,
+            description=description,
+            recommended_actions=actions_text,
+            impact_mitigation=impact_mitigation,
+            impact_start=impact_start,
+            last_update=last_update,
+        )
 
-        for service in services:
-            for region in regions:
-                flags: list[str] = []
-                if not region:
-                    flags.append("service_health_no_region")
-                if is_sensitive:
-                    flags.append("service_health_sensitive")
-                if not description and not summary:
-                    flags.append("missing_description")
+        service_regions: list[dict[str, str]] = []
+        if event_impacted_service_regions is not None:
+            service_regions = event_impacted_service_regions(event)
 
-                row = {
-                    "run_id": run_id,
-                    "as_of_date": as_of_date.isoformat(),
-                    "scope_mode": scope_mode,
-                    "record_type": "service_health_event_region" if region else "service_health_event_subscription",
-                    "source_system": "resource_health_events",
-                    "source_id": source_id,
-                    "event_id": event_id,
-                    "tracking_id": tracking_id,
-                    "event_type": event_type,
-                    "event_sub_type": event_sub_type,
-                    "event_source": event_source,
-                    "event_level": event_level,
-                    "level": event_level,
-                    "status": status,
-                    "priority": "",
-                    "title": title,
-                    "summary": summary,
-                    "description": description,
-                    "recommended_actions": actions_text,
-                    "impact_start_time": impact_start,
-                    "impact_mitigation_time": impact_mitigation,
-                    "last_update_time": last_update,
-                    "date_for_window": date_for_window,
-                    "impacted_service": service.get("name", ""),
-                    "impacted_service_guid": service.get("guid", ""),
-                    "impacted_region": region,
-                    "subscription_id": subscription_id,
-                    "subscription_name": subscription_name_map.get(subscription_id, ""),
-                    "resource_granularity": "not_available",
-                    "resource_id": "",
-                    "resource_group": "",
-                    "resource_type": "",
-                    "is_sensitive": "true" if is_sensitive else "false",
-                    "details_fetch_status": details_fetch_status,
-                    "description_quality": _service_description_quality(description, summary, is_sensitive),
-                    "diagnostic_flags": ",".join(sorted(set(flags))),
-                    "provenance_json": compact_json({"event_source": "resource_health_events"}),
-                }
-                rows.append(row)
+        if not service_regions:
+            services = event_impacted_services(event)
+            regions = event_impacted_regions(event)
+            for service in services:
+                for region in regions:
+                    service_regions.append(
+                        {
+                            "name": str(service.get("name") or ""),
+                            "guid": str(service.get("guid") or ""),
+                            "region": str(region or ""),
+                        }
+                    )
+
+        for service_region in service_regions:
+            region = str(service_region.get("region") or "")
+
+            flags: list[str] = []
+            if not region:
+                flags.append("service_health_no_region")
+            if is_sensitive:
+                flags.append("service_health_sensitive")
+            if not description and not summary:
+                flags.append("missing_description")
+
+            row = {
+                "run_id": run_id,
+                "as_of_date": as_of_date.isoformat(),
+                "scope_mode": scope_mode,
+                "record_type": "service_health_event_region" if region else "service_health_event_subscription",
+                "source_system": "resource_health_events",
+                "source_id": source_id,
+                "event_id": event_id,
+                "tracking_id": tracking_id,
+                "event_type": event_type,
+                "event_sub_type": event_sub_type,
+                "event_source": event_source,
+                "event_level": event_level,
+                "level": event_level,
+                "status": status,
+                "priority": "",
+                "title": title,
+                "summary": summary,
+                "description": description,
+                "recommended_actions": actions_text,
+                "impact_start_time": impact_start,
+                "impact_mitigation_time": impact_mitigation,
+                "last_update_time": last_update,
+                "date_for_window": date_for_window,
+                "impacted_service": str(service_region.get("name") or ""),
+                "impacted_service_guid": str(service_region.get("guid") or ""),
+                "impacted_region": region,
+                "subscription_id": subscription_id,
+                "subscription_name": subscription_name_map.get(subscription_id, ""),
+                "resource_granularity": "not_available",
+                "resource_id": "",
+                "resource_group": "",
+                "resource_type": "",
+                "is_sensitive": "true" if is_sensitive else "false",
+                "details_fetch_status": details_fetch_status,
+                "description_quality": _service_description_quality(description, summary, is_sensitive),
+                "diagnostic_flags": ",".join(sorted(set(flags))),
+                "provenance_json": compact_json({"event_source": "resource_health_events"}),
+            }
+            rows.append(row)
 
     return rows

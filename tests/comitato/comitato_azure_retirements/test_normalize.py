@@ -187,3 +187,107 @@ def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
 
     assert "raw_json" not in SERVICE_HEALTH_HEADERS
     assert all("raw_json" not in row for row in rows)
+
+
+def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dates() -> None:
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-1",
+        "name": "event-1",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "title": "AKS Ubuntu 22.04 node image will be retired on 30 June 2027",
+            "summary": "Plan your migration before retirement.",
+            "description": "Impact starts in 2026 but the retirement deadline remains in 2027.",
+            "impactStartTime": "2026-10-01T00:00:00Z",
+            "impactMitigationTime": "2027-05-15T00:00:00Z",
+            "lastUpdateTime": "2026-06-18T12:00:00Z",
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
+        event_impacted_regions=lambda _event: ["westeurope"],
+        build_recommended_actions=lambda _event: "Upgrade the node image.",
+    )
+
+    assert rows[0]["date_for_window"] == "2027-06-30"
+
+
+def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start() -> None:
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-2",
+        "name": "event-2",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "title": "Retirement notice",
+            "summary": "Migration details will follow.",
+            "description": "No explicit retirement date is available yet.",
+            "impactStartTime": "2026-09-01T00:00:00Z",
+            "impactMitigationTime": "2027-01-15T00:00:00Z",
+            "lastUpdateTime": "2026-06-18T12:00:00Z",
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
+        event_impacted_regions=lambda _event: ["westeurope"],
+        build_recommended_actions=lambda _event: "Track migration guidance.",
+    )
+
+    assert rows[0]["date_for_window"] == "2027-01-15"
+
+
+def test_normalize_service_health_rows_preserves_service_region_pairs_from_callback() -> None:
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-3",
+        "name": "event-3",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "title": "Regional advisory",
+            "summary": "Pairing should be preserved.",
+            "description": "Do not generate cross-product rows.",
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_services=lambda _event: [
+            {"name": "Azure Front Door", "guid": ""},
+            {"name": "Azure CDN", "guid": ""},
+        ],
+        event_impacted_regions=lambda _event: ["Global", "eastus"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Azure Front Door", "guid": "", "region": "Global"},
+            {"name": "Azure CDN", "guid": "", "region": "eastus"},
+        ],
+        build_recommended_actions=lambda _event: "Review impact.",
+    )
+
+    assert len(rows) == 2
+    assert {(row["impacted_service"], row["impacted_region"]) for row in rows} == {
+        ("Azure Front Door", "Global"),
+        ("Azure CDN", "eastus"),
+    }

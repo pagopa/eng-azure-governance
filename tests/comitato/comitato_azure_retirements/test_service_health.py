@@ -4,6 +4,7 @@ from src.comitato.comitato_azure_retirements.libs.arm_client import ArmPageResul
 from src.comitato.comitato_azure_retirements.libs.service_health import (
     build_recommended_actions,
     collect_events_for_subscriptions,
+    event_impacted_service_regions,
     event_impacted_regions,
     event_impacted_services,
     filter_health_advisory_events,
@@ -169,6 +170,28 @@ def test_event_impacted_regions_supports_live_impact_list_shape() -> None:
     }
 
     assert event_impacted_regions(event) == ["Global", "eastus"]
+
+
+def test_event_impacted_service_regions_preserves_live_pairs() -> None:
+    event = {
+        "properties": {
+            "impact": [
+                {
+                    "impactedService": "Azure Front Door",
+                    "impactedRegions": [{"impactedRegion": "Global"}],
+                },
+                {
+                    "impactedService": "Azure CDN",
+                    "impactedRegions": [{"impactedRegion": "eastus"}],
+                },
+            ]
+        }
+    }
+
+    assert event_impacted_service_regions(event) == [
+        {"name": "Azure Front Door", "guid": "", "region": "Global"},
+        {"name": "Azure CDN", "guid": "", "region": "eastus"},
+    ]
 
 
 def test_event_impacted_regions_falls_back_to_location() -> None:

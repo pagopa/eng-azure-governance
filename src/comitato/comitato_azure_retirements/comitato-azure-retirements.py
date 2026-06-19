@@ -29,6 +29,7 @@ from libs.service_health import (
     RESOURCE_HEALTH_API_VERSION,
     build_recommended_actions,
     collect_events_for_subscriptions,
+    event_impacted_service_regions,
     event_impacted_regions,
     event_impacted_services,
     filter_health_advisory_events,
@@ -288,6 +289,7 @@ def _fixture_mode(
         subscription_name_map=subscription_name_map,
         event_impacted_services=event_impacted_services,
         event_impacted_regions=event_impacted_regions,
+        event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
     )
 
@@ -463,6 +465,7 @@ def _live_mode(
         subscription_name_map=subscription_name_map,
         event_impacted_services=event_impacted_services,
         event_impacted_regions=event_impacted_regions,
+        event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
     )
 
