@@ -1,0 +1,97 @@
+name: 20 🔬 code-analysis
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code-analysis:
+    name: code-analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PIP_NO_PYTHON_VERSION_WARNING: "1"
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 https://github.com/actions/checkout/releases/tag/v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: 🧭 Prepare ephemeral virtualenv paths
+        run: |
+          code_analysis_root="${RUNNER_TEMP}/repo-code-analysis"
+          {
+            echo "TEST_VENV=${code_analysis_root}/tests"
+          } >> "${GITHUB_ENV}"
+
+      - name: 🐍 Set up Python from .python-version
+        # actions/setup-python@v6.2.0
+        # https://github.com/actions/setup-python/releases/tag/v6.2.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: |
+            .python-version
+            .github/scripts/requirements.txt
+            tools/analyze_copilot_debug_log/requirements.txt
+
+      - name: 🔎 Show Python version
+        run: |
+          python --version
+          python -m pip --version
+
+      - name: 📦 Validate scripts requirements
+        run: |
+          rm -rf "${TEST_VENV}"
+          python -m venv "${TEST_VENV}"
+          "${TEST_VENV}/bin/python" -m pip install --upgrade pip
+          "${TEST_VENV}/bin/pip" install --require-hashes -r ".github/scripts/requirements.txt"
+          "${TEST_VENV}/bin/python" -m pip check
+
+      - name: 🔥 Smoke test Python entry points
+        run: |
+          bash tools/analyze_copilot_debug_log/run.sh prompt-exports --help
+          bash tools/analyze_copilot_debug_log/run.sh debug-logs --help
+          ./.github/scripts/run.sh analyze_copilot_debug_log --help
+          ./.github/scripts/run.sh benchmark_skill_tokens --help
+          "${TEST_VENV}/bin/python" ".github/scripts/build_inventory.py" --help
+          "${TEST_VENV}/bin/python" ".github/scripts/check_catalog_consistency.py" --help
+          "${TEST_VENV}/bin/python" ".github/scripts/audit_copilot_catalog.py" --help
+          "${TEST_VENV}/bin/python" ".github/scripts/detect_token_risks.py" --help
+          "${TEST_VENV}/bin/python" ".github/scripts/validate_internal_skills.py" --help
+          "${TEST_VENV}/bin/python" ".github/scripts/sync_copilot_catalog.py" --help
+          "${TEST_VENV}/bin/python" ".github/scripts/github_catalog_validation.py" --help
+
+      - name: 🔥 Smoke test Bash entry points
+        run: |
+          ./.github/scripts/run.sh --help || true
+          bash -n .github/scripts/run.sh
+          bash -n tools/analyze_copilot_debug_log/run.sh
+          bash -n .github/scripts/build_inventory.sh
+          bash -n .github/scripts/check_catalog_consistency.sh
+          bash -n .github/scripts/audit_copilot_catalog.sh
+          bash -n .github/scripts/detect_token_risks.sh
+          bash -n .github/scripts/sync_copilot_catalog.sh
+          bash -n .github/scripts/sync_home_ai_resources.sh
+          bash -n .github/scripts/github_catalog_validation.sh
+          bash -n .github/skills/local-agent-sync-install-ai-resources/scripts/run.sh
+
+      - name: ✅ Run pytest
+        run: |
+          "${TEST_VENV}/bin/python" -m pytest tests -q
