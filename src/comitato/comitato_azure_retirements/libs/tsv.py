@@ -4,8 +4,22 @@ from __future__ import annotations
 
 import csv
 import json
+import sys
 from pathlib import Path
 from typing import Any
+
+
+def _configure_csv_field_size_limit() -> None:
+    limit = sys.maxsize
+    while True:
+        try:
+            csv.field_size_limit(limit)
+            return
+        except OverflowError:
+            limit //= 10
+
+
+_configure_csv_field_size_limit()
 
 
 def compact_json(value: Any) -> str:

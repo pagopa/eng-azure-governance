@@ -37,6 +37,8 @@ from libs.subscriptions import build_subscription_name_map, resolve_scope_subscr
 from libs.tsv import compact_json, read_tsv, unique_tsv_rows, write_json, write_jsonl, write_tsv
 from libs.workflow_exports import (
     AGGREGATE_FILENAME,
+    LEGACY_RAW_ADVISOR_FILENAME,
+    LEGACY_RAW_SERVICE_HEALTH_FILENAME,
     RAW_ADVISOR_FILENAME,
     RAW_SERVICE_HEALTH_FILENAME,
     SLIDE_FILENAME,
@@ -177,6 +179,48 @@ def _add_live_empty_output_diagnostics(
             expected_count=service_source_count,
         )
         reporter.warning("Service Health aggregate produced zero rows")
+
+
+def _enforce_mandatory_raw_rows(
+    *,
+    diagnostics: DiagnosticsCollector,
+    reporter: ExecutionReporter,
+    advisor_rows: list[dict[str, str]],
+    service_rows: list[dict[str, str]],
+) -> None:
+    missing_files: list[str] = []
+    if not advisor_rows:
+        missing_files.append(ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME)
+        diagnostics.add(
+            severity="error",
+            check_id="mandatory_advisor_raw_empty",
+            source_system="advisor_joined",
+            scope="global",
+            message="Advisor raw output is empty but mandatory",
+            action_required="Collect live or fixture raw data before running aggregate/slide workflows",
+        )
+
+    if not service_rows:
+        missing_files.append(SERVICE_HEALTH_ADVISORIES_RAW_FILENAME)
+        diagnostics.add(
+            severity="error",
+            check_id="mandatory_service_health_raw_empty",
+            source_system="resource_health_events",
+            scope="global",
+            message="Service Health raw output is empty but mandatory",
+            action_required="Collect live or fixture raw data before running aggregate/slide workflows",
+        )
+
+    if not missing_files:
+        return
+
+    reporter.error(
+        "Mandatory raw outputs are empty: "
+        + ", ".join(missing_files)
+    )
+    raise RuntimeError(
+        "Mandatory raw workflow outputs are empty; rerun in live/fixture mode with valid scope and permissions"
+    )
 
 
 def _load_fixture(path: Path) -> list[dict[str, Any]]:
@@ -557,12 +601,40 @@ def _require_stage_input(path: Path, *, stage_name: str) -> None:
     )
 
 
+def _resolve_optional_legacy_input(primary_path: Path, *, legacy_filename: str) -> Path:
+    if primary_path.exists():
+        return primary_path
+    legacy_path = primary_path.parent / legacy_filename
+    if legacy_path.exists():
+        return legacy_path
+    return primary_path
+
+
+def _require_non_empty_stage_input(rows: list[dict[str, str]], *, stage_name: str, path: Path) -> None:
+    if rows:
+        return
+    raise RuntimeError(
+        f"{stage_name} workflow requires non-empty input file '{path.name}' in '{path.parent}'. "
+        "Run workflow raw in live or fixture mode before aggregate/slide."
+    )
+
+
 def _load_raw_stage_inputs(output_dir: Path) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
-    advisor_path = output_dir / ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME
-    service_health_path = output_dir / SERVICE_HEALTH_ADVISORIES_RAW_FILENAME
+    advisor_path = _resolve_optional_legacy_input(
+        output_dir / ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME,
+        legacy_filename=LEGACY_RAW_ADVISOR_FILENAME,
+    )
+    service_health_path = _resolve_optional_legacy_input(
+        output_dir / SERVICE_HEALTH_ADVISORIES_RAW_FILENAME,
+        legacy_filename=LEGACY_RAW_SERVICE_HEALTH_FILENAME,
+    )
     _require_stage_input(advisor_path, stage_name="aggregate")
     _require_stage_input(service_health_path, stage_name="aggregate")
-    return read_tsv(advisor_path), read_tsv(service_health_path)
+    advisor_rows = read_tsv(advisor_path)
+    service_rows = read_tsv(service_health_path)
+    _require_non_empty_stage_input(advisor_rows, stage_name="aggregate", path=advisor_path)
+    _require_non_empty_stage_input(service_rows, stage_name="aggregate", path=service_health_path)
+    return advisor_rows, service_rows
 
 
 def _load_aggregate_stage_input(output_dir: Path) -> list[dict[str, str]]:
@@ -688,6 +760,12 @@ def main() -> int:
 
             advisor_rows = unique_tsv_rows(ADVISOR_HEADERS, advisor_rows)
             service_rows = unique_tsv_rows(SERVICE_HEALTH_HEADERS, service_rows)
+            _enforce_mandatory_raw_rows(
+                diagnostics=diagnostics,
+                reporter=reporter,
+                advisor_rows=advisor_rows,
+                service_rows=service_rows,
+            )
 
             reporter.section("📝", "Raw Stage", "Persist source Advisor and Service Health TSV artifacts")
             advisor_report_path = output_dir / ADVISOR_SERVICE_RETIREMENTS_RAW_FILENAME

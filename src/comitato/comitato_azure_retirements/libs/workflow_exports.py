@@ -16,8 +16,10 @@ from .dates import parse_possible_date
 from .tsv import compact_json
 
 
-RAW_ADVISOR_FILENAME = "azure_advisor_retirements_aggregate.tsv"
-RAW_SERVICE_HEALTH_FILENAME = "azure_service_health_advisories_aggregate.tsv"
+RAW_ADVISOR_FILENAME = "01_azure_advisor_retirements_raw.tsv"
+RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
+LEGACY_RAW_ADVISOR_FILENAME = "azure_advisor_retirements_aggregate.tsv"
+LEGACY_RAW_SERVICE_HEALTH_FILENAME = "azure_service_health_advisories_aggregate.tsv"
 AGGREGATE_FILENAME = "02_azure_retirements_aggregate.tsv"
 SLIDE_FILENAME = "03_azure_retirements_slide.tsv"
 UNKNOWN_PLATFORM = "Unknown Platform"
