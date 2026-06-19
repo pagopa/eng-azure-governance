@@ -9,14 +9,48 @@ from .arm_client import ArmClient
 RESOURCE_HEALTH_API_VERSION = "2025-05-01"
 
 
+def _impact_items(event: dict[str, Any]) -> list[dict[str, Any]]:
+    properties = event.get("properties", {})
+    impact = properties.get("impact", {})
+
+    if isinstance(impact, dict):
+        return [impact]
+    if isinstance(impact, list):
+        return [item for item in impact if isinstance(item, dict)]
+    return []
+
+
+def _append_service(
+    output: list[dict[str, str]],
+    seen: set[tuple[str, str]],
+    *,
+    name: str,
+    guid: str,
+) -> None:
+    candidate = (name, guid)
+    if candidate in seen:
+        return
+    seen.add(candidate)
+    output.append({"name": name, "guid": guid})
+
+
+def _append_region(output: list[str], seen: set[str], region: str) -> None:
+    if region in seen:
+        return
+    seen.add(region)
+    output.append(region)
+
+
 def collect_events_for_subscriptions(
     client: ArmClient,
     *,
     subscriptions: list[str],
     query_start_time: str,
-) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    allow_degraded: bool = False,
+) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     rows: list[dict[str, Any]] = []
     page_by_subscription: dict[str, int] = {}
+    failures: list[dict[str, str]] = []
 
     for subscription in subscriptions:
         url = (
@@ -27,31 +61,78 @@ def collect_events_for_subscriptions(
             "api-version": RESOURCE_HEALTH_API_VERSION,
             "queryStartTime": query_start_time,
         }
-        page = client.list_with_nextlink(url, params=params)
+        try:
+            page = client.list_with_nextlink(url, params=params)
+        except RuntimeError as exc:
+            if not allow_degraded:
+                raise
+            failures.append({"subscription_id": subscription, "error": str(exc)})
+            continue
+
         page_by_subscription[subscription] = page.page_count
         for event in page.items:
             event["_subscriptionId"] = subscription
         rows.extend(page.items)
 
-    return rows, page_by_subscription
+    return rows, page_by_subscription, failures
+
+
+def filter_health_advisory_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    filtered: list[dict[str, Any]] = []
+
+    for event in events:
+        properties = event.get("properties", {})
+        event_type = str(properties.get("eventType") or "").strip().lower()
+        if event_type != "healthadvisory":
+            continue
+
+        event_level = str(properties.get("level") or "").strip().lower()
+        if event_level not in {"warning", "critical"}:
+            continue
+
+        status = str(properties.get("status") or "").strip().lower()
+        if status == "resolved":
+            continue
+
+        filtered.append(event)
+
+    return filtered
 
 
 def event_impacted_services(event: dict[str, Any]) -> list[dict[str, str]]:
     properties = event.get("properties", {})
-    impact = properties.get("impact", {})
-    services = impact.get("impactedService", [])
 
     output: list[dict[str, str]] = []
-    if isinstance(services, list):
-        for service in services:
-            if not isinstance(service, dict):
-                continue
-            output.append(
-                {
-                    "name": str(service.get("serviceName") or service.get("name") or ""),
-                    "guid": str(service.get("serviceGuid") or service.get("id") or ""),
-                }
+    seen: set[tuple[str, str]] = set()
+
+    for impact_item in _impact_items(event):
+        services = impact_item.get("impactedService", [])
+        if isinstance(services, list):
+            for service in services:
+                if not isinstance(service, dict):
+                    continue
+                _append_service(
+                    output,
+                    seen,
+                    name=str(service.get("serviceName") or service.get("name") or ""),
+                    guid=str(service.get("serviceGuid") or service.get("id") or ""),
+                )
+            continue
+
+        if isinstance(services, dict):
+            _append_service(
+                output,
+                seen,
+                name=str(services.get("serviceName") or services.get("name") or ""),
+                guid=str(services.get("serviceGuid") or services.get("id") or ""),
             )
+            continue
+
+        service_name = str(services or impact_item.get("serviceName") or impact_item.get("name") or "")
+        service_guid = str(impact_item.get("serviceGuid") or impact_item.get("id") or "")
+        if service_name:
+            _append_service(output, seen, name=service_name, guid=service_guid)
+
     if output:
         return output
 
@@ -63,18 +144,44 @@ def event_impacted_services(event: dict[str, Any]) -> list[dict[str, str]]:
 
 def event_impacted_regions(event: dict[str, Any]) -> list[str]:
     properties = event.get("properties", {})
-    impact = properties.get("impact", {})
-
-    regions = impact.get("impactedRegion", [])
     output: list[str] = []
-    if isinstance(regions, list):
-        for region in regions:
-            if isinstance(region, dict):
-                candidate = region.get("regionName") or region.get("name") or ""
-                if candidate:
-                    output.append(str(candidate))
-            elif region:
-                output.append(str(region))
+    seen: set[str] = set()
+
+    for impact_item in _impact_items(event):
+        regions = impact_item.get("impactedRegions")
+        if regions is None:
+            regions = impact_item.get("impactedRegion", [])
+
+        if isinstance(regions, list):
+            for region in regions:
+                if isinstance(region, dict):
+                    candidate = (
+                        region.get("impactedRegion")
+                        or region.get("regionName")
+                        or region.get("name")
+                        or region.get("location")
+                        or ""
+                    )
+                    if candidate:
+                        _append_region(output, seen, str(candidate))
+                elif region:
+                    _append_region(output, seen, str(region))
+            continue
+
+        if isinstance(regions, dict):
+            candidate = (
+                regions.get("impactedRegion")
+                or regions.get("regionName")
+                or regions.get("name")
+                or regions.get("location")
+                or ""
+            )
+            if candidate:
+                _append_region(output, seen, str(candidate))
+            continue
+
+        if regions:
+            _append_region(output, seen, str(regions))
 
     if output:
         return output

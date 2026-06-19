@@ -22,10 +22,14 @@ def collect_advisor_metadata(client: ArmClient) -> tuple[list[dict[str, Any]], i
 
 
 def collect_advisor_recommendations(
-    client: ArmClient, subscriptions: list[str]
-) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    client: ArmClient,
+    subscriptions: list[str],
+    *,
+    allow_degraded: bool = False,
+) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     all_rows: list[dict[str, Any]] = []
     page_by_subscription: dict[str, int] = {}
+    failures: list[dict[str, str]] = []
 
     for subscription in subscriptions:
         url = (
@@ -36,13 +40,20 @@ def collect_advisor_recommendations(
             "api-version": ADVISOR_API_VERSION,
             "$filter": "SubCategory eq 'ServiceUpgradeAndRetirement'",
         }
-        page = client.list_with_nextlink(url, params=params)
+        try:
+            page = client.list_with_nextlink(url, params=params)
+        except RuntimeError as exc:
+            if not allow_degraded:
+                raise
+            failures.append({"subscription_id": subscription, "error": str(exc)})
+            continue
+
         page_by_subscription[subscription] = page.page_count
         for item in page.items:
             item["_subscriptionId"] = subscription
         all_rows.extend(page.items)
 
-    return all_rows, page_by_subscription
+    return all_rows, page_by_subscription, failures
 
 
 def collect_advisor_resource_graph(

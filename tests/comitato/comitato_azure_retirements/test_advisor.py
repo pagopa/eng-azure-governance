@@ -28,10 +28,39 @@ class FakeArmClient:
 def test_collect_advisor_recommendations_tags_subscription_id() -> None:
     client = FakeArmClient()
 
-    rows, pages = collect_advisor_recommendations(cast(Any, client), ["sub-1", "sub-2"])
+    rows, pages, failures = collect_advisor_recommendations(cast(Any, client), ["sub-1", "sub-2"])
 
     assert pages == {"sub-1": 2, "sub-2": 2}
     assert [row["_subscriptionId"] for row in rows] == ["sub-1", "sub-2"]
+    assert failures == []
+
+
+class FailingAdvisorArmClient(FakeArmClient):
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del params, items_key
+        self.calls.append((url, None))
+        if url.endswith("/subscriptions/sub-2/providers/Microsoft.Advisor/recommendations"):
+            raise RuntimeError("HTTP 502 for sub-2")
+        return ArmPageResult(items=[{"id": "rec-sub-1"}], page_count=1)
+
+
+def test_collect_advisor_recommendations_records_failures_in_degraded_mode() -> None:
+    client = FailingAdvisorArmClient()
+
+    rows, pages, failures = collect_advisor_recommendations(
+        cast(Any, client),
+        ["sub-1", "sub-2"],
+        allow_degraded=True,
+    )
+
+    assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
+    assert pages == {"sub-1": 1}
+    assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
 
 
 def test_index_metadata_maps_id_and_service_id_keys() -> None:

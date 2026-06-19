@@ -46,3 +46,25 @@ def test_query_resource_graph_paginates_and_tracks_truncation() -> None:
 
     second_payload = client.calls[1][1]
     assert second_payload["options"] == {"$top": 25, "$skipToken": "next-token"}
+
+
+def test_query_resource_graph_treats_false_string_as_not_truncated() -> None:
+    client = FakeArmClient(
+        [
+            {
+                "data": [{"id": "row-1"}],
+                "resultTruncated": "false",
+            }
+        ]
+    )
+
+    rows, truncated, page_count = query_resource_graph(
+        client,
+        query="resources | limit 5",
+        subscriptions=["sub-1"],
+        management_groups=[],
+    )
+
+    assert [row["id"] for row in rows] == ["row-1"]
+    assert truncated is False
+    assert page_count == 1

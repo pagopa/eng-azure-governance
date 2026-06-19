@@ -87,7 +87,6 @@ SERVICE_HEALTH_HEADERS = [
     "description_quality",
     "diagnostic_flags",
     "provenance_json",
-    "raw_json",
 ]
 
 DIAGNOSTICS_HEADERS = [

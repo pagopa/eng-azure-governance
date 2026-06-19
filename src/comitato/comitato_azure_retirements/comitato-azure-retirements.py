@@ -30,13 +30,19 @@ from libs.service_health import (
     collect_events_for_subscriptions,
     event_impacted_regions,
     event_impacted_services,
+    filter_health_advisory_events,
 )
 from libs.subscriptions import build_subscription_name_map, resolve_scope_subscriptions
-from libs.tsv import compact_json, write_json, write_jsonl, write_tsv
+from libs.tsv import compact_json, unique_tsv_rows, write_json, write_jsonl, write_tsv
 
 
 def _build_output_dir(root: Path, as_of_date) -> Path:
     return root / as_of_date.strftime("%Y") / as_of_date.strftime("%m")
+
+
+def _build_runtime_dir(as_of_date) -> Path:
+    repo_root = Path(__file__).resolve().parents[3]
+    return repo_root / "tmp" / "comitato" / "comitato_azure_retirements" / "run" / as_of_date.strftime("%Y") / as_of_date.strftime("%m")
 
 
 def _scope_mode(cfg: RuntimeConfig) -> str:
@@ -47,6 +53,15 @@ def _scope_mode(cfg: RuntimeConfig) -> str:
     if cfg.subscriptions:
         return "subscriptions"
     return "management_groups"
+
+
+def _diagnostic_summary(rows: list[dict[str, str]]) -> dict[str, int]:
+    summary = {"info": 0, "warning": 0, "error": 0}
+    for row in rows:
+        severity = row.get("severity", "")
+        if severity in summary:
+            summary[severity] += 1
+    return summary
 
 
 def _empty_rows(headers: list[str]) -> list[dict[str, str]]:
@@ -78,7 +93,6 @@ def _schema_only(
     }
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -167,7 +181,9 @@ def _fixture_mode(
     advisor_metadata = _load_fixture(cfg.fixture_dir / "advisor_metadata.json")
     advisor_recommendations = _load_fixture(cfg.fixture_dir / "advisor_recommendations.json")
     advisor_graph_rows = _load_fixture(cfg.fixture_dir / "advisor_resource_graph.json")
-    service_health_events = _load_fixture(cfg.fixture_dir / "service_health_events.json")
+    service_health_events = filter_health_advisory_events(
+        _load_fixture(cfg.fixture_dir / "service_health_events.json")
+    )
     subscription_rows = _load_fixture(cfg.fixture_dir / "subscriptions.json")
 
     metadata_by_key = index_metadata(advisor_metadata)
@@ -212,7 +228,6 @@ def _fixture_mode(
     }
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -272,17 +287,23 @@ def _live_mode(
         "Fetch Advisor metadata, recommendations, and Resource Graph enrichment",
     )
     advisor_metadata, advisor_metadata_pages = collect_advisor_metadata(client)
-    advisor_recommendations, recommendation_pages = collect_advisor_recommendations(client, subscriptions)
+    advisor_recommendations, recommendation_pages, recommendation_failures = collect_advisor_recommendations(
+        client,
+        subscriptions,
+        allow_degraded=cfg.allow_degraded,
+    )
     advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = collect_advisor_resource_graph(
         client,
         subscriptions=subscriptions,
         management_groups=cfg.management_groups,
     )
-    service_events, service_pages = collect_events_for_subscriptions(
+    service_events, service_pages, service_failures = collect_events_for_subscriptions(
         client,
         subscriptions=subscriptions,
         query_start_time=cfg.health_query_start.isoformat(),
+        allow_degraded=cfg.allow_degraded,
     )
+    service_events = filter_health_advisory_events(service_events)
     reporter.step(f"Advisor metadata rows: {len(advisor_metadata)} across {advisor_metadata_pages} page(s)")
     reporter.step(
         "Advisor recommendation rows: "
@@ -359,6 +380,44 @@ def _live_mode(
         raw_context_json=compact_json(service_pages),
     )
 
+    if recommendation_failures:
+        severity = "warning" if cfg.allow_degraded else "error"
+        diagnostics.add(
+            severity=severity,
+            check_id="advisor_subscription_failures",
+            source_system="advisor_recommendations",
+            scope="global",
+            message="Advisor recommendation collection failed for one or more subscriptions",
+            action_required=(
+                "Proceed in degraded mode and validate missing subscriptions manually"
+                if cfg.allow_degraded
+                else "Rerun with --allow-degraded or remediate the failing subscriptions"
+            ),
+            observed_count=len(recommendation_failures),
+            raw_context_json=compact_json(recommendation_failures),
+        )
+        reporter.warning(
+            f"Advisor recommendation collection failed for {len(recommendation_failures)} subscription(s)"
+        )
+
+    if service_failures:
+        severity = "warning" if cfg.allow_degraded else "error"
+        diagnostics.add(
+            severity=severity,
+            check_id="service_health_subscription_failures",
+            source_system="resource_health_events",
+            scope="global",
+            message="Service Health collection failed for one or more subscriptions",
+            action_required=(
+                "Proceed in degraded mode and validate missing subscriptions manually"
+                if cfg.allow_degraded
+                else "Rerun with --allow-degraded or remediate the failing subscriptions"
+            ),
+            observed_count=len(service_failures),
+            raw_context_json=compact_json(service_failures),
+        )
+        reporter.warning(f"Service Health collection failed for {len(service_failures)} subscription(s)")
+
     if advisor_graph_truncated:
         severity = "warning" if cfg.allow_degraded else "error"
         diagnostics.add(
@@ -390,7 +449,6 @@ def _live_mode(
     )
     counts_by_file = {
         "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-        "azure_service_health_advisories_aggregate.tsv": len(service_rows),
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
@@ -408,7 +466,9 @@ def main() -> int:
     run_id = f"azure-retirements-{uuid.uuid4()}"
     started_at = utc_now()
     output_dir = _build_output_dir(cfg.output_root, cfg.as_of_date)
+    runtime_dir = _build_runtime_dir(cfg.as_of_date)
     output_dir.mkdir(parents=True, exist_ok=True)
+    runtime_dir.mkdir(parents=True, exist_ok=True)
     scope_mode = _scope_mode(cfg)
     reporter = ExecutionReporter(verbose=cfg.verbose)
 
@@ -476,16 +536,17 @@ def main() -> int:
                 reporter=reporter,
             )
 
-        diagnostics_rows = diagnostics.rows()
+        advisor_rows = unique_tsv_rows(ADVISOR_HEADERS, advisor_rows)
+        diagnostics_rows = unique_tsv_rows(DIAGNOSTICS_HEADERS, diagnostics.rows())
+        diagnostic_summary = _diagnostic_summary(diagnostics_rows)
+        counts_by_file["azure_advisor_retirements_aggregate.tsv"] = len(advisor_rows)
         counts_by_file["azure_retirements_run_diagnostics.tsv"] = len(diagnostics_rows)
 
         reporter.section("📝", "Artifact Writing", "Persist normalized TSV, JSONL, and manifest outputs")
         write_tsv(output_dir / "azure_advisor_retirements_aggregate.tsv", ADVISOR_HEADERS, advisor_rows)
         reporter.step("Wrote advisor aggregate TSV")
-        write_tsv(output_dir / "azure_service_health_advisories_aggregate.tsv", SERVICE_HEALTH_HEADERS, service_rows)
-        reporter.step("Wrote Service Health aggregate TSV")
-        write_tsv(output_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics_rows)
-        reporter.step("Wrote diagnostics TSV")
+        write_tsv(runtime_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics_rows)
+        reporter.step(f"Wrote diagnostics TSV to {runtime_dir}")
 
         if cfg.write_raw_jsonl:
             write_jsonl(output_dir / "azure_advisor_retirements_raw.jsonl", advisor_raw_items)
@@ -515,21 +576,17 @@ def main() -> int:
                 "azure_retirements_run_diagnostics.tsv": len(diagnostics_rows),
             },
             counts_by_source=counts_by_source,
-            diagnostic_summary=diagnostics.summary(),
+            diagnostic_summary=diagnostic_summary,
             degraded_mode=any(row["severity"] == "error" for row in diagnostics_rows),
             command_line=" ".join(sys.argv),
         )
-        write_json(output_dir / "azure_retirements_run_manifest.json", manifest)
-        reporter.step("Wrote run manifest JSON")
+        write_json(runtime_dir / "azure_retirements_run_manifest.json", manifest)
+        reporter.step(f"Wrote run manifest JSON to {runtime_dir}")
         reporter.summary(
             output_dir=output_dir,
-            counts_by_file={
-                "azure_advisor_retirements_aggregate.tsv": len(advisor_rows),
-                "azure_service_health_advisories_aggregate.tsv": len(service_rows),
-                "azure_retirements_run_diagnostics.tsv": len(diagnostics_rows),
-            },
+            counts_by_file=counts_by_file,
             counts_by_source=counts_by_source,
-            diagnostic_summary=diagnostics.summary(),
+            diagnostic_summary=diagnostic_summary,
         )
         if any(row["severity"] == "error" for row in diagnostics_rows):
             reporter.error("Run completed with error diagnostics; treating execution as failed")
@@ -544,7 +601,7 @@ def main() -> int:
             message=f"Run failed: {exc}",
             action_required="Inspect traceback and rerun after remediation",
         )
-        write_tsv(output_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics.rows())
+        write_tsv(runtime_dir / "azure_retirements_run_diagnostics.tsv", DIAGNOSTICS_HEADERS, diagnostics.rows())
         reporter.error(f"Export failed: {exc}")
         return 1
 

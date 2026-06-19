@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 from typing import Any
 
@@ -12,6 +13,27 @@ from .dates import (
     parse_possible_date,
 )
 from .tsv import compact_json
+
+
+RESOURCE_TYPE_LABELS = {
+    "microsoft.cache/redis": "Redis Cache Server",
+    "microsoft.cdn/profiles": "Front Door Profile",
+    "microsoft.compute/disks": "Disk",
+    "microsoft.compute/virtualmachines": "Virtual machine",
+    "microsoft.containerregistry/registries": "Container registry",
+    "microsoft.containerservice/managedclusters": "Kubernetes service",
+    "microsoft.documentdb/databaseaccounts": "Cosmos DB account",
+    "microsoft.insights/webtests": "Availability test",
+    "microsoft.keyvault/vaults": "Key vault",
+    "microsoft.network/applicationgateways": "Application gateway",
+    "microsoft.network/networkwatchers/flowlogs": "Flow Log",
+    "microsoft.network/publicipaddresses": "Public IP address",
+    "microsoft.network/virtualnetworkgateways": "Virtual network gateway",
+    "microsoft.storage/storageaccounts": "Storage Account",
+    "microsoft.synapse/workspaces/bigdatapools": "Apache Spark pool",
+    "microsoft.web/sites": "App service",
+    "microsoft.apimanagement/service": "API Management",
+}
 
 
 def _extract_resource_name(resource_id: str) -> str:
@@ -41,6 +63,43 @@ def _description_quality(description: str, short_problem: str, feature: str, lin
     if link:
         return "link_only"
     return "missing"
+
+
+def _resource_type_from_resource_id(resource_id: str) -> str:
+    if not resource_id:
+        return ""
+
+    parts = [part for part in resource_id.split("/") if part]
+    for idx, part in enumerate(parts):
+        if part.lower() != "providers" or idx + 2 >= len(parts):
+            continue
+        return f"{parts[idx + 1]}/{parts[idx + 2]}".lower()
+    return ""
+
+
+def _humanize_provider_segment(segment: str) -> str:
+    if not segment:
+        return ""
+
+    normalized = segment.split(".", 1)[-1]
+    words = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", normalized).replace("_", " ")
+    return words.strip().title()
+
+
+def _fallback_service_name(*, resource_type: str, impacted_field: str, resource_id: str) -> str:
+    normalized_resource_type = resource_type.strip().lower() or _resource_type_from_resource_id(resource_id)
+    if normalized_resource_type in RESOURCE_TYPE_LABELS:
+        return RESOURCE_TYPE_LABELS[normalized_resource_type]
+
+    normalized_impacted_field = impacted_field.strip().lower()
+    if normalized_impacted_field in RESOURCE_TYPE_LABELS:
+        return RESOURCE_TYPE_LABELS[normalized_impacted_field]
+
+    if normalized_resource_type:
+        return _humanize_provider_segment(normalized_resource_type.split("/", 1)[0])
+    if normalized_impacted_field:
+        return _humanize_provider_segment(normalized_impacted_field.split("/", 1)[0])
+    return ""
 
 
 def normalize_advisor_rows(
@@ -74,9 +133,13 @@ def normalize_advisor_rows(
 
         source_properties = metadata.get("properties", {}).get("sourceProperties", {}) if metadata else {}
         service_retirement = source_properties.get("serviceRetirement", {}) if isinstance(source_properties, dict) else {}
+        extended_properties = properties.get("extendedProperties", {})
+        if not isinstance(extended_properties, dict):
+            extended_properties = {}
 
         retirement_raw = (
             str(service_retirement.get("retirementDate") or "")
+            or str(extended_properties.get("retirementDate") or "")
             or str(properties.get("retirementDate") or "")
             or ""
         )
@@ -97,7 +160,7 @@ def normalize_advisor_rows(
         short_problem = str(properties.get("shortDescription", {}).get("problem") or "")
         short_solution = str(properties.get("shortDescription", {}).get("solution") or "")
         description = str(properties.get("description") or "")
-        feature_name = str(service_retirement.get("retirementFeatureName") or "")
+        feature_name = str(service_retirement.get("retirementFeatureName") or extended_properties.get("retirementFeatureName") or "")
         recommendation_link = str(properties.get("learnMoreLink") or "")
         metadata_link = str(metadata.get("properties", {}).get("learnMoreLink") or "") if metadata else ""
         learn_more_link = recommendation_link or metadata_link
@@ -152,6 +215,12 @@ def normalize_advisor_rows(
             service_name = str(metadata.get("properties", {}).get("resourceMetadata", {}).get("singular") or "")
         if not service_name:
             service_name = str(properties.get("resourceMetadata", {}).get("singular") or "")
+        if not service_name:
+            service_name = _fallback_service_name(
+                resource_type=resource_type,
+                impacted_field=str(properties.get("impactedField") or ""),
+                resource_id=resource_id,
+            )
 
         row = {
             "run_id": run_id,
@@ -392,7 +461,6 @@ def normalize_service_health_rows(
                     "description_quality": _service_description_quality(description, summary, is_sensitive),
                     "diagnostic_flags": ",".join(sorted(set(flags))),
                     "provenance_json": compact_json({"event_source": "resource_health_events"}),
-                    "raw_json": compact_json({"event": event}),
                 }
                 rows.append(row)
 

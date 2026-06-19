@@ -14,8 +14,24 @@ def compact_json(value: Any) -> str:
     return json.dumps(value, separators=(",", ":"), sort_keys=True, ensure_ascii=True)
 
 
+def unique_tsv_rows(headers: list[str], rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    unique_rows: list[dict[str, str]] = []
+    seen_fingerprints: set[tuple[str, ...]] = set()
+
+    for row in rows:
+        safe_row = {key: sanitize_cell(row.get(key, "")) for key in headers}
+        fingerprint = tuple(safe_row[key] for key in headers)
+        if fingerprint in seen_fingerprints:
+            continue
+        seen_fingerprints.add(fingerprint)
+        unique_rows.append(safe_row)
+
+    return unique_rows
+
+
 def write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    unique_rows = unique_tsv_rows(headers, rows)
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
             handle,
@@ -25,9 +41,8 @@ def write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> Non
             extrasaction="ignore",
         )
         writer.writeheader()
-        for row in rows:
-            safe_row = {key: sanitize_cell(row.get(key, "")) for key in headers}
-            writer.writerow(safe_row)
+        for row in unique_rows:
+            writer.writerow(row)
 
 
 def write_json(path: Path, payload: Any) -> None:
