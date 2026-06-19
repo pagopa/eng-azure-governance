@@ -40,12 +40,14 @@ def _runtime_config(
     output_root: Path,
     *,
     mode: str = "schema-only",
+    workflows: list[str] | None = None,
     subscriptions: list[str] | None = None,
     management_groups: list[str] | None = None,
     fixture_dir: Path | None = None,
 ) -> RuntimeConfig:
     return RuntimeConfig(
         mode=mode,
+        workflows=workflows or ["raw", "aggregate", "slide"],
         subscriptions=subscriptions or [],
         management_groups=management_groups or [],
         output_root=output_root,
@@ -82,7 +84,7 @@ def test_main_fails_when_error_diagnostic_exists(monkeypatch: pytest.MonkeyPatch
             "resource_health_events": 0,
         }
         counts_by_file = {
-            "azure_advisor_service_retirements_raw.tsv": 0,
+            "azure_advisor_retirements_aggregate.tsv": 0,
             "azure_retirements_run_diagnostics.tsv": 1,
         }
         return [], [], counts_by_source, counts_by_file
@@ -114,7 +116,7 @@ def test_main_succeeds_when_diagnostics_have_no_errors(monkeypatch: pytest.Monke
             "resource_health_events": 0,
         }
         counts_by_file = {
-            "azure_advisor_service_retirements_raw.tsv": 0,
+            "azure_advisor_retirements_aggregate.tsv": 0,
             "azure_retirements_run_diagnostics.tsv": 1,
         }
         return [], [], counts_by_source, counts_by_file
@@ -202,8 +204,8 @@ def test_schema_only_returns_empty_rows_and_info_diagnostic(monkeypatch: pytest.
         "resource_health_events": 0,
     }
     assert counts_by_file == {
-        "azure_advisor_service_retirements_raw.tsv": 0,
-        "azure_service_health_advisories_raw.tsv": 0,
+        "azure_advisor_retirements_aggregate.tsv": 0,
+        "azure_service_health_advisories_aggregate.tsv": 0,
         "azure_retirements_run_diagnostics.tsv": 1,
     }
 
@@ -365,8 +367,8 @@ def test_fixture_mode_reads_files_and_builds_outputs(monkeypatch: pytest.MonkeyP
         "resource_graph_advisorresources": 1,
         "resource_health_events": 1,
     }
-    assert counts_by_file["azure_advisor_service_retirements_raw.tsv"] == 1
-    assert counts_by_file["azure_service_health_advisories_raw.tsv"] == 1
+    assert counts_by_file["azure_advisor_retirements_aggregate.tsv"] == 1
+    assert counts_by_file["azure_service_health_advisories_aggregate.tsv"] == 1
     assert counts_by_file["azure_retirements_run_diagnostics.tsv"] == 1
 
     assert {item["kind"] for item in advisor_raw} == {"advisor_metadata", "advisor_recommendation"}
@@ -426,16 +428,86 @@ def test_main_writes_runtime_artifacts_under_tmp_and_service_health_aggregate(
     assert module.main() == 0
 
     tsv_names = {path.name for path in tsv_paths}
-    assert "azure_advisor_service_retirements_raw.tsv" in tsv_names
-    assert "azure_service_health_advisories_raw.tsv" in tsv_names
+    assert "azure_advisor_retirements_aggregate.tsv" in tsv_names
+    assert "azure_service_health_advisories_aggregate.tsv" in tsv_names
     assert "azure_retirements_run_diagnostics.tsv" in tsv_names
 
-    advisor_path = next(path for path in tsv_paths if path.name == "azure_advisor_service_retirements_raw.tsv")
-    service_health_path = next(path for path in tsv_paths if path.name == "azure_service_health_advisories_raw.tsv")
+    advisor_path = next(path for path in tsv_paths if path.name == "azure_advisor_retirements_aggregate.tsv")
+    service_health_path = next(path for path in tsv_paths if path.name == "azure_service_health_advisories_aggregate.tsv")
     diagnostics_path = next(path for path in tsv_paths if path.name == "azure_retirements_run_diagnostics.tsv")
     manifest_path = next(path for path in json_paths if path.name == "azure_retirements_run_manifest.json")
 
-    assert advisor_path == tmp_path / "2026" / "06" / "azure_advisor_service_retirements_raw.tsv"
-    assert service_health_path == tmp_path / "2026" / "06" / "azure_service_health_advisories_raw.tsv"
+    assert advisor_path == tmp_path / "2026" / "06" / "azure_advisor_retirements_aggregate.tsv"
+    assert service_health_path == tmp_path / "2026" / "06" / "azure_service_health_advisories_aggregate.tsv"
     assert diagnostics_path == Path("tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_diagnostics.tsv").resolve()
     assert manifest_path == Path("tmp/comitato/comitato_azure_retirements/run/2026/06/azure_retirements_run_manifest.json").resolve()
+
+
+def test_main_raw_workflow_writes_only_raw_artifacts(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_workflow_raw")
+    monkeypatch.setattr(
+        module,
+        "parse_args",
+        lambda: _runtime_config(tmp_path, workflows=["raw"]),
+    )
+
+    tsv_paths: list[Path] = []
+
+    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+        del headers, rows
+        tsv_paths.append(path)
+
+    monkeypatch.setattr(module, "write_tsv", fake_write_tsv)
+    monkeypatch.setattr(module, "write_json", lambda *args, **kwargs: None)
+
+    assert module.main() == 0
+
+    written_names = {path.name for path in tsv_paths}
+    assert "azure_advisor_retirements_aggregate.tsv" in written_names
+    assert "azure_service_health_advisories_aggregate.tsv" in written_names
+    assert "azure_retirements_run_diagnostics.tsv" in written_names
+    assert "02_azure_retirements_aggregate.tsv" not in written_names
+    assert "03_azure_retirements_slide.tsv" not in written_names
+
+
+def test_main_aggregate_and_slide_workflows_reuse_existing_raw_inputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_workflow_aggregate_slide")
+    monkeypatch.setattr(
+        module,
+        "parse_args",
+        lambda: _runtime_config(tmp_path, workflows=["aggregate", "slide"]),
+    )
+
+    output_dir = tmp_path / "2026" / "06"
+    output_dir.mkdir(parents=True)
+    (output_dir / "azure_advisor_retirements_aggregate.tsv").write_text(
+        (
+            "retiring_feature\tshort_description_solution\tshort_description_problem\tdescription"
+            "\tretirement_date\tsubscription_name\tsource_system\tsource_id\tadvisor_recommendation_id\tas_of_date\n"
+            "TLS 1.0 retirement\tUpgrade TLS\tTLS 1.0 deprecated\tUse TLS 1.2"
+            "\t2026-12-31\tPROD-IO\tadvisor_joined\ts-1\tr-1\t2026-06-18\n"
+        ),
+        encoding="utf-8",
+    )
+    (output_dir / "azure_service_health_advisories_aggregate.tsv").write_text(
+        "title\tsummary\trecommended_actions\tdescription\tsubscription_name\tsource_system\tsource_id\tevent_id\tas_of_date\n",
+        encoding="utf-8",
+    )
+
+    tsv_paths: list[Path] = []
+
+    def fake_write_tsv(path: Path, headers: list[str], rows: list[dict[str, str]]) -> None:
+        del headers, rows
+        tsv_paths.append(path)
+
+    monkeypatch.setattr(module, "write_tsv", fake_write_tsv)
+    monkeypatch.setattr(module, "write_json", lambda *args, **kwargs: None)
+
+    assert module.main() == 0
+
+    written_names = {path.name for path in tsv_paths}
+    assert "02_azure_retirements_aggregate.tsv" in written_names
+    assert "03_azure_retirements_slide.tsv" in written_names
+    assert "azure_retirements_run_diagnostics.tsv" in written_names

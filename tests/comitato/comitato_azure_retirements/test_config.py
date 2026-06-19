@@ -16,6 +16,7 @@ def test_parse_args_defaults_to_live_when_scope_is_provided(monkeypatch: pytest.
     cfg = parse_args(["--subscriptions", "sub-1"])
 
     assert cfg.mode == "live"
+    assert cfg.workflows == ["raw", "aggregate", "slide"]
     assert cfg.subscriptions == ["sub-1"]
     assert cfg.output_root.as_posix().endswith("/src/comitato/comitato_azure_retirements/exports")
     assert cfg.as_of_date == date(2026, 6, 18)
@@ -35,6 +36,28 @@ def test_parse_args_keeps_schema_only_explicit(monkeypatch: pytest.MonkeyPatch) 
     cfg = parse_args(["--mode", "schema-only"])
 
     assert cfg.mode == "schema-only"
+
+
+def test_parse_args_accepts_workflow_csv() -> None:
+    cfg = parse_args(["--mode", "schema-only", "--workflow", "raw,slide"])
+
+    assert cfg.workflows == ["raw", "slide"]
+
+
+def test_parse_args_expands_full_workflow() -> None:
+    cfg = parse_args(["--mode", "schema-only", "--workflow", "full"])
+
+    assert cfg.workflows == ["raw", "aggregate", "slide"]
+
+
+def test_parse_args_rejects_full_combined_with_other_workflows() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--mode", "schema-only", "--workflow", "full,raw"])
+
+
+def test_parse_args_rejects_unsupported_workflow_value() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--mode", "schema-only", "--workflow", "raw,unknown"])
 
 
 def test_parse_args_reads_boolean_env_flags(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -4,12 +4,26 @@
 
 This document describes runtime behavior for `src/comitato/comitato_azure_retirements/comitato-azure-retirements.py`, including parallel collectors and troubleshooting artifacts.
 
+## Workflow Selection
+
+The runtime supports stage selection through `--workflow` (or `AZURE_RETIREMENTS_WORKFLOW`):
+
+- `raw`: produce source Advisor and Service Health TSV files.
+- `aggregate`: merge and group source rows into a normalized aggregate contract.
+- `slide`: project aggregate rows into the committee-facing subset.
+- `full`: shorthand for `raw,aggregate,slide`.
+
+When `aggregate` runs without `raw`, the runtime reuses existing raw files for the selected month.
+When `slide` runs without `aggregate`, the runtime reuses the existing aggregate file for the selected month.
+
 ## Runtime Artifacts
 
 The exporter writes these required TSV files:
 
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_advisor_service_retirements_raw.tsv`
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_service_health_advisories_raw.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_advisor_retirements_aggregate.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/azure_service_health_advisories_aggregate.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/02_azure_retirements_aggregate.tsv`
+- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/03_azure_retirements_slide.tsv`
 - `tmp/comitato/comitato_azure_retirements/run/YYYY/MM/azure_retirements_run_diagnostics.tsv`
 
 The runtime directory also contains:

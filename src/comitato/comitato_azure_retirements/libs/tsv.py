@@ -60,6 +60,18 @@ def write_jsonl(path: Path, items: list[dict[str, Any]]) -> None:
             handle.write("\n")
 
 
+def read_tsv(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t")
+        rows: list[dict[str, str]] = []
+        for row in reader:
+            rows.append({str(key): sanitize_cell(value) for key, value in row.items() if key is not None})
+        return rows
+
+
 def sanitize_cell(value: str | None) -> str:
     if value is None:
         return ""

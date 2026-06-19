@@ -101,3 +101,34 @@ DIAGNOSTICS_HEADERS = [
     "action_required",
     "raw_context_json",
 ]
+
+AGGREGATE_HEADERS = [
+    "advice_type",
+    "advisory_key",
+    "retiring_feature",
+    "action_required",
+    "retirement_date",
+    "retirement_date_quality",
+    "priority_label",
+    "impacted_platforms",
+    "impacted_platforms_subscriptions_json",
+    "impacted_subscriptions",
+    "source_systems",
+    "source_identifiers",
+    "source_links",
+    "summary_text",
+    "details_text",
+    "first_seen_date",
+    "last_seen_date",
+]
+
+SLIDE_HEADERS = [
+    "priority_label",
+    "retiring_feature",
+    "action_required",
+    "retirement_date",
+    "platforms",
+    "platforms_subscriptions_json",
+    "advice_type",
+    "source_links",
+]

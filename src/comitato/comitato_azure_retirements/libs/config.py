@@ -15,6 +15,7 @@ from .dates import add_calendar_months, parse_iso_date
 @dataclass(frozen=True)
 class RuntimeConfig:
     mode: str
+    workflows: list[str]
     subscriptions: list[str]
     management_groups: list[str]
     output_root: Path
@@ -52,12 +53,46 @@ def _parse_positive_int(raw_value: str | None, *, argument_name: str, parser: ar
     return value
 
 
+def _parse_workflows(raw_value: str | None, *, parser: argparse.ArgumentParser) -> list[str]:
+    allowed_workflows = {"raw", "aggregate", "slide", "full"}
+    full_workflow = ["raw", "aggregate", "slide"]
+
+    if raw_value is None or raw_value.strip() == "":
+        return full_workflow
+
+    requested = [item.strip().lower() for item in raw_value.split(",") if item.strip()]
+    if not requested:
+        return full_workflow
+
+    unknown = sorted({item for item in requested if item not in allowed_workflows})
+    if unknown:
+        parser.error(f"--workflow contains unsupported value(s): {', '.join(unknown)}")
+
+    if "full" in requested and len(requested) > 1:
+        parser.error("--workflow=full cannot be combined with other workflow values")
+
+    if requested == ["full"]:
+        return full_workflow
+
+    selected: list[str] = []
+    for workflow in requested:
+        if workflow not in selected:
+            selected.append(workflow)
+
+    return selected
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="comitato-azure-retirements",
         description="Export Azure Advisor retirements and Service Health advisories into separate TSV files.",
     )
     parser.add_argument("--mode", choices=["live", "schema-only", "fixture"], default=None)
+    parser.add_argument(
+        "--workflow",
+        default=None,
+        help="Comma-separated workflow list: raw,aggregate,slide or full (default: full)",
+    )
     parser.add_argument("--subscriptions", default=None)
     parser.add_argument("--management-groups", default=None)
     parser.add_argument("--output-root", default=None)
@@ -76,6 +111,7 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
     args = parser.parse_args(argv)
 
     mode = args.mode or os.getenv("AZURE_RETIREMENTS_MODE") or "live"
+    workflows = _parse_workflows(args.workflow or os.getenv("AZURE_RETIREMENTS_WORKFLOW"), parser=parser)
 
     subscriptions = _split_csv(args.subscriptions or os.getenv("AZURE_SUBSCRIPTIONS"))
     management_groups = _split_csv(args.management_groups or os.getenv("AZURE_MANAGEMENT_GROUPS"))
@@ -119,6 +155,7 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
 
     return RuntimeConfig(
         mode=mode,
+        workflows=workflows,
         subscriptions=subscriptions,
         management_groups=management_groups,
         output_root=output_root,
