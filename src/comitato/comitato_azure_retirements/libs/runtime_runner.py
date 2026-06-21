@@ -18,6 +18,7 @@ from .runtime_paths import (
     build_runtime_dir,
     scope_mode,
 )
+from .runtime_router import RuntimeRoute, StageAction, build_runtime_route
 from .runtime_stages import (
     add_aggregate_contract_diagnostics,
     add_slide_source_link_diagnostics,
@@ -340,6 +341,7 @@ def run_export(
     cfg: RuntimeConfig,
     argv: list[str],
     script_path: Path,
+    route: RuntimeRoute | None = None,
 ) -> int:
     run_id = f"azure-retirements-{uuid.uuid4()}"
     started_at = utc_now()
@@ -390,13 +392,20 @@ def run_export(
         counts_by_source = _default_counts_by_source()
         counts_by_file: dict[str, int] = {}
         resolved_subscriptions: list[str] = cfg.subscriptions
-        selected_workflows = cfg.workflows
-        aggregate_stage_ran = False
+        resolved_route = route or build_runtime_route(cfg.workflows)
+        selected_workflows = list(resolved_route.selected_workflows)
 
         reporter.step(f"Selected workflows: {', '.join(selected_workflows)}")
-        debug_logger.info("workflow_selection", "Resolved workflow selection", workflows=selected_workflows)
+        reporter.detail("Workflow route", resolved_route.describe(), always=True)
+        debug_logger.info(
+            "workflow_selection",
+            "Resolved workflow selection",
+            workflows=selected_workflows,
+            workflow_route=resolved_route.describe(),
+            workflow_route_name=resolved_route.name,
+        )
 
-        if "raw" in selected_workflows:
+        if resolved_route.raw_action == StageAction.EXECUTE:
             (
                 advisor_rows,
                 service_rows,
@@ -414,7 +423,7 @@ def run_export(
                 debug_logger=debug_logger,
             )
             counts_by_file.update(raw_counts_by_file)
-        elif "aggregate" in selected_workflows:
+        elif resolved_route.raw_action == StageAction.REUSE:
             reporter.section("📦", "Raw Stage Reuse", "Load previously generated raw TSV artifacts")
             advisor_rows, service_rows = load_raw_stage_inputs(output_dir)
             counts_by_file[RAW_ADVISOR_FILENAME] = len(advisor_rows)
@@ -438,11 +447,11 @@ def run_export(
                 check_id="raw_stage_skipped",
                 source_system="global",
                 scope="global",
-                message="Raw workflow skipped because only slide workflow was selected",
+                message="Raw workflow skipped by workflow route",
                 action_required="None",
             )
 
-        if "aggregate" in selected_workflows:
+        if resolved_route.aggregate_action == StageAction.EXECUTE:
             aggregate_rows = _run_aggregate_stage(
                 cfg=cfg,
                 output_dir=output_dir,
@@ -454,11 +463,24 @@ def run_export(
                 service_rows=service_rows,
                 counts_by_file=counts_by_file,
             )
-            aggregate_stage_ran = True
+        elif resolved_route.aggregate_action == StageAction.REUSE:
+            reporter.section("📦", "Aggregate Stage Reuse", "Load previously generated aggregate TSV artifact")
+            aggregate_rows = load_aggregate_stage_input(output_dir)
+            counts_by_file[AGGREGATE_FILENAME] = len(aggregate_rows)
+            reporter.step(
+                "Loaded aggregate stage input: "
+                f"{AGGREGATE_FILENAME} ({len(aggregate_rows)} row(s))"
+            )
+            diagnostics.add(
+                severity="info",
+                check_id="aggregate_stage_reused",
+                source_system="global",
+                scope="global",
+                message="Aggregate workflow skipped and existing aggregate artifact was reused",
+                action_required="None",
+            )
 
-        if "slide" in selected_workflows:
-            if not aggregate_stage_ran:
-                aggregate_rows = load_aggregate_stage_input(output_dir)
+        if resolved_route.slide_action == StageAction.EXECUTE:
             _ = _run_slide_stage(
                 output_dir=output_dir,
                 diagnostics=diagnostics,
