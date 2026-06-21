@@ -124,12 +124,12 @@ AGGREGATE_HEADERS = [
 ]
 
 SLIDE_HEADERS = [
+    "technology_or_service",
+    "retiring_feature",
     "platforms",
     "platforms_subscriptions_json",
     "priority_label",
     "advice_type",
-    "technology_or_service",
-    "retiring_feature",
     "action_required",
     "retirement_date",
     "source_links",

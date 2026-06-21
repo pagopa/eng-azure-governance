@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from datetime import date
+import html
 from pathlib import Path
+import re
 
 import pandas as pd
 import yaml
@@ -109,18 +111,21 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
                 )
             )
 
+        action_required = _strip_xml_tags(
+            str(row.get("action_required", "") or row.get("summary_text", ""))
+        )
+
         projected_rows.append(
             {
+                "technology_or_service": row.get("technology_or_service", ""),
+                "retiring_feature": row.get("retiring_feature", ""),
                 "platforms": row.get("impacted_platforms", ""),
                 "platforms_subscriptions_json": row.get(
                     "impacted_platforms_subscriptions_json", ""
                 ),
                 "priority_label": row.get("priority_label", ""),
                 "advice_type": row.get("advice_type", ""),
-                "technology_or_service": row.get("technology_or_service", ""),
-                "retiring_feature": row.get("retiring_feature", ""),
-                "action_required": row.get("action_required", "")
-                or row.get("summary_text", ""),
+                "action_required": action_required,
                 "retirement_date": row.get("retirement_date", ""),
                 "source_links": source_links,
             }
@@ -141,6 +146,18 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
         )
     )
     return projected_rows
+
+
+_XML_TAG_RE = re.compile(r"<[^>]+>")
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def _strip_xml_tags(value: str) -> str:
+    if not value:
+        return ""
+    decoded_value = html.unescape(value).replace("\xa0", " ")
+    without_tags = _XML_TAG_RE.sub(" ", decoded_value)
+    return _WHITESPACE_RE.sub(" ", without_tags).strip()
 
 
 def _build_advisory_key(

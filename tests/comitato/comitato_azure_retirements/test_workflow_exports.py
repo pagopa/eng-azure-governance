@@ -214,7 +214,9 @@ def test_build_slide_rows_projects_expected_fields() -> None:
                 "advice_type": "advisor_retirement",
                 "technology_or_service": "Azure Cache for Redis",
                 "retiring_feature": "Redis version upgrade",
-                "action_required": "Upgrade to latest supported version",
+                "action_required": (
+                    "<p><strong>Upgrade</strong> to latest supported version</p>"
+                ),
                 "retirement_date": "2026-10-01",
                 "source_links": "https://example.com/redis",
                 "summary_text": "Fallback summary",
@@ -224,12 +226,12 @@ def test_build_slide_rows_projects_expected_fields() -> None:
 
     assert slide_rows == [
         {
+            "technology_or_service": "Azure Cache for Redis",
+            "retiring_feature": "Redis version upgrade",
             "platforms": "IO",
             "platforms_subscriptions_json": '{"platforms":{"IO":["PROD-IO"]}}',
             "priority_label": "Prioritario",
             "advice_type": "advisor_retirement",
-            "technology_or_service": "Azure Cache for Redis",
-            "retiring_feature": "Redis version upgrade",
             "action_required": "Upgrade to latest supported version",
             "retirement_date": "2026-10-01",
             "source_links": "https://example.com/redis",
@@ -267,6 +269,27 @@ def test_build_slide_rows_backfills_source_links_from_source_identifiers() -> No
     )
 
 
+def test_build_slide_rows_uses_summary_fallback_and_strips_xml_tags() -> None:
+    slide_rows = build_slide_rows(
+        [
+            {
+                "impacted_platforms": "IO",
+                "impacted_platforms_subscriptions_json": '{"platforms":{"IO":["PROD-IO"]}}',
+                "priority_label": "Prioritario",
+                "advice_type": "service_health_retirement",
+                "technology_or_service": "Azure Storage",
+                "retiring_feature": "TLS 1.2 migration",
+                "action_required": "",
+                "summary_text": "<p>Move to <em>TLS 1.2</em>&nbsp;now</p>",
+                "retirement_date": "2026-12-01",
+                "source_links": "https://example.com/storage",
+            }
+        ]
+    )
+
+    assert slide_rows[0]["action_required"] == "Move to TLS 1.2 now"
+
+
 def test_headers_follow_requested_committee_contract() -> None:
     assert AGGREGATE_HEADERS[:3] == [
         "impacted_platforms",
@@ -280,11 +303,14 @@ def test_headers_follow_requested_committee_contract() -> None:
     ]
     assert AGGREGATE_HEADERS[6] == "retiring_feature"
 
-    assert SLIDE_HEADERS[:4] == [
+    assert SLIDE_HEADERS[:2] == [
+        "technology_or_service",
+        "retiring_feature",
+    ]
+    assert SLIDE_HEADERS[2:6] == [
         "platforms",
         "platforms_subscriptions_json",
         "priority_label",
         "advice_type",
     ]
-    assert SLIDE_HEADERS[4] == "technology_or_service"
-    assert SLIDE_HEADERS[5] == "retiring_feature"
+    assert SLIDE_HEADERS[6] == "action_required"
