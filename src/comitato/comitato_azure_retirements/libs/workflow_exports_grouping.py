@@ -1,0 +1,112 @@
+"""Grouping helpers for aggregate workflow exports."""
+
+from __future__ import annotations
+
+from collections import defaultdict
+from datetime import date
+
+from .dates import parse_possible_date
+from .tsv import compact_json
+from .workflow_exports_utils import (
+    as_string_list,
+    first_non_empty,
+    infer_technology_from_text,
+    max_iso_date,
+    min_iso_date,
+    pick_human_text,
+    priority_label,
+    sorted_unique,
+)
+
+UNKNOWN_PLATFORM = "Unknown Platform"
+
+
+def aggregate_group(
+    *,
+    advisory_key: str,
+    rows: list[dict[str, object]],
+    active_platform_map: dict[str, str],
+    normalize_key,
+    as_of_date: date,
+) -> dict[str, str]:
+    source_identifiers = sorted_unique(
+        item for row in rows for item in as_string_list(row.get("source_identifiers"))
+    )
+    source_links = sorted_unique(
+        item for row in rows for item in as_string_list(row.get("source_links"))
+    )
+    source_systems = sorted_unique(str(row.get("source_system", "")) for row in rows)
+    subscription_names = sorted_unique(str(row.get("subscription_name", "")) for row in rows)
+
+    platform_subscriptions: dict[str, set[str]] = defaultdict(set)
+    for subscription_name in subscription_names:
+        if not subscription_name:
+            continue
+        platform_name = active_platform_map.get(normalize_key(subscription_name), UNKNOWN_PLATFORM)
+        platform_subscriptions[platform_name].add(subscription_name)
+
+    ordered_platforms = sorted(
+        platform_subscriptions.keys(),
+        key=lambda value: (value == UNKNOWN_PLATFORM, value.lower()),
+    )
+    impacted_platforms = ", ".join(ordered_platforms)
+    platform_json = {
+        "platforms": {
+            platform_name: sorted(platform_subscriptions[platform_name], key=str.lower)
+            for platform_name in ordered_platforms
+        }
+    }
+
+    retirement_candidates = sorted_unique(str(row.get("retirement_date", "")) for row in rows)
+    parsed_dates = [candidate for candidate in retirement_candidates if parse_possible_date(candidate)]
+    chosen_retirement_date = ""
+    retirement_quality = "missing"
+    if parsed_dates:
+        chosen_retirement_date = min(parsed_dates)
+        any_derived = any(
+            str(row.get("retirement_date", "")) == chosen_retirement_date
+            and str(row.get("retirement_date_quality", "")) == "derived"
+            for row in rows
+        )
+        retirement_quality = "derived" if any_derived else "exact"
+
+    first_seen_date = min_iso_date(str(row.get("as_of_date", "")) for row in rows)
+    last_seen_date = max_iso_date(str(row.get("as_of_date", "")) for row in rows)
+
+    retiring_feature = pick_human_text(str(row.get("retiring_feature", "")) for row in rows)
+    summary_text = pick_human_text(str(row.get("summary_text", "")) for row in rows)
+    details_text = pick_human_text(str(row.get("details_text", "")) for row in rows)
+    action_required = pick_human_text(str(row.get("action_required", "")) for row in rows)
+    if not action_required:
+        action_required = summary_text
+
+    technology_or_service = first_non_empty(
+        [
+            pick_human_text(str(row.get("technology_or_service", "")) for row in rows),
+            infer_technology_from_text(candidates=[retiring_feature, summary_text, details_text]),
+        ]
+    )
+
+    advice_type = first_non_empty([str(row.get("advice_type", "")) for row in rows])
+    computed_priority_label = priority_label(retirement_date=chosen_retirement_date, as_of_date=as_of_date)
+
+    return {
+        "impacted_platforms": impacted_platforms,
+        "impacted_subscriptions": ", ".join(subscription_names),
+        "impacted_platforms_subscriptions_json": compact_json(platform_json),
+        "advice_type": advice_type,
+        "advisory_key": advisory_key,
+        "technology_or_service": technology_or_service,
+        "retiring_feature": retiring_feature,
+        "action_required": action_required,
+        "retirement_date": chosen_retirement_date,
+        "retirement_date_quality": retirement_quality,
+        "priority_label": computed_priority_label,
+        "source_systems": ", ".join(source_systems),
+        "source_identifiers": ", ".join(source_identifiers),
+        "source_links": ", ".join(source_links),
+        "summary_text": summary_text,
+        "details_text": details_text,
+        "first_seen_date": first_seen_date,
+        "last_seen_date": last_seen_date,
+    }

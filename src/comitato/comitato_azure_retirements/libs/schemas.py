@@ -103,16 +103,17 @@ DIAGNOSTICS_HEADERS = [
 ]
 
 AGGREGATE_HEADERS = [
+    "impacted_platforms",
+    "impacted_subscriptions",
+    "impacted_platforms_subscriptions_json",
     "advice_type",
     "advisory_key",
+    "technology_or_service",
     "retiring_feature",
     "action_required",
     "retirement_date",
     "retirement_date_quality",
     "priority_label",
-    "impacted_platforms",
-    "impacted_platforms_subscriptions_json",
-    "impacted_subscriptions",
     "source_systems",
     "source_identifiers",
     "source_links",
@@ -123,12 +124,13 @@ AGGREGATE_HEADERS = [
 ]
 
 SLIDE_HEADERS = [
+    "platforms",
+    "platforms_subscriptions_json",
     "priority_label",
+    "advice_type",
+    "technology_or_service",
     "retiring_feature",
     "action_required",
     "retirement_date",
-    "platforms",
-    "platforms_subscriptions_json",
-    "advice_type",
     "source_links",
 ]

@@ -18,6 +18,32 @@ When `--mode schema-only` is used, the `raw` stage is valid and writes header-on
 When `aggregate` runs without `raw`, the runtime reuses existing raw files for the selected month.
 When `slide` runs without `aggregate`, the runtime reuses the existing aggregate file for the selected month.
 
+## Committee TSV Contract
+
+Aggregate output starts with:
+
+1. `impacted_platforms`
+2. `impacted_subscriptions`
+3. `impacted_platforms_subscriptions_json`
+
+Aggregate rows then include `technology_or_service` before `retiring_feature`.
+
+Slide output starts with:
+
+1. `platforms`
+2. `platforms_subscriptions_json`
+3. `priority_label`
+4. `advice_type`
+
+Slide rows then include `technology_or_service` before `retiring_feature`.
+
+Data-quality guardrails:
+
+- Aggregate generation adds an error diagnostic when a row has the known blank-core shape
+  (empty `retiring_feature`, `impacted_platforms`, `impacted_subscriptions`, and `source_links`).
+- Slide generation backfills `source_links` from aggregate `source_identifiers` when links are empty,
+  then adds an error diagnostic only if links remain empty.
+
 ## Runtime Artifacts
 
 The exporter writes these required TSV files:

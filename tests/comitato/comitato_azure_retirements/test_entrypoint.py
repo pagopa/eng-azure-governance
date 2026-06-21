@@ -355,6 +355,62 @@ def test_live_empty_output_guardrails_warn_when_source_rows_are_absent(
     assert diagnostics.summary()["error"] == 0
 
 
+def test_slide_source_links_diagnostic_fails_when_any_row_is_missing_links(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_slide_source_links_diagnostic"
+    )
+    diagnostics = module.DiagnosticsCollector("run-1")
+
+    module._add_slide_source_link_diagnostics(
+        diagnostics=diagnostics,
+        slide_rows=[
+            {"source_links": "https://example.com/link"},
+            {"source_links": ""},
+        ],
+    )
+
+    diagnostic_rows = diagnostics.rows()
+    assert len(diagnostic_rows) == 1
+    assert diagnostic_rows[0]["check_id"] == "slide_missing_source_links"
+    assert diagnostic_rows[0]["severity"] == "error"
+    assert diagnostic_rows[0]["observed_count"] == "1"
+
+
+def test_aggregate_gap_diagnostic_fails_on_blank_core_shape(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_aggregate_gap_diagnostic"
+    )
+    diagnostics = module.DiagnosticsCollector("run-1")
+
+    module._add_aggregate_contract_diagnostics(
+        diagnostics=diagnostics,
+        aggregate_rows=[
+            {
+                "retiring_feature": "",
+                "impacted_platforms": "",
+                "impacted_subscriptions": "",
+                "source_links": "",
+            },
+            {
+                "retiring_feature": "AKS retirement",
+                "impacted_platforms": "IO",
+                "impacted_subscriptions": "PROD-IO",
+                "source_links": "https://example.com/aks",
+            },
+        ],
+    )
+
+    diagnostic_rows = diagnostics.rows()
+    assert len(diagnostic_rows) == 1
+    assert diagnostic_rows[0]["check_id"] == "aggregate_gap_rows_missing_core_fields"
+    assert diagnostic_rows[0]["severity"] == "error"
+    assert diagnostic_rows[0]["observed_count"] == "1"
+
+
 def test_fixture_mode_reads_files_and_builds_outputs(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -626,7 +682,7 @@ def test_main_aggregate_and_slide_workflows_reuse_existing_raw_inputs(
         (
             "retiring_feature\tshort_description_solution\tshort_description_problem\tdescription"
             "\tretirement_date\tsubscription_name\tsource_system\tsource_id\tadvisor_recommendation_id\tas_of_date\n"
-            "TLS 1.0 retirement\tUpgrade TLS\tTLS 1.0 deprecated\tUse TLS 1.2"
+            "TLS 1.0 retirement\tUpgrade TLS\tTLS 1.0 deprecated\tUse TLS 1.2 https://example.com/advisor"
             "\t2026-12-31\tPROD-IO\tadvisor_joined\ts-1\tr-1\t2026-06-18\n"
         ),
         encoding="utf-8",
@@ -635,7 +691,7 @@ def test_main_aggregate_and_slide_workflows_reuse_existing_raw_inputs(
         (
             "title\tsummary\trecommended_actions\tdescription\tsubscription_name\tsource_system\tsource_id"
             "\tevent_id\tas_of_date\n"
-            "Storage advisory\tService maintenance event\tReview mitigation plan\tService maintenance event"
+            "Storage advisory\tService maintenance event\tReview mitigation plan https://example.com/health\tService maintenance event"
             "\tPROD-IO\tresource_health_events\tsh-1\tevent-1\t2026-06-18\n"
         ),
         encoding="utf-8",
@@ -680,7 +736,7 @@ def test_main_aggregate_and_slide_workflows_accept_legacy_raw_input_filenames(
         (
             "retiring_feature\tshort_description_solution\tshort_description_problem\tdescription"
             "\tretirement_date\tsubscription_name\tsource_system\tsource_id\tadvisor_recommendation_id\tas_of_date\n"
-            "TLS 1.0 retirement\tUpgrade TLS\tTLS 1.0 deprecated\tUse TLS 1.2"
+            "TLS 1.0 retirement\tUpgrade TLS\tTLS 1.0 deprecated\tUse TLS 1.2 https://example.com/advisor"
             "\t2026-12-31\tPROD-IO\tadvisor_joined\ts-1\tr-1\t2026-06-18\n"
         ),
         encoding="utf-8",
@@ -689,7 +745,7 @@ def test_main_aggregate_and_slide_workflows_accept_legacy_raw_input_filenames(
         (
             "title\tsummary\trecommended_actions\tdescription\tsubscription_name\tsource_system\tsource_id"
             "\tevent_id\tas_of_date\n"
-            "Storage advisory\tService maintenance event\tReview mitigation plan\tService maintenance event"
+            "Storage advisory\tService maintenance event\tReview mitigation plan https://example.com/health\tService maintenance event"
             "\tPROD-IO\tresource_health_events\tsh-1\tevent-1\t2026-06-18\n"
         ),
         encoding="utf-8",
@@ -712,3 +768,52 @@ def test_main_aggregate_and_slide_workflows_accept_legacy_raw_input_filenames(
     assert AGGREGATE_FILENAME in written_names
     assert SLIDE_FILENAME in written_names
     assert "azure_retirements_run_diagnostics.tsv" in written_names
+
+
+def test_main_slide_workflow_reuses_existing_aggregate_without_raw_files(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_workflow_slide")
+    monkeypatch.setattr(
+        module,
+        "parse_args",
+        lambda: _runtime_config(tmp_path, workflows=["slide"]),
+    )
+
+    output_dir = tmp_path / "2026" / "06"
+    output_dir.mkdir(parents=True)
+    (output_dir / AGGREGATE_FILENAME).write_text(
+        (
+            "impacted_platforms\timpacted_subscriptions\timpacted_platforms_subscriptions_json\tadvice_type"
+            "\tadvisory_key\ttechnology_or_service\tretiring_feature\taction_required\tretirement_date"
+            "\tretirement_date_quality\tpriority_label\tsource_systems\tsource_identifiers\tsource_links"
+            "\tsummary_text\tdetails_text\tfirst_seen_date\tlast_seen_date\n"
+            "IO\tPROD-IO\t{}\tadvisor_retirement\tkey-1\tAzure Key Vault\tUpgrade SDK\tUpgrade now"
+            "\t2026-10-01\texact\tPrioritario\tadvisor_joined"
+            "\t/subscriptions/sub-1/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/kv/providers/Microsoft.Advisor/recommendations/rec-1"
+            "\t\tFallback summary\t\t2026-06-18\t2026-06-18\n"
+        ),
+        encoding="utf-8",
+    )
+
+    written_rows: dict[str, list[dict[str, str]]] = {}
+
+    def fake_write_tsv(
+        path: Path, headers: list[str], rows: list[dict[str, str]]
+    ) -> None:
+        del headers
+        written_rows[path.name] = rows
+
+    monkeypatch.setattr(module, "write_tsv", fake_write_tsv)
+    monkeypatch.setattr(module, "write_json", lambda *args, **kwargs: None)
+
+    assert module.main() == 0
+
+    assert SLIDE_FILENAME in written_rows
+    assert RAW_ADVISOR_FILENAME not in written_rows
+    assert RAW_SERVICE_HEALTH_FILENAME not in written_rows
+    assert AGGREGATE_FILENAME not in written_rows
+    assert "azure_retirements_run_diagnostics.tsv" in written_rows
+    assert written_rows[SLIDE_FILENAME][0]["source_links"].startswith(
+        "https://portal.azure.com/#resource/"
+    )

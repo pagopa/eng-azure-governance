@@ -23,12 +23,13 @@ Use this skill when the operator needs controlled support for aggregate-to-slide
 - Preserve one output row per aggregate row.
 - Keep `platforms_subscriptions_json` payloads unchanged from aggregate input.
 - Keep source links traceable and never drop non-empty links.
+- When `source_links` is empty, derive deterministic fallback links from aggregate `source_identifiers`.
 - Use `summary_text` as fallback only when `action_required` is empty.
 
 ## Validation expectations
 
 - Output includes exactly these columns:
-  `priority_label`, `retiring_feature`, `action_required`, `retirement_date`, `platforms`, `platforms_subscriptions_json`, `advice_type`, `source_links`.
+  `platforms`, `platforms_subscriptions_json`, `priority_label`, `advice_type`, `technology_or_service`, `retiring_feature`, `action_required`, `retirement_date`, `source_links`.
 - Sorting follows priority then retirement date then feature name.
 - Unknown platform rows stay visible and are not filtered.
 
