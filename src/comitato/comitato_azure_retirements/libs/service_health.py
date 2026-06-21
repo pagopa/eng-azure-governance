@@ -38,7 +38,17 @@ def _collect_subscription_events(
         "api-version": RESOURCE_HEALTH_API_VERSION,
         "queryStartTime": query_start_time,
     }
-    page = client.list_with_nextlink(url, params=params)
+    try:
+        page = client.list_with_nextlink(url, params=params)
+    except RuntimeError as exc:
+        # Some subscriptions intermittently fail with 502 only when queryStartTime is present.
+        # Retrying once without that filter usually restores collection without masking other errors.
+        if not query_start_time or "http 502" not in str(exc).lower():
+            raise
+        page = client.list_with_nextlink(
+            url,
+            params={"api-version": RESOURCE_HEALTH_API_VERSION},
+        )
 
     elapsed_ms = int((perf_counter() - started_at) * 1000)
     return page.items, page.page_count, elapsed_ms

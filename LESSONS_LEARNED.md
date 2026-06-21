@@ -23,3 +23,4 @@ This file retains durable lessons discovered while completing tasks in this repo
 | Date | Lesson | Status | Codification target |
 | --- | --- | --- | --- |
 | 2026-06-21 | Keep entrypoint runtime imports lazy when downstream modules require optional heavy dependencies (for example pandas), so unit tests can patch dispatch behavior without importing the full runtime tree. | Pending | Scoped guidance for comitato entrypoint/test patterns |
+| 2026-06-21 | In Service Health live collection, some subscriptions can fail with HTTP 502 only when queryStartTime is present; retry once without queryStartTime before classifying the subscription as degraded. | Pending | Service Health collection guidance for resilient query fallback |

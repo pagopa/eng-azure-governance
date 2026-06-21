@@ -24,6 +24,42 @@ class _Reporter:
         return None
 
 
+class _ProgressCallback:
+    def __call__(self, *_args, **_kwargs) -> None:
+        return None
+
+    def __enter__(self) -> _ProgressCallback:
+        return self
+
+    def __exit__(self, *_args, **_kwargs) -> None:
+        return None
+
+
+class _LiveReporter(_Reporter):
+    def detail(self, *_args, **_kwargs) -> None:
+        return None
+
+    def mapping(self, *_args, **_kwargs) -> None:
+        return None
+
+    def warning(self, *_args, **_kwargs) -> None:
+        return None
+
+    def problem_determination_report(self, *_args, **_kwargs) -> None:
+        return None
+
+    def subscription_progress(self, *_args, **_kwargs) -> _ProgressCallback:
+        return _ProgressCallback()
+
+
+class _DebugLogger:
+    def info(self, *_args, **_kwargs) -> None:
+        return None
+
+    def warning(self, *_args, **_kwargs) -> None:
+        return None
+
+
 def _runtime_config(output_root: Path) -> RuntimeConfig:
     return RuntimeConfig(
         mode="live",
@@ -61,3 +97,59 @@ def test_live_mode_raises_when_scope_resolves_to_no_subscriptions(
             reporter=_Reporter(),
             debug_logger=object(),
         )
+
+
+def test_live_mode_preserves_run_id_for_normalization(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    captured: dict[str, str] = {}
+
+    monkeypatch.setattr(runtime_live, "get_management_token", lambda: "token")
+    monkeypatch.setattr(runtime_live, "ArmClient", lambda *_args, **_kwargs: object())
+    monkeypatch.setattr(
+        runtime_live,
+        "resolve_scope_subscriptions",
+        lambda *_args, **_kwargs: (["sub-1"], {}),
+    )
+    monkeypatch.setattr(runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([], 1))
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_advisor_recommendations",
+        lambda *_args, **_kwargs: ([], {"sub-1": 0}, []),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_advisor_resource_graph",
+        lambda *_args, **_kwargs: ([], False, 0),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_events_for_subscriptions",
+        lambda *_args, **_kwargs: ([], {"sub-1": 0}, []),
+    )
+    monkeypatch.setattr(runtime_live, "filter_health_advisory_events", lambda events: events)
+    monkeypatch.setattr(runtime_live, "index_metadata_with_collisions", lambda *_args, **_kwargs: ({}, {}))
+    monkeypatch.setattr(runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {})
+
+    def _capture_advisor_run_id(**kwargs):
+        captured["advisor"] = kwargs["run_id"]
+        return []
+
+    def _capture_service_run_id(**kwargs):
+        captured["service"] = kwargs["run_id"]
+        return []
+
+    monkeypatch.setattr(runtime_live, "normalize_advisor_rows", _capture_advisor_run_id)
+    monkeypatch.setattr(runtime_live, "normalize_service_health_rows", _capture_service_run_id)
+
+    runtime_live.live_mode(
+        cfg=_runtime_config(tmp_path),
+        run_id="run-preserved",
+        output_dir=tmp_path,
+        diagnostics=DiagnosticsCollector("run-preserved"),
+        reporter=_LiveReporter(),
+        debug_logger=_DebugLogger(),
+    )
+
+    assert captured == {"advisor": "run-preserved", "service": "run-preserved"}

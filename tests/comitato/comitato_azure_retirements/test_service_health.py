@@ -79,6 +79,20 @@ class FailingServiceHealthClient(FakeArmClient):
         return ArmPageResult(items=[{"name": "event-a"}], page_count=1)
 
 
+class QueryStartRetryClient(FakeArmClient):
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del items_key
+        self.calls.append((url, params))
+        if params and "queryStartTime" in params:
+            raise RuntimeError("HTTP 502 for test-sub")
+        return ArmPageResult(items=[{"name": "event-a"}], page_count=1)
+
+
 def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() -> None:
     client = FailingServiceHealthClient()
 
@@ -92,6 +106,23 @@ def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() ->
     assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
     assert pages == {"sub-1": 1}
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
+
+
+def test_collect_events_for_subscriptions_retries_without_query_start_time_on_502() -> None:
+    client = QueryStartRetryClient()
+
+    rows, pages, failures = collect_events_for_subscriptions(
+        client,
+        subscriptions=["sub-1"],
+        query_start_time="2025-01-01T00:00:00",
+    )
+
+    assert failures == []
+    assert pages == {"sub-1": 1}
+    assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
+    assert len(client.calls) == 2
+    assert "queryStartTime" in (client.calls[0][1] or {})
+    assert client.calls[1][1] == {"api-version": "2025-05-01"}
 
 
 class StablePayloadServiceHealthClient(FakeArmClient):

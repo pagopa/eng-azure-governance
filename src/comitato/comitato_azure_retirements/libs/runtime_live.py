@@ -49,7 +49,7 @@ def live_mode(
     list[dict[str, Any]],
     list[str],
 ]:
-    del run_id, output_dir
+    del output_dir
     reporter.section(
         "🔐",
         "Authentication",
