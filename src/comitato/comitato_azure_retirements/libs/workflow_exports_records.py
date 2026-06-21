@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from dateutil import parser as date_parser
-
 from .dates import parse_possible_date
+from .normalize_shared import parse_retirement_date_candidate
 from .workflow_exports_utils import (
     DATE_CANDIDATE_PATTERN,
     extract_links,
@@ -20,25 +19,20 @@ def normalize_retirement_date(
     explicit_date: str,
     source_texts: list[str],
     exact_quality: bool,
-) -> tuple[str, str]:
+) -> tuple[str, str, bool]:
     parsed_explicit = parse_possible_date(explicit_date)
     if parsed_explicit:
-        return parsed_explicit.isoformat(), "exact" if exact_quality else "derived"
+        return parsed_explicit.isoformat(), "exact" if exact_quality else "derived", False
 
     for text in source_texts:
         if not text:
             continue
         for candidate in DATE_CANDIDATE_PATTERN.findall(text):
-            parsed_candidate = parse_possible_date(candidate)
-            if parsed_candidate:
-                return parsed_candidate.isoformat(), "derived"
-            try:
-                parsed_any = date_parser.parse(candidate, fuzzy=True)
-            except (TypeError, ValueError, date_parser.ParserError):
-                continue
-            return parsed_any.date().isoformat(), "derived"
+            resolved_candidate, derived_from_text = parse_retirement_date_candidate(candidate)
+            if resolved_candidate:
+                return resolved_candidate, "derived", derived_from_text
 
-    return "", "missing"
+    return "", "missing", False
 
 
 def classify_service_health_type(*, title: str, summary: str, description: str, event_sub_type: str) -> str:
@@ -58,7 +52,7 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
         source_identifiers = sorted_unique(
             [row.get("source_id", ""), row.get("advisor_recommendation_id", "")]
         )
-        retirement_date, retirement_quality = normalize_retirement_date(
+        retirement_date, retirement_quality, retirement_derived_from_text = normalize_retirement_date(
             explicit_date=row.get("retirement_date", ""),
             source_texts=[
                 row.get("short_description_problem", ""),
@@ -128,6 +122,7 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
                 ),
                 "details_text": row.get("description", ""),
                 "as_of_date": row.get("as_of_date", ""),
+                "diagnostic_flags": "retirement_date_derived_from_text" if retirement_derived_from_text else "",
             }
         )
 
@@ -140,7 +135,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
         source_identifiers = sorted_unique(
             [row.get("event_id", ""), row.get("tracking_id", ""), row.get("source_id", "")]
         )
-        retirement_date, retirement_quality = normalize_retirement_date(
+        retirement_date, retirement_quality, retirement_derived_from_text = normalize_retirement_date(
             explicit_date=row.get("date_for_window", ""),
             source_texts=[
                 row.get("title", ""),
@@ -201,6 +196,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                 "summary_text": first_non_empty([row.get("summary", ""), row.get("title", "")]),
                 "details_text": row.get("description", ""),
                 "as_of_date": row.get("as_of_date", ""),
+                "diagnostic_flags": "retirement_date_derived_from_text" if retirement_derived_from_text else "",
             }
         )
 

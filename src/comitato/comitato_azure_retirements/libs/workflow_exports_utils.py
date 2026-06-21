@@ -31,6 +31,18 @@ TECHNOLOGY_HINTS = {
     "storage": "Azure Storage",
 }
 
+PRIORITY_LABEL_CRITICO = "Critico"
+PRIORITY_LABEL_PRIORITARIO = "Prioritario"
+PRIORITY_LABEL_DA_PIANIFICARE = "Da pianificare"
+PRIORITY_LABEL_DEBITO = "Debito"
+PRIORITY_LABEL_ORDER = (
+    PRIORITY_LABEL_CRITICO,
+    PRIORITY_LABEL_PRIORITARIO,
+    PRIORITY_LABEL_DA_PIANIFICARE,
+    PRIORITY_LABEL_DEBITO,
+)
+PRIORITY_LABEL_RANK = {label: rank for rank, label in enumerate(PRIORITY_LABEL_ORDER)}
+
 
 def normalize_key(value: str) -> str:
     return WHITESPACE_PATTERN.sub(" ", value.strip().lower())
@@ -144,13 +156,17 @@ def infer_technology_from_text(*, candidates: Iterable[object]) -> str:
 def priority_label(*, retirement_date: str, as_of_date: date) -> str:
     parsed_date = parse_possible_date(retirement_date)
     if parsed_date is None:
-        return "Debito"
+        return PRIORITY_LABEL_DEBITO
 
     days_to_retirement = (parsed_date - as_of_date).days
     if days_to_retirement <= 90:
-        return "Critico"
+        return PRIORITY_LABEL_CRITICO
     if days_to_retirement <= 180:
-        return "Prioritario"
+        return PRIORITY_LABEL_PRIORITARIO
     if days_to_retirement <= 365:
-        return "Da pianificare"
-    return "Debito"
+        return PRIORITY_LABEL_DA_PIANIFICARE
+    return PRIORITY_LABEL_DEBITO
+
+
+def priority_rank(label: str) -> int:
+    return PRIORITY_LABEL_RANK.get(label, 99)

@@ -19,6 +19,7 @@ from .workflow_exports_utils import (
     build_advisory_key,
     canonical_title,
     normalize_key,
+    priority_rank,
     traceable_links_from_identifiers,
 )
 
@@ -29,6 +30,14 @@ LEGACY_RAW_SERVICE_HEALTH_FILENAME = "azure_service_health_advisories_aggregate.
 AGGREGATE_FILENAME = "02_azure_retirements_aggregate.tsv"
 SLIDE_FILENAME = "03_azure_retirements_slide.tsv"
 UNKNOWN_PLATFORM = GROUP_UNKNOWN_PLATFORM
+
+
+def _group_records_by_advisory_key(frame: pd.DataFrame) -> list[tuple[str, list[dict[str, object]]]]:
+    # Pandas is intentionally isolated here to keep a future stdlib migration one-spot.
+    grouped: list[tuple[str, list[dict[str, object]]]] = []
+    for advisory_key, group in frame.groupby("advisory_key", sort=True):
+        grouped.append((str(advisory_key), group.to_dict("records")))
+    return grouped
 
 
 def load_active_subscription_platform_map(platforms_path: Path) -> dict[str, str]:
@@ -84,11 +93,11 @@ def build_aggregate_rows(
     )
 
     grouped_rows: list[dict[str, str]] = []
-    for advisory_key, group in frame.groupby("advisory_key", sort=True):
+    for advisory_key, records in _group_records_by_advisory_key(frame):
         grouped_rows.append(
             aggregate_group(
                 advisory_key=str(advisory_key),
-                rows=group.to_dict("records"),
+                rows=records,
                 active_platform_map=active_platform_map,
                 normalize_key=normalize_key,
                 as_of_date=as_of_date,
@@ -131,15 +140,9 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
             }
         )
 
-    priority_rank = {
-        "Critico": 0,
-        "Prioritario": 1,
-        "Da pianificare": 2,
-        "Debito": 3,
-    }
     projected_rows.sort(
         key=lambda row: (
-            priority_rank.get(row.get("priority_label", ""), 99),
+            priority_rank(row.get("priority_label", "")),
             row.get("retirement_date", "9999-12-31") or "9999-12-31",
             row.get("technology_or_service", "").lower(),
             row.get("retiring_feature", "").lower(),

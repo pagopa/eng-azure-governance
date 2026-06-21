@@ -169,6 +169,34 @@ def test_normalize_advisor_rows_emits_single_catalog_row_per_metadata_id() -> No
     assert rows[0]["recommendation_type_id"] == "service-1"
 
 
+def test_normalize_advisor_rows_gates_raw_json_by_flag() -> None:
+    recommendation = _recommendation(
+        recommendation_type_id="service-1",
+        resource_id="/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1",
+    )
+
+    default_rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={},
+    )
+    verbose_rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={},
+        include_raw_json=True,
+    )
+
+    assert default_rows[0]["raw_json"] == ""
+    assert "recommendation" in verbose_rows[0]["raw_json"]
+
+
 def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
     large_raw_payload = "x" * 10_000
     event = {
@@ -233,6 +261,7 @@ def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dat
     )
 
     assert rows[0]["date_for_window"] == "2027-06-30"
+    assert "retirement_date_derived_from_text" in rows[0]["diagnostic_flags"].split(",")
 
 
 def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start() -> (
@@ -267,6 +296,37 @@ def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start(
     )
 
     assert rows[0]["date_for_window"] == "2027-01-15"
+
+
+def test_normalize_service_health_rows_ignores_version_like_tokens_as_dates() -> None:
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-2b",
+        "name": "event-2b",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "title": "AKS node image version 2.0 retirement guidance",
+            "summary": "Version 2.0 rollout guidance without a real deadline.",
+            "description": "No explicit retirement date in this advisory.",
+            "lastUpdateTime": "2026-06-18T12:00:00Z",
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
+        event_impacted_regions=lambda _event: ["westeurope"],
+        build_recommended_actions=lambda _event: "Track migration guidance.",
+    )
+
+    assert rows[0]["date_for_window"] == "2026-06-18"
+    assert "retirement_date_derived_from_text" not in rows[0]["diagnostic_flags"].split(",")
 
 
 def test_normalize_service_health_rows_preserves_service_region_pairs_from_callback() -> (

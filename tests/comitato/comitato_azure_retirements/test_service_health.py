@@ -94,6 +94,34 @@ def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() ->
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
 
 
+class StablePayloadServiceHealthClient(FakeArmClient):
+    def __init__(self) -> None:
+        super().__init__()
+        self.payload = [{"name": "event-a"}]
+
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del url, params, items_key
+        return ArmPageResult(items=self.payload, page_count=1)
+
+
+def test_collect_events_for_subscriptions_does_not_mutate_payload_items() -> None:
+    client = StablePayloadServiceHealthClient()
+
+    rows, _, _ = collect_events_for_subscriptions(
+        client,
+        subscriptions=["sub-1"],
+        query_start_time="2025-01-01T00:00:00",
+    )
+
+    assert rows[0]["_subscriptionId"] == "sub-1"
+    assert "_subscriptionId" not in client.payload[0]
+
+
 def test_collect_events_for_subscriptions_marks_degraded_failures_as_warning() -> None:
     client = FailingServiceHealthClient()
     updates: list[tuple[str, int, int, str, str | None]] = []

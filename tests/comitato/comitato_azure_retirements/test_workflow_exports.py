@@ -12,6 +12,10 @@ from src.comitato.comitato_azure_retirements.libs.schemas import (
     AGGREGATE_HEADERS,
     SLIDE_HEADERS,
 )
+from src.comitato.comitato_azure_retirements.libs.workflow_exports_utils import (
+    PRIORITY_LABEL_RANK,
+    priority_label,
+)
 
 
 def test_load_active_subscription_platform_map_uses_active_only(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -314,3 +318,15 @@ def test_headers_follow_requested_committee_contract() -> None:
         "advice_type",
     ]
     assert SLIDE_HEADERS[6] == "action_required"
+
+
+def test_priority_label_producer_values_are_ranked() -> None:
+    labels = {
+        priority_label(retirement_date="", as_of_date=date(2026, 6, 19)),
+        priority_label(retirement_date="2026-07-01", as_of_date=date(2026, 6, 19)),
+        priority_label(retirement_date="2026-12-01", as_of_date=date(2026, 6, 19)),
+        priority_label(retirement_date="2027-03-01", as_of_date=date(2026, 6, 19)),
+        priority_label(retirement_date="2028-06-01", as_of_date=date(2026, 6, 19)),
+    }
+
+    assert labels.issubset(set(PRIORITY_LABEL_RANK.keys()))

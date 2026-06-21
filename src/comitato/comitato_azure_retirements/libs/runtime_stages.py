@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .advisor import index_metadata, index_resource_graph
+from .advisor import index_metadata_with_collisions, index_resource_graph
+from .concurrency import effective_worker_count
 from .config import RuntimeConfig
 from .diagnostics import DiagnosticsCollector
 from .normalize import normalize_advisor_rows, normalize_service_health_rows
@@ -52,14 +53,6 @@ def manifest_degraded_mode(rows: list[dict[str, str]]) -> bool:
 def empty_rows(headers: list[str]) -> list[dict[str, str]]:
     del headers
     return []
-
-
-def effective_worker_count(subscriptions_count: int, requested_workers: int | None) -> int:
-    if subscriptions_count <= 1:
-        return 1
-    if requested_workers is None:
-        return min(16, subscriptions_count)
-    return max(1, min(requested_workers, subscriptions_count))
 
 
 def schema_only(
@@ -221,9 +214,26 @@ def fixture_mode(
     )
     subscription_rows = load_fixture(cfg.fixture_dir / "subscriptions.json")
 
-    metadata_by_key = index_metadata(advisor_metadata)
+    metadata_by_key, metadata_collisions = index_metadata_with_collisions(advisor_metadata)
     graph_by_key = index_resource_graph(advisor_graph_rows)
     subscription_name_map = build_subscription_name_map(subscription_rows)
+
+    if metadata_collisions:
+        diagnostics.add(
+            severity="warning",
+            check_id="advisor_metadata_key_collisions",
+            source_system="advisor_metadata",
+            scope="fixture",
+            message="Advisor metadata contains duplicated keys; last value wins during indexing",
+            action_required="Inspect fixture payload for duplicate metadata IDs or service IDs",
+            observed_count=len(metadata_collisions),
+            raw_context_json=compact_json(
+                {
+                    "duplicate_keys": sorted(metadata_collisions.keys()),
+                    "collision_events": sum(metadata_collisions.values()),
+                }
+            ),
+        )
 
     advisor_rows = normalize_advisor_rows(
         run_id=run_id,
@@ -232,6 +242,7 @@ def fixture_mode(
         recommendations=advisor_recommendations,
         metadata_by_key=metadata_by_key,
         resource_graph_by_key=graph_by_key,
+        include_raw_json=cfg.write_raw_jsonl,
     )
 
     service_rows = normalize_service_health_rows(
@@ -340,19 +351,34 @@ def add_aggregate_contract_diagnostics(
         and not row.get("impacted_subscriptions", "").strip()
         and not row.get("source_links", "").strip()
     ]
-    if not gap_row_indexes:
-        return
+    if gap_row_indexes:
+        diagnostics.add(
+            severity="error",
+            check_id="aggregate_gap_rows_missing_core_fields",
+            source_system="aggregate",
+            scope="global",
+            message="Aggregate rows contain blank feature/platform/subscription/link core fields",
+            action_required="Fix normalization/grouping inputs before using aggregate output",
+            observed_count=len(gap_row_indexes),
+            raw_context_json=compact_json({"row_numbers": gap_row_indexes}),
+        )
 
-    diagnostics.add(
-        severity="error",
-        check_id="aggregate_gap_rows_missing_core_fields",
-        source_system="aggregate",
-        scope="global",
-        message="Aggregate rows contain blank feature/platform/subscription/link core fields",
-        action_required="Fix normalization/grouping inputs before using aggregate output",
-        observed_count=len(gap_row_indexes),
-        raw_context_json=compact_json({"row_numbers": gap_row_indexes}),
-    )
+    derived_date_row_indexes = [
+        index + 1
+        for index, row in enumerate(aggregate_rows)
+        if row.get("retirement_date_quality", "") == "derived"
+    ]
+    if derived_date_row_indexes:
+        diagnostics.add(
+            severity="warning",
+            check_id="aggregate_rows_with_derived_retirement_date",
+            source_system="aggregate",
+            scope="global",
+            message="Aggregate rows include retirement dates inferred from text",
+            action_required="Review derived retirement dates before committee distribution",
+            observed_count=len(derived_date_row_indexes),
+            raw_context_json=compact_json({"row_numbers": derived_date_row_indexes}),
+        )
 
 
 def add_slide_source_link_diagnostics(

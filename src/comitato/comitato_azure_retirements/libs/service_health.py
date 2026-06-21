@@ -8,6 +8,7 @@ from time import perf_counter
 from typing import Any
 
 from .arm_client import ArmClient
+from .concurrency import effective_worker_count
 from .debug_log import DebugRunLogger
 
 RESOURCE_HEALTH_API_VERSION = "2025-05-01"
@@ -15,14 +16,11 @@ RESOURCE_HEALTH_API_VERSION = "2025-05-01"
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
-def _resolve_worker_count(
-    total_subscriptions: int, requested_workers: int | None
-) -> int:
-    if total_subscriptions <= 1:
-        return 1
-    if requested_workers is None:
-        return min(16, total_subscriptions)
-    return max(1, min(requested_workers, total_subscriptions))
+def _with_subscription_id(event: dict[str, Any], subscription: str) -> dict[str, Any]:
+    # Keep source payload immutable while preserving subscription context for normalization.
+    with_subscription = dict(event)
+    with_subscription["_subscriptionId"] = subscription
+    return with_subscription
 
 
 def _collect_subscription_events(
@@ -43,10 +41,7 @@ def _collect_subscription_events(
     page = client.list_with_nextlink(url, params=params)
 
     elapsed_ms = int((perf_counter() - started_at) * 1000)
-    rows = page.items
-    for event in rows:
-        event["_subscriptionId"] = subscription
-    return rows, page.page_count, elapsed_ms
+    return page.items, page.page_count, elapsed_ms
 
 
 def _impact_items(event: dict[str, Any]) -> list[dict[str, Any]]:
@@ -165,6 +160,7 @@ def collect_events_for_subscriptions(
     allow_degraded: bool = False,
     on_subscription_update: SubscriptionProgressCallback | None = None,
     max_workers: int | None = None,
+    resolved_worker_count: int | None = None,
     debug_logger: DebugRunLogger | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     rows: list[dict[str, Any]] = []
@@ -173,7 +169,10 @@ def collect_events_for_subscriptions(
     failures: list[dict[str, str]] = []
     total_subscriptions = len(subscriptions)
 
-    worker_count = _resolve_worker_count(total_subscriptions, max_workers)
+    worker_count = effective_worker_count(
+        total_subscriptions,
+        resolved_worker_count if resolved_worker_count is not None else max_workers,
+    )
     if debug_logger is not None:
         debug_logger.info(
             "service_health_parallel_collection_started",
@@ -224,15 +223,17 @@ def collect_events_for_subscriptions(
                         total=total_subscriptions,
                     )
                 if not allow_degraded:
-                    for pending in future_to_subscription:
-                        if pending is not future and not pending.done():
-                            pending.cancel()
+                    # ThreadPoolExecutor cannot reliably stop already-running tasks.
+                    # Re-raising preserves strict behavior while the executor drains.
                     raise
                 failures.append({"subscription_id": subscription, "error": error_text})
                 continue
 
             page_by_subscription[subscription] = page_count
-            rows_by_subscription[subscription] = subscription_rows
+            rows_by_subscription[subscription] = [
+                _with_subscription_id(event, subscription)
+                for event in subscription_rows
+            ]
             if on_subscription_update is not None:
                 on_subscription_update(
                     subscription, completed, total_subscriptions, "ok", None

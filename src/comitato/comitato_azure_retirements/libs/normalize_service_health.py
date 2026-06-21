@@ -71,6 +71,7 @@ def normalize_service_health_rows(
             impact_start=impact_start,
             last_update=last_update,
         )
+        resolved_date_for_window, derived_from_text = date_for_window
 
         service_regions: list[dict[str, str]] = []
         if event_impacted_service_regions is not None:
@@ -99,6 +100,8 @@ def normalize_service_health_rows(
                 flags.append("service_health_sensitive")
             if not description and not summary:
                 flags.append("missing_description")
+            if derived_from_text:
+                flags.append("retirement_date_derived_from_text")
 
             row = {
                 "run_id": run_id,
@@ -123,7 +126,7 @@ def normalize_service_health_rows(
                 "impact_start_time": impact_start,
                 "impact_mitigation_time": impact_mitigation,
                 "last_update_time": last_update,
-                "date_for_window": date_for_window,
+                "date_for_window": resolved_date_for_window,
                 "impacted_service": str(service_region.get("name") or ""),
                 "impacted_service_guid": str(service_region.get("guid") or ""),
                 "impacted_region": region,

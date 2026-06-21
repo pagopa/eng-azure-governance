@@ -104,6 +104,7 @@ def normalize_advisor_rows(
     recommendations: list[dict[str, Any]],
     metadata_by_key: dict[str, dict[str, Any]],
     resource_graph_by_key: dict[tuple[str, str], dict[str, Any]],
+    include_raw_json: bool = False,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     used_metadata_keys: set[str] = set()
@@ -277,12 +278,16 @@ def normalize_advisor_rows(
                     "resource_graph_key": [recommendation_type_id, resource_id],
                 }
             ),
-            "raw_json": compact_json(
-                {
-                    "recommendation": recommendation,
-                    "metadata": metadata,
-                    "resource_graph": resource_graph,
-                }
+            "raw_json": (
+                compact_json(
+                    {
+                        "recommendation": recommendation,
+                        "metadata": metadata,
+                        "resource_graph": resource_graph,
+                    }
+                )
+                if include_raw_json
+                else ""
             ),
         }
         rows.append(row)
@@ -355,7 +360,7 @@ def normalize_advisor_rows(
                 "join_quality": "catalog_only",
                 "diagnostic_flags": "catalog_only_without_subscription",
                 "provenance_json": compact_json({"metadata_source": "advisor_metadata"}),
-                "raw_json": compact_json({"metadata": metadata}),
+                "raw_json": compact_json({"metadata": metadata}) if include_raw_json else "",
             }
         )
 

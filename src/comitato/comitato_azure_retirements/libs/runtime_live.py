@@ -8,10 +8,10 @@ from .advisor import (
     collect_advisor_metadata,
     collect_advisor_recommendations,
     collect_advisor_resource_graph,
-    index_metadata,
+    index_metadata_with_collisions,
     index_resource_graph,
 )
-from .arm_client import ArmClient
+from .arm_client import ArmClient, ArmClientSettings
 from .auth import get_management_token
 from .config import RuntimeConfig
 from .debug_log import DebugRunLogger
@@ -57,7 +57,16 @@ def live_mode(
     )
     reporter.step("Requesting Azure ARM bearer token")
     token = get_management_token()
-    client = ArmClient(token, trace_handler=reporter.observe_request)
+    # Keep pool size at least as large as the worker budget to avoid pool churn.
+    pool_size = max(16, cfg.max_workers or 16)
+    client = ArmClient(
+        token,
+        settings=ArmClientSettings(
+            pool_connections=pool_size,
+            pool_maxsize=pool_size,
+        ),
+        trace_handler=reporter.observe_request,
+    )
     reporter.success("ARM client ready with retry-aware HTTP session")
 
     reporter.section(
@@ -117,7 +126,7 @@ def live_mode(
             subscriptions,
             allow_degraded=cfg.allow_degraded,
             on_subscription_update=advisor_progress,
-            max_workers=effective_workers,
+            resolved_worker_count=effective_workers,
             debug_logger=debug_logger,
         )
     advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = collect_advisor_resource_graph(
@@ -132,7 +141,7 @@ def live_mode(
             query_start_time=cfg.health_query_start.isoformat(),
             allow_degraded=cfg.allow_degraded,
             on_subscription_update=service_progress,
-            max_workers=effective_workers,
+            resolved_worker_count=effective_workers,
             debug_logger=debug_logger,
         )
     service_events = filter_health_advisory_events(service_events)
@@ -158,8 +167,28 @@ def live_mode(
     )
     reporter.mapping("Service Health pages by subscription", service_pages)
 
-    metadata_by_key = index_metadata(advisor_metadata)
+    metadata_by_key, metadata_collisions = index_metadata_with_collisions(advisor_metadata)
     graph_by_key = index_resource_graph(advisor_graph_rows)
+
+    if metadata_collisions:
+        diagnostics.add(
+            severity="warning",
+            check_id="advisor_metadata_key_collisions",
+            source_system="advisor_metadata",
+            scope="global",
+            message="Advisor metadata contains duplicated keys; last value wins during indexing",
+            action_required="Review duplicated metadata IDs or service IDs before relying on catalog-only joins",
+            observed_count=len(metadata_collisions),
+            raw_context_json=compact_json(
+                {
+                    "duplicate_keys": sorted(metadata_collisions.keys()),
+                    "collision_events": sum(metadata_collisions.values()),
+                }
+            ),
+        )
+        reporter.warning(
+            f"Advisor metadata produced {len(metadata_collisions)} duplicate key(s)"
+        )
 
     subscription_name_rows = [
         {
@@ -177,6 +206,7 @@ def live_mode(
         recommendations=advisor_recommendations,
         metadata_by_key=metadata_by_key,
         resource_graph_by_key=graph_by_key,
+        include_raw_json=cfg.write_raw_jsonl,
     )
 
     service_rows = normalize_service_health_rows(

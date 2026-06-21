@@ -6,11 +6,12 @@ This toolkit exports Azure retirements evidence for committee review.
 
 Persisted outputs currently include:
 
-- `azure_advisor_retirements_aggregate.tsv`
+- `01_azure_advisor_retirements_raw.tsv`
+- `01_azure_service_health_advisories_raw.tsv`
+- `02_azure_retirements_aggregate.tsv`
+- `03_azure_retirements_slide.tsv`
 - `azure_retirements_run_diagnostics.tsv`
 - `azure_retirements_run_manifest.json`
-
-Service Health collection remains part of the runtime flow, but the normalized `azure_service_health_advisories_aggregate.tsv` file is not currently persisted.
 
 ## Non-Purpose
 
@@ -20,7 +21,6 @@ This project does not:
 - Produce a final executive merged table.
 - Automate portal interactions.
 - Infer resource-level impact for Service Health when the source does not provide resource IDs.
-- Persist a normalized Service Health TSV aggregate in the current output contract.
 
 ## Dependency Decision Note
 
@@ -30,7 +30,8 @@ This project does not:
   - `httpx` plus `tenacity` and `rich`.
   - Azure management SDK packages.
 - Final choice: `requests`, `urllib3`, and `rich`, while keeping `az` CLI token acquisition.
-- Why: this keeps the authentication path explicit, adds robust retry handling for `429` and transient `5xx` responses, and produces clean sectioned console logs with emoji and readable summaries.
+- Current aggregate implementation keeps `pandas` for grouping stability, isolated behind a single helper for future replacement.
+- Why: this keeps the authentication path explicit, adds robust retry handling for `429` and transient `5xx` responses, and produces clean sectioned console logs with emoji and readable summaries while preserving committee output consistency.
 
 ## Python Version
 
@@ -107,7 +108,7 @@ CLI flags override environment values.
 - `AZURE_RETIREMENTS_ALLOW_DEGRADED`
 - `AZURE_BEARER_TOKEN` (optional explicit bearer token; otherwise `az` CLI token is used)
 
-`AZURE_RETIREMENTS_OUTPUT_ROOT` controls only export artifacts such as the advisor aggregate and optional raw JSONL traces. Runtime diagnostics and manifest files are always written under `tmp/`.
+`AZURE_RETIREMENTS_OUTPUT_ROOT` controls export artifacts (raw Advisor TSV, raw Service Health TSV, aggregate TSV, slide TSV, and optional raw JSONL traces). Runtime diagnostics and manifest files are always written under `tmp/`.
 
 ## Output Path
 
@@ -127,7 +128,10 @@ These paths are runtime artifacts and are intentionally Git-ignored.
 
 Required export files:
 
-- `azure_advisor_retirements_aggregate.tsv`
+- `01_azure_advisor_retirements_raw.tsv`
+- `01_azure_service_health_advisories_raw.tsv`
+- `02_azure_retirements_aggregate.tsv`
+- `03_azure_retirements_slide.tsv`
 
 Required runtime files:
 
