@@ -33,3 +33,30 @@ def test_normalize_advisor_rows_fallback_service_name_from_impacted_field() -> N
     assert rows[0]["service_name"] == "App service"
     assert rows[0]["join_quality"] == "recommendation_only"
     assert "recommendation_without_metadata" in rows[0]["diagnostic_flags"].split(",")
+
+
+def test_normalize_advisor_rows_backfills_subscription_name_from_scope_map() -> None:
+    recommendation = {
+        "id": "rec-1",
+        "properties": {
+            "recommendationTypeId": "service-1",
+            "resourceMetadata": {
+                "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.KeyVault/vaults/kv-1"
+            },
+            "shortDescription": {"problem": "Upgrade SDK"},
+        },
+        "_subscriptionId": "sub-1",
+    }
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 21),
+        scope_mode="live",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={},
+        subscription_name_map={"sub-1": "PROD-IO"},
+    )
+
+    assert rows[0]["subscription_id"] == "sub-1"
+    assert rows[0]["subscription_name"] == "PROD-IO"

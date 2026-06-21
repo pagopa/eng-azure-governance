@@ -206,6 +206,7 @@ def live_mode(
         recommendations=advisor_recommendations,
         metadata_by_key=metadata_by_key,
         resource_graph_by_key=graph_by_key,
+        subscription_name_map=subscription_name_map,
         include_raw_json=cfg.write_raw_jsonl,
     )
 

@@ -104,6 +104,7 @@ def normalize_advisor_rows(
     recommendations: list[dict[str, Any]],
     metadata_by_key: dict[str, dict[str, Any]],
     resource_graph_by_key: dict[tuple[str, str], dict[str, Any]],
+    subscription_name_map: dict[str, str] | None = None,
     include_raw_json: bool = False,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
@@ -189,6 +190,7 @@ def normalize_advisor_rows(
         if retirement_raw and not retirement_date_text:
             row_flags.append("unparseable_date")
 
+        subscription_id = str(recommendation.get("_subscriptionId") or "")
         tags_json = ""
         resource_type = ""
         location = ""
@@ -205,6 +207,9 @@ def normalize_advisor_rows(
             resource_name = str(resource_graph.get("name") or resource_name)
             resource_group = str(resource_graph.get("resourceGroup") or resource_group)
             platform_state = str(resource_graph.get("platformState") or "")
+
+        if not subscription_name and subscription_name_map:
+            subscription_name = subscription_name_map.get(subscription_id, "")
 
         actions = properties.get("actions", [])
         action_link = ""
@@ -243,7 +248,7 @@ def normalize_advisor_rows(
             "days_to_retirement": "" if d_days is None else str(d_days),
             "months_to_retirement": "" if d_months is None else str(d_months),
             "retirement_date_quality": date_quality,
-            "subscription_id": str(recommendation.get("_subscriptionId") or ""),
+            "subscription_id": subscription_id,
             "subscription_name": subscription_name,
             "resource_id": resource_id,
             "resource_name": resource_name,

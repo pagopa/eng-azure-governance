@@ -177,6 +177,51 @@ def test_build_aggregate_rows_backfills_source_links_from_advisor_identifiers() 
     )
 
 
+def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscription_id() -> None:
+    advisor_rows = [
+        {
+            "retiring_feature": "Known subscription row",
+            "short_description_solution": "Upgrade",
+            "short_description_problem": "Known subscription",
+            "retirement_date": "2026-12-31",
+            "subscription_id": "sub-1",
+            "subscription_name": "PROD-IO",
+            "source_system": "advisor_joined",
+            "source_id": "/subscriptions/sub-1/resourceGroups/rg/providers/Microsoft.Web/sites/app/providers/Microsoft.Advisor/recommendations/known",
+            "advisor_recommendation_id": "known",
+            "service_name": "App service",
+            "as_of_date": "2026-06-19",
+        },
+        {
+            "retiring_feature": "Blank subscription row",
+            "short_description_solution": "Upgrade",
+            "short_description_problem": "Blank subscription",
+            "retirement_date": "2027-01-31",
+            "subscription_id": "sub-1",
+            "subscription_name": "",
+            "source_system": "advisor_joined",
+            "source_id": "/subscriptions/sub-1/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/kv/providers/Microsoft.Advisor/recommendations/blank",
+            "advisor_recommendation_id": "blank",
+            "service_name": "Key vault",
+            "as_of_date": "2026-06-19",
+        },
+    ]
+
+    aggregate_rows = build_aggregate_rows(
+        advisor_rows=advisor_rows,
+        service_rows=[],
+        active_platform_map={"prod-io": "IO"},
+        as_of_date=date(2026, 6, 19),
+    )
+
+    blank_row = next(
+        row for row in aggregate_rows if row["retiring_feature"] == "Blank subscription row"
+    )
+    assert blank_row["impacted_platforms"] == "IO"
+    assert blank_row["impacted_subscriptions"] == "PROD-IO"
+    assert blank_row["impacted_platforms_subscriptions_json"] == '{"platforms":{"IO":["PROD-IO"]}}'
+
+
 def test_build_aggregate_rows_backfills_source_links_from_service_health_identifiers() -> None:
     source_identifier = "Microsoft.ResourceHealth/events/ABCD-123"
     service_rows = [

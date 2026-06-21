@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date
+import re
 
 from .dates import parse_possible_date
 from .tsv import compact_json
@@ -19,6 +20,9 @@ from .workflow_exports_utils import (
 )
 
 UNKNOWN_PLATFORM = "Unknown Platform"
+UNKNOWN_SUBSCRIPTION = "Unknown Subscription"
+
+_SUBSCRIPTION_ID_RE = re.compile(r"/subscriptions/([^/]+)", re.IGNORECASE)
 
 
 def aggregate_group(
@@ -28,6 +32,7 @@ def aggregate_group(
     active_platform_map: dict[str, str],
     normalize_key,
     as_of_date: date,
+    subscription_name_by_id: dict[str, str] | None = None,
 ) -> dict[str, str]:
     source_identifiers = sorted_unique(
         item for row in rows for item in as_string_list(row.get("source_identifiers"))
@@ -36,12 +41,13 @@ def aggregate_group(
         item for row in rows for item in as_string_list(row.get("source_links"))
     )
     source_systems = sorted_unique(str(row.get("source_system", "")) for row in rows)
-    subscription_names = sorted_unique(str(row.get("subscription_name", "")) for row in rows)
+    subscription_names = _subscription_references(
+        rows=rows,
+        subscription_name_by_id=subscription_name_by_id or {},
+    )
 
     platform_subscriptions: dict[str, set[str]] = defaultdict(set)
     for subscription_name in subscription_names:
-        if not subscription_name:
-            continue
         platform_name = active_platform_map.get(normalize_key(subscription_name), UNKNOWN_PLATFORM)
         platform_subscriptions[platform_name].add(subscription_name)
 
@@ -110,3 +116,35 @@ def aggregate_group(
         "first_seen_date": first_seen_date,
         "last_seen_date": last_seen_date,
     }
+
+
+def _subscription_references(
+    *,
+    rows: list[dict[str, object]],
+    subscription_name_by_id: dict[str, str],
+) -> list[str]:
+    references: list[str] = []
+    for row in rows:
+        subscription_name = str(row.get("subscription_name", "")).strip()
+        subscription_id = str(row.get("subscription_id", "")).strip()
+        if not subscription_id:
+            subscription_id = _first_subscription_id(row.get("source_identifiers"))
+
+        if not subscription_name and subscription_id:
+            subscription_name = subscription_name_by_id.get(subscription_id, subscription_id)
+
+        if subscription_name:
+            references.append(subscription_name)
+
+    if not references:
+        references.append(UNKNOWN_SUBSCRIPTION)
+
+    return sorted_unique(references)
+
+
+def _first_subscription_id(source_identifiers: object) -> str:
+    for source_identifier in as_string_list(source_identifiers):
+        match = _SUBSCRIPTION_ID_RE.search(source_identifier)
+        if match:
+            return match.group(1)
+    return ""

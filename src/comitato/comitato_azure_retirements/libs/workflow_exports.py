@@ -91,6 +91,7 @@ def build_aggregate_rows(
         ),
         axis=1,
     )
+    subscription_name_by_id = _subscription_name_by_id(frame.to_dict("records"))
 
     grouped_rows: list[dict[str, str]] = []
     for advisory_key, records in _group_records_by_advisory_key(frame):
@@ -101,6 +102,7 @@ def build_aggregate_rows(
                 active_platform_map=active_platform_map,
                 normalize_key=normalize_key,
                 as_of_date=as_of_date,
+                subscription_name_by_id=subscription_name_by_id,
             )
         )
 
@@ -176,3 +178,13 @@ def _build_advisory_key(
         canonical_date=canonical_date,
         source_identifiers=source_identifiers,
     )
+
+
+def _subscription_name_by_id(records: list[dict[str, object]]) -> dict[str, str]:
+    mapping: dict[str, str] = {}
+    for record in records:
+        subscription_id = str(record.get("subscription_id", "")).strip()
+        subscription_name = str(record.get("subscription_name", "")).strip()
+        if subscription_id and subscription_name and subscription_id not in mapping:
+            mapping[subscription_id] = subscription_name
+    return mapping
