@@ -1,8 +1,3 @@
-<!-- markdownlint-disable-file MD041 -->
-<!-- PR title format: <type>(<scope>): <summary> -->
-<!-- Examples: feat(terraform): add new SCP policy -->
-<!--           fix(scripts): correct JSON validation logic -->
-
 ## Description
 
 <!-- Describe the policy/custom role/initiative change and intended control. -->
