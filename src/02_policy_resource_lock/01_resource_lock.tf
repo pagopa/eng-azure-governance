@@ -14,7 +14,7 @@ variable "resource_lock_types" {
     "Microsoft.Network/virtualNetworkGateways",
     "Microsoft.OperationalInsights/workspaces",
     "microsoft.insights/components",
-    "Microsoft.ContainerService/ManagedClusters",
+    #"Microsoft.ContainerService/ManagedClusters",  Exclude AKS for Microsoft action migration for Azure Monitor extension (https://pagopa.atlassian.net/wiki/spaces/CSG/pages/3177349130/Azure+-+Disable+Resource+lock+policy)
     "Microsoft.Cdn/profiles",
     "Microsoft.KeyVault/vaults",
     "Microsoft.EventHub/Namespaces",
