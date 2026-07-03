@@ -37,7 +37,7 @@ jobs:
 
       - name: Restore pre-commit cache
         id: pre-commit-cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # actions/cache/restore@v5.0.5 release: https://github.com/actions/cache/releases/tag/v5.0.5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5 release: https://github.com/actions/cache/releases/tag/v5.0.5
         with:
           path: ${{ runner.temp }}/pre-commit-cache
           key: pre-commit-${{ runner.os }}-config-hash-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -80,7 +80,7 @@ jobs:
 
       - name: Save pre-commit cache
         if: ${{ always() && steps.pre-commit-run.outcome != 'skipped' && steps.pre-commit-cache.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # actions/cache/save@v5.0.5 release: https://github.com/actions/cache/releases/tag/v5.0.5
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5 release: https://github.com/actions/cache/releases/tag/v5.0.5
         with:
           path: ${{ runner.temp }}/pre-commit-cache
           key: pre-commit-${{ runner.os }}-config-hash-${{ hashFiles('.pre-commit-config.yaml') }}
