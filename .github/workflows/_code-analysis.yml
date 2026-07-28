@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: 📥 Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3 https://github.com/actions/checkout/releases/tag/v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
         with:
           persist-credentials: false
 
@@ -48,50 +48,45 @@ jobs:
           cache: pip
           cache-dependency-path: |
             .python-version
-            .github/scripts/requirements.txt
-            tools/analyze_copilot_debug_log/requirements.txt
+            src/comitato/comitato_azure_retirements/requirements.txt
 
       - name: 🔎 Show Python version
         run: |
           python --version
           python -m pip --version
 
-      - name: 📦 Validate scripts requirements
+      - name: 📦 Validate Python requirements
         run: |
           rm -rf "${TEST_VENV}"
           python -m venv "${TEST_VENV}"
           "${TEST_VENV}/bin/python" -m pip install --upgrade pip
-          "${TEST_VENV}/bin/pip" install --require-hashes -r ".github/scripts/requirements.txt"
+          "${TEST_VENV}/bin/pip" install --require-hashes -r "src/comitato/comitato_azure_retirements/requirements.txt"
+          "${TEST_VENV}/bin/pip" install pytest==9.1.0
           "${TEST_VENV}/bin/python" -m pip check
 
-      - name: 🔥 Smoke test Python entry points
+      - name: 🔥 Analyze Python sources and tests
         run: |
-          bash tools/analyze_copilot_debug_log/run.sh prompt-exports --help
-          bash tools/analyze_copilot_debug_log/run.sh debug-logs --help
-          ./.github/scripts/run.sh analyze_copilot_debug_log --help
-          ./.github/scripts/run.sh benchmark_skill_tokens --help
-          "${TEST_VENV}/bin/python" ".github/scripts/build_inventory.py" --help
-          "${TEST_VENV}/bin/python" ".github/scripts/check_catalog_consistency.py" --help
-          "${TEST_VENV}/bin/python" ".github/scripts/audit_copilot_catalog.py" --help
-          "${TEST_VENV}/bin/python" ".github/scripts/detect_token_risks.py" --help
-          "${TEST_VENV}/bin/python" ".github/scripts/validate_internal_skills.py" --help
-          "${TEST_VENV}/bin/python" ".github/scripts/sync_copilot_catalog.py" --help
-          "${TEST_VENV}/bin/python" ".github/scripts/github_catalog_validation.py" --help
+          mapfile -t python_files < <(
+            find src/comitato tests \
+              -type f -name '*.py' -not -path '*/.venv/*' -print | sort
+          )
+          test "${#python_files[@]}" -gt 0
+          "${TEST_VENV}/bin/python" -m py_compile "${python_files[@]}"
+          "${TEST_VENV}/bin/python" \
+            src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help
 
-      - name: 🔥 Smoke test Bash entry points
+      - name: 🔥 Analyze Bash scripts
         run: |
-          ./.github/scripts/run.sh --help || true
-          bash -n .github/scripts/run.sh
-          bash -n tools/analyze_copilot_debug_log/run.sh
-          bash -n .github/scripts/build_inventory.sh
-          bash -n .github/scripts/check_catalog_consistency.sh
-          bash -n .github/scripts/audit_copilot_catalog.sh
-          bash -n .github/scripts/detect_token_risks.sh
-          bash -n .github/scripts/sync_copilot_catalog.sh
-          bash -n .github/scripts/sync_home_ai_resources.sh
-          bash -n .github/scripts/github_catalog_validation.sh
-          bash -n .github/skills/local-agent-sync-install-ai-resources/scripts/run.sh
+          mapfile -t bash_files < <(
+            find scripts src \
+              -type f -name '*.sh' -not -path '*/.venv/*' -print | sort
+          )
+          test "${#bash_files[@]}" -gt 0
+          for file in "${bash_files[@]}"; do
+            bash -n "${file}"
+          done
 
       - name: ✅ Run pytest
         run: |
-          "${TEST_VENV}/bin/python" -m pytest tests -q
+          "${TEST_VENV}/bin/python" -m pytest \
+            tests/comitato/comitato_azure_retirements -q
