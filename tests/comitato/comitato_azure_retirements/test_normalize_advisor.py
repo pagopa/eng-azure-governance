@@ -60,3 +60,49 @@ def test_normalize_advisor_rows_backfills_subscription_name_from_scope_map() -> 
 
     assert rows[0]["subscription_id"] == "sub-1"
     assert rows[0]["subscription_name"] == "PROD-IO"
+
+
+def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description() -> None:
+    recommendation = {
+        "id": "rec-1",
+        "properties": {
+            "recommendationTypeId": "service-1",
+            "resourceMetadata": {
+                "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Web/sites/app-1"
+            },
+            "shortDescription": {"problem": "Short problem", "solution": "Short solution"},
+            "description": {"problem": "The complete problem description", "solution": "Do not export"},
+        },
+        "_subscriptionId": "sub-1",
+    }
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 21),
+        scope_mode="live",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={
+            ("service-1", recommendation["properties"]["resourceMetadata"]["resourceId"].lower()): {
+                "location": "Italy North",
+            }
+        },
+    )
+
+    assert rows[0]["location"] == "italynorth"
+    assert rows[0]["description"] == "The complete problem description"
+
+    excluded_rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 21),
+        scope_mode="live",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={
+            ("service-1", recommendation["properties"]["resourceMetadata"]["resourceId"].lower()): {
+                "location": "eastus",
+            }
+        },
+    )
+
+    assert excluded_rows == []

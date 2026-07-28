@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from datetime import date
 from typing import Any, Callable
 
 from .dates import normalize_datetime
 from .normalize_shared import service_health_date_for_window
+from .regions import ALLOWED_REGIONS, canonical_allowed_region
 from .tsv import compact_json
 
 
@@ -31,6 +33,7 @@ def normalize_service_health_rows(
     event_impacted_regions: Callable[[dict[str, Any]], list[str]],
     event_impacted_service_regions: Callable[[dict[str, Any]], list[dict[str, str]]] | None = None,
     build_recommended_actions: Callable[[dict[str, Any]], str],
+    allowed_regions: Collection[str] = ALLOWED_REGIONS,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
 
@@ -45,7 +48,7 @@ def normalize_service_health_rows(
         event_type = str(properties.get("eventType") or "")
         event_sub_type = str(properties.get("eventSubType") or "")
         event_source = str(properties.get("eventSource") or "")
-        tracking_id = str(properties.get("trackingId") or "")
+        tracking_id = event_id
 
         title = str(properties.get("title") or properties.get("header") or "")
         summary = str(properties.get("summary") or "")
@@ -92,6 +95,10 @@ def normalize_service_health_rows(
 
         for service_region in service_regions:
             region = str(service_region.get("region") or "")
+            if region:
+                region = canonical_allowed_region(region, allowed_regions)
+                if not region:
+                    continue
 
             flags: list[str] = []
             if not region:
@@ -120,6 +127,7 @@ def normalize_service_health_rows(
                 "status": status,
                 "priority": "",
                 "title": title,
+                "short_description_solution": title,
                 "summary": summary,
                 "description": description,
                 "recommended_actions": actions_text,

@@ -6,6 +6,20 @@ import pytest
 
 from src.comitato.comitato_azure_retirements.libs.config import parse_args
 from src.comitato.comitato_azure_retirements.libs.dates import add_calendar_months
+from src.comitato.comitato_azure_retirements.libs.regions import ALLOWED_REGIONS
+
+
+def test_allowed_regions_are_loaded_from_raw_export_configuration() -> None:
+    assert ALLOWED_REGIONS == frozenset(
+        {
+            "italynorth",
+            "northeurope",
+            "westeurope",
+            "spaincentral",
+            "germanywestcentral",
+            "global",
+        }
+    )
 
 
 def test_parse_args_defaults_to_live_when_scope_is_provided(

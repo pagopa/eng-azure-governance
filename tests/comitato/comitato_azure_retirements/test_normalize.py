@@ -229,6 +229,43 @@ def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
     assert all("raw_json" not in row for row in rows)
 
 
+def test_normalize_service_health_rows_filters_regions_and_uses_event_id_for_tracking() -> None:
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-1",
+        "name": "event-1",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "trackingId": "different-tracking-id",
+            "title": "Regional advisory",
+            "impact": {
+                "impactedService": "Storage",
+                "impactedRegions": ["Italy North", "Global", "eastus"],
+            },
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_services=lambda _event: [{"name": "Storage", "guid": "guid-1"}],
+        event_impacted_regions=lambda _event: ["Italy North", "Global", "eastus"],
+        build_recommended_actions=lambda _event: "Review mitigation plan",
+    )
+
+    assert {(row["impacted_service"], row["impacted_region"]) for row in rows} == {
+        ("Storage", "italynorth"),
+        ("Storage", "global"),
+    }
+    assert all(row["tracking_id"] == row["event_id"] == "event-1" for row in rows)
+    assert all(row["short_description_solution"] == "Regional advisory" for row in rows)
+
+
 def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dates() -> (
     None
 ):
@@ -364,8 +401,7 @@ def test_normalize_service_health_rows_preserves_service_region_pairs_from_callb
         build_recommended_actions=lambda _event: "Review impact.",
     )
 
-    assert len(rows) == 2
+    assert len(rows) == 1
     assert {(row["impacted_service"], row["impacted_region"]) for row in rows} == {
-        ("Azure Front Door", "Global"),
-        ("Azure CDN", "eastus"),
+        ("Azure Front Door", "global"),
     }

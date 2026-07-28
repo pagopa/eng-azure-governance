@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-import re
+from collections.abc import Collection
 from datetime import date
+import re
 from typing import Any
 
 from .dates import days_to_retirement, months_to_retirement, normalize_datetime, parse_possible_date
+from .regions import ALLOWED_REGIONS, canonical_allowed_region
 from .tsv import compact_json
 
 RESOURCE_TYPE_LABELS = {
@@ -59,6 +61,18 @@ def _description_quality(description: str, short_problem: str, feature: str, lin
     return "missing"
 
 
+def _problem_description(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if not isinstance(value, dict):
+        return ""
+    for key in ("problem", "description", "text", "content"):
+        candidate = value.get(key)
+        if isinstance(candidate, str):
+            return candidate
+    return ""
+
+
 def _resource_type_from_resource_id(resource_id: str) -> str:
     if not resource_id:
         return ""
@@ -106,6 +120,7 @@ def normalize_advisor_rows(
     resource_graph_by_key: dict[tuple[str, str], dict[str, Any]],
     subscription_name_map: dict[str, str] | None = None,
     include_raw_json: bool = False,
+    allowed_regions: Collection[str] = ALLOWED_REGIONS,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     used_metadata_keys: set[str] = set()
@@ -159,9 +174,12 @@ def normalize_advisor_rows(
         d_days = days_to_retirement(as_of_date, retirement_date)
         d_months = months_to_retirement(as_of_date, retirement_date)
 
-        short_problem = str(properties.get("shortDescription", {}).get("problem") or "")
-        short_solution = str(properties.get("shortDescription", {}).get("solution") or "")
-        description = str(properties.get("description") or "")
+        short_description = properties.get("shortDescription", {})
+        if not isinstance(short_description, dict):
+            short_description = {}
+        short_problem = str(short_description.get("problem") or "")
+        short_solution = str(short_description.get("solution") or "")
+        description = _problem_description(properties.get("description"))
         feature_name = str(
             service_retirement.get("retirementFeatureName")
             or extended_properties.get("retirementFeatureName")
@@ -207,6 +225,12 @@ def normalize_advisor_rows(
             resource_name = str(resource_graph.get("name") or resource_name)
             resource_group = str(resource_graph.get("resourceGroup") or resource_group)
             platform_state = str(resource_graph.get("platformState") or "")
+
+        if location:
+            canonical_location = canonical_allowed_region(location, allowed_regions)
+            if not canonical_location:
+                continue
+            location = canonical_location
 
         if not subscription_name and subscription_name_map:
             subscription_name = subscription_name_map.get(subscription_id, "")

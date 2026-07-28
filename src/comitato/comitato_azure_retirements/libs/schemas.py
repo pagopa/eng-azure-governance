@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 ADVISOR_HEADERS = [
+    "service_name",
+    "retiring_feature",
     "run_id",
     "as_of_date",
     "scope_mode",
@@ -12,8 +14,6 @@ ADVISOR_HEADERS = [
     "recommendation_type_id",
     "advisor_recommendation_id",
     "advisor_metadata_id",
-    "service_name",
-    "retiring_feature",
     "retirement_date",
     "days_to_retirement",
     "months_to_retirement",
@@ -36,8 +36,8 @@ ADVISOR_HEADERS = [
     "last_updated",
     "label",
     "short_description_problem",
-    "short_description_solution",
     "description",
+    "short_description_solution",
     "potential_benefits",
     "learn_more_link",
     "action_link",
@@ -50,6 +50,8 @@ ADVISOR_HEADERS = [
 ]
 
 SERVICE_HEALTH_HEADERS = [
+    "impacted_service",
+    "subscription_name",
     "run_id",
     "as_of_date",
     "scope_mode",
@@ -66,6 +68,7 @@ SERVICE_HEALTH_HEADERS = [
     "status",
     "priority",
     "title",
+    "short_description_solution",
     "summary",
     "description",
     "recommended_actions",
@@ -73,11 +76,9 @@ SERVICE_HEALTH_HEADERS = [
     "impact_mitigation_time",
     "last_update_time",
     "date_for_window",
-    "impacted_service",
     "impacted_service_guid",
     "impacted_region",
     "subscription_id",
-    "subscription_name",
     "resource_granularity",
     "resource_id",
     "resource_group",
