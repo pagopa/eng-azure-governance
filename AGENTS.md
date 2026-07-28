@@ -1,101 +1,137 @@
-# AGENTS.md - Instruction Architecture Bridge
+# AGENTS.md - Repository Operating Core
 
-This file is the stable entrypoint for the repository instruction architecture.
+`AGENTS.md` is the primary always-on repository policy entrypoint for coding
+agents in this repository. Keep it compact: it should route agents to the
+nearest owner, avoid duplicated guidance, and require explicit validation.
 
-## Role
+## First Move
 
-- `AGENTS.md` is the main orientation document, the cross-surface bridge, and the precedence anchor.
-- Keep this file stable, strategic, and free of volatile inventory.
-- Treat rules as canonical here unless a narrower scoped instruction explicitly owns an exception.
+- Identify the requested target and nearest owner before broad reading.
+- Read only the evidence needed to choose the smallest valid change and check.
+- Prefer the closest executable validation; report any validation gap explicitly.
 
-## Cross-Surface Contract
+## Precedence
 
-1. Use `.github/copilot-instructions.md` as the repo-wide Copilot projection.
-2. Use `.github/INVENTORY.md` for the exact live catalog of instructions, skills, and agents.
-3. Use `.github/instructions/` for path-specific or domain-specific projections.
-4. Use `.github/skills/` and `.github/agents/` only when they are relevant to the current task.
-5. Keep policy, projections, and inventory separate instead of mixing them into one file.
-6. If `docs/architecture.md` exists in the current repository, treat it as the per-repo architecture contract: read it before reasoning about repository purpose, components, system boundaries, or runtime fit, and update it in the same change when behavior, components, or boundaries move. This file is intentionally not part of the synced baseline; each repository owns its own `docs/architecture.md`. If the file is absent, fall back to inspecting the repository structure on disk and do not invent architecture facts.
+- Direct user instructions win for the current task unless they require unsafe,
+  destructive, or impossible behavior.
+- Resolve conflicts with the smallest valid owner. Treat broader files as
+  fallback policy, not permission to override narrower contracts.
+- Do not infer active policy from removed files, generated output, historical
+  aliases, or past automation unless it exists on disk and is deliberately
+  reintroduced.
 
-## Precedence Model
+## User Alignment
 
-- `AGENTS.md` owns repository-wide defaults, rule placement, and bridge behavior.
-- `.github/copilot-instructions.md` projects the repo-wide behavior that must remain visible in native Copilot flows and must stay aligned with this file.
-- Narrower scoped instructions may override defaults only inside their declared scope.
-- Before adding a new policy, decide whether it truly belongs at repository scope; prefer the smallest specific instruction, skill, agent, or configuration that fully owns the behavior, and promote it to `AGENTS.md` only when it changes cross-surface governance or applies across the AI configuration baseline.
-- When rules conflict, prefer the smallest valid scope; if scope is equal, follow the canonical rule stated here and remove the conflicting duplicate.
+- For small, deterministic, low-risk tasks, proceed after identifying the
+  target, nearest owner, and validation path.
+- For non-trivial, ambiguous, architectural, policy, contract, or multi-step
+  work, align with the user before implementation.
 
-## Language Default
+## Operating Principles
 
-- The default authoring language for repository artifacts is English unless a scoped instruction explicitly overrides it.
-- User chat may be Italian.
-- Keep language exceptions explicit and local instead of restating broader prohibitions across the catalog.
-- Repository-owned execution-plan artifacts under `tmp/superpowers/<clear-action-or-task-name>/` may default to Italian when the local planning policy applies; this exception stays local to those plan files and does not change the repository-wide English default.
+- Think before acting. Confirm target, nearest owner, bounded evidence, and
+  validation path before broad commands.
+- Make surgical changes. Preserve user work, avoid unrelated refactors, and tie
+  each edit to the requested outcome.
+- Fix the controlling issue where practical instead of layering workarounds.
+- Work toward verified outcomes. Run the closest available validation and report
+  explicit gaps.
 
-## Naming Contract
+## Scope And Placement
 
-- Repository-owned resources created in `cloud-strategy.github` use the `internal-*` prefix by default.
-- Repository-owned resources created in other repositories use the `local-*` prefix.
-- The `local-*` prefix is also reserved, inside this standards repository, for repo-owned tooling that must remain source-of-truth here and must NOT propagate to consumer repositories during sync (for example, the sync command-center agents and their paired engine skills). These assets stay excluded from the synced baseline by design.
-- Imported upstream resources keep the `<short-repo>-<original-resource-name>` form.
+- `AGENTS.md` owns stable repository-wide policy, precedence, tactical defaults,
+  ownership boundaries, and routing anchors.
+- `.github/INVENTORY.md` is the exact live inventory of the GitHub Copilot catalog.
+- Do not put long operational procedures, detailed checklists, detailed
+  file-shape recipes, command playbooks, or tool-specific workflows here.
+- Short, globally safe best-practice defaults may live here when they improve
+  baseline behavior without turning this file into a procedure manual.
+- `tmp/` is temporary support only. Treat its contents as disposable working
+  artifacts and do not commit files from `tmp/`.
 
-## Resource Model
+## Authoring Defaults
 
-- Treat prefixes as origin and ownership markers first. Do not use them as a rigid proxy for strategic, tactical, or operational level.
-- Evaluate resources on two axes: origin/ownership and dominant role.
-- `obra-*` resources are cross-cutting workflow assets. They often help with strategic framing, but may govern tactical or operational work when relevant.
-- `internal-*` resources are the canonical repository-owned layer. They are tactical by default, but may also be strategic or operational when their contract says so.
-- Imported upstream resources remain support depth by default. Overlap alone is not enough to fork or wrap them; prefer a repository-owned wrapper or replacement only when routing, governance, terminology, output shape, or safety expectations require repo-local ownership.
-- During catalog review or rationalization, imported assets in domains already covered by a credible internal owner must be evaluated as `keep as depth`, `wrap under the internal owner`, or `retire`; do not collapse that decision to a binary keep/delete choice.
-- Keep imported upstream assets verbatim by default. Allow a direct in-place override only for a strong repo-specific need that the user explicitly counter-validates, and register that override in the `local-agent-sync-external-resources` skill bundle so future refreshes can replay it safely.
-- `local-*` resources remain consumer-local extensions in target repositories. In this standards repository, the `local-*` prefix is also used for repo-owned tooling that intentionally must not be synced to consumers (for example, sync command centers and their paired engine skills); these assets remain source-of-truth here and are excluded from the synced baseline.
-- When overlap exists, prefer the repository-owned internal owner as canonical and use imported depth as support unless no credible internal owner exists.
+- Use Plain Technical English for repository-owned prose unless a narrower owner
+  explicitly overrides it.
+- Prefer short sentences, stable terms, active voice, and explicit `must`,
+  `should`, and `may` wording.
+- Keep required technical names unchanged.
 
-## Operational Owner Model
+## Tactical Defaults
 
-- `internal-delivery-operator`, `internal-planning-leader`, `internal-review-guard`, and `internal-critical-master` remain the canonical repository-owned operational agents.
-- The canonical operational model uses direct entry instead of a repository-owned front-door router.
-- When the right lane is unclear, prefer `internal-planning-leader` as the safe fallback.
-- Canonical owners remain recommendation-only when their boundary breaks and are not subagent-invoked by default.
-- Any future automation between canonical owners must be explicit, narrow, one-directional, and must not create all-to-all dispatch or nested ping-pong.
+- Preserve compact working state across turns; avoid rebuilding full context
+  unless new evidence invalidates the current state.
+- Keep one active primary owner per execution lane; load narrower owners only
+  when path, runtime, symptom, or validation evidence proves they are needed.
+- Use bounded evidence: inspect changed sections and failing-validator context
+  first, then expand only when gaps remain.
+- Name the validation path early; if evidence changes it, update the working
+  assumption before editing.
 
-## Projection Rules
+## Delivery And Validation
 
-- Keep repo-wide Copilot behavior in `.github/copilot-instructions.md`.
-- Keep local self-containment in scoped instruction files only when it improves the consumer experience and does not create drift.
-- Keep volatile inventory in `.github/INVENTORY.md`, never here.
-- When introducing a new source-managed catalog family or a new human-readable catalog summary surface, update inventory generation, sync discovery, and validator coverage in the same change so `.github/INVENTORY.md` is not the only surface aware of it.
-- Do not add hand-maintained catalog matrices or counts beside `.github/INVENTORY.md` unless they are generated from the filesystem or covered by validation.
-- Keep `internal-sync-*` assets sync-specific. They may reference root governance, but they do not replace canonical ownership in this file or `.github/copilot-instructions.md`.
-- When a sync or catalog workflow changes a repository-wide default, update the canonical owner first and then realign downstream projections or sync surfaces in the same pass.
-- Do not treat removed validators, sync scripts, contract tests, or historical aliases as active policy unless they exist on disk and are reintroduced deliberately.
+- Be extremely concise in user-facing reporting without sacrificing clarity,
+  correctness, safety, required evidence, or actionable next steps. Lead with
+  the outcome, omit repetition and incidental process detail, and expand only
+  when requested or necessary.
+- Reason from repository evidence. Do not invent runtimes, validators, sync
+  flows, or tests.
+- For non-trivial work, make target state, anti-scope, assumptions, tradeoffs,
+  and validation path visible before implementation or handoff.
+- When a contract or policy changes, align the owning tests, validators, or docs
+  instead of letting stale checks restore the old behavior.
 
-## Consumer Override Layer
+## Code Changes
 
-- This standards repository owns the sync seed template at `.github/copilot-instructions.override.md.template`.
-- Consumer repositories may keep `.github/copilot-instructions.override.md` as the consumer-local exception layer materialized from that template by sync.
-- That file may override synced defaults from `AGENTS.md` or `.github/copilot-instructions.md` only inside the consumer repository and only when each exception states the overridden baseline rule, local scope, reason, and required disclosure.
-- If the target file exists but declares no active overrides, keep the synced baseline authoritative.
-- When a response follows a local override, it must say that a consumer-local exception is in effect and cite `.github/copilot-instructions.override.md`.
-- Keep the target override file local in effect even when seeded by sync. Do not treat it as inventory, and do not use it to collapse the separate roles of `AGENTS.md`, `.github/copilot-instructions.md`, and `.github/INVENTORY.md`.
-- The local override layer must not redefine the ownership meaning of `internal-*`, `local-*`, or `internal-sync-*`; use it for repo-local exceptions, not for replacing the bridge model.
+- Executable or evaluable behavior changes must use a test-first
+  red-green-refactor loop: define the failing check, make the smallest
+  implementation edit, then rerun the focused check and closest validation.
+- Place tests under repository-root `tests/` using paths that make the owning
+  source or checked behavior obvious. Keep deeper layout conventions in the
+  nearest owner.
+- The failing check must exist before the first implementation edit unless a
+  pre-code testability exception names the gap and alternate validation path.
+- Tests added after implementation are regression coverage only; they must not
+  be represented as test-first work.
+- Exceptions are limited to prose-only docs, generated inventory, mechanical
+  formatting, behavior-neutral renames, read-only validation, or explicit
+  pre-code testability exceptions.
+- If this gate is skipped, agents must stop, disclose the violation, establish
+  the recovery path, and must not claim retroactive red-green-refactor work.
 
-## Retained Learning
+## Agent skills
 
-- Root `LESSONS_LEARNED.md` is the repository learning ledger for durable lessons discovered during repository work, regardless of phase.
-- Record or codify a durable lesson as soon as it becomes clear enough to be reusable; do not wait for task completion only because the work is still in planning, review, debugging, or implementation.
-- When a validator, IDE, schema check, or runtime error overturns an earlier implementation assumption, re-evaluate retained learning immediately instead of treating the correction as task-local by default.
-- When correctness depends on vendor-owned workflow semantics, schema constraints, or context availability, read the primary documentation before editing or asserting that a change is valid.
-- Keep `LESSONS_LEARNED.md` non-canonical. It must not replace `AGENTS.md`, `.github/copilot-instructions.md`, scoped instructions, skills, or agents.
-- Keep `LESSONS_LEARNED.md` append-preserving by default: preserve unrelated rows already on disk, including local uncommitted lessons, and change a specific row only when that same lesson is being codified, disproven, narrowed, or deduplicated.
-- Durable corrections to repeated or consequential misapplication of existing repository rules may also be retained as lessons.
-- Keep detailed retained-learning behavior in `.github/copilot-instructions.md`; keep only the strategic boundary here.
+### Issue tracker
 
-## Volatile Artifacts
+Issues and PRDs are tracked in GitHub Issues for `pagopa/cloud-strategy.github`. See `docs/agents/issue-tracker.md`.
 
-- Transient planning, brainstorming, and other Superpowers-generated working files must not be written under `docs/`.
-- When such artifacts are needed inside this repository, write them under `tmp/superpowers/`.
-- Create or reuse `tmp/superpowers/<clear-action-or-task-name>/` only for retained repository-owned planning that must survive the current turn because the work is non-banal, crosses turns, spans macro-categories, needs handoff, tracking, or provenance, or preserves tradeoffs worth review.
-- Keep retained execution plans as numbered Markdown files: a single `01-...md` file when one macro-category is enough, or multiple numbered files such as `01-contesto-e-vincoli.md`, `02-implementazione.md`, and `03-validazione.md` when the work spans multiple macro-categories.
-- Keep unresolved questions, doubts, or user decisions in `dubbi-e-domande.md`; this file stays separate from executable plan files and remains outside the plan-and-apply loop.
-- During execution, create matching `done-*` files, move completed items into them, remove them from the active numbered source file, and continue through the remaining numbered plan files until the work is finished or a real blocker requires user input.
+### Triage labels
+
+Use the default canonical triage labels. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This repository uses the single-context domain documentation layout. See `docs/agents/domain.md`.
+
+## graphify
+
+For any question about this repo's architecture, structure, components, or how to add/modify/find
+code, your first action should be `graphify query "<question>"` when `graphify-out/graph.json`
+exists. Use `graphify path "<A>" "<B>"` for relationship questions and `graphify explain "<concept>"`
+for focused-concept questions. These return a scoped subgraph, usually much smaller than the full
+report or raw grep output.
+
+Triggers: "how do I…", "where is…", "what does … do", "add/modify a `<component>`",
+"explain the architecture", or anything that depends on how files or classes relate.
+
+If `graphify-out/wiki/index.md` exists, use it for broad navigation. Read `graphify-out/GRAPH_REPORT.md`
+only for broad architecture review or when query/path/explain do not surface enough context. Only read
+source files when (a) modifying/debugging specific code, (b) the graph lacks the needed detail, or
+(c) the graph is missing or stale.
+
+Type `/graphify` in Copilot Chat to build or update the graph.
+
+## Optional Repository-Local Policy
+
+If `AGENTS.local.md` exists next to this file, load and apply it after this
+baseline. If it does not exist, continue without error.
