@@ -10,15 +10,22 @@ from src.comitato.comitato_azure_retirements.libs.schemas import SERVICE_HEALTH_
 
 
 def _recommendation(
-    *, recommendation_type_id: str, resource_id: str, learn_more_link: str = ""
+    *,
+    recommendation_type_id: str,
+    resource_id: str,
+    learn_more_link: str = "",
+    retirement_date: str = "2026-06-30",
 ) -> dict[str, object]:
+    properties: dict[str, object] = {
+        "recommendationTypeId": recommendation_type_id,
+        "resourceMetadata": {"resourceId": resource_id},
+        "learnMoreLink": learn_more_link,
+    }
+    if retirement_date:
+        properties["extendedProperties"] = {"retirementDate": retirement_date}
     return {
         "id": "rec-1",
-        "properties": {
-            "recommendationTypeId": recommendation_type_id,
-            "resourceMetadata": {"resourceId": resource_id},
-            "learnMoreLink": learn_more_link,
-        },
+        "properties": properties,
         "_subscriptionId": "sub-1",
     }
 
@@ -163,10 +170,52 @@ def test_normalize_advisor_rows_emits_single_catalog_row_per_metadata_id() -> No
         resource_graph_by_key={},
     )
 
-    assert len(rows) == 1
-    assert rows[0]["record_type"] == "advisor_catalog_retirement"
-    assert rows[0]["advisor_metadata_id"] == "meta-1"
-    assert rows[0]["recommendation_type_id"] == "service-1"
+    assert rows == []
+
+
+def test_normalize_advisor_rows_keeps_only_retirements_in_next_year_with_resource() -> None:
+    resource_id = "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1"
+    recommendations = [
+        _recommendation(
+            recommendation_type_id="within-window",
+            resource_id=resource_id,
+            retirement_date="2027-06-18",
+        ),
+        _recommendation(
+            recommendation_type_id="at-upper-bound",
+            resource_id=resource_id,
+            retirement_date="2027-06-18",
+        ),
+        _recommendation(
+            recommendation_type_id="beyond-window",
+            resource_id=resource_id,
+            retirement_date="2027-06-19",
+        ),
+        _recommendation(
+            recommendation_type_id="without-date",
+            resource_id=resource_id,
+            retirement_date="",
+        ),
+        _recommendation(
+            recommendation_type_id="without-resource",
+            resource_id="",
+            retirement_date="2027-06-18",
+        ),
+    ]
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        recommendations=recommendations,
+        metadata_by_key={},
+        resource_graph_by_key={},
+    )
+
+    assert [row["recommendation_type_id"] for row in rows] == [
+        "within-window",
+        "at-upper-bound",
+    ]
 
 
 def test_normalize_advisor_rows_gates_raw_json_by_flag() -> None:

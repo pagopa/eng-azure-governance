@@ -9,8 +9,7 @@ from typing import Any
 
 from .advisor import metadata_field
 from .dates import (
-    days_to_retirement,
-    months_to_retirement,
+    add_calendar_months,
     normalize_datetime,
     parse_possible_date,
 )
@@ -137,7 +136,7 @@ def normalize_advisor_rows(
     allowed_regions: Collection[str] = ALLOWED_REGIONS,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
-    used_metadata_keys: set[str] = set()
+    upper_bound = add_calendar_months(as_of_date, 12)
 
     for recommendation in recommendations:
         properties = recommendation.get("properties", {})
@@ -148,13 +147,12 @@ def normalize_advisor_rows(
             or ""
         ).lower()
 
+        if not resource_id:
+            continue
+
         metadata = metadata_by_key.get(recommendation_type_id) or metadata_by_key.get(
             recommendation.get("id", "")
         )
-        if metadata:
-            meta_id = str(metadata.get("id") or "")
-            if meta_id:
-                used_metadata_keys.add(meta_id)
 
         resource_graph = resource_graph_by_key.get(
             (recommendation_type_id, resource_id)
@@ -181,16 +179,14 @@ def normalize_advisor_rows(
         retirement_date = parse_possible_date(retirement_raw)
         retirement_date_text = retirement_date.isoformat() if retirement_date else ""
 
-        date_quality = "exact"
-        if not retirement_raw:
-            date_quality = "missing"
-        elif retirement_date is None:
-            date_quality = "unparseable"
-        elif retirement_date < as_of_date:
-            date_quality = "past"
+        if (
+            retirement_date is None
+            or retirement_date < as_of_date
+            or retirement_date > upper_bound
+        ):
+            continue
 
-        d_days = days_to_retirement(as_of_date, retirement_date)
-        d_months = months_to_retirement(as_of_date, retirement_date)
+        date_quality = "exact"
 
         short_description = properties.get("shortDescription", {})
         if not isinstance(short_description, dict):
@@ -309,8 +305,6 @@ def normalize_advisor_rows(
             "service_name": service_name,
             "retiring_feature": feature_name,
             "retirement_date": retirement_date_text,
-            "days_to_retirement": "" if d_days is None else str(d_days),
-            "months_to_retirement": "" if d_months is None else str(d_months),
             "retirement_date_quality": date_quality,
             "subscription_id": subscription_id,
             "subscription_name": subscription_name,
@@ -364,96 +358,5 @@ def normalize_advisor_rows(
             ),
         }
         rows.append(row)
-
-    emitted_catalog_metadata_ids: set[str] = set()
-    for metadata in metadata_by_key.values():
-        meta_id = str(metadata.get("id") or "")
-        if (
-            not meta_id
-            or meta_id in used_metadata_keys
-            or meta_id in emitted_catalog_metadata_ids
-        ):
-            continue
-        emitted_catalog_metadata_ids.add(meta_id)
-
-        source_properties = metadata_field(metadata, "sourceProperties", {})
-        service_retirement = (
-            source_properties.get("serviceRetirement", {})
-            if isinstance(source_properties, dict)
-            else {}
-        )
-        if not service_retirement:
-            continue
-
-        recommendation_type_id = str(service_retirement.get("serviceId") or meta_id)
-        retirement_raw = str(service_retirement.get("retirementDate") or "")
-        feature_name = str(service_retirement.get("retirementFeatureName") or "")
-        learn_more_link = str(metadata_field(metadata, "learnMoreLink", "") or "")
-        metadata_resource = metadata_field(metadata, "resourceMetadata", {})
-        if not isinstance(metadata_resource, dict):
-            metadata_resource = {}
-        if not any([feature_name, retirement_raw, learn_more_link]):
-            continue
-
-        retirement_date = parse_possible_date(retirement_raw)
-
-        rows.append(
-            {
-                "run_id": run_id,
-                "as_of_date": as_of_date.isoformat(),
-                "scope_mode": scope_mode,
-                "record_type": "advisor_catalog_retirement",
-                "source_system": "advisor_metadata",
-                "source_id": meta_id,
-                "recommendation_type_id": recommendation_type_id,
-                "advisor_recommendation_id": "",
-                "advisor_metadata_id": meta_id,
-                "service_name": str(metadata_resource.get("singular") or ""),
-                "retiring_feature": feature_name,
-                "retirement_date": retirement_date.isoformat()
-                if retirement_date
-                else "",
-                "days_to_retirement": "",
-                "months_to_retirement": "",
-                "retirement_date_quality": "exact"
-                if retirement_date
-                else ("missing" if not retirement_raw else "unparseable"),
-                "subscription_id": "",
-                "subscription_name": "",
-                "resource_id": "",
-                "resource_name": "",
-                "resource_group": "",
-                "resource_type": "",
-                "location": "",
-                "tags_json": "",
-                "environment_hint": "",
-                "platform_hint": "",
-                "impact": "",
-                "risk": "",
-                "category": "HighAvailability",
-                "sub_category": "ServiceUpgradeAndRetirement",
-                "platform_state": "",
-                "last_updated": "",
-                "label": "",
-                "short_description_problem": "",
-                "short_description_solution": "",
-                "description": "",
-                "potential_benefits": "",
-                "learn_more_link": learn_more_link,
-                "action_link": "",
-                "action_caption": "",
-                "description_quality": _description_quality(
-                    "", "", feature_name, learn_more_link
-                ),
-                "join_quality": "catalog_only",
-                "diagnostic_flags": "catalog_only_without_subscription",
-                "provenance_json": compact_json(
-                    {"metadata_source": "advisor_metadata"}
-                ),
-                "raw_json": compact_json({"metadata": metadata})
-                if include_raw_json
-                else "",
-            }
-        )
 
     return rows

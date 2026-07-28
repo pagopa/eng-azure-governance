@@ -21,7 +21,10 @@ def test_schema_headers_are_non_empty_and_unique() -> None:
 
 
 def test_schema_headers_expose_core_contract_fields() -> None:
-    assert "run_id" in ADVISOR_HEADERS
+    assert "run_id" not in ADVISOR_HEADERS
+    assert "recommendation_type_id" in ADVISOR_HEADERS
+    assert "days_to_retirement" not in ADVISOR_HEADERS
+    assert "months_to_retirement" not in ADVISOR_HEADERS
     assert "run_id" in SERVICE_HEALTH_HEADERS
     assert "check_id" in DIAGNOSTICS_HEADERS
     assert "advisory_key" in AGGREGATE_HEADERS
@@ -37,6 +40,5 @@ def test_raw_headers_start_with_canonical_service_health_contract() -> None:
         "description_problem",
     ]
     assert "description" not in SERVICE_HEALTH_HEADERS
-    assert ADVISOR_HEADERS.index("description") == (
-        ADVISOR_HEADERS.index("short_description_problem") + 1
-    )
+    assert ADVISOR_HEADERS[2:4] == ["short_description_problem", "recommendation_type_id"]
+    assert ADVISOR_HEADERS.index("description") == ADVISOR_HEADERS.index("label") + 1

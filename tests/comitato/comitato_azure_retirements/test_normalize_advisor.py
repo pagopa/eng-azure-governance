@@ -34,6 +34,7 @@ def test_subscription_scoped_resource_keeps_blank_group_and_flag() -> None:
         "properties": {
             "recommendationTypeId": "service-1",
             "resourceMetadata": {"resourceId": resource_id},
+            "extendedProperties": {"retirementDate": "2027-01-31"},
         },
         "_subscriptionId": "sub",
     }
@@ -61,6 +62,7 @@ def test_resource_graph_type_overrides_arm_type_fallback() -> None:
         "properties": {
             "recommendationTypeId": "service-1",
             "resourceMetadata": {"resourceId": resource_id},
+            "extendedProperties": {"retirementDate": "2027-01-31"},
         },
         "_subscriptionId": "sub",
     }
@@ -87,6 +89,7 @@ def test_normalize_advisor_rows_fallback_service_name_from_impacted_field() -> N
             "resourceMetadata": {
                 "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Web/sites/app-1"
             },
+            "extendedProperties": {"retirementDate": "2027-01-31"},
             "impactedField": "MICROSOFT.WEB/SITES",
             "shortDescription": {"problem": "Upgrade before retirement"},
         },
@@ -115,6 +118,7 @@ def test_normalize_advisor_rows_backfills_subscription_name_from_scope_map() -> 
             "resourceMetadata": {
                 "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.KeyVault/vaults/kv-1"
             },
+            "extendedProperties": {"retirementDate": "2027-01-31"},
             "shortDescription": {"problem": "Upgrade SDK"},
         },
         "_subscriptionId": "sub-1",
@@ -190,6 +194,7 @@ def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description
             "resourceMetadata": {
                 "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Web/sites/app-1"
             },
+            "extendedProperties": {"retirementDate": "2027-01-31"},
             "shortDescription": {
                 "problem": "Short problem",
                 "solution": "Short solution",
