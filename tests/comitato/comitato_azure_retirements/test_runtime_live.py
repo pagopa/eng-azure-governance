@@ -112,6 +112,16 @@ def test_live_mode_preserves_run_id_for_normalization(
         "resolve_scope_subscriptions",
         lambda *_args, **_kwargs: (["sub-1"], {}),
     )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_subscription_inventory",
+        lambda *_args, **_kwargs: ([], False, 1),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_impacted_resources",
+        lambda *_args, **_kwargs: ([], False, 1),
+    )
     monkeypatch.setattr(runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([], 1))
     monkeypatch.setattr(
         runtime_live,

@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from dataclasses import dataclass
-import html
 from pathlib import Path
-import re
 
 import pandas as pd
 import yaml
@@ -27,6 +25,7 @@ from .workflow_exports_utils import (
     priority_rank,
     traceable_links_from_identifiers,
 )
+from .service_health_text import html_to_ascii_text
 
 RAW_ADVISOR_FILENAME = "01_azure_advisor_retirements_raw.tsv"
 RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
@@ -170,13 +169,13 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
                 )
             )
 
-        action_required = _strip_xml_tags(
+        action_required = html_to_ascii_text(
             str(row.get("action_required", "") or row.get("summary_text", ""))
         )
         complete_description = " ".join(
             value
             for value in (
-                _strip_xml_tags(str(row.get("details_text", ""))),
+                html_to_ascii_text(str(row.get("details_text", ""))),
                 action_required,
             )
             if value
@@ -219,16 +218,6 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
     return projected_rows
 
 
-_XML_TAG_RE = re.compile(r"<[^>]+>")
-_WHITESPACE_RE = re.compile(r"\s+")
-
-
-def _strip_xml_tags(value: str) -> str:
-    if not value:
-        return ""
-    decoded_value = html.unescape(value).replace("\xa0", " ")
-    without_tags = _XML_TAG_RE.sub(" ", decoded_value)
-    return _WHITESPACE_RE.sub(" ", without_tags).strip()
 
 
 def _build_advisory_key(

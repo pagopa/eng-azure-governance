@@ -50,6 +50,10 @@ ADVISOR_HEADERS = [
 ]
 
 SERVICE_HEALTH_HEADERS = [
+    "tracking_id",
+    "short_description_solution",
+    "summary",
+    "description_problem",
     "impacted_service",
     "subscription_name",
     "run_id",
@@ -59,7 +63,6 @@ SERVICE_HEALTH_HEADERS = [
     "source_system",
     "source_id",
     "event_id",
-    "tracking_id",
     "event_type",
     "event_sub_type",
     "event_source",
@@ -68,9 +71,6 @@ SERVICE_HEALTH_HEADERS = [
     "status",
     "priority",
     "title",
-    "short_description_solution",
-    "summary",
-    "description",
     "recommended_actions",
     "impact_start_time",
     "impact_mitigation_time",

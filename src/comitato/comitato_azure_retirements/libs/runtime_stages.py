@@ -24,6 +24,7 @@ from .service_health import (
     event_impacted_services,
     filter_health_advisory_events,
 )
+from .service_health_resources import index_impacted_resources
 from .subscriptions import build_subscription_name_map
 from .tsv import compact_json, read_tsv
 from .workflow_exports import (
@@ -264,6 +265,72 @@ def enforce_mandatory_raw_rows(
     )
 
 
+def add_service_health_contract_diagnostics(
+    *, diagnostics: DiagnosticsCollector, rows: list[dict[str, str]]
+) -> None:
+    checks: list[tuple[str, list[int], str]] = []
+    blank_tracking = [
+        index + 1 for index, row in enumerate(rows) if not row.get("tracking_id", "").strip()
+    ]
+    noncanonical_description = [
+        index + 1
+        for index, row in enumerate(rows)
+        if not row.get("description_problem", "").isascii()
+        or "<" in row.get("description_problem", "")
+        or ">" in row.get("description_problem", "")
+    ]
+    blank_priority = [
+        index + 1 for index, row in enumerate(rows) if not row.get("priority", "").strip()
+    ]
+    blank_subscription = [
+        index + 1
+        for index, row in enumerate(rows)
+        if not row.get("subscription_name", "").strip()
+    ]
+    blank_resource_contract = [
+        index + 1
+        for index, row in enumerate(rows)
+        if any(
+            not row.get(key, "").strip()
+            for key in ("resource_granularity", "resource_id", "resource_group", "resource_type")
+        )
+    ]
+    checks.extend(
+        [
+            ("service_health_blank_tracking_id", blank_tracking, "Service Health tracking_id is blank"),
+            (
+                "service_health_noncanonical_description_problem",
+                noncanonical_description,
+                "Service Health description_problem is not canonical ASCII text",
+            ),
+            ("service_health_blank_priority", blank_priority, "Service Health priority is blank"),
+            (
+                "service_health_blank_subscription_name",
+                blank_subscription,
+                "Service Health subscription_name is blank",
+            ),
+            (
+                "service_health_blank_resource_contract",
+                blank_resource_contract,
+                "Service Health resource contract contains a blank field",
+            ),
+        ]
+    )
+    for check_id, row_numbers, message in checks:
+        if not row_numbers:
+            continue
+        diagnostics.add(
+            severity="error",
+            check_id=check_id,
+            source_system="resource_health_events",
+            scope="global",
+            message=message,
+            action_required="Fix Service Health normalization before publication",
+            observed_count=len(row_numbers),
+            raw_context_json=compact_json({"row_numbers": row_numbers}),
+        )
+
+
 def load_fixture(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -308,6 +375,17 @@ def fixture_mode(
         expired_event_ids=service_health_filter.expired_event_ids,
     )
     subscription_rows = load_fixture(cfg.fixture_dir / "subscriptions.json")
+    impacted_resource_rows = load_fixture(
+        cfg.fixture_dir / "service_health_impacted_resources.json"
+    )
+    retained_tracking_ids = {
+        str(event.get("name") or event.get("id") or "")
+        for event in service_health_events
+    }
+    impacted_resources_by_event = index_impacted_resources(
+        impacted_resource_rows,
+        tracking_ids=retained_tracking_ids,
+    )
 
     metadata_by_key, metadata_collisions = index_metadata_with_collisions(advisor_metadata)
     graph_by_key = index_resource_graph(advisor_graph_rows)
@@ -351,6 +429,7 @@ def fixture_mode(
         event_impacted_regions=event_impacted_regions,
         event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
+        impacted_resources_by_event=impacted_resources_by_event,
     )
 
     diagnostics.add(
@@ -406,6 +485,14 @@ def resolve_optional_legacy_input(primary_path: Path, *, legacy_filename: str) -
     return primary_path
 
 
+def canonicalize_service_health_input_row(row: dict[str, str]) -> dict[str, str]:
+    canonical = dict(row)
+    if not canonical.get("description_problem", "").strip():
+        canonical["description_problem"] = canonical.get("description", "")
+    canonical.pop("description", None)
+    return canonical
+
+
 def require_non_empty_stage_input(rows: list[dict[str, str]], *, stage_name: str, path: Path) -> None:
     if rows:
         return
@@ -427,7 +514,10 @@ def load_raw_stage_inputs(output_dir: Path) -> tuple[list[dict[str, str]], list[
     require_stage_input(advisor_path, stage_name="aggregate")
     require_stage_input(service_health_path, stage_name="aggregate")
     advisor_rows = read_tsv(advisor_path)
-    service_rows = read_tsv(service_health_path)
+    service_rows = [
+        canonicalize_service_health_input_row(row)
+        for row in read_tsv(service_health_path)
+    ]
     require_non_empty_stage_input(advisor_rows, stage_name="aggregate", path=advisor_path)
     require_non_empty_stage_input(service_rows, stage_name="aggregate", path=service_health_path)
     return advisor_rows, service_rows

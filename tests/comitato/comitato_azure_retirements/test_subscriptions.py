@@ -3,9 +3,20 @@ from __future__ import annotations
 from src.comitato.comitato_azure_retirements.libs.arm_client import ArmPageResult
 from src.comitato.comitato_azure_retirements.libs.subscriptions import (
     build_subscription_name_map,
+    collect_subscription_inventory,
     discover_subscriptions_for_management_group,
     resolve_scope_subscriptions,
 )
+
+
+class FakeResourceGraphClient:
+    def __init__(self, rows: list[dict[str, object]]) -> None:
+        self.rows = rows
+
+    def post_json(self, url: str, payload: dict[str, object]) -> dict[str, object]:
+        assert "Microsoft.ResourceGraph/resources" in url
+        assert "resourcecontainers" in str(payload["query"])
+        return {"data": self.rows, "resultTruncated": False}
 
 
 class FakeArmClient:
@@ -57,3 +68,26 @@ def test_build_subscription_name_map_keeps_first_name() -> None:
     )
 
     assert mapping == {"sub-1": "First", "sub-2": "Other"}
+
+
+def test_collect_subscription_inventory_is_independent_from_advisor_rows() -> None:
+    client = FakeResourceGraphClient(
+        [{"subscriptionId": "SUB-1", "subscriptionName": "Production"}]
+    )
+
+    rows, truncated, pages = collect_subscription_inventory(
+        client,
+        subscriptions=["sub-1"],
+        management_groups=[],
+    )
+
+    assert rows == [{"subscriptionId": "SUB-1", "subscriptionName": "Production"}]
+    assert truncated is False
+    assert pages == 1
+
+
+def test_build_subscription_name_map_matches_ids_case_insensitively() -> None:
+    mapping = build_subscription_name_map(
+        [{"subscriptionId": "SUB-1", "subscriptionName": "Production"}]
+    )
+    assert mapping == {"sub-1": "Production"}

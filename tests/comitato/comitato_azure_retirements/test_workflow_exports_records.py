@@ -157,3 +157,20 @@ def test_service_health_records_backfill_traceable_links_when_missing_urls() -> 
         link.startswith("https://portal.azure.com/#search/")
         for link in rows[0]["source_links"]
     )
+
+
+def test_service_health_records_reads_legacy_description_at_boundary() -> None:
+    rows = service_health_records(
+        [
+            {
+                "source_id": "event-1",
+                "tracking_id": "TRK-1",
+                "title": "Service retirement advisory",
+                "description": "Legacy migration guidance",
+                "event_sub_type": "Retirement",
+            }
+        ]
+    )
+
+    assert rows[0]["details_text"] == "Legacy migration guidance"
+    assert rows[0]["action_required"] == "Legacy migration guidance"

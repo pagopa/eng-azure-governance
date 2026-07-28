@@ -90,3 +90,41 @@ def service_health_date_for_window(
             return candidate, False
 
     return "", False
+
+
+def service_health_deadlines(
+    *,
+    title: str,
+    summary: str,
+    description: str,
+    recommended_actions: str,
+    impact_mitigation: str,
+    impact_start: str,
+    last_update: str,
+) -> tuple[str, str, bool]:
+    qualified_deadline, derived_from_text = extract_retirement_deadline_from_text(
+        title=title,
+        summary=summary,
+        description=description,
+        recommended_actions=recommended_actions,
+    )
+    if not qualified_deadline:
+        for text in [title, summary, recommended_actions, description]:
+            for candidate in DATE_CANDIDATE_PATTERN.findall(text):
+                qualified_deadline, derived_from_text = parse_retirement_date_candidate(candidate)
+                if qualified_deadline:
+                    break
+            if qualified_deadline:
+                break
+
+    if not qualified_deadline:
+        qualified_deadline = date_from_normalized_datetime(impact_mitigation)
+
+    date_for_window = qualified_deadline
+    if not date_for_window:
+        for candidate in (impact_mitigation, impact_start, last_update):
+            date_for_window = date_from_normalized_datetime(candidate)
+            if date_for_window:
+                break
+
+    return qualified_deadline, date_for_window, derived_from_text

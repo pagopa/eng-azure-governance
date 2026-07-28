@@ -33,7 +33,12 @@ from .service_health import (
     event_impacted_services,
     filter_health_advisory_events,
 )
-from .subscriptions import build_subscription_name_map, resolve_scope_subscriptions
+from .service_health_resources import collect_impacted_resources, index_impacted_resources
+from .subscriptions import (
+    build_subscription_name_map,
+    collect_subscription_inventory,
+    resolve_scope_subscriptions,
+)
 from .tsv import compact_json
 from .workflow_exports import RAW_ADVISOR_FILENAME, RAW_SERVICE_HEALTH_FILENAME
 
@@ -92,6 +97,41 @@ def live_mode(
             "Management group descendants",
             {group: len(items) for group, items in mg_resolution.items()},
             always=True,
+        )
+
+    subscription_inventory_rows, subscription_inventory_truncated, subscription_inventory_pages = (
+        collect_subscription_inventory(
+            client,
+            subscriptions=subscriptions,
+            management_groups=cfg.management_groups,
+        )
+    )
+    subscription_name_map = build_subscription_name_map(subscription_inventory_rows)
+    unresolved_subscription_ids = sorted(
+        subscription_id
+        for subscription_id in subscriptions
+        if subscription_id.strip().lower() not in subscription_name_map
+    )
+    if unresolved_subscription_ids:
+        diagnostics.add(
+            severity="warning",
+            check_id="subscription_name_fallback_to_id",
+            source_system="resourcecontainers_subscriptions",
+            scope="global",
+            message="Subscription names were unavailable; subscription IDs will be emitted",
+            action_required="Review Resource Graph subscription inventory coverage",
+            observed_count=len(unresolved_subscription_ids),
+            raw_context_json=compact_json({"subscription_ids": unresolved_subscription_ids}),
+        )
+    if subscription_inventory_truncated:
+        diagnostics.add(
+            severity="warning" if cfg.allow_degraded else "error",
+            check_id="subscription_inventory_truncated",
+            source_system="resourcecontainers_subscriptions",
+            scope="global",
+            message="Subscription inventory Resource Graph response was truncated",
+            action_required="Review scope and Resource Graph pagination before publication",
+            raw_context_json=compact_json({"pages": subscription_inventory_pages}),
         )
 
     effective_workers = effective_worker_count(len(subscriptions), cfg.max_workers)
@@ -168,6 +208,53 @@ def live_mode(
         diagnostics=diagnostics,
         expired_event_ids=service_health_filter.expired_event_ids,
     )
+    retained_tracking_ids = {
+        str(event.get("name") or event.get("id") or "")
+        for event in service_events
+    }
+    try:
+        impacted_resource_rows, impacted_resource_truncated, impacted_resource_pages = (
+            collect_impacted_resources(
+                client,
+                subscriptions=subscriptions,
+                management_groups=cfg.management_groups,
+            )
+        )
+    except Exception as exc:
+        severity = "warning" if cfg.allow_degraded else "error"
+        diagnostics.add(
+            severity=severity,
+            check_id="service_health_impacted_resources_query_failed",
+            source_system="servicehealthresources",
+            scope="global",
+            message="Service Health impacted-resource query failed",
+            action_required=(
+                "Proceed with unavailable resource markers in degraded mode"
+                if cfg.allow_degraded
+                else "Rerun after remediating the Resource Graph query failure"
+            ),
+            raw_context_json=compact_json({"error": str(exc)}),
+        )
+        if not cfg.allow_degraded:
+            raise
+        impacted_resource_rows = []
+        impacted_resource_truncated = False
+        impacted_resource_pages = 0
+
+    impacted_resources_by_event = index_impacted_resources(
+        impacted_resource_rows,
+        tracking_ids=retained_tracking_ids,
+    )
+    if impacted_resource_truncated:
+        diagnostics.add(
+            severity="warning" if cfg.allow_degraded else "error",
+            check_id="service_health_impacted_resources_query_truncated",
+            source_system="servicehealthresources",
+            scope="global",
+            message="Service Health impacted-resource query was truncated",
+            action_required="Review Resource Graph pagination before publication",
+            raw_context_json=compact_json({"pages": impacted_resource_pages}),
+        )
     reporter.step(
         f"Advisor metadata rows: {len(advisor_metadata)} across {advisor_metadata_pages} page(s)"
     )
@@ -237,15 +324,6 @@ def live_mode(
             f"Advisor metadata produced {len(metadata_collisions)} duplicate key(s)"
         )
 
-    subscription_name_rows = [
-        {
-            "subscriptionId": row.get("subscriptionId", ""),
-            "subscriptionName": row.get("subscriptionName", ""),
-        }
-        for row in advisor_graph_rows
-    ]
-    subscription_name_map = build_subscription_name_map(subscription_name_rows)
-
     advisor_rows = normalize_advisor_rows(
         run_id=run_id,
         as_of_date=cfg.as_of_date,
@@ -267,6 +345,7 @@ def live_mode(
         event_impacted_regions=event_impacted_regions,
         event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
+        impacted_resources_by_event=impacted_resources_by_event,
     )
 
     diagnostics.add(

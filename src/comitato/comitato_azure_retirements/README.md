@@ -192,9 +192,53 @@ rows (`platform_state=New`) enter the main aggregate. Service Health publication
 dates come from Azure `impactMitigationTime` (the normalized End time), and
 Service Health rows are written to `02_azure_service_health_supplemental.tsv`.
 The committee slide combines the Advisor aggregate and Service Health
-supplemental aggregate and labels each row with its source. Service Health
-remains subscription/service/region oriented; resource fields stay empty when
-Azure does not provide a verifiable resource identity.
+supplemental aggregate and labels each row with its source.
+
+## Service Health Raw Contract
+
+`01_azure_service_health_advisories_raw.tsv` starts with these four columns, in
+this exact order:
+
+1. `tracking_id`
+2. `short_description_solution`
+3. `summary`
+4. `description_problem`
+
+The raw schema does not publish the legacy `description` column. The problem
+description is plain ASCII: HTML tags are removed, Unicode punctuation is
+normalized, and each retained anchor is written as `visible text (URL)`. URLs
+remain searchable and are percent-encoded when their path, query, or fragment
+contains non-ASCII characters.
+
+`priority` is calculated from a qualified retirement deadline using the existing
+priority thresholds. When no qualified deadline exists, the value is `Debito`.
+The publication-window date may use broader Service Health time fallbacks, but
+`impactStartTime` and `lastUpdateTime` never become a retirement deadline.
+
+Subscription names come from an independent Resource Graph inventory and are
+matched case-insensitively. When Azure does not return a name, the row uses the
+subscription ID and emits `subscription_name_fallback_to_id` in
+`diagnostic_flags`.
+
+Impacted resources come only from Azure's `servicehealthresources` Resource
+Graph table. A resource row represents an Azure-published impacted-resource
+association, not a resource inferred from service, region, type, or naming
+similarity. Each published association is emitted once; it is not multiplied by
+every event service-region pair. If no association is published, the row keeps
+the event's service and region evidence and uses `not_available` for each of
+`resource_granularity`, `resource_id`, `resource_group`, and `resource_type`,
+with `service_health_impacted_resources_not_published` in diagnostics.
+
+Azure impacted-resource coverage is partial, scope- and permission-dependent,
+may appear up to two weeks after publication, and can change over time. An
+empty successful query therefore means unavailable published association data,
+not proof that no resource is affected. Strict live and fixture runs reject
+blank canonical fields or non-canonical descriptions before writing raw TSV;
+degraded runs retain bounded diagnostics for operational review.
+
+Legacy fixture and TSV inputs remain readable: an input `description` value is
+adapted to `description_problem` at the raw-input boundary and is never emitted
+as a canonical output column.
 
 Publication exclusions are reported in run diagnostics as
 `publication_advisor_not_current`, `publication_expired`,
@@ -206,7 +250,10 @@ The workbook is implementation guidance only. Runtime collection and aggregation
 
 ## Known Limitation
 
-Service Health output is event/subscription/service/region oriented by default. Resource-level impact is only populated if a verified source field explicitly contains resource IDs.
+Service Health resource associations are only as complete as the Azure-published
+`servicehealthresources` result visible to the configured scope and identity.
+Rows with unavailable associations are explicit and must not be interpreted as
+evidence that Azure found no impacted resources.
 
 ## Validation Workflow
 

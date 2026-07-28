@@ -191,6 +191,7 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
 def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     for row in service_rows:
+        description_problem = row.get("description_problem", "") or row.get("description", "")
         source_identifiers = sorted_unique(
             [row.get("event_id", ""), row.get("tracking_id", ""), row.get("source_id", "")]
         )
@@ -200,13 +201,13 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                 row.get("title", ""),
                 row.get("summary", ""),
                 row.get("recommended_actions", ""),
-                row.get("description", ""),
+                description_problem,
             ],
             exact_quality=False,
         )
         links = extract_links(
             [
-                row.get("description", ""),
+                description_problem,
                 row.get("recommended_actions", ""),
                 row.get("summary", ""),
                 row.get("title", ""),
@@ -221,7 +222,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                     candidates=[
                         row.get("title", ""),
                         row.get("summary", ""),
-                        row.get("description", ""),
+                        description_problem,
                         row.get("event_sub_type", ""),
                     ]
                 ),
@@ -232,7 +233,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                 "advice_type": classify_service_health_type(
                     title=row.get("title", ""),
                     summary=row.get("summary", ""),
-                    description=row.get("description", ""),
+                    description=description_problem,
                     event_sub_type=row.get("event_sub_type", ""),
                 ),
                 "technology_or_service": technology_or_service,
@@ -243,7 +244,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                     [
                         row.get("recommended_actions", ""),
                         row.get("summary", ""),
-                        row.get("description", ""),
+                        description_problem,
                     ]
                 ),
                 "retirement_date": retirement_date,
@@ -255,7 +256,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                 "source_links": links,
                 "publication_date": row.get("impact_mitigation_time", ""),
                 "summary_text": first_non_empty([row.get("summary", ""), row.get("title", "")]),
-                "details_text": row.get("description", ""),
+                "details_text": description_problem,
                 "as_of_date": row.get("as_of_date", ""),
                 "diagnostic_flags": "retirement_date_derived_from_text" if retirement_derived_from_text else "",
             }

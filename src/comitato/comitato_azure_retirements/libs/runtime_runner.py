@@ -23,6 +23,7 @@ from .runtime_router import RuntimeRoute, StageAction, build_runtime_route
 from .runtime_stages import (
     add_aggregate_contract_diagnostics,
     add_publication_exclusion_diagnostics,
+    add_service_health_contract_diagnostics,
     add_slide_source_link_diagnostics,
     diagnostic_summary,
     enforce_mandatory_raw_rows,
@@ -149,6 +150,26 @@ def _run_raw_stage(
 
     advisor_rows = unique_tsv_rows(ADVISOR_HEADERS, advisor_rows)
     service_rows = unique_tsv_rows(SERVICE_HEALTH_HEADERS, service_rows)
+    add_service_health_contract_diagnostics(
+        diagnostics=diagnostics,
+        rows=service_rows,
+    )
+    if cfg.mode in {"live", "fixture"} and not cfg.allow_degraded:
+        contract_errors = [
+            row
+            for row in diagnostics.rows()
+            if row["severity"] == "error"
+            and row["check_id"].startswith("service_health_")
+            and row["check_id"] in {
+                "service_health_blank_tracking_id",
+                "service_health_noncanonical_description_problem",
+                "service_health_blank_priority",
+                "service_health_blank_subscription_name",
+                "service_health_blank_resource_contract",
+            }
+        ]
+        if contract_errors:
+            raise RuntimeError("Service Health raw contract validation failed before publication")
     if cfg.mode != "schema-only":
         enforce_mandatory_raw_rows(
             diagnostics=diagnostics,

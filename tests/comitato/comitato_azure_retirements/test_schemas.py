@@ -34,12 +34,15 @@ def test_schema_headers_expose_core_contract_fields() -> None:
     assert SERVICE_HEALTH_SUPPLEMENTAL_FILENAME == "02_azure_service_health_supplemental.tsv"
 
 
-def test_raw_headers_start_with_requested_fields_and_place_descriptions_correctly() -> None:
+def test_raw_headers_start_with_canonical_service_health_contract() -> None:
     assert ADVISOR_HEADERS[:2] == ["service_name", "retiring_feature"]
-    assert SERVICE_HEALTH_HEADERS[:2] == ["impacted_service", "subscription_name"]
-    assert SERVICE_HEALTH_HEADERS.index("short_description_solution") == (
-        SERVICE_HEALTH_HEADERS.index("title") + 1
-    )
+    assert SERVICE_HEALTH_HEADERS[:4] == [
+        "tracking_id",
+        "short_description_solution",
+        "summary",
+        "description_problem",
+    ]
+    assert "description" not in SERVICE_HEALTH_HEADERS
     assert ADVISOR_HEADERS.index("description") == (
         ADVISOR_HEADERS.index("short_description_problem") + 1
     )

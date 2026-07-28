@@ -12,6 +12,7 @@ from src.comitato.comitato_azure_retirements.libs import runtime_stages
 from src.comitato.comitato_azure_retirements.libs.runtime_stages import (
     add_aggregate_contract_diagnostics,
     add_publication_exclusion_diagnostics,
+    add_service_health_contract_diagnostics,
     add_slide_source_link_diagnostics,
     diagnostic_summary,
     enforce_mandatory_raw_rows,
@@ -240,6 +241,24 @@ def test_load_raw_stage_inputs_reads_non_empty_legacy_files(tmp_path: Path) -> N
     assert service_rows[0]["source_id"] == "event-1"
 
 
+def test_load_raw_stage_inputs_maps_legacy_service_description(tmp_path: Path) -> None:
+    write_tsv(
+        tmp_path / runtime_stages.RAW_ADVISOR_FILENAME,
+        ADVISOR_HEADERS,
+        [{"source_id": "a"}],
+    )
+    write_tsv(
+        tmp_path / runtime_stages.RAW_SERVICE_HEALTH_FILENAME,
+        ["tracking_id", "description"],
+        [{"tracking_id": "TRK-1", "description": "Legacy text"}],
+    )
+
+    _, service_rows = load_raw_stage_inputs(tmp_path)
+
+    assert service_rows[0]["description_problem"] == "Legacy text"
+    assert "description" not in service_rows[0]
+
+
 def test_load_slide_stage_inputs_reads_advisor_and_service_health_aggregates(
     tmp_path: Path,
 ) -> None:
@@ -286,6 +305,35 @@ def test_contract_diagnostics_flag_gap_and_missing_source_links() -> None:
     assert "aggregate_gap_rows_missing_core_fields" in check_ids
     assert "aggregate_rows_with_derived_retirement_date" in check_ids
     assert "slide_missing_source_links" in check_ids
+
+
+def test_service_health_contract_diagnostics_flags_every_required_gap() -> None:
+    diagnostics = DiagnosticsCollector("run-1")
+
+    add_service_health_contract_diagnostics(
+        diagnostics=diagnostics,
+        rows=[
+            {
+                "tracking_id": "",
+                "description_problem": "<p>bad</p>",
+                "priority": "",
+                "subscription_name": "",
+                "resource_granularity": "",
+                "resource_id": "",
+                "resource_group": "",
+                "resource_type": "",
+            }
+        ],
+    )
+
+    check_ids = {row["check_id"] for row in diagnostics.rows()}
+    assert check_ids == {
+        "service_health_blank_tracking_id",
+        "service_health_noncanonical_description_problem",
+        "service_health_blank_priority",
+        "service_health_blank_subscription_name",
+        "service_health_blank_resource_contract",
+    }
 
 
 def test_publication_exclusion_diagnostics_are_bounded_and_source_specific() -> None:
