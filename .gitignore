@@ -56,3 +56,4 @@ htmlcov/
 venv/
 /tmp/*
 .~lock.*
+graphify-out/*
