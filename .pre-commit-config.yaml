@@ -34,19 +34,22 @@ repos:
 
       # Structured data validation
       - id: check-yaml # Validate YAML syntax before CI sees it.
+        exclude: '^\.github/skills/internal-yaml/fixtures/invalid/'
       - id: check-json # Validate JSON syntax before runtime uses it.
+        exclude: '^\.github/skills/internal-json/fixtures/invalid/'
 
       # Python safety rails
       - id: check-ast # Ensure Python files are syntactically valid.
-        files: ^(scripts|src|tests)/.*\.py$
+        files: ^(scripts|src|tests|tools)/.*\.py$
       - id: debug-statements # Block accidental breakpoint() and debugger imports.
-        files: ^(scripts|src|tests)/.*\.py$
+        files: ^(scripts|src|tests|tools)/.*\.py$
 
       # Security
       - id: detect-aws-credentials # Prevent committing AWS credentials by mistake.
         args:
           - --allow-missing-credentials
       - id: detect-private-key # Prevent committing private keys.
+        exclude: '^\.github/skills/awesome-copilot-security-review/references/'
 
   # GitHub Actions
   - repo: https://github.com/rhysd/actionlint
@@ -65,7 +68,7 @@ repos:
 
   # Python linting and formatting
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: d1b833175a5d08a925900115526febd8fe71c98e # ruff-pre-commit v0.15.11; source https://github.com/astral-sh/ruff-pre-commit/releases/tag/v0.15.11
+    rev: 3b3f7c3f57fe9925356faf5fe6230835138be230 # ruff-pre-commit v0.15.11; source https://github.com/astral-sh/ruff-pre-commit/releases/tag/v0.15.11
     hooks:
       - id: ruff-check # Auto-sort Python imports with Ruff, replacing isort.
         name: ruff-check-imports
@@ -73,15 +76,15 @@ repos:
           - --fix
           - --select
           - I
-        files: ^(scripts|src|tests)/.*\.py$
+        files: ^(scripts|src|tests|tools)/.*\.py$
       - id: ruff-format # Format Python code with Ruff instead of Black.
-        files: ^(scripts|src|tests)/.*\.py$
+        files: ^(scripts|src|tests|tools)/.*\.py$
       - id: ruff-check # Lint Python code for correctness, style, and simplifications.
-        files: ^(scripts|src|tests)/.*\.py$
+        files: ^(scripts|src|tests|tools)/.*\.py$
 
   # Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: d0e12caebb2ab0ee8bf98181c8bfe9702bca103d # pre-commit-terraform v1.105.0; source https://github.com/antonbabenko/pre-commit-terraform/releases/tag/v1.105.0
+    rev: d61ded22bf9aa0f757303ebcbb0d6d71c4b54015 # pre-commit-terraform v1.105.0; source https://github.com/antonbabenko/pre-commit-terraform/releases/tag/v1.105.0
     hooks:
       - id: terraform_fmt # Enforce canonical Terraform formatting.
       - id: terraform_docs # Keep Terraform module documentation aligned with code.
