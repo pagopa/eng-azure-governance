@@ -3,8 +3,76 @@ from __future__ import annotations
 from datetime import date
 
 from src.comitato.comitato_azure_retirements.libs.normalize_advisor import (
+    _resource_type_from_resource_id,
     normalize_advisor_rows,
 )
+
+
+def test_resource_type_fallback_reconstructs_nested_arm_type() -> None:
+    resource_id = (
+        "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Network/"
+        "networkWatchers/watcher/flowLogs/flow"
+    )
+
+    assert _resource_type_from_resource_id(resource_id) == (
+        "microsoft.network/networkwatchers/flowlogs"
+    )
+
+
+def test_resource_type_fallback_reconstructs_ordinary_arm_type() -> None:
+    resource_id = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+
+    assert _resource_type_from_resource_id(resource_id) == "microsoft.web/sites"
+
+
+def test_subscription_scoped_resource_keeps_blank_group_and_flag() -> None:
+    resource_id = "/subscriptions/sub/providers/Microsoft.Blueprint/blueprints/security"
+    recommendation = {
+        "id": "rec-1",
+        "properties": {
+            "recommendationTypeId": "service-1",
+            "resourceMetadata": {"resourceId": resource_id},
+        },
+        "_subscriptionId": "sub",
+    }
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 21),
+        scope_mode="live",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={},
+    )
+
+    assert rows[0]["resource_group"] == ""
+    assert rows[0]["resource_type"] == "microsoft.blueprint/blueprints"
+    assert "subscription_scope" in rows[0]["diagnostic_flags"].split(",")
+
+
+def test_resource_graph_type_overrides_arm_type_fallback() -> None:
+    resource_id = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    recommendation = {
+        "id": "rec-1",
+        "properties": {
+            "recommendationTypeId": "service-1",
+            "resourceMetadata": {"resourceId": resource_id},
+        },
+        "_subscriptionId": "sub",
+    }
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 21),
+        scope_mode="live",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={
+            ("service-1", resource_id.lower()): {"type": "Custom.Provider/widgets"}
+        },
+    )
+
+    assert rows[0]["resource_type"] == "custom.provider/widgets"
 
 
 def test_normalize_advisor_rows_fallback_service_name_from_impacted_field() -> None:

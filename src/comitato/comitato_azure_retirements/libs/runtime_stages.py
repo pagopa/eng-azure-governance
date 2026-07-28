@@ -6,7 +6,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .advisor import index_metadata_with_collisions, index_resource_graph
+from .advisor import (
+    flatten_advisor_metadata_items,
+    index_metadata_with_collisions,
+    index_resource_graph,
+)
 from .concurrency import effective_worker_count
 from .config import RuntimeConfig
 from .diagnostics import DiagnosticsCollector
@@ -28,6 +32,7 @@ from .workflow_exports import (
     RAW_ADVISOR_FILENAME,
     RAW_SERVICE_HEALTH_FILENAME,
     AGGREGATE_FILENAME,
+    SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
 )
 
 MANIFEST_DEGRADED_CHECK_IDS = {
@@ -48,6 +53,54 @@ def diagnostic_summary(rows: list[dict[str, str]]) -> dict[str, int]:
 
 def manifest_degraded_mode(rows: list[dict[str, str]]) -> bool:
     return any(row.get("check_id", "") in MANIFEST_DEGRADED_CHECK_IDS for row in rows)
+
+
+def add_service_health_expired_diagnostic(
+    *, diagnostics: DiagnosticsCollector, expired_event_ids: list[str]
+) -> None:
+    if not expired_event_ids:
+        return
+    diagnostics.add(
+        severity="info",
+        check_id="service_health_expired_events_filtered",
+        source_system="resource_health_events",
+        scope="global",
+        message="Service Health events with elapsed End time were excluded before normalization",
+        action_required="None",
+        observed_count=len(expired_event_ids),
+        raw_context_json=compact_json(
+            {"tracking_ids": sorted(set(expired_event_ids))}
+        ),
+    )
+
+
+def add_publication_exclusion_diagnostics(
+    *,
+    diagnostics: DiagnosticsCollector,
+    excluded_by_reason: dict[str, list[str]],
+) -> None:
+    for reason in (
+        "advisor_not_current",
+        "expired",
+        "beyond_one_year",
+        "missing_or_invalid_date",
+    ):
+        identifiers = sorted(set(excluded_by_reason.get(reason, [])))
+        if not identifiers:
+            continue
+        context: dict[str, Any] = {"identifiers": identifiers[:100]}
+        if len(identifiers) > 100:
+            context["identifiers_truncated"] = True
+        diagnostics.add(
+            severity="info",
+            check_id=f"publication_{reason}",
+            source_system="publication_window",
+            scope="global",
+            message=f"Publication rows excluded: {reason}",
+            action_required="Review excluded identifiers if the source payload is expected to be current",
+            observed_count=len(identifiers),
+            raw_context_json=compact_json(context),
+        )
 
 
 def empty_rows(headers: list[str]) -> list[dict[str, str]]:
@@ -101,7 +154,20 @@ def add_live_empty_output_diagnostics(
         + counts_by_source["advisor_recommendations"]
         + counts_by_source["resource_graph_advisorresources"]
     )
-    service_source_count = counts_by_source["resource_health_events"]
+    service_source_count = counts_by_source.get(
+        "resource_health_events_collected",
+        counts_by_source["resource_health_events"],
+    )
+    service_retained_count = counts_by_source.get(
+        "resource_health_events_retained",
+        counts_by_source.get("resource_health_events", 0),
+    )
+    service_expired_count = counts_by_source.get("resource_health_events_expired", 0)
+    service_intentionally_empty = (
+        service_source_count > 0
+        and service_retained_count == 0
+        and service_expired_count == service_source_count
+    )
 
     if not advisor_rows:
         severity = "warning" if advisor_source_count == 0 else "error"
@@ -122,7 +188,7 @@ def add_live_empty_output_diagnostics(
         reporter.warning("Advisor aggregate produced zero rows")
 
     if not service_rows:
-        severity = "warning" if service_source_count == 0 else "error"
+        severity = "warning" if service_source_count == 0 or service_intentionally_empty else "error"
         diagnostics.add(
             severity=severity,
             check_id="service_rows_empty",
@@ -132,6 +198,8 @@ def add_live_empty_output_diagnostics(
             action_required=(
                 "No Service Health source rows were returned for the resolved scope"
                 if service_source_count == 0
+                else "All collected Service Health events were intentionally excluded because their End time elapsed"
+                if service_intentionally_empty
                 else "Fix Service Health normalization before using this export"
             ),
             observed_count=len(service_rows),
@@ -146,7 +214,24 @@ def enforce_mandatory_raw_rows(
     reporter: ExecutionReporter,
     advisor_rows: list[dict[str, str]],
     service_rows: list[dict[str, str]],
+    counts_by_source: dict[str, int] | None = None,
 ) -> None:
+    source_counts = counts_by_source or {}
+    service_collected_count = source_counts.get(
+        "resource_health_events_collected",
+        source_counts.get("resource_health_events", 0),
+    )
+    service_retained_count = source_counts.get(
+        "resource_health_events_retained",
+        source_counts.get("resource_health_events", len(service_rows)),
+    )
+    service_expired_count = source_counts.get("resource_health_events_expired", 0)
+    service_intentionally_empty = (
+        not service_rows
+        and service_collected_count > 0
+        and service_retained_count == 0
+        and service_expired_count == service_collected_count
+    )
     missing_files: list[str] = []
     if not advisor_rows:
         missing_files.append(RAW_ADVISOR_FILENAME)
@@ -159,7 +244,7 @@ def enforce_mandatory_raw_rows(
             action_required="Collect live or fixture raw data before running aggregate/slide workflows",
         )
 
-    if not service_rows:
+    if not service_rows and not service_intentionally_empty:
         missing_files.append(RAW_SERVICE_HEALTH_FILENAME)
         diagnostics.add(
             severity="error",
@@ -206,11 +291,21 @@ def fixture_mode(
     del output_dir
     assert cfg.fixture_dir is not None
 
-    advisor_metadata = load_fixture(cfg.fixture_dir / "advisor_metadata.json")
+    advisor_metadata = flatten_advisor_metadata_items(
+        load_fixture(cfg.fixture_dir / "advisor_metadata.json")
+    )
     advisor_recommendations = load_fixture(cfg.fixture_dir / "advisor_recommendations.json")
     advisor_graph_rows = load_fixture(cfg.fixture_dir / "advisor_resource_graph.json")
-    service_health_events = filter_health_advisory_events(
-        load_fixture(cfg.fixture_dir / "service_health_events.json")
+    collected_service_health_events = load_fixture(
+        cfg.fixture_dir / "service_health_events.json"
+    )
+    service_health_filter = filter_health_advisory_events(
+        collected_service_health_events, as_of_date=cfg.as_of_date
+    )
+    service_health_events = service_health_filter.events
+    add_service_health_expired_diagnostic(
+        diagnostics=diagnostics,
+        expired_event_ids=service_health_filter.expired_event_ids,
     )
     subscription_rows = load_fixture(cfg.fixture_dir / "subscriptions.json")
 
@@ -273,6 +368,9 @@ def fixture_mode(
         "advisor_recommendations": len(advisor_recommendations),
         "resource_graph_advisorresources": len(advisor_graph_rows),
         "resource_health_events": len(service_health_events),
+        "resource_health_events_collected": len(collected_service_health_events),
+        "resource_health_events_retained": len(service_health_events),
+        "resource_health_events_expired": len(service_health_filter.expired_event_ids),
     }
     counts_by_file = {
         RAW_ADVISOR_FILENAME: len(advisor_rows),

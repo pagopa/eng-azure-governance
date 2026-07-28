@@ -51,7 +51,20 @@ def collect_advisor_metadata(client: ArmClient) -> tuple[list[dict[str, Any]], i
         "$expand": "ibiza",
     }
     page = client.list_with_nextlink(url, params=params)
-    return page.items, page.page_count
+    return flatten_advisor_metadata_items(page.items), page.page_count
+
+
+def flatten_advisor_metadata_items(
+    items: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    flattened: list[dict[str, Any]] = []
+    for item in items:
+        supported = item.get("properties", {}).get("supportedValues")
+        if isinstance(supported, list):
+            flattened.extend(row for row in supported if isinstance(row, dict))
+        else:
+            flattened.append(item)
+    return flattened
 
 
 def collect_advisor_recommendations(

@@ -19,7 +19,11 @@ from .diagnostics import DiagnosticsCollector
 from .normalize import normalize_advisor_rows, normalize_service_health_rows
 from .runtime_logging import ExecutionReporter
 from .runtime_paths import scope_mode
-from .runtime_stages import add_live_empty_output_diagnostics, effective_worker_count
+from .runtime_stages import (
+    add_live_empty_output_diagnostics,
+    add_service_health_expired_diagnostic,
+    effective_worker_count,
+)
 from .service_health import (
     build_recommended_actions,
     collect_events_for_subscriptions,
@@ -144,7 +148,15 @@ def live_mode(
             resolved_worker_count=effective_workers,
             debug_logger=debug_logger,
         )
-    service_events = filter_health_advisory_events(service_events)
+    collected_service_events = service_events
+    service_health_filter = filter_health_advisory_events(
+        collected_service_events, as_of_date=cfg.as_of_date
+    )
+    service_events = service_health_filter.events
+    add_service_health_expired_diagnostic(
+        diagnostics=diagnostics,
+        expired_event_ids=service_health_filter.expired_event_ids,
+    )
     reporter.step(
         f"Advisor metadata rows: {len(advisor_metadata)} across {advisor_metadata_pages} page(s)"
     )
@@ -342,6 +354,9 @@ def live_mode(
         "advisor_recommendations": len(advisor_recommendations),
         "resource_graph_advisorresources": len(advisor_graph_rows),
         "resource_health_events": len(service_events),
+        "resource_health_events_collected": len(collected_service_events),
+        "resource_health_events_retained": len(service_events),
+        "resource_health_events_expired": len(service_health_filter.expired_event_ids),
     }
     add_live_empty_output_diagnostics(
         diagnostics=diagnostics,

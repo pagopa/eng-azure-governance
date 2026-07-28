@@ -81,7 +81,9 @@ def _resource_type_from_resource_id(resource_id: str) -> str:
     for idx, part in enumerate(parts):
         if part.lower() != "providers" or idx + 2 >= len(parts):
             continue
-        return f"{parts[idx + 1]}/{parts[idx + 2]}".lower()
+        provider_namespace = parts[idx + 1]
+        type_segments = parts[idx + 2 :][0::2]
+        return f"{provider_namespace}/{'/'.join(type_segments)}".lower()
     return ""
 
 
@@ -210,7 +212,7 @@ def normalize_advisor_rows(
 
         subscription_id = str(recommendation.get("_subscriptionId") or "")
         tags_json = ""
-        resource_type = ""
+        resource_type = _resource_type_from_resource_id(resource_id)
         location = ""
         subscription_name = ""
         resource_name = _extract_resource_name(resource_id)
@@ -225,6 +227,9 @@ def normalize_advisor_rows(
             resource_name = str(resource_graph.get("name") or resource_name)
             resource_group = str(resource_graph.get("resourceGroup") or resource_group)
             platform_state = str(resource_graph.get("platformState") or "")
+
+        if not resource_group and "/subscriptions/" in resource_id and "/providers/" in resource_id:
+            row_flags.append("subscription_scope")
 
         if location:
             canonical_location = canonical_allowed_region(location, allowed_regions)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 from src.comitato.comitato_azure_retirements.libs.workflow_exports import (
+    AggregateBuildResult,
     UNKNOWN_PLATFORM,
     build_aggregate_rows,
     build_slide_rows,
@@ -51,6 +52,7 @@ def test_build_aggregate_rows_groups_platforms_and_unknown_bucket() -> None:
             "retirement_date": "2026-12-31",
             "subscription_name": "PROD-IO",
             "source_system": "advisor_joined",
+            "platform_state": "New",
             "source_id": "source-1",
             "advisor_recommendation_id": "rec-1",
             "action_link": "https://example.com/action",
@@ -65,6 +67,7 @@ def test_build_aggregate_rows_groups_platforms_and_unknown_bucket() -> None:
             "retirement_date": "2026-12-31",
             "subscription_name": "SUB-NOT-MAPPED",
             "source_system": "advisor_joined",
+            "platform_state": "New",
             "source_id": "source-2",
             "advisor_recommendation_id": "rec-2",
             "action_link": "",
@@ -73,12 +76,13 @@ def test_build_aggregate_rows_groups_platforms_and_unknown_bucket() -> None:
         },
     ]
 
-    aggregate_rows = build_aggregate_rows(
+    aggregate_result = build_aggregate_rows(
         advisor_rows=advisor_rows,
         service_rows=[],
         active_platform_map={"prod-io": "IO"},
         as_of_date=date(2026, 6, 19),
     )
+    aggregate_rows = aggregate_result.advisor_rows
 
     assert len(aggregate_rows) == 1
     row = aggregate_rows[0]
@@ -90,6 +94,42 @@ def test_build_aggregate_rows_groups_platforms_and_unknown_bucket() -> None:
         f'"{UNKNOWN_PLATFORM}":["SUB-NOT-MAPPED"]'
         in row["impacted_platforms_subscriptions_json"]
     )
+
+
+def test_build_aggregate_rows_separates_advisor_and_service_health_records() -> None:
+    result = build_aggregate_rows(
+        advisor_rows=[
+            {
+                "retiring_feature": "Advisor retirement",
+                "short_description_problem": "Advisor problem",
+                "retirement_date": "2026-09-30",
+                "subscription_name": "PROD-IO",
+                "source_system": "advisor_joined",
+                "platform_state": "New",
+                "source_id": "advisor-1",
+                "as_of_date": "2026-07-28",
+            }
+        ],
+        service_rows=[
+            {
+                "title": "Health retirement",
+                "summary": "Service event",
+                "impact_mitigation_time": "2026-10-01T00:00:00Z",
+                "date_for_window": "2026-10-01",
+                "source_system": "resource_health_events",
+                "source_id": "health-1",
+                "event_id": "health-1",
+                "tracking_id": "health-1",
+                "as_of_date": "2026-07-28",
+            }
+        ],
+        active_platform_map={"prod-io": "IO"},
+        as_of_date=date(2026, 7, 28),
+    )
+
+    assert isinstance(result, AggregateBuildResult)
+    assert all(row["advice_type"] == "advisor_retirement" for row in result.advisor_rows)
+    assert all(row["advice_type"] != "advisor_retirement" for row in result.service_health_rows)
 
 
 def test_build_aggregate_rows_skips_low_signal_catalog_rows() -> None:
@@ -117,6 +157,7 @@ def test_build_aggregate_rows_skips_low_signal_catalog_rows() -> None:
             "retirement_date": "2026-12-31",
             "subscription_name": "PROD-IO",
             "source_system": "advisor_joined",
+            "platform_state": "New",
             "source_id": "source-1",
             "advisor_recommendation_id": "rec-1",
             "action_link": "https://example.com/action",
@@ -131,7 +172,7 @@ def test_build_aggregate_rows_skips_low_signal_catalog_rows() -> None:
         service_rows=[],
         active_platform_map={"prod-io": "IO"},
         as_of_date=date(2026, 6, 19),
-    )
+    ).advisor_rows
 
     assert len(aggregate_rows) == 1
     assert aggregate_rows[0]["retiring_feature"] == "TLS 1.0 retirement"
@@ -152,6 +193,7 @@ def test_build_aggregate_rows_backfills_source_links_from_advisor_identifiers() 
             "retirement_date": "2026-12-31",
             "subscription_name": "PROD-IO",
             "source_system": "advisor_joined",
+            "platform_state": "New",
             "source_id": advisor_source_id,
             "advisor_recommendation_id": advisor_source_id,
             "action_link": "",
@@ -166,7 +208,7 @@ def test_build_aggregate_rows_backfills_source_links_from_advisor_identifiers() 
         service_rows=[],
         active_platform_map={"prod-io": "IO"},
         as_of_date=date(2026, 6, 19),
-    )
+    ).advisor_rows
 
     assert len(aggregate_rows) == 1
     assert (
@@ -187,6 +229,7 @@ def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscriptio
             "subscription_id": "sub-1",
             "subscription_name": "PROD-IO",
             "source_system": "advisor_joined",
+            "platform_state": "New",
             "source_id": "/subscriptions/sub-1/resourceGroups/rg/providers/Microsoft.Web/sites/app/providers/Microsoft.Advisor/recommendations/known",
             "advisor_recommendation_id": "known",
             "service_name": "App service",
@@ -200,6 +243,7 @@ def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscriptio
             "subscription_id": "sub-1",
             "subscription_name": "",
             "source_system": "advisor_joined",
+            "platform_state": "New",
             "source_id": "/subscriptions/sub-1/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/kv/providers/Microsoft.Advisor/recommendations/blank",
             "advisor_recommendation_id": "blank",
             "service_name": "Key vault",
@@ -212,7 +256,7 @@ def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscriptio
         service_rows=[],
         active_platform_map={"prod-io": "IO"},
         as_of_date=date(2026, 6, 19),
-    )
+    ).advisor_rows
 
     blank_row = next(
         row for row in aggregate_rows if row["retiring_feature"] == "Blank subscription row"
@@ -235,6 +279,7 @@ def test_build_aggregate_rows_backfills_source_links_from_service_health_identif
             "source_id": source_identifier,
             "event_id": source_identifier,
             "tracking_id": source_identifier,
+            "impact_mitigation_time": "2026-10-01T00:00:00Z",
             "as_of_date": "2026-06-19",
         }
     ]
@@ -244,7 +289,7 @@ def test_build_aggregate_rows_backfills_source_links_from_service_health_identif
         service_rows=service_rows,
         active_platform_map={"prod-io": "IO"},
         as_of_date=date(2026, 6, 19),
-    )
+    ).service_health_rows
 
     assert len(aggregate_rows) == 1
     assert (

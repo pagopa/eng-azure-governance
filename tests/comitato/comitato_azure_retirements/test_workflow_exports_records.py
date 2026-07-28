@@ -1,11 +1,66 @@
 from __future__ import annotations
 
+from datetime import date
+
 from src.comitato.comitato_azure_retirements.libs.workflow_exports_records import (
     advisor_records,
     classify_service_health_type,
     normalize_retirement_date,
+    select_publication_records,
     service_health_records,
 )
+
+
+def test_select_publication_records_uses_inclusive_one_year_window() -> None:
+    records = [
+        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2026-07-28", "source_identifiers": ["lower"]},
+        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2027-07-28", "source_identifiers": ["upper"]},
+        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2026-07-27", "source_identifiers": ["expired"]},
+        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2027-07-29", "source_identifiers": ["future"]},
+        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "not-a-date", "source_identifiers": ["invalid"]},
+    ]
+
+    selection = select_publication_records(records, as_of_date=date(2026, 7, 28))
+
+    assert [record["source_identifiers"] for record in selection.records] == [["lower"], ["upper"]]
+    assert selection.excluded_by_reason == {
+        "expired": ["expired"],
+        "beyond_one_year": ["future"],
+        "missing_or_invalid_date": ["invalid"],
+    }
+
+
+def test_select_publication_records_excludes_non_current_advisor_rows() -> None:
+    selection = select_publication_records(
+        [
+            {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2026-09-30", "source_identifiers": ["current"]},
+            {"source_system": "advisor_joined", "platform_state": "", "publication_date": "2026-09-30", "source_identifiers": ["recommendation-only"]},
+        ],
+        as_of_date=date(2026, 7, 28),
+    )
+
+    assert [record["source_identifiers"] for record in selection.records] == [["current"]]
+    assert selection.excluded_by_reason["advisor_not_current"] == ["recommendation-only"]
+
+
+def test_service_health_publication_selection_uses_impact_mitigation_time() -> None:
+    records = service_health_records(
+        [
+            {
+                "source_id": "future-event",
+                "tracking_id": "future-event",
+                "impact_mitigation_time": "2027-07-29T00:00:00Z",
+                "date_for_window": "2026-09-30",
+                "title": "Service retirement notice",
+                "event_sub_type": "Retirement",
+            }
+        ]
+    )
+
+    selection = select_publication_records(records, as_of_date=date(2026, 7, 28))
+
+    assert selection.records == []
+    assert selection.excluded_by_reason["beyond_one_year"] == ["future-event"]
 
 
 def test_classify_service_health_type_prioritizes_deprecation_then_retirement() -> None:

@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any, cast
 
 from src.comitato.comitato_azure_retirements.libs.advisor import (
+    collect_advisor_metadata,
     collect_advisor_recommendations,
+    flatten_advisor_metadata_items,
     index_metadata,
     index_metadata_with_collisions,
     index_resource_graph,
@@ -36,6 +38,50 @@ def test_collect_advisor_recommendations_tags_subscription_id() -> None:
     assert pages == {"sub-1": 2, "sub-2": 2}
     assert [row["_subscriptionId"] for row in rows] == ["sub-1", "sub-2"]
     assert failures == []
+
+
+def test_flatten_advisor_metadata_items_expands_supported_values() -> None:
+    metadata = {"id": "service-1", "properties": {"sourceProperties": {}}}
+    wrapper = {"properties": {"supportedValues": [metadata]}}
+
+    assert flatten_advisor_metadata_items([wrapper]) == [metadata]
+
+
+def test_flatten_advisor_metadata_items_preserves_direct_rows() -> None:
+    metadata = {"id": "service-1", "properties": {"sourceProperties": {}}}
+
+    assert flatten_advisor_metadata_items([metadata]) == [metadata]
+
+
+class MetadataArmClient:
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del url, params, items_key
+        metadata = {
+            "id": "service-1",
+            "properties": {
+                "sourceProperties": {
+                    "serviceRetirement": {"serviceId": "service-1"}
+                }
+            },
+        }
+        return ArmPageResult(
+            items=[{"properties": {"supportedValues": [metadata]}}],
+            page_count=3,
+        )
+
+
+def test_collect_advisor_metadata_returns_indexable_flattened_rows() -> None:
+    rows, page_count = collect_advisor_metadata(cast(Any, MetadataArmClient()))
+
+    indexed = index_metadata(rows)
+
+    assert page_count == 3
+    assert indexed["service-1"] is rows[0]
 
 
 def test_collect_advisor_recommendations_emits_progress_updates() -> None:

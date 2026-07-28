@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from .dates import parse_possible_date
+from .dates import add_calendar_months
 from .normalize_shared import parse_retirement_date_candidate
 from .workflow_exports_utils import (
     DATE_CANDIDATE_PATTERN,
@@ -12,6 +15,59 @@ from .workflow_exports_utils import (
     sorted_unique,
     traceable_links_from_identifiers,
 )
+
+
+@dataclass(frozen=True)
+class PublicationSelection:
+    records: list[dict[str, object]]
+    excluded_by_reason: dict[str, list[str]]
+
+
+def _record_identifiers(record: dict[str, object]) -> list[str]:
+    identifiers = record.get("source_identifiers", [])
+    if isinstance(identifiers, list):
+        values = [str(identifier).strip() for identifier in identifiers if str(identifier).strip()]
+    else:
+        values = []
+    if values:
+        return sorted(set(values))
+    fallback = str(record.get("source_id") or record.get("tracking_id") or "").strip()
+    return [fallback] if fallback else []
+
+
+def select_publication_records(
+    records: list[dict[str, object]], *, as_of_date
+) -> PublicationSelection:
+    upper_bound = add_calendar_months(as_of_date, 12)
+    selected: list[dict[str, object]] = []
+    excluded: dict[str, list[str]] = {}
+
+    for record in records:
+        source_system = str(record.get("source_system") or "")
+        if source_system.startswith("advisor") and str(record.get("platform_state") or "") != "New":
+            excluded.setdefault("advisor_not_current", []).extend(_record_identifiers(record))
+            continue
+
+        publication_date = parse_possible_date(str(record.get("publication_date") or ""))
+        if publication_date is None:
+            excluded.setdefault("missing_or_invalid_date", []).extend(_record_identifiers(record))
+            continue
+        if publication_date < as_of_date:
+            excluded.setdefault("expired", []).extend(_record_identifiers(record))
+            continue
+        if publication_date > upper_bound:
+            excluded.setdefault("beyond_one_year", []).extend(_record_identifiers(record))
+            continue
+        selected.append(record)
+
+    return PublicationSelection(
+        records=selected,
+        excluded_by_reason={
+            reason: sorted(set(identifiers))
+            for reason, identifiers in excluded.items()
+            if identifiers
+        },
+    )
 
 
 def normalize_retirement_date(
@@ -118,6 +174,8 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
                 "source_system": row.get("source_system", "advisor_joined") or "advisor_joined",
                 "source_identifiers": source_identifiers,
                 "source_links": links,
+                "publication_date": row.get("retirement_date", ""),
+                "platform_state": row.get("platform_state", ""),
                 "summary_text": first_non_empty(
                     [row.get("short_description_problem", ""), row.get("retiring_feature", "")]
                 ),
@@ -195,6 +253,7 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                 "source_system": row.get("source_system", "resource_health_events") or "resource_health_events",
                 "source_identifiers": source_identifiers,
                 "source_links": links,
+                "publication_date": row.get("impact_mitigation_time", ""),
                 "summary_text": first_non_empty([row.get("summary", ""), row.get("title", "")]),
                 "details_text": row.get("description", ""),
                 "as_of_date": row.get("as_of_date", ""),

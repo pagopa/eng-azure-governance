@@ -9,6 +9,7 @@ Persisted outputs currently include:
 - `01_azure_advisor_retirements_raw.tsv`
 - `01_azure_service_health_advisories_raw.tsv`
 - `02_azure_retirements_aggregate.tsv`
+- `02_azure_service_health_supplemental.tsv`
 - `03_azure_retirements_slide.tsv`
 - `azure_retirements_run_diagnostics.tsv`
 - `azure_retirements_run_manifest.json`
@@ -131,6 +132,7 @@ Required export files:
 - `01_azure_advisor_retirements_raw.tsv`
 - `01_azure_service_health_advisories_raw.tsv`
 - `02_azure_retirements_aggregate.tsv`
+- `02_azure_service_health_supplemental.tsv`
 - `03_azure_retirements_slide.tsv`
 
 Required runtime files:
@@ -142,6 +144,20 @@ Optional export files with `--write-raw-jsonl`:
 
 - `azure_advisor_retirements_raw.jsonl`
 - `azure_service_health_advisories_raw.jsonl`
+
+Publication selection uses the inclusive calendar window
+`as_of_date <= publication_date <= add_calendar_months(as_of_date, 12)`.
+Advisor publication dates come from `retirement_date` and only current Advisor
+rows (`platform_state=New`) enter the main aggregate. Service Health publication
+dates come from Azure `impactMitigationTime` (the normalized End time), and
+Service Health rows are written to `02_azure_service_health_supplemental.tsv`.
+The committee slide is projected from the Advisor aggregate only. Service Health
+remains subscription/service/region oriented; resource fields stay empty when
+Azure does not provide a verifiable resource identity.
+
+Publication exclusions are reported in run diagnostics as
+`publication_advisor_not_current`, `publication_expired`,
+`publication_beyond_one_year`, and `publication_missing_or_invalid_date`.
 
 ## Workbook Role
 

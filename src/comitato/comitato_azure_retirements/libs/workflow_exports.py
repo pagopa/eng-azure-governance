@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from dataclasses import dataclass
 import html
 from pathlib import Path
 import re
@@ -13,7 +14,11 @@ from .workflow_exports_grouping import (
     UNKNOWN_PLATFORM as GROUP_UNKNOWN_PLATFORM,
     aggregate_group,
 )
-from .workflow_exports_records import advisor_records, service_health_records
+from .workflow_exports_records import (
+    advisor_records,
+    select_publication_records,
+    service_health_records,
+)
 from .workflow_exports_utils import (
     as_string_list,
     build_advisory_key,
@@ -28,8 +33,16 @@ RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
 LEGACY_RAW_ADVISOR_FILENAME = "azure_advisor_retirements_aggregate.tsv"
 LEGACY_RAW_SERVICE_HEALTH_FILENAME = "azure_service_health_advisories_aggregate.tsv"
 AGGREGATE_FILENAME = "02_azure_retirements_aggregate.tsv"
+SERVICE_HEALTH_SUPPLEMENTAL_FILENAME = "02_azure_service_health_supplemental.tsv"
 SLIDE_FILENAME = "03_azure_retirements_slide.tsv"
 UNKNOWN_PLATFORM = GROUP_UNKNOWN_PLATFORM
+
+
+@dataclass(frozen=True)
+class AggregateBuildResult:
+    advisor_rows: list[dict[str, str]]
+    service_health_rows: list[dict[str, str]]
+    excluded_by_reason: dict[str, list[str]]
 
 
 def _group_records_by_advisory_key(frame: pd.DataFrame) -> list[tuple[str, list[dict[str, object]]]]:
@@ -65,15 +78,12 @@ def load_active_subscription_platform_map(platforms_path: Path) -> dict[str, str
     return reverse_map
 
 
-def build_aggregate_rows(
+def _group_records(
+    records: list[dict[str, object]],
     *,
-    advisor_rows: list[dict[str, str]],
-    service_rows: list[dict[str, str]],
     active_platform_map: dict[str, str],
     as_of_date: date,
 ) -> list[dict[str, str]]:
-    """Build grouped aggregate rows from advisor and service health raw rows."""
-    records = advisor_records(advisor_rows) + service_health_records(service_rows)
     if not records:
         return []
 
@@ -94,11 +104,11 @@ def build_aggregate_rows(
     subscription_name_by_id = _subscription_name_by_id(frame.to_dict("records"))
 
     grouped_rows: list[dict[str, str]] = []
-    for advisory_key, records in _group_records_by_advisory_key(frame):
+    for advisory_key, grouped_records in _group_records_by_advisory_key(frame):
         grouped_rows.append(
             aggregate_group(
                 advisory_key=str(advisory_key),
-                rows=records,
+                rows=grouped_records,
                 active_platform_map=active_platform_map,
                 normalize_key=normalize_key,
                 as_of_date=as_of_date,
@@ -108,6 +118,44 @@ def build_aggregate_rows(
 
     grouped_rows.sort(key=lambda row: row["advisory_key"])
     return grouped_rows
+
+
+def build_aggregate_rows(
+    *,
+    advisor_rows: list[dict[str, str]],
+    service_rows: list[dict[str, str]],
+    active_platform_map: dict[str, str],
+    as_of_date: date,
+) -> AggregateBuildResult:
+    """Build source-separated grouped aggregate rows for the publication window."""
+    advisor_selection = select_publication_records(
+        advisor_records(advisor_rows), as_of_date=as_of_date
+    )
+    service_health_selection = select_publication_records(
+        service_health_records(service_rows), as_of_date=as_of_date
+    )
+
+    excluded_by_reason: dict[str, list[str]] = {}
+    for selection in (advisor_selection, service_health_selection):
+        for reason, identifiers in selection.excluded_by_reason.items():
+            excluded_by_reason.setdefault(reason, []).extend(identifiers)
+
+    return AggregateBuildResult(
+        advisor_rows=_group_records(
+            advisor_selection.records,
+            active_platform_map=active_platform_map,
+            as_of_date=as_of_date,
+        ),
+        service_health_rows=_group_records(
+            service_health_selection.records,
+            active_platform_map=active_platform_map,
+            as_of_date=as_of_date,
+        ),
+        excluded_by_reason={
+            reason: sorted(set(identifiers))
+            for reason, identifiers in excluded_by_reason.items()
+        },
+    )
 
 
 def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str]]:

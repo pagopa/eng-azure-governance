@@ -103,6 +103,7 @@ def test_live_mode_preserves_run_id_for_normalization(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     captured: dict[str, str] = {}
+    diagnostics = DiagnosticsCollector("run-preserved")
 
     monkeypatch.setattr(runtime_live, "get_management_token", lambda: "token")
     monkeypatch.setattr(runtime_live, "ArmClient", lambda *_args, **_kwargs: object())
@@ -125,9 +126,22 @@ def test_live_mode_preserves_run_id_for_normalization(
     monkeypatch.setattr(
         runtime_live,
         "collect_events_for_subscriptions",
-        lambda *_args, **_kwargs: ([], {"sub-1": 0}, []),
+        lambda *_args, **_kwargs: (
+            [
+                {
+                    "name": "9HB8-C00",
+                    "properties": {
+                        "eventType": "HealthAdvisory",
+                        "level": "Warning",
+                        "status": "Active",
+                        "impactMitigationTime": "2026-03-31T13:51:10Z",
+                    },
+                }
+            ],
+            {"sub-1": 1},
+            [],
+        ),
     )
-    monkeypatch.setattr(runtime_live, "filter_health_advisory_events", lambda events: events)
     monkeypatch.setattr(runtime_live, "index_metadata_with_collisions", lambda *_args, **_kwargs: ({}, {}))
     monkeypatch.setattr(runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {})
     monkeypatch.setattr(runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {})
@@ -138,6 +152,7 @@ def test_live_mode_preserves_run_id_for_normalization(
 
     def _capture_service_run_id(**kwargs):
         captured["service"] = kwargs["run_id"]
+        captured["service_events"] = kwargs["events"]
         return []
 
     monkeypatch.setattr(runtime_live, "normalize_advisor_rows", _capture_advisor_run_id)
@@ -147,9 +162,20 @@ def test_live_mode_preserves_run_id_for_normalization(
         cfg=_runtime_config(tmp_path),
         run_id="run-preserved",
         output_dir=tmp_path,
-        diagnostics=DiagnosticsCollector("run-preserved"),
+        diagnostics=diagnostics,
         reporter=_LiveReporter(),
         debug_logger=_DebugLogger(),
     )
 
-    assert captured == {"advisor": "run-preserved", "service": "run-preserved"}
+    assert captured == {
+        "advisor": "run-preserved",
+        "service": "run-preserved",
+        "service_events": [],
+    }
+    expired_diagnostic = next(
+        row
+        for row in diagnostics.rows()
+        if row["check_id"] == "service_health_expired_events_filtered"
+    )
+    assert expired_diagnostic["observed_count"] == "1"
+    assert "9HB8-C00" in expired_diagnostic["raw_context_json"]

@@ -21,6 +21,7 @@ from .runtime_paths import (
 from .runtime_router import RuntimeRoute, StageAction, build_runtime_route
 from .runtime_stages import (
     add_aggregate_contract_diagnostics,
+    add_publication_exclusion_diagnostics,
     add_slide_source_link_diagnostics,
     diagnostic_summary,
     enforce_mandatory_raw_rows,
@@ -37,6 +38,7 @@ from .workflow_exports import (
     AGGREGATE_FILENAME,
     RAW_ADVISOR_FILENAME,
     RAW_SERVICE_HEALTH_FILENAME,
+    SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
     SLIDE_FILENAME,
     build_aggregate_rows,
     build_slide_rows,
@@ -53,6 +55,9 @@ def _default_counts_by_source() -> dict[str, int]:
         "advisor_recommendations": 0,
         "resource_graph_advisorresources": 0,
         "resource_health_events": 0,
+        "resource_health_events_collected": 0,
+        "resource_health_events_retained": 0,
+        "resource_health_events_expired": 0,
     }
 
 
@@ -141,6 +146,7 @@ def _run_raw_stage(
             reporter=reporter,
             advisor_rows=advisor_rows,
             service_rows=service_rows,
+            counts_by_source=counts_by_source,
         )
 
     reporter.section(
@@ -204,27 +210,58 @@ def _run_aggregate_stage(
 ) -> list[dict[str, str]]:
     reporter.section("🧮", "Aggregate Stage", "Build normalized grouped advisory contract")
     platform_map = load_active_subscription_platform_map(platforms_source_path)
-    aggregate_rows = unique_tsv_rows(
-        AGGREGATE_HEADERS,
-        build_aggregate_rows(
-            advisor_rows=advisor_rows,
-            service_rows=service_rows,
-            active_platform_map=platform_map,
-            as_of_date=cfg.as_of_date,
-        ),
+    aggregate_result = build_aggregate_rows(
+        advisor_rows=advisor_rows,
+        service_rows=service_rows,
+        active_platform_map=platform_map,
+        as_of_date=cfg.as_of_date,
     )
-    add_aggregate_contract_diagnostics(diagnostics=diagnostics, aggregate_rows=aggregate_rows)
+    advisor_aggregate_rows = unique_tsv_rows(
+        AGGREGATE_HEADERS,
+        aggregate_result.advisor_rows,
+    )
+    service_health_aggregate_rows = unique_tsv_rows(
+        AGGREGATE_HEADERS,
+        aggregate_result.service_health_rows,
+    )
+    add_publication_exclusion_diagnostics(
+        diagnostics=diagnostics,
+        excluded_by_reason=aggregate_result.excluded_by_reason,
+    )
+    add_aggregate_contract_diagnostics(
+        diagnostics=diagnostics,
+        aggregate_rows=advisor_aggregate_rows,
+    )
     aggregate_report_path = output_dir / AGGREGATE_FILENAME
-    write_tsv(aggregate_report_path, AGGREGATE_HEADERS, aggregate_rows)
-    counts_by_file[AGGREGATE_FILENAME] = len(aggregate_rows)
-    reporter.step(f"Wrote aggregate report: {aggregate_report_path} ({len(aggregate_rows)} row(s))")
+    write_tsv(aggregate_report_path, AGGREGATE_HEADERS, advisor_aggregate_rows)
+    counts_by_file[AGGREGATE_FILENAME] = len(advisor_aggregate_rows)
+    reporter.step(
+        f"Wrote aggregate report: {aggregate_report_path} ({len(advisor_aggregate_rows)} row(s))"
+    )
     debug_logger.info(
         "aggregate_report_written",
         "Aggregate report written",
         report_path=str(aggregate_report_path),
-        rows=len(aggregate_rows),
+        rows=len(advisor_aggregate_rows),
     )
-    return aggregate_rows
+    supplemental_report_path = output_dir / SERVICE_HEALTH_SUPPLEMENTAL_FILENAME
+    write_tsv(
+        supplemental_report_path,
+        AGGREGATE_HEADERS,
+        service_health_aggregate_rows,
+    )
+    counts_by_file[SERVICE_HEALTH_SUPPLEMENTAL_FILENAME] = len(service_health_aggregate_rows)
+    reporter.step(
+        "Wrote Service Health supplemental report: "
+        f"{supplemental_report_path} ({len(service_health_aggregate_rows)} row(s))"
+    )
+    debug_logger.info(
+        "service_health_supplemental_report_written",
+        "Service Health supplemental report written",
+        report_path=str(supplemental_report_path),
+        rows=len(service_health_aggregate_rows),
+    )
+    return advisor_aggregate_rows
 
 
 def _run_slide_stage(

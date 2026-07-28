@@ -4,16 +4,25 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
+from datetime import date
 from time import perf_counter
 from typing import Any
 
 from .arm_client import ArmClient
 from .concurrency import effective_worker_count
 from .debug_log import DebugRunLogger
+from .dates import parse_possible_date
 
 RESOURCE_HEALTH_API_VERSION = "2025-05-01"
 
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
+
+
+@dataclass(frozen=True)
+class HealthAdvisoryFilterResult:
+    events: list[dict[str, Any]]
+    expired_event_ids: list[str]
 
 
 def _with_subscription_id(event: dict[str, Any], subscription: str) -> dict[str, Any]:
@@ -275,8 +284,11 @@ def collect_events_for_subscriptions(
     return rows, page_by_subscription, failures
 
 
-def filter_health_advisory_events(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def filter_health_advisory_events(
+    events: list[dict[str, Any]], *, as_of_date: date
+) -> HealthAdvisoryFilterResult:
     filtered: list[dict[str, Any]] = []
+    expired_event_ids: list[str] = []
 
     for event in events:
         properties = event.get("properties", {})
@@ -292,9 +304,18 @@ def filter_health_advisory_events(events: list[dict[str, Any]]) -> list[dict[str
         if status == "resolved":
             continue
 
+        mitigation_date = parse_possible_date(
+            str(properties.get("impactMitigationTime") or "")
+        )
+        if mitigation_date is not None and mitigation_date < as_of_date:
+            event_id = str(event.get("name") or event.get("id") or "")
+            if event_id:
+                expired_event_ids.append(event_id)
+            continue
+
         filtered.append(event)
 
-    return filtered
+    return HealthAdvisoryFilterResult(filtered, expired_event_ids)
 
 
 def event_impacted_services(event: dict[str, Any]) -> list[dict[str, str]]:
