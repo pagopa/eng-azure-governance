@@ -1,0 +1,100 @@
+pagoPA:
+  active:
+    - DEV-pagoPA
+    - UAT-pagoPA
+    - PROD-pagoPA
+    - Common
+    - PDA-Migration-PostgreSQL
+    - PROD-PDA-BACKUP
+IO:
+  active:
+    - DEV-IO
+    - PROD-IO
+    - DEV-QATM
+    - PROD-QATM
+    - PROD-CED
+  disabled:
+    - DEV-ITWALLET
+Security:
+  active:
+    - Prod-Sec
+PARI:
+  active:
+    - DEV-CSTAR
+    - UAT-CSTAR
+    - PROD-CSTAR
+  deleted:
+    - DEV-MIL
+    - UAT-MIL
+    - PROD-MIL
+SelfCare:
+  active:
+    - DEV-SelfCare
+    - UAT-SelfCare
+    - PROD-SelfCare
+Technology:
+  active:
+    - ORG
+    - DevOpsAutomation
+    - DevOpsLab
+    - PROD-SITECORP
+    - Microsoft Azure Enterprise
+    - DEV-PS
+  disabled:
+    - Unassigned
+    - PROD-PSN
+  deleted:
+    - DELETEME_DIEGO_V2
+    - DELETEME_TEST_DIEGO
+Carta Giovani:
+  active:
+    - UAT-Esercenti
+    - PROD-Esercenti
+Fatturazione:
+  active:
+    - DEV-FATTURAZIONE
+    - UAT-FATTURAZIONE
+    - PROD-FATTURAZIONE
+Piattaforma Unifaria:
+  active:
+    - DEV-ARC
+    - UAT-ARC
+    - PROD-ARC
+    - DEV-P4PA
+    - UAT-P4PA
+    - PROD-P4PA
+ICT:
+  active:
+    - DEV-ICT
+    - PROD-ICT
+DevEx:
+  active:
+    - DEV-ENGINEERING
+    - DEV-DEVEX
+    - UAT-DEVEX
+    - PROD-DEVEX
+    - PROD-TRIAL
+GRC:
+  active:
+    - DEV-GRC
+    - PROD-GRC
+CRM:
+  active:
+    - DEV-CRM
+    - UAT-CRM
+    - PROD-CRM
+Assistenza:
+  active:
+    - DEV-Assistenza
+Monitoraggio Pagamenti:
+  active:
+    - DEV-PAY-MONITORING
+    - UAT-PAY-MONITORING
+    - PROD-PAY-MONITORING
+Platform Service Management:
+  active:
+    - DEV-PLATFORM-SM
+    - PROD-PLATFORM-SM
+Software Version Control:
+  active:
+    - GitHub
