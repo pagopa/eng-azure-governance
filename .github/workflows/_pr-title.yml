@@ -1,4 +1,4 @@
-name: "🔬 Validate PR title"
+name: "21 🔬 Validate PR title"
 
 on:
   pull_request_target:
