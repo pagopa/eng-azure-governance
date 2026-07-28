@@ -66,6 +66,7 @@ def test_normalized_resource_row_has_ascii_description_priority_and_resource() -
     assert rows[0]["priority"] == "Critico"
     assert rows[0]["resource_granularity"] == "resource"
     assert rows[0]["resource_group"] == "rg-one"
+    assert rows[0]["record_type"] == "service_health_event_resource"
 
 
 def test_normalized_row_never_leaves_subscription_or_resource_fields_blank() -> None:
@@ -113,8 +114,9 @@ def test_normalize_service_health_rows_marks_sensitive_without_description() -> 
         scope_mode="live",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "Storage", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Storage", "guid": "guid-1", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "Review guidance",
     )
 
@@ -145,8 +147,9 @@ def test_normalize_service_health_rows_accepts_empty_article_list() -> None:
         scope_mode="live",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "Storage", "guid": ""}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Storage", "guid": "", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "",
     )
 

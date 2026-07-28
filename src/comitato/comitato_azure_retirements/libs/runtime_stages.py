@@ -19,9 +19,7 @@ from .runtime_logging import ExecutionReporter
 from .schemas import ADVISOR_HEADERS, SERVICE_HEALTH_HEADERS
 from .service_health import (
     build_recommended_actions,
-    event_impacted_regions,
     event_impacted_service_regions,
-    event_impacted_services,
     filter_health_advisory_events,
 )
 from .service_health_resources import index_impacted_resources
@@ -425,8 +423,6 @@ def fixture_mode(
         scope_mode="fixture",
         events=service_health_events,
         subscription_name_map=subscription_name_map,
-        event_impacted_services=event_impacted_services,
-        event_impacted_regions=event_impacted_regions,
         event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
         impacted_resources_by_event=impacted_resources_by_event,

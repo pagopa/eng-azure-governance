@@ -220,8 +220,10 @@ def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "Storage", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope", "northeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Storage", "guid": "guid-1", "region": "westeurope"},
+            {"name": "Storage", "guid": "guid-1", "region": "northeurope"},
+        ],
         build_recommended_actions=lambda _event: "Review mitigation plan",
     )
 
@@ -253,8 +255,11 @@ def test_normalize_service_health_rows_filters_regions_and_uses_event_id_for_tra
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "Storage", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["Italy North", "Global", "eastus"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Storage", "guid": "guid-1", "region": "Italy North"},
+            {"name": "Storage", "guid": "guid-1", "region": "Global"},
+            {"name": "Storage", "guid": "guid-1", "region": "eastus"},
+        ],
         build_recommended_actions=lambda _event: "Review mitigation plan",
     )
 
@@ -292,8 +297,9 @@ def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dat
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "AKS", "guid": "guid-1", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "Upgrade the node image.",
     )
 
@@ -327,8 +333,9 @@ def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start(
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "AKS", "guid": "guid-1", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "Track migration guidance.",
     )
 
@@ -357,8 +364,9 @@ def test_normalize_service_health_rows_ignores_version_like_tokens_as_dates() ->
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "AKS", "guid": "guid-1", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "Track migration guidance.",
     )
 
@@ -389,11 +397,6 @@ def test_normalize_service_health_rows_preserves_service_region_pairs_from_callb
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [
-            {"name": "Azure Front Door", "guid": ""},
-            {"name": "Azure CDN", "guid": ""},
-        ],
-        event_impacted_regions=lambda _event: ["Global", "eastus"],
         event_impacted_service_regions=lambda _event: [
             {"name": "Azure Front Door", "guid": "", "region": "Global"},
             {"name": "Azure CDN", "guid": "", "region": "eastus"},

@@ -34,10 +34,7 @@ def normalize_service_health_rows(
     scope_mode: str,
     events: list[dict[str, Any]],
     subscription_name_map: dict[str, str],
-    event_impacted_services: Callable[[dict[str, Any]], list[dict[str, str]]] | None = None,
-    event_impacted_regions: Callable[[dict[str, Any]], list[str]] | None = None,
-    event_impacted_service_regions: Callable[[dict[str, Any]], list[dict[str, str]]]
-    | None = None,
+    event_impacted_service_regions: Callable[[dict[str, Any]], list[dict[str, str]]],
     build_recommended_actions: Callable[[dict[str, Any]], str],
     impacted_resources_by_event: dict[tuple[str, str], list[ImpactedResource]] | None = None,
     allowed_regions: Collection[str] = ALLOWED_REGIONS,
@@ -88,22 +85,7 @@ def normalize_service_health_rows(
             last_update=last_update,
         )
 
-        service_regions: list[dict[str, str]] = []
-        if event_impacted_service_regions is not None:
-            service_regions = event_impacted_service_regions(event)
-
-        if not service_regions:
-            services = event_impacted_services(event) if event_impacted_services else []
-            regions = event_impacted_regions(event) if event_impacted_regions else []
-            for service in services:
-                for region in regions:
-                    service_regions.append(
-                        {
-                            "name": str(service.get("name") or ""),
-                            "guid": str(service.get("guid") or ""),
-                            "region": str(region or ""),
-                        }
-                    )
+        service_regions = event_impacted_service_regions(event)
 
         if not service_regions:
             service_regions = [{"name": "", "guid": "", "region": ""}]
@@ -181,9 +163,13 @@ def normalize_service_health_rows(
                 "run_id": run_id,
                 "as_of_date": as_of_date.isoformat(),
                 "scope_mode": scope_mode,
-                "record_type": "service_health_event_region"
-                if region
-                else "service_health_event_subscription",
+                "record_type": (
+                    "service_health_event_resource"
+                    if resource is not None
+                    else "service_health_event_region"
+                    if region
+                    else "service_health_event_subscription"
+                ),
                 "source_system": "resource_health_events",
                 "source_id": source_id,
                 "event_id": event_id,

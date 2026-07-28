@@ -28,9 +28,7 @@ from .runtime_stages import (
 from .service_health import (
     build_recommended_actions,
     collect_events_for_subscriptions,
-    event_impacted_regions,
     event_impacted_service_regions,
-    event_impacted_services,
     filter_health_advisory_events,
 )
 from .service_health_resources import collect_impacted_resources, index_impacted_resources
@@ -341,8 +339,6 @@ def live_mode(
         scope_mode=scope_mode(cfg),
         events=service_events,
         subscription_name_map=subscription_name_map,
-        event_impacted_services=event_impacted_services,
-        event_impacted_regions=event_impacted_regions,
         event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
         impacted_resources_by_event=impacted_resources_by_event,
