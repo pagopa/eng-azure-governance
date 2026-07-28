@@ -1,0 +1,92 @@
+name: 20 🔬 code-analysis
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code-analysis:
+    name: code-analysis
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PIP_NO_PYTHON_VERSION_WARNING: "1"
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: 🧭 Prepare ephemeral virtualenv paths
+        run: |
+          code_analysis_root="${RUNNER_TEMP}/repo-code-analysis"
+          {
+            echo "TEST_VENV=${code_analysis_root}/tests"
+          } >> "${GITHUB_ENV}"
+
+      - name: 🐍 Set up Python from .python-version
+        # actions/setup-python@v6.2.0
+        # https://github.com/actions/setup-python/releases/tag/v6.2.0
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: |
+            .python-version
+            src/comitato/comitato_azure_retirements/requirements.txt
+
+      - name: 🔎 Show Python version
+        run: |
+          python --version
+          python -m pip --version
+
+      - name: 📦 Validate Python requirements
+        run: |
+          rm -rf "${TEST_VENV}"
+          python -m venv "${TEST_VENV}"
+          "${TEST_VENV}/bin/python" -m pip install --upgrade pip
+          "${TEST_VENV}/bin/pip" install --require-hashes -r "src/comitato/comitato_azure_retirements/requirements.txt"
+          "${TEST_VENV}/bin/pip" install pytest==9.1.0
+          "${TEST_VENV}/bin/python" -m pip check
+
+      - name: 🔥 Analyze Python sources and tests
+        run: |
+          mapfile -t python_files < <(
+            find src/comitato tests \
+              -type f -name '*.py' -not -path '*/.venv/*' -print | sort
+          )
+          test "${#python_files[@]}" -gt 0
+          "${TEST_VENV}/bin/python" -m py_compile "${python_files[@]}"
+          "${TEST_VENV}/bin/python" \
+            src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help
+
+      - name: 🔥 Analyze Bash scripts
+        run: |
+          mapfile -t bash_files < <(
+            find scripts src \
+              -type f -name '*.sh' -not -path '*/.venv/*' -print | sort
+          )
+          test "${#bash_files[@]}" -gt 0
+          for file in "${bash_files[@]}"; do
+            bash -n "${file}"
+          done
+
+      - name: ✅ Run pytest
+        run: |
+          "${TEST_VENV}/bin/python" -m pytest \
+            tests/comitato/comitato_azure_retirements -q
