@@ -1,4 +1,0 @@
-interface:
-  display_name: "Internal Project Java"
-  short_description: "Help with Internal Project Java tasks"
-  default_prompt: "Use $internal-project-java for this task and follow the repository-owned workflow in the skill."
