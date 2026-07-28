@@ -18,13 +18,13 @@ def test_aggregate_group_builds_platform_map_dates_and_priority() -> None:
             {
                 "source_identifiers": ["id-1"],
                 "source_links": ["https://example.com/one"],
+                "source": "advisor",
                 "source_system": "advisor_joined",
                 "subscription_name": "PROD-IO",
                 "retirement_date": "2026-06-01",
-                "retirement_date_quality": "derived",
                 "retiring_feature": "TLS 1.0 retirement",
                 "summary_text": "TLS 1.0 is deprecated",
-                "details_text": "Migrate to TLS 1.2",
+                "_descrizione_problema_raw": "TLS 1.0 is deprecated",
                 "action_required": "Upgrade TLS settings",
                 "technology_or_service": "Azure App Service",
                 "advice_type": "advisor_retirement",
@@ -33,13 +33,13 @@ def test_aggregate_group_builds_platform_map_dates_and_priority() -> None:
             {
                 "source_identifiers": ["id-2"],
                 "source_links": [],
-                "source_system": "resource_health_events",
+                "source": "advisor",
+                "source_system": "advisor_joined",
                 "subscription_name": "UNMAPPED-SUB",
                 "retirement_date": "2026-07-01",
-                "retirement_date_quality": "exact",
                 "retiring_feature": "TLS 1.0 retirement",
                 "summary_text": "Migration required",
-                "details_text": "No extra details",
+                "_descrizione_problema_raw": "No extra details",
                 "action_required": "",
                 "technology_or_service": "",
                 "advice_type": "advisor_retirement",
@@ -51,12 +51,15 @@ def test_aggregate_group_builds_platform_map_dates_and_priority() -> None:
         as_of_date=date(2026, 1, 1),
     )
 
+    assert grouped["source"] == "advisor"
+    assert grouped["_descrizione_problema_raw"] == "TLS 1.0 is deprecated"
     assert grouped["impacted_platforms"] == "IO, Unknown Platform"
     assert f'"{UNKNOWN_PLATFORM}":["UNMAPPED-SUB"]' in grouped[
         "impacted_platforms_subscriptions_json"
     ]
     assert grouped["retirement_date"] == "2026-06-01"
-    assert grouped["retirement_date_quality"] == "derived"
+    assert "retirement_date_quality" not in grouped
+    assert "details_text" not in grouped
     assert grouped["priority_label"] == "Prioritario"
     assert grouped["first_seen_date"] == "2026-05-20"
     assert grouped["last_seen_date"] == "2026-05-25"

@@ -290,7 +290,6 @@ def test_contract_diagnostics_flag_gap_and_missing_source_links() -> None:
                 "impacted_platforms": "",
                 "impacted_subscriptions": "",
                 "source_links": "",
-                "retirement_date_quality": "derived",
             }
         ],
     )
@@ -301,8 +300,22 @@ def test_contract_diagnostics_flag_gap_and_missing_source_links() -> None:
 
     check_ids = {row["check_id"] for row in diagnostics.rows()}
     assert "aggregate_gap_rows_missing_core_fields" in check_ids
-    assert "aggregate_rows_with_derived_retirement_date" in check_ids
+    assert "aggregate_rows_with_derived_retirement_date" not in check_ids
     assert "slide_missing_source_links" in check_ids
+
+
+def test_contract_diagnostics_ignore_legacy_derived_date_quality() -> None:
+    diagnostics = DiagnosticsCollector("run-1")
+
+    add_aggregate_contract_diagnostics(
+        diagnostics=diagnostics,
+        aggregate_rows=[{"retirement_date_quality": "derived"}],
+    )
+
+    assert all(
+        row["check_id"] != "aggregate_rows_with_derived_retirement_date"
+        for row in diagnostics.rows()
+    )
 
 
 def test_service_health_contract_diagnostics_flags_every_required_gap() -> None:
@@ -331,7 +344,38 @@ def test_service_health_contract_diagnostics_flags_every_required_gap() -> None:
         "service_health_blank_priority",
         "service_health_blank_subscription_name",
         "service_health_blank_resource_contract",
+        "service_health_blank_resource_resolution_contract",
     }
+
+
+def test_service_health_contract_requires_resolution_fields() -> None:
+    diagnostics = DiagnosticsCollector("run-1")
+
+    add_service_health_contract_diagnostics(
+        diagnostics=diagnostics,
+        rows=[
+            {
+                "tracking_id": "TRK-1",
+                "description_problem": "ok",
+                "priority": "Debito",
+                "subscription_name": "sub-1",
+                "resource_granularity": "not_available",
+                "resource_id": "not_available",
+                "resource_group": "not_available",
+                "resource_type": "not_available",
+                "resource_resolution_source": "",
+                "resource_resolution_status": "",
+                "recommendation_type_id": "",
+                "advisor_platform_state": "",
+                "current_query_match": "",
+            }
+        ],
+    )
+
+    assert any(
+        row["check_id"] == "service_health_blank_resource_resolution_contract"
+        for row in diagnostics.rows()
+    )
 
 
 def test_publication_exclusion_diagnostics_are_bounded_and_source_specific() -> None:

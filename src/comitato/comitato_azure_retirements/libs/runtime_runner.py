@@ -165,6 +165,7 @@ def _run_raw_stage(
                 "service_health_blank_priority",
                 "service_health_blank_subscription_name",
                 "service_health_blank_resource_contract",
+                "service_health_blank_resource_resolution_contract",
             }
         ]
         if contract_errors:

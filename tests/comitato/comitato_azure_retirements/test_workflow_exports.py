@@ -176,10 +176,10 @@ def test_build_aggregate_rows_skips_low_signal_catalog_rows() -> None:
 
     assert len(aggregate_rows) == 1
     assert aggregate_rows[0]["retiring_feature"] == "TLS 1.0 retirement"
-    assert aggregate_rows[0]["source_links"] == "https://example.com/action, https://example.com/learn"
+    assert aggregate_rows[0]["source_links"] == "https://example.com/learn"
 
 
-def test_build_aggregate_rows_backfills_source_links_from_advisor_identifiers() -> None:
+def test_build_aggregate_rows_does_not_synthesize_source_links_from_advisor_identifiers() -> None:
     advisor_source_id = (
         "/subscriptions/sub-1/resourceGroups/rg-test/providers/Microsoft.Storage/"
         "storageAccounts/storage01/providers/Microsoft.Advisor/recommendations/rec-1"
@@ -211,12 +211,7 @@ def test_build_aggregate_rows_backfills_source_links_from_advisor_identifiers() 
     ).advisor_rows
 
     assert len(aggregate_rows) == 1
-    assert (
-        aggregate_rows[0]["source_links"]
-        == "https://portal.azure.com/#resource/subscriptions/sub-1/resourceGroups/"
-        "rg-test/providers/Microsoft.Storage/storageAccounts/storage01/providers/"
-        "Microsoft.Advisor/recommendations/rec-1"
-    )
+    assert aggregate_rows[0]["source_links"] == ""
 
 
 def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscription_id() -> None:
@@ -266,7 +261,7 @@ def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscriptio
     assert blank_row["impacted_platforms_subscriptions_json"] == '{"platforms":{"IO":["PROD-IO"]}}'
 
 
-def test_build_aggregate_rows_backfills_source_links_from_service_health_identifiers() -> None:
+def test_build_aggregate_rows_does_not_synthesize_source_links_from_service_health_identifiers() -> None:
     source_identifier = "Microsoft.ResourceHealth/events/ABCD-123"
     service_rows = [
         {
@@ -292,10 +287,7 @@ def test_build_aggregate_rows_backfills_source_links_from_service_health_identif
     ).service_health_rows
 
     assert len(aggregate_rows) == 1
-    assert (
-        aggregate_rows[0]["source_links"]
-        == "https://portal.azure.com/#search/Microsoft.ResourceHealth%2Fevents%2FABCD-123"
-    )
+    assert aggregate_rows[0]["source_links"] == ""
 
 
 def test_build_slide_rows_projects_expected_fields() -> None:
@@ -311,7 +303,8 @@ def test_build_slide_rows_projects_expected_fields() -> None:
                 "action_required": (
                     "<p><strong>Upgrade</strong> to latest supported version</p>"
                 ),
-                "details_text": "<p>Full Redis retirement details.</p>",
+                "_descrizione_problema_raw": "<p>Full Redis retirement details.</p>",
+                "source": "service-health",
                 "retirement_date": "2026-10-01",
                 "source_links": "https://example.com/redis",
                 "source_systems": "advisor_joined",
@@ -335,7 +328,7 @@ def test_build_slide_rows_projects_expected_fields() -> None:
             "comitato_retirement_date": "2026-10-01",
             "comitato_piattaforme": "IO",
             "source_links": "https://example.com/redis",
-            "source": "Fonte: advisor",
+            "source": "Fonte: service-health",
         }
     ]
 
@@ -417,17 +410,28 @@ def test_build_slide_rows_marks_service_health_source() -> None:
 
 
 def test_headers_follow_requested_committee_contract() -> None:
-    assert AGGREGATE_HEADERS[:3] == [
-        "impacted_platforms",
-        "impacted_subscriptions",
-        "impacted_platforms_subscriptions_json",
-    ]
-    assert AGGREGATE_HEADERS[3:6] == [
-        "advice_type",
+    assert AGGREGATE_HEADERS == [
+        "source",
         "advisory_key",
         "technology_or_service",
+        "impacted_platforms",
+        "impacted_subscriptions",
+        "_descrizione_problema_raw",
+        "impacted_platforms_subscriptions_json",
+        "advice_type",
+        "retiring_feature",
+        "action_required",
+        "retirement_date",
+        "priority_label",
+        "source_systems",
+        "source_identifiers",
+        "source_links",
+        "summary_text",
+        "first_seen_date",
+        "last_seen_date",
     ]
-    assert AGGREGATE_HEADERS[6] == "retiring_feature"
+    assert "retirement_date_quality" not in AGGREGATE_HEADERS
+    assert "details_text" not in AGGREGATE_HEADERS
 
     assert SLIDE_HEADERS[:2] == [
         "technology_or_service",

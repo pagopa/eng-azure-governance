@@ -11,7 +11,6 @@ from .tsv import compact_json
 from .workflow_exports_utils import (
     as_string_list,
     first_non_empty,
-    infer_technology_from_text,
     max_iso_date,
     min_iso_date,
     pick_human_text,
@@ -66,53 +65,46 @@ def aggregate_group(
     retirement_candidates = sorted_unique(str(row.get("retirement_date", "")) for row in rows)
     parsed_dates = [candidate for candidate in retirement_candidates if parse_possible_date(candidate)]
     chosen_retirement_date = ""
-    retirement_quality = "missing"
     if parsed_dates:
         chosen_retirement_date = min(parsed_dates)
-        any_derived = any(
-            str(row.get("retirement_date", "")) == chosen_retirement_date
-            and str(row.get("retirement_date_quality", "")) == "derived"
-            for row in rows
-        )
-        retirement_quality = "derived" if any_derived else "exact"
 
     first_seen_date = min_iso_date(str(row.get("as_of_date", "")) for row in rows)
     last_seen_date = max_iso_date(str(row.get("as_of_date", "")) for row in rows)
 
     retiring_feature = pick_human_text(str(row.get("retiring_feature", "")) for row in rows)
     summary_text = pick_human_text(str(row.get("summary_text", "")) for row in rows)
-    details_text = pick_human_text(str(row.get("details_text", "")) for row in rows)
+    source = first_non_empty(str(row.get("source", "")) for row in rows)
+    raw_problem = pick_human_text(
+        str(row.get("_descrizione_problema_raw", "")) for row in rows
+    )
     action_required = pick_human_text(str(row.get("action_required", "")) for row in rows)
     if not action_required:
         action_required = summary_text
 
-    technology_or_service = first_non_empty(
-        [
-            pick_human_text(str(row.get("technology_or_service", "")) for row in rows),
-            infer_technology_from_text(candidates=[retiring_feature, summary_text, details_text]),
-        ]
+    technology_or_service = pick_human_text(
+        str(row.get("technology_or_service", "")) for row in rows
     )
 
     advice_type = first_non_empty([str(row.get("advice_type", "")) for row in rows])
     computed_priority_label = priority_label(retirement_date=chosen_retirement_date, as_of_date=as_of_date)
 
     return {
+        "source": source,
+        "advisory_key": advisory_key,
+        "technology_or_service": technology_or_service,
         "impacted_platforms": impacted_platforms,
         "impacted_subscriptions": ", ".join(subscription_names),
         "impacted_platforms_subscriptions_json": compact_json(platform_json),
         "advice_type": advice_type,
-        "advisory_key": advisory_key,
-        "technology_or_service": technology_or_service,
+        "_descrizione_problema_raw": raw_problem,
         "retiring_feature": retiring_feature,
         "action_required": action_required,
         "retirement_date": chosen_retirement_date,
-        "retirement_date_quality": retirement_quality,
         "priority_label": computed_priority_label,
         "source_systems": ", ".join(source_systems),
         "source_identifiers": ", ".join(source_identifiers),
         "source_links": ", ".join(source_links),
         "summary_text": summary_text,
-        "details_text": details_text,
         "first_seen_date": first_seen_date,
         "last_seen_date": last_seen_date,
     }

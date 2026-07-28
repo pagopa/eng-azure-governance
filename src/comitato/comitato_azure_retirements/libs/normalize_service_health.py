@@ -10,6 +10,7 @@ from .dates import normalize_datetime
 from .normalize_shared import service_health_deadlines
 from .regions import ALLOWED_REGIONS, canonical_allowed_region
 from .service_health_resources import ImpactedResource
+from .service_health_resource_resolution import ResourceEvidence
 from .service_health_text import html_to_ascii_text
 from .tsv import compact_json
 from .workflow_exports_utils import priority_label
@@ -36,7 +37,10 @@ def normalize_service_health_rows(
     subscription_name_map: dict[str, str],
     event_impacted_service_regions: Callable[[dict[str, Any]], list[dict[str, str]]],
     build_recommended_actions: Callable[[dict[str, Any]], str],
-    impacted_resources_by_event: dict[tuple[str, str], list[ImpactedResource]] | None = None,
+    impacted_resources_by_event: dict[
+        tuple[str, str], list[ImpactedResource | ResourceEvidence]
+    ]
+    | None = None,
     allowed_regions: Collection[str] = ALLOWED_REGIONS,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
@@ -140,10 +144,38 @@ def normalize_service_health_rows(
                 flags.append("subscription_name_fallback_to_id")
             if resource is None:
                 flags.append("service_health_impacted_resources_not_published")
+            if event.get("_resource_resolution_subscription_synthesized") is True:
+                flags.append("service_health_subscription_recovered_from_advisor")
 
             resource_id = resource.resource_id if resource is not None else "not_available"
             resource_group = resource.resource_group if resource is not None else "not_available"
             resource_type = resource.resource_type if resource is not None else "not_available"
+            resolution_source = (
+                str(getattr(resource, "source", "service_health_arg"))
+                if resource is not None
+                else "not_available"
+            )
+            resolution_status = (
+                str(getattr(resource, "status", "active"))
+                if resource is not None
+                else "not_published"
+            )
+            recommendation_type_id = (
+                str(getattr(resource, "recommendation_type_id", ""))
+                if resource is not None
+                else ""
+            ) or "not_available"
+            advisor_platform_state = (
+                str(getattr(resource, "advisor_platform_state", ""))
+                if resource is not None
+                else ""
+            ) or "not_available"
+            current_query_match = (
+                "true"
+                if resource is not None
+                and bool(getattr(resource, "current_query_match", False))
+                else "false"
+            )
             resource_granularity = (
                 "resource"
                 if resource is not None and resource.resource_id != "not_available"
@@ -156,7 +188,7 @@ def normalize_service_health_rows(
                 "resource_lookup_status": "found" if resource is not None else "unavailable",
             }
             if resource is not None:
-                provenance["resource_source"] = "servicehealthresources"
+                provenance["resource_source"] = resolution_source
                 provenance["resource_info_json"] = resource.info_json
 
             row = {
@@ -202,6 +234,11 @@ def normalize_service_health_rows(
                 "resource_id": resource_id,
                 "resource_group": resource_group,
                 "resource_type": resource_type,
+                "resource_resolution_source": resolution_source,
+                "resource_resolution_status": resolution_status,
+                "recommendation_type_id": recommendation_type_id,
+                "advisor_platform_state": advisor_platform_state,
+                "current_query_match": current_query_match,
                 "is_sensitive": "true" if is_sensitive else "false",
                 "details_fetch_status": details_fetch_status,
                 "description_quality": _service_description_quality(

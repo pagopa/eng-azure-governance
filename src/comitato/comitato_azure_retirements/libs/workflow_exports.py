@@ -171,21 +171,26 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
         action_required = html_to_ascii_text(
             str(row.get("action_required", "") or row.get("summary_text", ""))
         )
+        raw_problem = row.get("_descrizione_problema_raw", "") or row.get("details_text", "")
         complete_description = " ".join(
             value
             for value in (
-                html_to_ascii_text(str(row.get("details_text", ""))),
+                html_to_ascii_text(str(raw_problem)),
                 action_required,
             )
             if value
         )
-        source_systems = row.get("source_systems", "").lower()
-        source = (
-            "Fonte: service-health"
-            if "resource_health" in source_systems
-            or str(row.get("advice_type", "")).startswith("service_health")
-            else "Fonte: advisor"
-        )
+        canonical_source = row.get("source", "").strip()
+        if canonical_source in {"advisor", "service-health"}:
+            source = f"Fonte: {canonical_source}"
+        else:
+            source_systems = row.get("source_systems", "").lower()
+            source = (
+                "Fonte: service-health"
+                if "resource_health" in source_systems
+                or str(row.get("advice_type", "")).startswith("service_health")
+                else "Fonte: advisor"
+            )
 
         projected_rows.append(
             {

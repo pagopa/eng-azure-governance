@@ -42,3 +42,14 @@ def test_raw_headers_start_with_canonical_service_health_contract() -> None:
     assert "description" not in SERVICE_HEALTH_HEADERS
     assert ADVISOR_HEADERS[2:4] == ["short_description_problem", "recommendation_type_id"]
     assert ADVISOR_HEADERS.index("description") == ADVISOR_HEADERS.index("label") + 1
+
+
+def test_service_health_resolution_fields_follow_resource_type() -> None:
+    start = SERVICE_HEALTH_HEADERS.index("resource_type") + 1
+    assert SERVICE_HEALTH_HEADERS[start : start + 5] == [
+        "resource_resolution_source",
+        "resource_resolution_status",
+        "recommendation_type_id",
+        "advisor_platform_state",
+        "current_query_match",
+    ]

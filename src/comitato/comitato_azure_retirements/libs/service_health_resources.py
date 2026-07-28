@@ -24,6 +24,12 @@ class ImpactedResource:
     resource_type: str
     region: str
     info_json: str
+    source: str = "service_health_arg"
+    status: str = "active"
+    recommendation_type_id: str = ""
+    advisor_platform_state: str = ""
+    current_query_match: bool = False
+    resource_exists: bool = True
 
 
 def collect_impacted_resources(
@@ -95,6 +101,9 @@ def index_impacted_resources(
             resource_type=resource_type,
             region=region,
             info_json=compact_json(info),
+            source="service_health_arg",
+            status="active",
+            resource_exists=True,
         )
         key = (tracking_id.lower(), subscription_id.lower())
         fingerprint = (

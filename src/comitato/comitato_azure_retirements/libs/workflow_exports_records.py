@@ -11,9 +11,7 @@ from .workflow_exports_utils import (
     DATE_CANDIDATE_PATTERN,
     extract_links,
     first_non_empty,
-    infer_technology_from_text,
     sorted_unique,
-    traceable_links_from_identifiers,
 )
 
 
@@ -108,24 +106,8 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
         source_identifiers = sorted_unique(
             [row.get("source_id", ""), row.get("advisor_recommendation_id", "")]
         )
-        retirement_date, retirement_quality, retirement_derived_from_text = normalize_retirement_date(
-            explicit_date=row.get("retirement_date", ""),
-            source_texts=[
-                row.get("short_description_problem", ""),
-                row.get("short_description_solution", ""),
-                row.get("description", ""),
-            ],
-            exact_quality=True,
-        )
-        explicit_links = extract_links(
-            [
-                row.get("action_link", ""),
-                row.get("learn_more_link", ""),
-                row.get("description", ""),
-                row.get("short_description_solution", ""),
-                row.get("short_description_problem", ""),
-            ]
-        )
+        retirement_date = row.get("retirement_date", "")
+        explicit_links = extract_links([row.get("learn_more_link", "")])
         retiring_feature = first_non_empty(
             [
                 row.get("retiring_feature", ""),
@@ -134,24 +116,9 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
             ]
         )
         action_required = first_non_empty(
-            [
-                row.get("short_description_solution", ""),
-                row.get("short_description_problem", ""),
-                row.get("description", ""),
-            ]
+            [row.get("short_description_solution", ""), row.get("short_description_problem", "")]
         )
-        technology_or_service = first_non_empty(
-            [
-                row.get("service_name", ""),
-                infer_technology_from_text(
-                    candidates=[
-                        row.get("retiring_feature", ""),
-                        row.get("short_description_problem", ""),
-                        row.get("description", ""),
-                    ]
-                ),
-            ]
-        )
+        technology_or_service = row.get("service_name", "")
 
         # Skip low-signal advisor metadata records that cannot produce committee-usable rows.
         if row.get("source_system", "") == "advisor_metadata" and not any(
@@ -159,29 +126,25 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
         ):
             continue
 
-        links = explicit_links or traceable_links_from_identifiers(source_identifiers)
-
         records.append(
             {
+                "source": "advisor",
                 "advice_type": "advisor_retirement",
                 "technology_or_service": technology_or_service,
+                "_descrizione_problema_raw": row.get("short_description_problem", ""),
                 "retiring_feature": retiring_feature,
                 "action_required": action_required,
                 "retirement_date": retirement_date,
-                "retirement_date_quality": retirement_quality,
                 "subscription_id": row.get("subscription_id", ""),
                 "subscription_name": row.get("subscription_name", ""),
                 "source_system": row.get("source_system", "advisor_joined") or "advisor_joined",
                 "source_identifiers": source_identifiers,
-                "source_links": links,
+                "source_links": explicit_links,
                 "publication_date": row.get("retirement_date", ""),
                 "platform_state": row.get("platform_state", ""),
-                "summary_text": first_non_empty(
-                    [row.get("short_description_problem", ""), row.get("retiring_feature", "")]
-                ),
-                "details_text": row.get("description", ""),
+                "summary_text": row.get("short_description_problem", ""),
                 "as_of_date": row.get("as_of_date", ""),
-                "diagnostic_flags": "retirement_date_derived_from_text" if retirement_derived_from_text else "",
+                "diagnostic_flags": "",
             }
         )
 
@@ -195,70 +158,43 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
         source_identifiers = sorted_unique(
             [row.get("event_id", ""), row.get("tracking_id", ""), row.get("source_id", "")]
         )
-        retirement_date, retirement_quality, retirement_derived_from_text = normalize_retirement_date(
-            explicit_date=row.get("date_for_window", ""),
-            source_texts=[
-                row.get("title", ""),
-                row.get("summary", ""),
-                row.get("recommended_actions", ""),
-                description_problem,
-            ],
-            exact_quality=False,
-        )
+        retirement_date = row.get("date_for_window", "")
         links = extract_links(
             [
                 description_problem,
-                row.get("recommended_actions", ""),
                 row.get("summary", ""),
                 row.get("title", ""),
-            ]
-        )
-        if not links:
-            links = traceable_links_from_identifiers(source_identifiers)
-        technology_or_service = first_non_empty(
-            [
-                row.get("impacted_service", ""),
-                infer_technology_from_text(
-                    candidates=[
-                        row.get("title", ""),
-                        row.get("summary", ""),
-                        description_problem,
-                        row.get("event_sub_type", ""),
-                    ]
-                ),
             ]
         )
         records.append(
             {
+                "source": "service-health",
                 "advice_type": classify_service_health_type(
                     title=row.get("title", ""),
                     summary=row.get("summary", ""),
                     description=description_problem,
                     event_sub_type=row.get("event_sub_type", ""),
                 ),
-                "technology_or_service": technology_or_service,
-                "retiring_feature": first_non_empty(
-                    [row.get("title", ""), row.get("summary", ""), row.get("impacted_service", "")]
-                ),
+                "technology_or_service": row.get("impacted_service", ""),
+                "_descrizione_problema_raw": description_problem,
+                "retiring_feature": row.get("title", ""),
                 "action_required": first_non_empty(
                     [
+                        row.get("short_description_solution", ""),
                         row.get("recommended_actions", ""),
                         row.get("summary", ""),
-                        description_problem,
                     ]
                 ),
                 "retirement_date": retirement_date,
-                "retirement_date_quality": retirement_quality,
                 "subscription_id": row.get("subscription_id", ""),
                 "subscription_name": row.get("subscription_name", ""),
                 "source_system": row.get("source_system", "resource_health_events") or "resource_health_events",
                 "source_identifiers": source_identifiers,
                 "source_links": links,
                 "publication_date": row.get("impact_mitigation_time", ""),
-                "summary_text": first_non_empty([row.get("summary", ""), row.get("title", "")]),
-                "details_text": description_problem,
+                "summary_text": row.get("summary", ""),
                 "as_of_date": row.get("as_of_date", ""),
-                "diagnostic_flags": "retirement_date_derived_from_text" if retirement_derived_from_text else "",
+                "diagnostic_flags": "",
             }
         )
 

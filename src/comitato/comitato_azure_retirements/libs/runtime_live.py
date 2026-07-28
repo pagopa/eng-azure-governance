@@ -31,6 +31,13 @@ from .service_health import (
     event_impacted_service_regions,
     filter_health_advisory_events,
 )
+from .service_health_resource_resolution import (
+    collect_advisor_retirement_evidence,
+    expand_events_for_resource_subscriptions,
+    impacted_resource_evidence,
+    index_retirement_metadata,
+    merge_resource_evidence,
+)
 from .service_health_resources import collect_impacted_resources, index_impacted_resources
 from .subscriptions import (
     build_subscription_name_map,
@@ -210,6 +217,9 @@ def live_mode(
         str(event.get("name") or event.get("id") or "")
         for event in service_events
     }
+    metadata_by_tracking = index_retirement_metadata(
+        advisor_metadata, retained_tracking_ids
+    )
     try:
         impacted_resource_rows, impacted_resource_truncated, impacted_resource_pages = (
             collect_impacted_resources(
@@ -253,6 +263,125 @@ def live_mode(
             action_required="Review Resource Graph pagination before publication",
             raw_context_json=compact_json({"pages": impacted_resource_pages}),
         )
+        if not cfg.allow_degraded:
+            raise RuntimeError("Service Health impacted-resource query was truncated")
+
+    direct_evidence = [
+        impacted_resource_evidence(tracking_id, subscription_id, resource)
+        for (tracking_id, subscription_id), resources in impacted_resources_by_event.items()
+        for resource in resources
+    ]
+    try:
+        advisor_evidence, resolution_diagnostics = collect_advisor_retirement_evidence(
+            client,
+            metadata_by_tracking=metadata_by_tracking,
+            subscriptions=subscriptions,
+            management_groups=cfg.management_groups,
+        )
+    except Exception as exc:
+        if not cfg.allow_degraded:
+            raise
+        advisor_evidence = []
+        resolution_diagnostics = {
+            str(tracking_id).strip().lower(): {
+                "status": "query_failed",
+                "source_counts": {},
+                "excluded_deleted": 0,
+                "query_failed": True,
+                "truncated": False,
+                "advisor_pages": 0,
+                "metadata_pages": 0,
+                "query_failures": [str(exc)],
+                "malformed_resource_ids": 0,
+            }
+            for tracking_id in retained_tracking_ids
+            if str(tracking_id).strip()
+        }
+    resolution_failures = {
+        tracking_id: diagnostic
+        for tracking_id, diagnostic in resolution_diagnostics.items()
+        if diagnostic.get("query_failed") or diagnostic.get("truncated")
+    }
+    if resolution_failures and not cfg.allow_degraded:
+        raise RuntimeError(
+            "Service Health resource-resolution query failed or was truncated: "
+            + ", ".join(sorted(resolution_failures))
+        )
+    resolution = merge_resource_evidence(
+        retained_tracking_ids,
+        direct_evidence,
+        advisor_evidence,
+    )
+    service_events = expand_events_for_resource_subscriptions(
+        service_events, resolution.resources_by_event
+    )
+    for tracking_id in sorted(retained_tracking_ids, key=str.lower):
+        key = tracking_id.lower()
+        diagnostic = resolution_diagnostics.get(key, {})
+        counts = dict(resolution.source_counts_by_tracking.get(key, {}))
+        diagnostic_status = resolution.status_by_tracking.get(key, "unsupported")
+        if diagnostic.get("query_failed"):
+            diagnostic_status = "query_failed"
+        elif diagnostic.get("truncated"):
+            diagnostic_status = "truncated"
+        recovered = sorted(
+            {
+                subscription_id
+                for (resource_tracking, subscription_id) in resolution.resources_by_event
+                if resource_tracking == key
+                and not any(
+                    str(event.get("_subscriptionId") or "").strip().lower()
+                    == subscription_id
+                    and str(event.get("name") or event.get("id") or "").strip().lower()
+                    == key
+                    for event in collected_service_events
+                )
+            }
+        )
+        diagnostics.add(
+            severity=("warning" if cfg.allow_degraded else "error")
+            if diagnostic_status in {"query_failed", "truncated"}
+            else "info",
+            check_id="service_health_resource_resolution",
+            source_system="service_health_resource_resolution",
+            scope=key,
+            message="Service Health resource resolution completed",
+            action_required=(
+                "Review query and pagination coverage before publication"
+                if diagnostic_status in {"query_failed", "truncated"}
+                else "None"
+            ),
+            observed_count=sum(counts.values()),
+            raw_context_json=compact_json(
+                {
+                    "tracking_id": tracking_id,
+                    "status": diagnostic_status,
+                    "source_counts": counts,
+                    "excluded_deleted": resolution.excluded_by_tracking.get(key, 0)
+                    + int(diagnostic.get("excluded_deleted", 0)),
+                    "observed_event_subscriptions": len(
+                        {
+                            str(event.get("_subscriptionId") or "").strip().lower()
+                            for event in collected_service_events
+                            if str(event.get("name") or event.get("id") or "")
+                            .strip()
+                            .lower()
+                            == key
+                        }
+                    ),
+                    "resolved_resource_subscriptions": len(
+                        {
+                            subscription_id
+                            for resource_tracking, subscription_id in resolution.resources_by_event
+                            if resource_tracking == key
+                        }
+                    ),
+                    "recovered_subscriptions": recovered,
+                    "query_failures": diagnostic.get("query_failures", []),
+                }
+            ),
+        )
+
     reporter.step(
         f"Advisor metadata rows: {len(advisor_metadata)} across {advisor_metadata_pages} page(s)"
     )
@@ -341,7 +470,7 @@ def live_mode(
         subscription_name_map=subscription_name_map,
         event_impacted_service_regions=event_impacted_service_regions,
         build_recommended_actions=build_recommended_actions,
-        impacted_resources_by_event=impacted_resources_by_event,
+        impacted_resources_by_event=resolution.resources_by_event,
     )
 
     diagnostics.add(

@@ -292,6 +292,20 @@ def add_service_health_contract_diagnostics(
             for key in ("resource_granularity", "resource_id", "resource_group", "resource_type")
         )
     ]
+    blank_resource_resolution_contract = [
+        index + 1
+        for index, row in enumerate(rows)
+        if any(
+            not row.get(key, "").strip()
+            for key in (
+                "resource_resolution_source",
+                "resource_resolution_status",
+                "recommendation_type_id",
+                "advisor_platform_state",
+                "current_query_match",
+            )
+        )
+    ]
     checks.extend(
         [
             ("service_health_blank_tracking_id", blank_tracking, "Service Health tracking_id is blank"),
@@ -310,6 +324,11 @@ def add_service_health_contract_diagnostics(
                 "service_health_blank_resource_contract",
                 blank_resource_contract,
                 "Service Health resource contract contains a blank field",
+            ),
+            (
+                "service_health_blank_resource_resolution_contract",
+                blank_resource_resolution_contract,
+                "Service Health resource-resolution contract contains a blank field",
             ),
         ]
     )
@@ -550,24 +569,6 @@ def add_aggregate_contract_diagnostics(
             observed_count=len(gap_row_indexes),
             raw_context_json=compact_json({"row_numbers": gap_row_indexes}),
         )
-
-    derived_date_row_indexes = [
-        index + 1
-        for index, row in enumerate(aggregate_rows)
-        if row.get("retirement_date_quality", "") == "derived"
-    ]
-    if derived_date_row_indexes:
-        diagnostics.add(
-            severity="warning",
-            check_id="aggregate_rows_with_derived_retirement_date",
-            source_system="aggregate",
-            scope="global",
-            message="Aggregate rows include retirement dates inferred from text",
-            action_required="Review derived retirement dates before committee distribution",
-            observed_count=len(derived_date_row_indexes),
-            raw_context_json=compact_json({"row_numbers": derived_date_row_indexes}),
-        )
-
 
 def add_slide_source_link_diagnostics(
     *, diagnostics: DiagnosticsCollector, slide_rows: list[dict[str, str]]

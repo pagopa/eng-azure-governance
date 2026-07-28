@@ -20,7 +20,8 @@ This project does not:
 - Build PowerPoint slides.
 - Produce a final executive merged table.
 - Automate portal interactions.
-- Infer resource-level impact for Service Health when the source does not provide resource IDs.
+- Infer resource-level impact for Service Health from names, regions, service labels,
+  or other non-authoritative similarity.
 
 ## Dependency Decision Note
 
@@ -217,21 +218,30 @@ matched case-insensitively. When Azure does not return a name, the row uses the
 subscription ID and emits `subscription_name_fallback_to_id` in
 `diagnostic_flags`.
 
-Impacted resources come only from Azure's `servicehealthresources` Resource
-Graph table. A resource row represents an Azure-published impacted-resource
-association, not a resource inferred from service, region, type, or naming
-similarity. Each published association is emitted once; it is not multiplied by
-every event service-region pair. If no association is published, the row keeps
-the event's service and region evidence and uses `not_available` for each of
-`resource_granularity`, `resource_id`, `resource_group`, and `resource_type`,
-with `service_health_impacted_resources_not_published` in diagnostics.
+Resource resolution uses only Azure-published evidence. The source cascade is:
+direct `servicehealthresources` associations, all-state Advisor retirement
+associations, and Microsoft-authored `recommendationDataSourceQuery` metadata
+queries against the `resources` inventory table. Direct Service Health evidence
+has precedence when sources identify the same ARM resource. Resource IDs are
+deduplicated case-insensitively by tracking ID, subscription, and ARM ID.
 
-Azure impacted-resource coverage is partial, scope- and permission-dependent,
-may appear up to two weeks after publication, and can change over time. An
-empty successful query therefore means unavailable published association data,
-not proof that no resource is affected. Strict live and fixture runs reject
-blank canonical fields or non-canonical descriptions before writing raw TSV;
-degraded runs retain bounded diagnostics for operational review.
+The five resolution columns after `resource_type` are
+`resource_resolution_source`, `resource_resolution_status`,
+`recommendation_type_id`, `advisor_platform_state`, and `current_query_match`.
+Advisor `New` evidence is `active`; existing `Resolved` evidence remains
+`resolved`. Deleted resources are excluded from portal-compatible rows but are
+counted in the per-tracking diagnostics. When Advisor evidence finds a resource
+subscription omitted by the event endpoint, the exporter synthesizes only that
+subscription's event row and marks it with
+`service_health_subscription_recovered_from_advisor`.
+
+If no evidence-backed resource is available, the event retains its service and
+region evidence and uses `not_available` for resource fields and the explicit
+resolution placeholders. This is a published-data status, not an inference of
+no impact. Coverage remains scope- and permission-dependent; a blank result is
+not proof that no resource is affected. Strict live runs stop on source-query
+failures or Resource Graph truncation. Degraded runs retain event rows and emit
+bounded `query_failed` or `truncated` diagnostics for review.
 
 Legacy fixture and TSV inputs remain readable: an input `description` value is
 adapted to `description_problem` at the raw-input boundary and is never emitted
@@ -248,9 +258,10 @@ The workbook is implementation guidance only. Runtime collection and aggregation
 ## Known Limitation
 
 Service Health resource associations are only as complete as the Azure-published
-`servicehealthresources` result visible to the configured scope and identity.
-Rows with unavailable associations are explicit and must not be interpreted as
-evidence that Azure found no impacted resources.
+sources visible to the configured scope and identity, including Advisor metadata
+permissions and Resource Graph pagination. Rows with unavailable associations
+are explicit and must not be interpreted as evidence that Azure found no
+impacted resources.
 
 ## Validation Workflow
 
