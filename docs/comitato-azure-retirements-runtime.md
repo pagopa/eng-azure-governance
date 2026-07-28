@@ -28,14 +28,17 @@ Aggregate output starts with:
 
 Aggregate rows then include `technology_or_service` before `retiring_feature`.
 
-Slide output starts with:
+Slide output uses this exact ordered header:
 
-1. `platforms`
-2. `platforms_subscriptions_json`
-3. `priority_label`
-4. `advice_type`
-
-Slide rows then include `technology_or_service` before `retiring_feature`.
+1. `technology_or_service`
+2. `retiring_feature`
+3. `platforms`
+4. `platforms_subscriptions_json`
+5. `priority_label`
+6. `advice_type`
+7. `action_required`
+8. `retirement_date`
+9. `source_links`
 
 Data-quality guardrails:
 

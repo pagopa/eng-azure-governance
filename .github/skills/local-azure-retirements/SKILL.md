@@ -1,38 +1,54 @@
 ---
 name: local-azure-retirements
-description: Use when converting Azure retirements aggregate TSV data into committee-ready slide TSV rows with deterministic field mapping, priority labeling, and platform/subscription traceability.
+description: Use when converting an existing 02_azure_retirements_aggregate.tsv for a requested year and month into the canonical committee-ready 03_azure_retirements_slide.tsv, including deterministic projection, ordering, link fallback, diagnostics, and platform/subscription traceability.
 ---
 
 # Local Azure Retirements
 
-Use this skill when the operator needs controlled support for aggregate-to-slide conversions in the Azure retirements workflow.
-
 ## When to use
 
-- The input is `02_azure_retirements_aggregate.tsv`.
-- The expected output is `03_azure_retirements_slide.tsv`.
-- The request needs deterministic mapping, not free-form summarization.
+- Convert an existing monthly aggregate TSV into the slide TSV.
+- Rebuild or validate the slide projection without recollecting Azure data.
+- Diagnose a deterministic aggregate-to-slide conversion failure.
 
 ## Boundary
 
-- In scope: deterministic field projection, sorting, fallback handling, and conversion checks.
+- In scope: canonical slide-stage execution, deterministic field projection,
+  sorting, fallback handling, diagnostics, and conversion checks.
 - Out of scope: PowerPoint generation, narrative slide design, and source data recollection from Azure APIs.
 
-## Required conversion posture
+## Workflow
 
-- Preserve one output row per aggregate row.
-- Keep `platforms_subscriptions_json` payloads unchanged from aggregate input.
-- Keep source links traceable and never drop non-empty links.
-- When `source_links` is empty, derive deterministic fallback links from aggregate `source_identifiers`.
-- Use `summary_text` as fallback only when `action_required` is empty.
+1. Resolve the requested year and month. Do not silently select the newest
+   export directory.
+2. Confirm that
+   `src/comitato/comitato_azure_retirements/exports/YYYY/MM/02_azure_retirements_aggregate.tsv`
+   exists and contains data rows.
+3. Read
+   [references/slide-conversion-contract.md](references/slide-conversion-contract.md).
+4. Run only the canonical slide stage. `schema-only` prevents live Azure
+   collection while the slide stage reuses the existing aggregate:
 
-## Validation expectations
+   ```bash
+   bash src/comitato/comitato_azure_retirements/run.sh \
+     --mode schema-only \
+     --workflow slide \
+     --as-of-date YYYY-MM-DD
+   ```
 
-- Output includes exactly these columns:
-  `platforms`, `platforms_subscriptions_json`, `priority_label`, `advice_type`, `technology_or_service`, `retiring_feature`, `action_required`, `retirement_date`, `source_links`.
-- Sorting follows priority then retirement date then feature name.
-- Unknown platform rows stay visible and are not filtered.
+   Add `--output-root <root>` only when the aggregate lives below a different
+   export root.
+5. Inspect the generated slide TSV and the run diagnostics. Stop with the
+   explicit diagnostic when the aggregate is missing, empty, or leaves a slide
+   row without a traceable source link.
 
-## Reference
+## Validation
 
-Use [references/slide-conversion-contract.md](references/slide-conversion-contract.md) for detailed mapping tables and failure handling patterns.
+- Require the exact ordered header defined in the reference.
+- Confirm that every aggregate row was projected before canonical exact-row
+  deduplication; do not manually filter unknown platforms.
+- Confirm that `platforms_subscriptions_json` values are unchanged.
+- Confirm that non-empty source links were preserved and empty links received
+  the deterministic fallback.
+- Confirm priority, date, technology or service, and feature ordering.
+- Do not report success while slide-stage error diagnostics remain.

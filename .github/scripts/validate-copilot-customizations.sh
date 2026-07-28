@@ -412,25 +412,22 @@ validate_repo_local_skill_naming() {
   local file="$1"
   local severity="error"
   local actual_name=""
-  local expected_internal_name=""
+  local expected_name=""
   local skill_dir
 
   [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
 
   actual_name="$(frontmatter_value "$file" "name")"
-  expected_internal_name="$(internal_asset_identifier "$file" || true)"
+  expected_name="$(internal_asset_identifier "$file" || true)"
   skill_dir="$(basename "$(dirname "$file")")"
 
   case "$skill_dir" in
     tech-ai-*)
       return 0
       ;;
-    internal-*)
-      if [[ -n "$actual_name" && "$actual_name" != internal-* ]]; then
-        record_issue "$severity" "Repository-internal skill name must start with 'internal-': ${file}"
-      fi
-      if [[ -n "$actual_name" && -n "$expected_internal_name" && "$actual_name" != "$expected_internal_name" ]]; then
-        record_issue "$severity" "Repository-internal skill name must match directory name '${expected_internal_name}': ${file}"
+    internal-*|local-*)
+      if [[ -n "$actual_name" && -n "$expected_name" && "$actual_name" != "$expected_name" ]]; then
+        record_issue "$severity" "Repository skill name must match directory name '${expected_name}': ${file}"
       fi
       return 0
       ;;
@@ -833,25 +830,8 @@ validate_agents_dir() {
   fi
 }
 
-resolve_agents_file() {
-  local target_root="$1"
-  local config_dir="$2"
-
-  if [[ -f "${target_root}/AGENTS.md" ]]; then
-    printf '%s' "${target_root}/AGENTS.md"
-    return 0
-  fi
-
-  if [[ -f "${config_dir}/AGENTS.md" ]]; then
-    printf '%s' "${config_dir}/AGENTS.md"
-    return 0
-  fi
-
-  return 1
-}
-
-agents_contains_path() {
-  local agents_file="$1"
+inventory_contains_path() {
+  local inventory_file="$1"
   local path="$2"
   local alternate_path
 
@@ -862,43 +842,36 @@ agents_contains_path() {
     alternate_path=".github/${path}"
   fi
 
-  if grep -Fq "$path" "$agents_file" || grep -Fq "$alternate_path" "$agents_file"; then
+  if grep -Fq "$path" "$inventory_file" || grep -Fq "$alternate_path" "$inventory_file"; then
     return 0
   fi
 
   return 1
 }
 
-validate_agents_inventory() {
+validate_catalog_inventory() {
   local target_root="$1"
   local config_dir="$2"
   local instructions_dir="$3"
   local prompts_dir="$4"
   local skills_dir="$5"
-  local agents_file=""
-  local root_agents_file="${target_root}/AGENTS.md"
-  local legacy_agents_file="${config_dir}/AGENTS.md"
+  local inventory_file="${config_dir}/INVENTORY.md"
   local file
   local rel_path
   local severity="error"
 
   [[ "$MODE" == "legacy-compatible" ]] && severity="warn"
 
-  if [[ -f "$root_agents_file" ]]; then
-    agents_file="$root_agents_file"
-  elif [[ -f "$legacy_agents_file" ]]; then
-    record_issue "$severity" "AGENTS.md must live in repository root; found legacy ${legacy_agents_file}"
-    agents_file="$legacy_agents_file"
-  else
-    record_issue "$severity" "Missing AGENTS.md in repository root: ${root_agents_file}"
+  if [[ ! -f "$inventory_file" ]]; then
+    record_issue "$severity" "Missing Copilot catalog inventory: ${inventory_file}"
     return 0
   fi
 
   if [[ -d "$instructions_dir" ]]; then
     while IFS= read -r file; do
       rel_path="${file#"${target_root}/"}"
-      if ! agents_contains_path "$agents_file" "$rel_path"; then
-        record_issue "$severity" "AGENTS.md is missing instruction inventory entry for '${rel_path}'"
+      if ! inventory_contains_path "$inventory_file" "$rel_path"; then
+        record_issue "$severity" "INVENTORY.md is missing instruction inventory entry for '${rel_path}'"
       fi
     done < <(find "$instructions_dir" -type f -name '*.instructions.md' | sort)
   fi
@@ -906,8 +879,8 @@ validate_agents_inventory() {
   if [[ -d "$prompts_dir" ]]; then
     while IFS= read -r file; do
       rel_path="${file#"${target_root}/"}"
-      if ! agents_contains_path "$agents_file" "$rel_path"; then
-        record_issue "$severity" "AGENTS.md is missing prompt inventory entry for '${rel_path}'"
+      if ! inventory_contains_path "$inventory_file" "$rel_path"; then
+        record_issue "$severity" "INVENTORY.md is missing prompt inventory entry for '${rel_path}'"
       fi
     done < <(find "$prompts_dir" -type f -name '*.prompt.md' | sort)
   fi
@@ -915,8 +888,8 @@ validate_agents_inventory() {
   if [[ -d "$skills_dir" ]]; then
     while IFS= read -r file; do
       rel_path="${file#"${target_root}/"}"
-      if ! agents_contains_path "$agents_file" "$rel_path"; then
-        record_issue "$severity" "AGENTS.md is missing skill inventory entry for '${rel_path}'"
+      if ! inventory_contains_path "$inventory_file" "$rel_path"; then
+        record_issue "$severity" "INVENTORY.md is missing skill inventory entry for '${rel_path}'"
       fi
     done < <(find "$skills_dir" -type f -name 'SKILL.md' | sort)
   fi
@@ -1133,7 +1106,7 @@ validate_target() {
   fi
 
   validate_agents_dir "$agents_dir"
-  validate_agents_inventory "$target_root" "$github_dir" "$instructions_dir" "$prompts_dir" "$skills_dir"
+  validate_catalog_inventory "$target_root" "$github_dir" "$instructions_dir" "$prompts_dir" "$skills_dir"
   validate_codeowners_placeholder "$target_root" "$github_dir"
   validate_unreferenced_skills "$prompts_dir" "$skills_dir"
   validate_workflow_pinning "$workflows_dir"
