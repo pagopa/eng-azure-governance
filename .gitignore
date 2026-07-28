@@ -55,3 +55,4 @@ htmlcov/
 .venv/
 venv/
 /tmp/*
+.~lock.*
