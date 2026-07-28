@@ -311,8 +311,10 @@ def test_build_slide_rows_projects_expected_fields() -> None:
                 "action_required": (
                     "<p><strong>Upgrade</strong> to latest supported version</p>"
                 ),
+                "details_text": "<p>Full Redis retirement details.</p>",
                 "retirement_date": "2026-10-01",
                 "source_links": "https://example.com/redis",
+                "source_systems": "advisor_joined",
                 "summary_text": "Fallback summary",
             }
         ]
@@ -324,11 +326,16 @@ def test_build_slide_rows_projects_expected_fields() -> None:
             "retiring_feature": "Redis version upgrade",
             "platforms": "IO",
             "platforms_subscriptions_json": '{"platforms":{"IO":["PROD-IO"]}}',
-            "priority_label": "Prioritario",
+            "comitato_priorità": "Prioritario",
             "advice_type": "advisor_retirement",
             "action_required": "Upgrade to latest supported version",
-            "retirement_date": "2026-10-01",
+            "comitato_descrizione_completa": (
+                "Full Redis retirement details. Upgrade to latest supported version"
+            ),
+            "comitato_retirement_date": "2026-10-01",
+            "comitato_piattaforme": "IO",
             "source_links": "https://example.com/redis",
+            "source": "Fonte: advisor",
         }
     ]
 
@@ -384,6 +391,31 @@ def test_build_slide_rows_uses_summary_fallback_and_strips_xml_tags() -> None:
     assert slide_rows[0]["action_required"] == "Move to TLS 1.2 now"
 
 
+def test_build_slide_rows_marks_service_health_source() -> None:
+    slide_rows = build_slide_rows(
+        [
+            {
+                "impacted_platforms": "IO",
+                "impacted_platforms_subscriptions_json": '{"platforms":{"IO":["PROD-IO"]}}',
+                "priority_label": "Prioritario",
+                "advice_type": "service_health_retirement",
+                "technology_or_service": "Azure Storage",
+                "retiring_feature": "Storage retirement",
+                "action_required": "Review storage accounts",
+                "details_text": "<p>Storage retirement details.</p>",
+                "retirement_date": "2026-12-01",
+                "source_links": "https://example.com/storage",
+                "source_systems": "resource_health_events",
+            }
+        ]
+    )
+
+    assert slide_rows[0]["source"] == "Fonte: service-health"
+    assert slide_rows[0]["comitato_descrizione_completa"] == (
+        "Storage retirement details. Review storage accounts"
+    )
+
+
 def test_headers_follow_requested_committee_contract() -> None:
     assert AGGREGATE_HEADERS[:3] == [
         "impacted_platforms",
@@ -404,10 +436,17 @@ def test_headers_follow_requested_committee_contract() -> None:
     assert SLIDE_HEADERS[2:6] == [
         "platforms",
         "platforms_subscriptions_json",
-        "priority_label",
+        "comitato_priorità",
         "advice_type",
     ]
-    assert SLIDE_HEADERS[6] == "action_required"
+    assert SLIDE_HEADERS[6:] == [
+        "action_required",
+        "comitato_descrizione_completa",
+        "comitato_retirement_date",
+        "comitato_piattaforme",
+        "source_links",
+        "source",
+    ]
 
 
 def test_priority_label_producer_values_are_ranked() -> None:

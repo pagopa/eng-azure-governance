@@ -16,6 +16,7 @@ from src.comitato.comitato_azure_retirements.libs.runtime_stages import (
     diagnostic_summary,
     enforce_mandatory_raw_rows,
     fixture_mode,
+    load_slide_stage_inputs,
     load_raw_stage_inputs,
     manifest_degraded_mode,
     require_non_empty_stage_input,
@@ -24,6 +25,7 @@ from src.comitato.comitato_azure_retirements.libs.runtime_stages import (
 )
 from src.comitato.comitato_azure_retirements.libs.schemas import (
     ADVISOR_HEADERS,
+    AGGREGATE_HEADERS,
     SERVICE_HEALTH_HEADERS,
 )
 from src.comitato.comitato_azure_retirements.libs.tsv import write_tsv
@@ -236,6 +238,28 @@ def test_load_raw_stage_inputs_reads_non_empty_legacy_files(tmp_path: Path) -> N
     assert len(service_rows) == 1
     assert advisor_rows[0]["source_id"] == "advisor-1"
     assert service_rows[0]["source_id"] == "event-1"
+
+
+def test_load_slide_stage_inputs_reads_advisor_and_service_health_aggregates(
+    tmp_path: Path,
+) -> None:
+    write_tsv(
+        tmp_path / runtime_stages.AGGREGATE_FILENAME,
+        AGGREGATE_HEADERS,
+        [{"technology_or_service": "Advisor service"}],
+    )
+    write_tsv(
+        tmp_path / runtime_stages.SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
+        AGGREGATE_HEADERS,
+        [{"technology_or_service": "Health service"}],
+    )
+
+    rows = load_slide_stage_inputs(tmp_path)
+
+    assert [row["technology_or_service"] for row in rows] == [
+        "Advisor service",
+        "Health service",
+    ]
 
 
 def test_contract_diagnostics_flag_gap_and_missing_source_links() -> None:

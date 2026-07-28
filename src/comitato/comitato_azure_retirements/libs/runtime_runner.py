@@ -29,6 +29,7 @@ from .runtime_stages import (
     fixture_mode,
     load_aggregate_stage_input,
     load_raw_stage_inputs,
+    load_slide_stage_inputs,
     manifest_degraded_mode,
     schema_only,
 )
@@ -221,7 +222,7 @@ def _run_aggregate_stage(
     advisor_rows: list[dict[str, str]],
     service_rows: list[dict[str, str]],
     counts_by_file: dict[str, int],
-) -> list[dict[str, str]]:
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     reporter.section(
         "🧮", "Aggregate Stage", "Build normalized grouped advisory contract"
     )
@@ -279,7 +280,7 @@ def _run_aggregate_stage(
         report_path=str(supplemental_report_path),
         rows=len(service_health_aggregate_rows),
     )
-    return advisor_aggregate_rows
+    return advisor_aggregate_rows, service_health_aggregate_rows
 
 
 def _run_slide_stage(
@@ -486,6 +487,8 @@ def run_export(
         advisor_rows: list[dict[str, str]] = []
         service_rows: list[dict[str, str]] = []
         aggregate_rows: list[dict[str, str]] = []
+        service_health_aggregate_rows: list[dict[str, str]] = []
+        slide_input_rows: list[dict[str, str]] = []
         counts_by_source = _default_counts_by_source()
         counts_by_file: dict[str, int] = {}
         resolved_subscriptions: list[str] = cfg.subscriptions
@@ -553,7 +556,7 @@ def run_export(
 
         current_stage = "aggregate"
         if resolved_route.aggregate_action == StageAction.EXECUTE:
-            aggregate_rows = _run_aggregate_stage(
+            aggregate_rows, service_health_aggregate_rows = _run_aggregate_stage(
                 cfg=cfg,
                 output_dir=output_dir,
                 platforms_source_path=platforms_source_path,
@@ -564,6 +567,7 @@ def run_export(
                 service_rows=service_rows,
                 counts_by_file=counts_by_file,
             )
+            slide_input_rows = aggregate_rows + service_health_aggregate_rows
         elif resolved_route.aggregate_action == StageAction.REUSE:
             reporter.section(
                 "📦",
@@ -571,6 +575,7 @@ def run_export(
                 "Load previously generated aggregate TSV artifact",
             )
             aggregate_rows = load_aggregate_stage_input(output_dir)
+            slide_input_rows = load_slide_stage_inputs(output_dir)
             counts_by_file[AGGREGATE_FILENAME] = len(aggregate_rows)
             reporter.step(
                 "Loaded aggregate stage input: "
@@ -592,7 +597,7 @@ def run_export(
                 diagnostics=diagnostics,
                 reporter=reporter,
                 debug_logger=debug_logger,
-                aggregate_rows=aggregate_rows,
+                aggregate_rows=slide_input_rows,
                 counts_by_file=counts_by_file,
             )
 

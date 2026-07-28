@@ -191,7 +191,8 @@ Advisor publication dates come from `retirement_date` and only current Advisor
 rows (`platform_state=New`) enter the main aggregate. Service Health publication
 dates come from Azure `impactMitigationTime` (the normalized End time), and
 Service Health rows are written to `02_azure_service_health_supplemental.tsv`.
-The committee slide is projected from the Advisor aggregate only. Service Health
+The committee slide combines the Advisor aggregate and Service Health
+supplemental aggregate and labels each row with its source. Service Health
 remains subscription/service/region oriented; resource fields stay empty when
 Azure does not provide a verifiable resource identity.
 

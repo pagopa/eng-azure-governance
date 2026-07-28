@@ -439,6 +439,14 @@ def load_aggregate_stage_input(output_dir: Path) -> list[dict[str, str]]:
     return read_tsv(aggregate_path)
 
 
+def load_slide_stage_inputs(output_dir: Path) -> list[dict[str, str]]:
+    aggregate_rows = load_aggregate_stage_input(output_dir)
+    supplemental_path = output_dir / SERVICE_HEALTH_SUPPLEMENTAL_FILENAME
+    if not supplemental_path.exists():
+        return aggregate_rows
+    return aggregate_rows + read_tsv(supplemental_path)
+
+
 def add_aggregate_contract_diagnostics(
     *, diagnostics: DiagnosticsCollector, aggregate_rows: list[dict[str, str]]
 ) -> None:

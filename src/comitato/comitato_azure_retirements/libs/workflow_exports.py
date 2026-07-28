@@ -173,6 +173,21 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
         action_required = _strip_xml_tags(
             str(row.get("action_required", "") or row.get("summary_text", ""))
         )
+        complete_description = " ".join(
+            value
+            for value in (
+                _strip_xml_tags(str(row.get("details_text", ""))),
+                action_required,
+            )
+            if value
+        )
+        source_systems = row.get("source_systems", "").lower()
+        source = (
+            "Fonte: service-health"
+            if "resource_health" in source_systems
+            or str(row.get("advice_type", "")).startswith("service_health")
+            else "Fonte: advisor"
+        )
 
         projected_rows.append(
             {
@@ -182,11 +197,14 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
                 "platforms_subscriptions_json": row.get(
                     "impacted_platforms_subscriptions_json", ""
                 ),
-                "priority_label": row.get("priority_label", ""),
+                "comitato_priorità": row.get("priority_label", ""),
                 "advice_type": row.get("advice_type", ""),
                 "action_required": action_required,
-                "retirement_date": row.get("retirement_date", ""),
+                "comitato_descrizione_completa": complete_description,
+                "comitato_retirement_date": row.get("retirement_date", ""),
+                "comitato_piattaforme": row.get("impacted_platforms", ""),
                 "source_links": source_links,
+                "source": source,
             }
         )
 

@@ -83,7 +83,8 @@ def test_aggregate_stage_persists_split_sources_and_returns_advisor_rows(
         counts_by_file={},
     )
 
-    assert result[0]["advice_type"] == "advisor_retirement"
+    assert result[0][0]["advice_type"] == "advisor_retirement"
+    assert result[1][0]["advice_type"] == "service_health_retirement"
     assert (tmp_path / runtime_runner.AGGREGATE_FILENAME).exists()
     assert (tmp_path / SERVICE_HEALTH_SUPPLEMENTAL_FILENAME).exists()
 
