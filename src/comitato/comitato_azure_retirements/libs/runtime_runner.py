@@ -47,7 +47,6 @@ from .workflow_exports import (
     AGGREGATE_FILENAME,
     RAW_ADVISOR_FILENAME,
     RAW_SERVICE_HEALTH_FILENAME,
-    SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
     SLIDE_FILENAME,
     build_aggregate_rows,
     build_slide_rows,
@@ -243,7 +242,7 @@ def _run_aggregate_stage(
     advisor_rows: list[dict[str, str]],
     service_rows: list[dict[str, str]],
     counts_by_file: dict[str, int],
-) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+) -> list[dict[str, str]]:
     reporter.section(
         "🧮", "Aggregate Stage", "Build normalized grouped advisory contract"
     )
@@ -254,13 +253,9 @@ def _run_aggregate_stage(
         active_platform_map=platform_map,
         as_of_date=cfg.as_of_date,
     )
-    advisor_aggregate_rows = unique_tsv_rows(
+    aggregate_rows = unique_tsv_rows(
         AGGREGATE_HEADERS,
-        aggregate_result.advisor_rows,
-    )
-    service_health_aggregate_rows = unique_tsv_rows(
-        AGGREGATE_HEADERS,
-        aggregate_result.service_health_rows,
+        aggregate_result.advisor_rows + aggregate_result.service_health_rows,
     )
     add_publication_exclusion_diagnostics(
         diagnostics=diagnostics,
@@ -268,40 +263,21 @@ def _run_aggregate_stage(
     )
     add_aggregate_contract_diagnostics(
         diagnostics=diagnostics,
-        aggregate_rows=advisor_aggregate_rows,
+        aggregate_rows=aggregate_rows,
     )
     aggregate_report_path = output_dir / AGGREGATE_FILENAME
-    write_tsv(aggregate_report_path, AGGREGATE_HEADERS, advisor_aggregate_rows)
-    counts_by_file[AGGREGATE_FILENAME] = len(advisor_aggregate_rows)
+    write_tsv(aggregate_report_path, AGGREGATE_HEADERS, aggregate_rows)
+    counts_by_file[AGGREGATE_FILENAME] = len(aggregate_rows)
     reporter.step(
-        f"Wrote aggregate report: {aggregate_report_path} ({len(advisor_aggregate_rows)} row(s))"
+        f"Wrote aggregate report: {aggregate_report_path} ({len(aggregate_rows)} row(s))"
     )
     debug_logger.info(
         "aggregate_report_written",
         "Aggregate report written",
         report_path=str(aggregate_report_path),
-        rows=len(advisor_aggregate_rows),
+        rows=len(aggregate_rows),
     )
-    supplemental_report_path = output_dir / SERVICE_HEALTH_SUPPLEMENTAL_FILENAME
-    write_tsv(
-        supplemental_report_path,
-        AGGREGATE_HEADERS,
-        service_health_aggregate_rows,
-    )
-    counts_by_file[SERVICE_HEALTH_SUPPLEMENTAL_FILENAME] = len(
-        service_health_aggregate_rows
-    )
-    reporter.step(
-        "Wrote Service Health supplemental report: "
-        f"{supplemental_report_path} ({len(service_health_aggregate_rows)} row(s))"
-    )
-    debug_logger.info(
-        "service_health_supplemental_report_written",
-        "Service Health supplemental report written",
-        report_path=str(supplemental_report_path),
-        rows=len(service_health_aggregate_rows),
-    )
-    return advisor_aggregate_rows, service_health_aggregate_rows
+    return aggregate_rows
 
 
 def _run_slide_stage(
@@ -577,7 +553,7 @@ def run_export(
 
         current_stage = "aggregate"
         if resolved_route.aggregate_action == StageAction.EXECUTE:
-            aggregate_rows, service_health_aggregate_rows = _run_aggregate_stage(
+            aggregate_rows = _run_aggregate_stage(
                 cfg=cfg,
                 output_dir=output_dir,
                 platforms_source_path=platforms_source_path,
@@ -588,7 +564,7 @@ def run_export(
                 service_rows=service_rows,
                 counts_by_file=counts_by_file,
             )
-            slide_input_rows = aggregate_rows + service_health_aggregate_rows
+            slide_input_rows = aggregate_rows
         elif resolved_route.aggregate_action == StageAction.REUSE:
             reporter.section(
                 "📦",

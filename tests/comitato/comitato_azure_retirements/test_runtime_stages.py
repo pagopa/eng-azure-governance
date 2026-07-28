@@ -259,18 +259,16 @@ def test_load_raw_stage_inputs_maps_legacy_service_description(tmp_path: Path) -
     assert "description" not in service_rows[0]
 
 
-def test_load_slide_stage_inputs_reads_advisor_and_service_health_aggregates(
+def test_load_slide_stage_inputs_reads_combined_aggregate(
     tmp_path: Path,
 ) -> None:
     write_tsv(
         tmp_path / runtime_stages.AGGREGATE_FILENAME,
         AGGREGATE_HEADERS,
-        [{"technology_or_service": "Advisor service"}],
-    )
-    write_tsv(
-        tmp_path / runtime_stages.SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
-        AGGREGATE_HEADERS,
-        [{"technology_or_service": "Health service"}],
+        [
+            {"technology_or_service": "Advisor service"},
+            {"technology_or_service": "Health service"},
+        ],
     )
 
     rows = load_slide_stage_inputs(tmp_path)

@@ -32,7 +32,6 @@ RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
 LEGACY_RAW_ADVISOR_FILENAME = "azure_advisor_retirements_aggregate.tsv"
 LEGACY_RAW_SERVICE_HEALTH_FILENAME = "azure_service_health_advisories_aggregate.tsv"
 AGGREGATE_FILENAME = "02_azure_retirements_aggregate.tsv"
-SERVICE_HEALTH_SUPPLEMENTAL_FILENAME = "02_azure_service_health_supplemental.tsv"
 SLIDE_FILENAME = "03_azure_retirements_slide.tsv"
 UNKNOWN_PLATFORM = GROUP_UNKNOWN_PLATFORM
 

@@ -31,7 +31,6 @@ from .workflow_exports import (
     RAW_ADVISOR_FILENAME,
     RAW_SERVICE_HEALTH_FILENAME,
     AGGREGATE_FILENAME,
-    SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
 )
 
 MANIFEST_DEGRADED_CHECK_IDS = {
@@ -526,11 +525,7 @@ def load_aggregate_stage_input(output_dir: Path) -> list[dict[str, str]]:
 
 
 def load_slide_stage_inputs(output_dir: Path) -> list[dict[str, str]]:
-    aggregate_rows = load_aggregate_stage_input(output_dir)
-    supplemental_path = output_dir / SERVICE_HEALTH_SUPPLEMENTAL_FILENAME
-    if not supplemental_path.exists():
-        return aggregate_rows
-    return aggregate_rows + read_tsv(supplemental_path)
+    return load_aggregate_stage_input(output_dir)
 
 
 def add_aggregate_contract_diagnostics(

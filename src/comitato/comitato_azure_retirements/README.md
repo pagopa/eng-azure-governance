@@ -9,7 +9,6 @@ Persisted outputs currently include:
 - `01_azure_advisor_retirements_raw.tsv`
 - `01_azure_service_health_advisories_raw.tsv`
 - `02_azure_retirements_aggregate.tsv`
-- `02_azure_service_health_supplemental.tsv`
 - `03_azure_retirements_slide.tsv`
 - `azure_retirements_run_diagnostics.tsv`
 - `azure_retirements_run_manifest.json`
@@ -166,7 +165,6 @@ Required export files:
 - `01_azure_advisor_retirements_raw.tsv`
 - `01_azure_service_health_advisories_raw.tsv`
 - `02_azure_retirements_aggregate.tsv`
-- `02_azure_service_health_supplemental.tsv`
 - `03_azure_retirements_slide.tsv`
 
 Required runtime files:
@@ -190,9 +188,8 @@ Publication selection uses the inclusive calendar window
 Advisor publication dates come from `retirement_date` and only current Advisor
 rows (`platform_state=New`) enter the main aggregate. Service Health publication
 dates come from Azure `impactMitigationTime` (the normalized End time), and
-Service Health rows are written to `02_azure_service_health_supplemental.tsv`.
-The committee slide combines the Advisor aggregate and Service Health
-supplemental aggregate and labels each row with its source.
+The aggregate includes both Advisor and Service Health rows. The committee
+slide projects the combined aggregate and labels each row with its source.
 
 ## Service Health Raw Contract
 

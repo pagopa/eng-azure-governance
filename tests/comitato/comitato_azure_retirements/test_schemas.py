@@ -7,11 +7,6 @@ from src.comitato.comitato_azure_retirements.libs.schemas import (
     SERVICE_HEALTH_HEADERS,
     SLIDE_HEADERS,
 )
-from src.comitato.comitato_azure_retirements.libs.workflow_exports import (
-    SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
-)
-
-
 def _assert_unique_non_empty_headers(headers: list[str]) -> None:
     assert headers
     assert len(headers) == len(set(headers))
@@ -31,7 +26,6 @@ def test_schema_headers_expose_core_contract_fields() -> None:
     assert "check_id" in DIAGNOSTICS_HEADERS
     assert "advisory_key" in AGGREGATE_HEADERS
     assert "source_links" in SLIDE_HEADERS
-    assert SERVICE_HEALTH_SUPPLEMENTAL_FILENAME == "02_azure_service_health_supplemental.tsv"
 
 
 def test_raw_headers_start_with_canonical_service_health_contract() -> None:

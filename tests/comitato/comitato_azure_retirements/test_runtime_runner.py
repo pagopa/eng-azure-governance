@@ -16,7 +16,6 @@ from src.comitato.comitato_azure_retirements.libs.runtime_router import (
     build_runtime_route,
 )
 from src.comitato.comitato_azure_retirements.libs.workflow_exports import (
-    SERVICE_HEALTH_SUPPLEMENTAL_FILENAME,
     AggregateBuildResult,
 )
 
@@ -56,7 +55,7 @@ class _StageLogger:
         return None
 
 
-def test_aggregate_stage_persists_split_sources_and_returns_advisor_rows(
+def test_aggregate_stage_persists_combined_sources_without_supplemental_report(
     monkeypatch, tmp_path: Path
 ) -> None:  # type: ignore[no-untyped-def]
     build_result = AggregateBuildResult(
@@ -83,10 +82,12 @@ def test_aggregate_stage_persists_split_sources_and_returns_advisor_rows(
         counts_by_file={},
     )
 
-    assert result[0][0]["advice_type"] == "advisor_retirement"
-    assert result[1][0]["advice_type"] == "service_health_retirement"
+    assert [row["advice_type"] for row in result] == [
+        "advisor_retirement",
+        "service_health_retirement",
+    ]
     assert (tmp_path / runtime_runner.AGGREGATE_FILENAME).exists()
-    assert (tmp_path / SERVICE_HEALTH_SUPPLEMENTAL_FILENAME).exists()
+    assert not list(tmp_path.glob("*service_health_supplemental.tsv"))
 
 
 def test_run_export_logs_failure_stage_and_full_traceback(
