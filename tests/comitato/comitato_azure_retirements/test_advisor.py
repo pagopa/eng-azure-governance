@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from src.comitato.comitato_azure_retirements.libs import advisor
 from src.comitato.comitato_azure_retirements.libs.advisor import (
     collect_advisor_metadata,
     collect_advisor_recommendations,
@@ -64,9 +65,7 @@ class MetadataArmClient:
         metadata = {
             "id": "service-1",
             "properties": {
-                "sourceProperties": {
-                    "serviceRetirement": {"serviceId": "service-1"}
-                }
+                "sourceProperties": {"serviceRetirement": {"serviceId": "service-1"}}
             },
         }
         return ArmPageResult(
@@ -199,6 +198,67 @@ def test_index_metadata_maps_id_and_service_id_keys() -> None:
 
     assert indexed["meta-1"] is metadata
     assert indexed["service-1"] is metadata
+
+
+def test_index_metadata_supports_expanded_live_metadata_shape() -> None:
+    metadata = {
+        "id": "meta-live",
+        "properties": [
+            {"name": "retirementDate", "value": "2027-01-31"},
+            {"name": "serviceId", "value": "service-live"},
+        ],
+        "sourceProperties": {
+            "serviceRetirement": {
+                "serviceId": "service-live",
+                "retirementDate": "2027-01-31",
+            }
+        },
+    }
+
+    indexed = index_metadata([metadata])
+
+    assert indexed["meta-live"] is metadata
+    assert indexed["service-live"] is metadata
+
+
+def test_index_metadata_keeps_id_when_expanded_properties_are_missing() -> None:
+    metadata = {"id": "meta-without-properties", "properties": None}
+
+    indexed = index_metadata([metadata])
+
+    assert indexed == {"meta-without-properties": metadata}
+
+
+def test_metadata_shape_issues_report_only_unknown_field_types() -> None:
+    assert hasattr(advisor, "metadata_shape_issues"), (
+        "metadata shape validation is missing"
+    )
+    rows = [
+        {
+            "id": "known-live",
+            "properties": [{"name": "serviceId", "value": "service-live"}],
+            "sourceProperties": {"serviceRetirement": {}},
+        },
+        {"id": "known-empty", "properties": None},
+        {
+            "id": "unknown-shape",
+            "properties": "not-a-supported-shape",
+            "sourceProperties": ["not-a-mapping"],
+        },
+    ]
+
+    assert advisor.metadata_shape_issues(rows) == [
+        {
+            "metadata_id": "unknown-shape",
+            "field": "properties",
+            "actual_type": "str",
+        },
+        {
+            "metadata_id": "unknown-shape",
+            "field": "sourceProperties",
+            "actual_type": "list",
+        },
+    ]
 
 
 def test_index_metadata_with_collisions_reports_duplicate_keys() -> None:

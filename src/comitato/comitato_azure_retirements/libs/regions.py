@@ -6,7 +6,9 @@ import re
 from collections.abc import Collection
 from pathlib import Path
 
-REGIONS_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "azure_regions.conf"
+from .config import DEFAULT_REL_CONFIG, REL_CONFIG_PATH
+
+REGIONS_CONFIG_PATH = REL_CONFIG_PATH
 
 
 def _region_key(value: str) -> str:
@@ -14,12 +16,12 @@ def _region_key(value: str) -> str:
 
 
 def load_allowed_regions(path: Path = REGIONS_CONFIG_PATH) -> frozenset[str]:
-    regions: set[str] = set()
-    for line in path.read_text(encoding="utf-8").splitlines():
-        value = line.split("#", 1)[0].strip()
-        if value:
-            regions.add(_region_key(value))
-    return frozenset(regions)
+    if path == REGIONS_CONFIG_PATH:
+        return DEFAULT_REL_CONFIG.allowed_regions
+
+    from .config import load_rel_config
+
+    return load_rel_config(path).allowed_regions
 
 
 ALLOWED_REGIONS = load_allowed_regions()

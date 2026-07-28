@@ -20,7 +20,9 @@ def test_resource_type_fallback_reconstructs_nested_arm_type() -> None:
 
 
 def test_resource_type_fallback_reconstructs_ordinary_arm_type() -> None:
-    resource_id = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    resource_id = (
+        "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    )
 
     assert _resource_type_from_resource_id(resource_id) == "microsoft.web/sites"
 
@@ -51,7 +53,9 @@ def test_subscription_scoped_resource_keeps_blank_group_and_flag() -> None:
 
 
 def test_resource_graph_type_overrides_arm_type_fallback() -> None:
-    resource_id = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    resource_id = (
+        "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    )
     recommendation = {
         "id": "rec-1",
         "properties": {
@@ -130,7 +134,55 @@ def test_normalize_advisor_rows_backfills_subscription_name_from_scope_map() -> 
     assert rows[0]["subscription_name"] == "PROD-IO"
 
 
-def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description() -> None:
+def test_normalize_advisor_rows_reads_expanded_live_metadata_fields() -> None:
+    resource_id = (
+        "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Web/sites/app-1"
+    )
+    recommendation = {
+        "id": "rec-1",
+        "properties": {
+            "recommendationTypeId": "service-live",
+            "resourceMetadata": {"resourceId": resource_id},
+        },
+        "_subscriptionId": "sub-1",
+    }
+    metadata = {
+        "id": "meta-live",
+        "properties": [
+            {"name": "retirementDate", "value": "2027-01-31"},
+            {"name": "serviceId", "value": "service-live"},
+        ],
+        "sourceProperties": {
+            "serviceRetirement": {
+                "serviceId": "service-live",
+                "retirementDate": "2027-01-31",
+                "retirementFeatureName": "Legacy runtime",
+            }
+        },
+        "resourceMetadata": {"singular": "App Service"},
+        "learnMoreLink": "https://example.invalid/retirement",
+    }
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 7, 28),
+        scope_mode="live",
+        recommendations=[recommendation],
+        metadata_by_key={"service-live": metadata},
+        resource_graph_by_key={},
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["advisor_metadata_id"] == "meta-live"
+    assert rows[0]["service_name"] == "App Service"
+    assert rows[0]["retiring_feature"] == "Legacy runtime"
+    assert rows[0]["retirement_date"] == "2027-01-31"
+    assert rows[0]["learn_more_link"] == "https://example.invalid/retirement"
+
+
+def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description() -> (
+    None
+):
     recommendation = {
         "id": "rec-1",
         "properties": {
@@ -138,8 +190,14 @@ def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description
             "resourceMetadata": {
                 "resourceId": "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Web/sites/app-1"
             },
-            "shortDescription": {"problem": "Short problem", "solution": "Short solution"},
-            "description": {"problem": "The complete problem description", "solution": "Do not export"},
+            "shortDescription": {
+                "problem": "Short problem",
+                "solution": "Short solution",
+            },
+            "description": {
+                "problem": "The complete problem description",
+                "solution": "Do not export",
+            },
         },
         "_subscriptionId": "sub-1",
     }
@@ -151,7 +209,10 @@ def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description
         recommendations=[recommendation],
         metadata_by_key={},
         resource_graph_by_key={
-            ("service-1", recommendation["properties"]["resourceMetadata"]["resourceId"].lower()): {
+            (
+                "service-1",
+                recommendation["properties"]["resourceMetadata"]["resourceId"].lower(),
+            ): {
                 "location": "Italy North",
             }
         },
@@ -167,7 +228,10 @@ def test_normalize_advisor_rows_filters_regions_and_extracts_problem_description
         recommendations=[recommendation],
         metadata_by_key={},
         resource_graph_by_key={
-            ("service-1", recommendation["properties"]["resourceMetadata"]["resourceId"].lower()): {
+            (
+                "service-1",
+                recommendation["properties"]["resourceMetadata"]["resourceId"].lower(),
+            ): {
                 "location": "eastus",
             }
         },

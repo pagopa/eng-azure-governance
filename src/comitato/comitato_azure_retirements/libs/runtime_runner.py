@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +32,13 @@ from .runtime_stages import (
     manifest_degraded_mode,
     schema_only,
 )
-from .schemas import ADVISOR_HEADERS, AGGREGATE_HEADERS, DIAGNOSTICS_HEADERS, SERVICE_HEALTH_HEADERS, SLIDE_HEADERS
+from .schemas import (
+    ADVISOR_HEADERS,
+    AGGREGATE_HEADERS,
+    DIAGNOSTICS_HEADERS,
+    SERVICE_HEALTH_HEADERS,
+    SLIDE_HEADERS,
+)
 from .service_health import RESOURCE_HEALTH_API_VERSION
 from .tsv import compact_json, unique_tsv_rows, write_json, write_jsonl, write_tsv
 from .workflow_exports import (
@@ -44,6 +51,7 @@ from .workflow_exports import (
     build_slide_rows,
     load_active_subscription_platform_map,
 )
+
 
 def _platforms_source_path(script_path: Path) -> Path:
     return script_path.resolve().parents[2] / "_source_of_truth" / "platforms.yaml"
@@ -158,7 +166,9 @@ def _run_raw_stage(
     service_health_report_path = output_dir / RAW_SERVICE_HEALTH_FILENAME
 
     write_tsv(advisor_report_path, ADVISOR_HEADERS, advisor_rows)
-    reporter.step(f"Wrote Advisor retirements report: {advisor_report_path} ({len(advisor_rows)} row(s))")
+    reporter.step(
+        f"Wrote Advisor retirements report: {advisor_report_path} ({len(advisor_rows)} row(s))"
+    )
     debug_logger.info(
         "advisor_report_written",
         "Advisor retirements report written",
@@ -181,8 +191,12 @@ def _run_raw_stage(
     counts_by_file[RAW_SERVICE_HEALTH_FILENAME] = len(service_rows)
 
     if cfg.write_raw_jsonl:
-        write_jsonl(output_dir / "azure_advisor_retirements_raw.jsonl", advisor_raw_items)
-        write_jsonl(output_dir / "azure_service_health_advisories_raw.jsonl", service_raw_items)
+        write_jsonl(
+            output_dir / "azure_advisor_retirements_raw.jsonl", advisor_raw_items
+        )
+        write_jsonl(
+            output_dir / "azure_service_health_advisories_raw.jsonl", service_raw_items
+        )
         reporter.step("Wrote raw JSONL traces")
 
     return (
@@ -208,7 +222,9 @@ def _run_aggregate_stage(
     service_rows: list[dict[str, str]],
     counts_by_file: dict[str, int],
 ) -> list[dict[str, str]]:
-    reporter.section("🧮", "Aggregate Stage", "Build normalized grouped advisory contract")
+    reporter.section(
+        "🧮", "Aggregate Stage", "Build normalized grouped advisory contract"
+    )
     platform_map = load_active_subscription_platform_map(platforms_source_path)
     aggregate_result = build_aggregate_rows(
         advisor_rows=advisor_rows,
@@ -250,7 +266,9 @@ def _run_aggregate_stage(
         AGGREGATE_HEADERS,
         service_health_aggregate_rows,
     )
-    counts_by_file[SERVICE_HEALTH_SUPPLEMENTAL_FILENAME] = len(service_health_aggregate_rows)
+    counts_by_file[SERVICE_HEALTH_SUPPLEMENTAL_FILENAME] = len(
+        service_health_aggregate_rows
+    )
     reporter.step(
         "Wrote Service Health supplemental report: "
         f"{supplemental_report_path} ({len(service_health_aggregate_rows)} row(s))"
@@ -313,7 +331,9 @@ def _finalize_run(
     manifest_path = runtime_dir / "azure_retirements_run_manifest.json"
 
     write_tsv(diagnostics_path, DIAGNOSTICS_HEADERS, diagnostics_rows)
-    reporter.step(f"Wrote run diagnostics: {diagnostics_path} ({len(diagnostics_rows)} row(s))")
+    reporter.step(
+        f"Wrote run diagnostics: {diagnostics_path} ({len(diagnostics_rows)} row(s))"
+    )
     debug_logger.info(
         "diagnostics_written",
         "Diagnostics TSV written",
@@ -343,12 +363,17 @@ def _finalize_run(
         diagnostic_summary=resolved_diagnostic_summary,
         degraded_mode=manifest_degraded_mode(diagnostics_rows),
         command_line=" ".join(argv),
-        debug_log_path=str(debug_logger.file_path),
+        debug_log_path=(str(debug_logger.file_path) if debug_logger.enabled else ""),
     )
     write_json(manifest_path, manifest)
     reporter.step(f"Wrote run manifest: {manifest_path}")
-    debug_logger.info("run_manifest_written", "Runtime manifest written", manifest_path=str(manifest_path))
-    reporter.step(f"Runtime debug log: {debug_logger.file_path}")
+    debug_logger.info(
+        "run_manifest_written",
+        "Runtime manifest written",
+        manifest_path=str(manifest_path),
+    )
+    if debug_logger.enabled:
+        reporter.step(f"Runtime debug log: {debug_logger.file_path}")
     reporter.summary(
         output_dir=output_dir,
         counts_by_file=counts_by_file,
@@ -356,7 +381,9 @@ def _finalize_run(
         diagnostic_summary=resolved_diagnostic_summary,
     )
     if any(row["severity"] == "error" for row in diagnostics_rows):
-        reporter.error("Run completed with error diagnostics; treating execution as failed")
+        reporter.error(
+            "Run completed with error diagnostics; treating execution as failed"
+        )
         debug_logger.error(
             "run_completed_with_errors",
             "Run completed with diagnostics severity error",
@@ -381,25 +408,57 @@ def run_export(
     route: RuntimeRoute | None = None,
 ) -> int:
     run_id = f"azure-retirements-{uuid.uuid4()}"
-    started_at = utc_now()
+    started_at_datetime = datetime.now(timezone.utc).replace(microsecond=0)
+    started_at = started_at_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
     output_dir = build_output_dir(cfg.output_root, cfg.as_of_date)
     runtime_dir = build_runtime_dir(script_path, cfg.as_of_date)
     output_dir.mkdir(parents=True, exist_ok=True)
     runtime_dir.mkdir(parents=True, exist_ok=True)
     resolved_scope_mode = scope_mode(cfg)
-    debug_logger = DebugRunLogger(file_path=build_debug_log_path(runtime_dir, run_id), run_id=run_id)
-    reporter = ExecutionReporter(verbose=cfg.verbose, debug_logger=debug_logger)
+    log_directory = cfg.logging.log_directory or runtime_dir
+    debug_logger = DebugRunLogger(
+        file_path=build_debug_log_path(
+            log_directory,
+            run_id,
+            started_at=started_at_datetime,
+        ),
+        run_id=run_id,
+        enabled=cfg.logging.enabled,
+        level=cfg.logging.level,
+        include_traceback=cfg.logging.include_traceback,
+    )
+    reporter = ExecutionReporter(
+        verbose=cfg.verbose,
+        debug_logger=debug_logger,
+        console_level=cfg.logging.console_level,
+    )
     platforms_source_path = _platforms_source_path(script_path)
 
     diagnostics = DiagnosticsCollector(run_id)
     diagnostics.add(
         severity="info",
-        check_id="debug_log_enabled",
+        check_id=(
+            "debug_log_enabled" if debug_logger.enabled else "debug_log_disabled"
+        ),
         source_system="global",
         scope="global",
-        message="Persistent debug log enabled for this run",
-        action_required="Use debug log for timeline-based problem determination",
-        raw_context_json=compact_json({"debug_log_path": str(debug_logger.file_path)}),
+        message=(
+            "Persistent debug log enabled for this run"
+            if debug_logger.enabled
+            else "Persistent debug log disabled by azure_rel.conf"
+        ),
+        action_required=(
+            "Use debug log for timeline-based problem determination"
+            if debug_logger.enabled
+            else "Set logging.enabled=true in azure_rel.conf when persistent diagnostics are required"
+        ),
+        raw_context_json=compact_json(
+            {
+                "debug_log_path": (
+                    str(debug_logger.file_path) if debug_logger.enabled else ""
+                )
+            }
+        ),
     )
     reporter.banner(
         run_id=run_id,
@@ -422,6 +481,7 @@ def run_export(
         command_line=" ".join(argv),
     )
 
+    current_stage = "startup"
     try:
         advisor_rows: list[dict[str, str]] = []
         service_rows: list[dict[str, str]] = []
@@ -442,6 +502,7 @@ def run_export(
             workflow_route_name=resolved_route.name,
         )
 
+        current_stage = "raw"
         if resolved_route.raw_action == StageAction.EXECUTE:
             (
                 advisor_rows,
@@ -461,7 +522,9 @@ def run_export(
             )
             counts_by_file.update(raw_counts_by_file)
         elif resolved_route.raw_action == StageAction.REUSE:
-            reporter.section("📦", "Raw Stage Reuse", "Load previously generated raw TSV artifacts")
+            reporter.section(
+                "📦", "Raw Stage Reuse", "Load previously generated raw TSV artifacts"
+            )
             advisor_rows, service_rows = load_raw_stage_inputs(output_dir)
             counts_by_file[RAW_ADVISOR_FILENAME] = len(advisor_rows)
             counts_by_file[RAW_SERVICE_HEALTH_FILENAME] = len(service_rows)
@@ -488,6 +551,7 @@ def run_export(
                 action_required="None",
             )
 
+        current_stage = "aggregate"
         if resolved_route.aggregate_action == StageAction.EXECUTE:
             aggregate_rows = _run_aggregate_stage(
                 cfg=cfg,
@@ -501,7 +565,11 @@ def run_export(
                 counts_by_file=counts_by_file,
             )
         elif resolved_route.aggregate_action == StageAction.REUSE:
-            reporter.section("📦", "Aggregate Stage Reuse", "Load previously generated aggregate TSV artifact")
+            reporter.section(
+                "📦",
+                "Aggregate Stage Reuse",
+                "Load previously generated aggregate TSV artifact",
+            )
             aggregate_rows = load_aggregate_stage_input(output_dir)
             counts_by_file[AGGREGATE_FILENAME] = len(aggregate_rows)
             reporter.step(
@@ -517,6 +585,7 @@ def run_export(
                 action_required="None",
             )
 
+        current_stage = "slide"
         if resolved_route.slide_action == StageAction.EXECUTE:
             _ = _run_slide_stage(
                 output_dir=output_dir,
@@ -527,6 +596,7 @@ def run_export(
                 counts_by_file=counts_by_file,
             )
 
+        current_stage = "finalize"
         return _finalize_run(
             cfg=cfg,
             run_id=run_id,
@@ -556,8 +626,18 @@ def run_export(
             DIAGNOSTICS_HEADERS,
             diagnostics.rows(),
         )
-        reporter.error(f"Export failed: {exc}")
-        debug_logger.error("run_failed", "Unhandled runtime failure", error=str(exc))
+        log_hint = (
+            f"; full traceback: {debug_logger.file_path}"
+            if debug_logger.enabled and cfg.logging.include_traceback
+            else ""
+        )
+        reporter.error(f"Export failed during {current_stage}: {exc}{log_hint}")
+        debug_logger.exception(
+            "run_failed",
+            "Unhandled runtime failure",
+            exc,
+            stage=current_stage,
+        )
         return 1
     finally:
         debug_logger.close()

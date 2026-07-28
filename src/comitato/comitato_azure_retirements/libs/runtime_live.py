@@ -10,6 +10,7 @@ from .advisor import (
     collect_advisor_resource_graph,
     index_metadata_with_collisions,
     index_resource_graph,
+    metadata_shape_issues,
 )
 from .arm_client import ArmClient, ArmClientSettings
 from .auth import get_management_token
@@ -124,29 +125,39 @@ def live_mode(
     )
     problem_rows: list[dict[str, str]] = []
     advisor_metadata, advisor_metadata_pages = collect_advisor_metadata(client)
-    with reporter.subscription_progress("Advisor recommendations", len(subscriptions)) as advisor_progress:
-        advisor_recommendations, recommendation_pages, recommendation_failures = collect_advisor_recommendations(
-            client,
-            subscriptions,
-            allow_degraded=cfg.allow_degraded,
-            on_subscription_update=advisor_progress,
-            resolved_worker_count=effective_workers,
-            debug_logger=debug_logger,
+    with reporter.subscription_progress(
+        "Advisor recommendations", len(subscriptions)
+    ) as advisor_progress:
+        advisor_recommendations, recommendation_pages, recommendation_failures = (
+            collect_advisor_recommendations(
+                client,
+                subscriptions,
+                allow_degraded=cfg.allow_degraded,
+                on_subscription_update=advisor_progress,
+                resolved_worker_count=effective_workers,
+                debug_logger=debug_logger,
+            )
         )
-    advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = collect_advisor_resource_graph(
-        client,
-        subscriptions=subscriptions,
-        management_groups=cfg.management_groups,
-    )
-    with reporter.subscription_progress("Service Health", len(subscriptions)) as service_progress:
-        service_events, service_pages, service_failures = collect_events_for_subscriptions(
+    advisor_graph_rows, advisor_graph_truncated, advisor_graph_pages = (
+        collect_advisor_resource_graph(
             client,
             subscriptions=subscriptions,
-            query_start_time=cfg.health_query_start.isoformat(),
-            allow_degraded=cfg.allow_degraded,
-            on_subscription_update=service_progress,
-            resolved_worker_count=effective_workers,
-            debug_logger=debug_logger,
+            management_groups=cfg.management_groups,
+        )
+    )
+    with reporter.subscription_progress(
+        "Service Health", len(subscriptions)
+    ) as service_progress:
+        service_events, service_pages, service_failures = (
+            collect_events_for_subscriptions(
+                client,
+                subscriptions=subscriptions,
+                query_start_time=cfg.health_query_start.isoformat(),
+                allow_degraded=cfg.allow_degraded,
+                on_subscription_update=service_progress,
+                resolved_worker_count=effective_workers,
+                debug_logger=debug_logger,
+            )
         )
     collected_service_events = service_events
     service_health_filter = filter_health_advisory_events(
@@ -179,7 +190,31 @@ def live_mode(
     )
     reporter.mapping("Service Health pages by subscription", service_pages)
 
-    metadata_by_key, metadata_collisions = index_metadata_with_collisions(advisor_metadata)
+    metadata_issues = metadata_shape_issues(advisor_metadata)
+    if metadata_issues:
+        diagnostics.add(
+            severity="warning",
+            check_id="advisor_metadata_shape_issues",
+            source_system="advisor_metadata",
+            scope="global",
+            message="Advisor metadata contains fields with unsupported structural types",
+            action_required="Review metadata IDs and field types before relying on affected joins",
+            observed_count=len(metadata_issues),
+            raw_context_json=compact_json(metadata_issues),
+        )
+        reporter.warning(
+            f"Advisor metadata produced {len(metadata_issues)} structural shape issue(s)"
+        )
+        debug_logger.warning(
+            "advisor_metadata_shape_issues",
+            "Advisor metadata contains unsupported structural field types",
+            issue_count=len(metadata_issues),
+            issues=metadata_issues,
+        )
+
+    metadata_by_key, metadata_collisions = index_metadata_with_collisions(
+        advisor_metadata
+    )
     graph_by_key = index_resource_graph(advisor_graph_rows)
 
     if metadata_collisions:
@@ -371,10 +406,15 @@ def live_mode(
         "azure_retirements_run_diagnostics.tsv": len(diagnostics.rows()),
     }
 
-    advisor_raw = [{"kind": "advisor_metadata", "item": item} for item in advisor_metadata] + [
-        {"kind": "advisor_recommendation", "item": item} for item in advisor_recommendations
+    advisor_raw = [
+        {"kind": "advisor_metadata", "item": item} for item in advisor_metadata
+    ] + [
+        {"kind": "advisor_recommendation", "item": item}
+        for item in advisor_recommendations
     ]
-    service_raw = [{"kind": "service_health_event", "item": item} for item in service_events]
+    service_raw = [
+        {"kind": "service_health_event", "item": item} for item in service_events
+    ]
 
     return (
         advisor_rows,

@@ -59,7 +59,7 @@ def flatten_advisor_metadata_items(
 ) -> list[dict[str, Any]]:
     flattened: list[dict[str, Any]] = []
     for item in items:
-        supported = item.get("properties", {}).get("supportedValues")
+        supported = metadata_field(item, "supportedValues")
         if isinstance(supported, list):
             flattened.extend(row for row in supported if isinstance(row, dict))
         else:
@@ -213,14 +213,57 @@ def _extract_metadata_id(item: dict[str, Any]) -> str:
     return str(item.get("id") or "")
 
 
+def metadata_field(item: dict[str, Any], field_name: str, default: Any = None) -> Any:
+    """Read a metadata field from expanded live rows or legacy nested rows."""
+    if field_name in item:
+        return item[field_name]
+
+    properties = item.get("properties")
+    if isinstance(properties, dict):
+        return properties.get(field_name, default)
+    return default
+
+
+def metadata_shape_issues(
+    metadata_rows: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Return structural metadata issues without copying source payload values."""
+    issues: list[dict[str, str]] = []
+    expected_types: tuple[tuple[str, tuple[type[Any], ...]], ...] = (
+        ("properties", (dict, list, type(None))),
+        ("sourceProperties", (dict, type(None))),
+        ("resourceMetadata", (dict, type(None))),
+    )
+    for item in metadata_rows:
+        metadata_id = str(item.get("id") or "")
+        for field_name, allowed_types in expected_types:
+            if field_name not in item:
+                continue
+            value = item[field_name]
+            if isinstance(value, allowed_types):
+                continue
+            issues.append(
+                {
+                    "metadata_id": metadata_id,
+                    "field": field_name,
+                    "actual_type": type(value).__name__,
+                }
+            )
+    return issues
+
+
 def _extract_metadata_recommendation_type_id(item: dict[str, Any]) -> str:
-    source_properties = item.get("properties", {}).get("sourceProperties", {})
+    source_properties = metadata_field(item, "sourceProperties", {})
+    if not isinstance(source_properties, dict):
+        source_properties = {}
     service_retirement = source_properties.get("serviceRetirement", {})
+    if not isinstance(service_retirement, dict):
+        service_retirement = {}
     candidate = service_retirement.get("serviceId")
     if candidate:
         return str(candidate)
 
-    supported_values = item.get("properties", {}).get("supportedValues", [])
+    supported_values = metadata_field(item, "supportedValues", [])
     if isinstance(supported_values, list):
         for supported in supported_values:
             if not isinstance(supported, dict):

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from .config import RuntimeConfig
@@ -25,8 +25,15 @@ def build_runtime_dir(script_path: Path, as_of_date: date) -> Path:
     )
 
 
-def build_debug_log_path(runtime_dir: Path, run_id: str) -> Path:
-    return runtime_dir / f"{run_id}_debug.log"
+def build_debug_log_path(
+    runtime_dir: Path,
+    run_id: str,
+    *,
+    started_at: datetime | None = None,
+) -> Path:
+    resolved_start = started_at or datetime.now(timezone.utc)
+    timestamp_prefix = resolved_start.astimezone(timezone.utc).strftime("%Y%m%d%H%M")
+    return runtime_dir / f"{timestamp_prefix}_{run_id}_debug.log"
 
 
 def scope_mode(cfg: RuntimeConfig) -> str:

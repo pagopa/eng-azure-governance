@@ -53,6 +53,23 @@ def test_reporter_logs_retry_warning() -> None:
     assert "HTTP retry applied 2 time(s)" in buffer.getvalue()
 
 
+def test_reporter_console_level_suppresses_info_but_keeps_warnings() -> None:
+    buffer = StringIO()
+    console = Console(file=buffer, color_system=None, force_terminal=False, width=120)
+    reporter = ExecutionReporter(
+        verbose=False,
+        console=console,
+        console_level="WARNING",
+    )
+
+    reporter.step("Hidden informational step")
+    reporter.warning("Visible warning")
+
+    output = buffer.getvalue()
+    assert "Hidden informational step" not in output
+    assert "Visible warning" in output
+
+
 def test_reporter_summary_renders_tables() -> None:
     reporter, buffer = build_reporter()
 

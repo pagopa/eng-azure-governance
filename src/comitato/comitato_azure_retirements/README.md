@@ -94,7 +94,41 @@ bash src/comitato/comitato_azure_retirements/run.sh \
 
 - Console execution is split into sections for authentication, scope resolution, data collection, artifact writing, and final summary.
 - Operator-facing logs use emoji markers to highlight progress, warnings, retries, and terminal failures.
+- Persistent logs use human-readable text, UTC timestamps, stable event names, and contextual `key=value` fields.
+- Unhandled failures record the active workflow stage, exception type, complete traceback, and chained causes.
 - When `--verbose` is enabled, the exporter also prints per-subscription page counts and management group resolution details.
+
+## Runtime Configuration
+
+`config/azure_rel.conf` is the single configuration file for the allowed Azure
+regions and logging behavior:
+
+```ini
+[regions]
+allowed =
+    italynorth
+    westeurope
+    global
+
+[logging]
+enabled = true
+level = INFO
+console_level = INFO
+include_traceback = true
+log_directory =
+```
+
+- `level` controls the persistent file threshold.
+- `console_level` controls the operator console threshold.
+- Supported levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
+- An empty `log_directory` uses the standard runtime directory under `tmp/`.
+- A relative `log_directory` is resolved from the directory containing
+  `azure_rel.conf`.
+- Configuration errors stop startup with an explicit missing section, invalid
+  value, or missing file message.
+
+`azure_rel.conf` replaces the former `azure_regions.conf`; there is no legacy
+fallback.
 
 ## Environment Variables
 
@@ -139,6 +173,12 @@ Required runtime files:
 
 - `azure_retirements_run_diagnostics.tsv`
 - `azure_retirements_run_manifest.json`
+- `YYYYMMDDHHMM_azure-retirements-<run-id>_debug.log` when
+  `logging.enabled=true`
+
+The filename timestamp is UTC. Each text log line also starts with an ISO UTC
+timestamp. When a run fails, the terminal message identifies the failing stage
+and points to the log containing the complete traceback.
 
 Optional export files with `--write-raw-jsonl`:
 

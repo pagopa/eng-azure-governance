@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from pathlib import Path
@@ -33,11 +34,16 @@ class ExecutionReporter:
         verbose: bool,
         console: Console | None = None,
         debug_logger: DebugRunLogger | None = None,
+        console_level: str = "INFO",
     ) -> None:
         self._verbose = verbose
         self._console = console or Console(soft_wrap=True)
         self._debug_logger = debug_logger
+        self._console_level = getattr(logging, console_level.upper(), logging.INFO)
         self._reported_retries: set[str] = set()
+
+    def _allows_console(self, level: int) -> bool:
+        return level >= self._console_level
 
     def banner(
         self,
@@ -58,9 +64,14 @@ class ExecutionReporter:
         summary.add_row("Management Groups", str(len(management_groups)))
         summary.add_row("Raw JSONL", "enabled" if write_raw_jsonl else "disabled")
         summary.add_row("Output", str(output_dir))
-        self._console.print(
-            Panel.fit(summary, title="🚀 Azure Retirements Export", border_style="cyan")
-        )
+        if self._allows_console(logging.INFO):
+            self._console.print(
+                Panel.fit(
+                    summary,
+                    title="🚀 Azure Retirements Export",
+                    border_style="cyan",
+                )
+            )
         if self._debug_logger is not None:
             self._debug_logger.info(
                 "run_banner",
@@ -74,10 +85,11 @@ class ExecutionReporter:
             )
 
     def section(self, emoji: str, title: str, description: str = "") -> None:
-        self._console.print()
-        self._console.rule(f"[bold cyan]{emoji} {escape(title)}[/bold cyan]")
-        if description:
-            self._console.print(f"[dim]{escape(description)}[/dim]")
+        if self._allows_console(logging.INFO):
+            self._console.print()
+            self._console.rule(f"[bold cyan]{emoji} {escape(title)}[/bold cyan]")
+            if description:
+                self._console.print(f"[dim]{escape(description)}[/dim]")
         if self._debug_logger is not None:
             self._debug_logger.info(
                 "section",
@@ -87,14 +99,16 @@ class ExecutionReporter:
             )
 
     def step(self, message: str) -> None:
-        self._console.print(f"• {escape(message)}")
+        if self._allows_console(logging.INFO):
+            self._console.print(f"• {escape(message)}")
         if self._debug_logger is not None:
             self._debug_logger.info("step", message)
 
     def detail(self, label: str, value: str, *, always: bool = False) -> None:
         if not always and not self._verbose:
             return
-        self._console.print(f"  [dim]{escape(label)}:[/] {escape(value)}")
+        if self._allows_console(logging.INFO):
+            self._console.print(f"  [dim]{escape(label)}:[/] {escape(value)}")
         if self._debug_logger is not None:
             self._debug_logger.info(
                 "detail", "Runtime detail", label=label, value=value
@@ -108,12 +122,13 @@ class ExecutionReporter:
         if not always and not self._verbose:
             return
 
-        table = Table(title=f"📋 {title}", header_style="bold blue")
-        table.add_column("Key")
-        table.add_column("Value")
-        for key, value in values.items():
-            table.add_row(str(key), str(value))
-        self._console.print(table)
+        if self._allows_console(logging.INFO):
+            table = Table(title=f"📋 {title}", header_style="bold blue")
+            table.add_column("Key")
+            table.add_column("Value")
+            for key, value in values.items():
+                table.add_row(str(key), str(value))
+            self._console.print(table)
         if self._debug_logger is not None:
             self._debug_logger.info(
                 "mapping", "Runtime mapping emitted", title=title, values=values
@@ -125,6 +140,30 @@ class ExecutionReporter:
     ) -> Iterator[SubscriptionProgressCallback]:
         if total <= 0:
             yield lambda *_args, **_kwargs: None
+            return
+
+        if not self._allows_console(logging.INFO):
+
+            def _quiet_update(
+                subscription_id: str,
+                completed: int,
+                overall_total: int,
+                status: str,
+                error: str | None,
+            ) -> None:
+                if self._debug_logger is not None:
+                    self._debug_logger.info(
+                        "subscription_progress",
+                        "Subscription progress update",
+                        collector=title,
+                        subscription_id=subscription_id,
+                        completed=completed,
+                        total=overall_total,
+                        status=status,
+                        error=error,
+                    )
+
+            yield _quiet_update
             return
 
         progress = Progress(
@@ -202,24 +241,25 @@ class ExecutionReporter:
         if not rows:
             return
 
-        table = Table(title=title, header_style="bold yellow")
-        table.add_column("Collector")
-        table.add_column("Subscription")
-        table.add_column("Severity")
-        table.add_column("Detail")
+        if self._allows_console(logging.WARNING):
+            table = Table(title=title, header_style="bold yellow")
+            table.add_column("Collector")
+            table.add_column("Subscription")
+            table.add_column("Severity")
+            table.add_column("Detail")
 
-        for row in rows:
-            detail = row.get("detail", "")
-            if len(detail) > 140:
-                detail = f"{detail[:137]}..."
-            table.add_row(
-                row.get("collector", ""),
-                row.get("subscription", ""),
-                row.get("severity", ""),
-                detail,
-            )
+            for row in rows:
+                detail = row.get("detail", "")
+                if len(detail) > 140:
+                    detail = f"{detail[:137]}..."
+                table.add_row(
+                    row.get("collector", ""),
+                    row.get("subscription", ""),
+                    row.get("severity", ""),
+                    detail,
+                )
 
-        self._console.print(table)
+            self._console.print(table)
         if self._debug_logger is not None:
             self._debug_logger.warning(
                 "problem_determination",
@@ -229,17 +269,20 @@ class ExecutionReporter:
             )
 
     def success(self, message: str) -> None:
-        self._console.print(f"✅ {escape(message)}", style="green")
+        if self._allows_console(logging.INFO):
+            self._console.print(f"✅ {escape(message)}", style="green")
         if self._debug_logger is not None:
             self._debug_logger.info("success", message)
 
     def warning(self, message: str) -> None:
-        self._console.print(f"⚠️  {escape(message)}", style="yellow")
+        if self._allows_console(logging.WARNING):
+            self._console.print(f"⚠️  {escape(message)}", style="yellow")
         if self._debug_logger is not None:
             self._debug_logger.warning("warning", message)
 
     def error(self, message: str) -> None:
-        self._console.print(f"❌ {escape(message)}", style="red")
+        if self._allows_console(logging.ERROR):
+            self._console.print(f"❌ {escape(message)}", style="red")
         if self._debug_logger is not None:
             self._debug_logger.error("error", message)
 
@@ -276,6 +319,18 @@ class ExecutionReporter:
         counts_by_source: dict[str, int],
         diagnostic_summary: dict[str, int],
     ) -> None:
+        if not self._allows_console(logging.INFO):
+            if self._debug_logger is not None:
+                self._debug_logger.info(
+                    "run_summary",
+                    "Run summary emitted",
+                    output_dir=str(output_dir),
+                    counts_by_file=counts_by_file,
+                    counts_by_source=counts_by_source,
+                    diagnostic_summary=diagnostic_summary,
+                )
+            return
+
         self.section("✅", "Run Summary", "Export completed with the counts below")
         self.step(f"Output directory: {output_dir}")
 

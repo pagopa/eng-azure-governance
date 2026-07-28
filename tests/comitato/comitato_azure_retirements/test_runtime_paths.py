@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
@@ -52,16 +52,27 @@ def test_build_runtime_dir_targets_tmp_comitato_runtime_tree() -> None:
     )
 
 
-def test_build_debug_log_path_appends_run_identifier() -> None:
+def test_build_debug_log_path_prefixes_utc_start_timestamp() -> None:
     runtime_dir = Path("/tmp/runtime")
 
-    assert build_debug_log_path(runtime_dir, "run-123") == Path(
-        "/tmp/runtime/run-123_debug.log"
-    )
+    assert build_debug_log_path(
+        runtime_dir,
+        "run-123",
+        started_at=datetime(2026, 7, 28, 17, 8, tzinfo=timezone.utc),
+    ) == Path("/tmp/runtime/202607281708_run-123_debug.log")
 
 
 def test_scope_mode_reflects_runtime_context() -> None:
     assert scope_mode(_runtime_config(mode="fixture", subscriptions=[])) == "fixture"
-    assert scope_mode(_runtime_config(mode="schema-only", subscriptions=[])) == "schema_only"
-    assert scope_mode(_runtime_config(mode="live", subscriptions=["sub-1"])) == "subscriptions"
-    assert scope_mode(_runtime_config(mode="live", subscriptions=[])) == "management_groups"
+    assert (
+        scope_mode(_runtime_config(mode="schema-only", subscriptions=[]))
+        == "schema_only"
+    )
+    assert (
+        scope_mode(_runtime_config(mode="live", subscriptions=["sub-1"]))
+        == "subscriptions"
+    )
+    assert (
+        scope_mode(_runtime_config(mode="live", subscriptions=[]))
+        == "management_groups"
+    )

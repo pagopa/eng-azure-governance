@@ -12,7 +12,9 @@ from .regions import ALLOWED_REGIONS, canonical_allowed_region
 from .tsv import compact_json
 
 
-def _service_description_quality(description: str, summary: str, sensitive: bool) -> str:
+def _service_description_quality(
+    description: str, summary: str, sensitive: bool
+) -> str:
     if sensitive and not description:
         return "sensitive_blocked"
     if description:
@@ -31,7 +33,8 @@ def normalize_service_health_rows(
     subscription_name_map: dict[str, str],
     event_impacted_services: Callable[[dict[str, Any]], list[dict[str, str]]],
     event_impacted_regions: Callable[[dict[str, Any]], list[str]],
-    event_impacted_service_regions: Callable[[dict[str, Any]], list[dict[str, str]]] | None = None,
+    event_impacted_service_regions: Callable[[dict[str, Any]], list[dict[str, str]]]
+    | None = None,
     build_recommended_actions: Callable[[dict[str, Any]], str],
     allowed_regions: Collection[str] = ALLOWED_REGIONS,
 ) -> list[dict[str, str]]:
@@ -53,11 +56,16 @@ def normalize_service_health_rows(
         title = str(properties.get("title") or properties.get("header") or "")
         summary = str(properties.get("summary") or "")
         article = properties.get("article", {})
-        description = str(article.get("articleContent") or properties.get("description") or "")
+        article_content = (
+            article.get("articleContent") if isinstance(article, dict) else ""
+        )
+        description = str(article_content or properties.get("description") or "")
         actions_text = build_recommended_actions(event)
 
         impact_start = normalize_datetime(str(properties.get("impactStartTime") or ""))
-        impact_mitigation = normalize_datetime(str(properties.get("impactMitigationTime") or ""))
+        impact_mitigation = normalize_datetime(
+            str(properties.get("impactMitigationTime") or "")
+        )
         last_update = normalize_datetime(str(properties.get("lastUpdateTime") or ""))
 
         is_sensitive = bool(properties.get("isSensitive") or False)
@@ -114,7 +122,9 @@ def normalize_service_health_rows(
                 "run_id": run_id,
                 "as_of_date": as_of_date.isoformat(),
                 "scope_mode": scope_mode,
-                "record_type": "service_health_event_region" if region else "service_health_event_subscription",
+                "record_type": "service_health_event_region"
+                if region
+                else "service_health_event_subscription",
                 "source_system": "resource_health_events",
                 "source_id": source_id,
                 "event_id": event_id,
@@ -146,9 +156,13 @@ def normalize_service_health_rows(
                 "resource_type": "",
                 "is_sensitive": "true" if is_sensitive else "false",
                 "details_fetch_status": details_fetch_status,
-                "description_quality": _service_description_quality(description, summary, is_sensitive),
+                "description_quality": _service_description_quality(
+                    description, summary, is_sensitive
+                ),
                 "diagnostic_flags": ",".join(sorted(set(flags))),
-                "provenance_json": compact_json({"event_source": "resource_health_events"}),
+                "provenance_json": compact_json(
+                    {"event_source": "resource_health_events"}
+                ),
             }
             rows.append(row)
 
