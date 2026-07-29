@@ -52,10 +52,9 @@ def load_active_subscription_platform_map(
     for platform_name, platform_payload in platforms.items():
         if not isinstance(platform_name, str) or not platform_name.strip():
             raise _catalog_error(catalog_path, "platform name must be non-empty")
-        if (
-            not isinstance(platform_payload, Mapping)
-            or set(platform_payload) != {"subscriptions"}
-        ):
+        if not isinstance(platform_payload, Mapping) or set(platform_payload) != {
+            "subscriptions"
+        }:
             raise _catalog_error(
                 catalog_path,
                 f"platform {platform_name!r} must contain only subscriptions",
@@ -70,10 +69,11 @@ def load_active_subscription_platform_map(
 
         for index, subscription in enumerate(subscriptions):
             location = f"platforms.{platform_name}.subscriptions[{index}]"
-            if (
-                not isinstance(subscription, Mapping)
-                or set(subscription) != {"name", "id", "state"}
-            ):
+            if not isinstance(subscription, Mapping) or set(subscription) != {
+                "name",
+                "id",
+                "state",
+            }:
                 raise _catalog_error(
                     catalog_path,
                     f"{location} must contain only name, id, and state",

@@ -55,10 +55,7 @@ def test_load_active_subscription_platform_map_uses_schema_v1_active_entries_onl
 def test_canonical_eng_finops_catalog_has_accepted_active_assignments() -> None:
     repository_root = Path(__file__).resolve().parents[3]
     catalog_path = (
-        repository_root
-        / "src"
-        / "_source_of_truth"
-        / "eng-finops-platforms.yaml"
+        repository_root / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
     )
 
     mapping = load_active_subscription_platform_map(catalog_path)
