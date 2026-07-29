@@ -18,12 +18,12 @@ from .config import RuntimeConfig
 from .debug_log import DebugRunLogger
 from .diagnostics import DiagnosticsCollector
 from .normalize import normalize_advisor_rows, normalize_service_health_rows
+from .concurrency import effective_worker_count
 from .runtime_logging import ExecutionReporter
 from .runtime_paths import scope_mode
 from .runtime_stages import (
     add_live_empty_output_diagnostics,
     add_service_health_expired_diagnostic,
-    effective_worker_count,
 )
 from .service_health import (
     build_recommended_actions,

@@ -23,6 +23,7 @@
   },
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/src/comitato/comitato_azure_retirements/.venv/bin/python",
   "python.testing.pytestArgs": [
     "tests"
   ],
