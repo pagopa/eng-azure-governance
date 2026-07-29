@@ -100,9 +100,13 @@ class ArmClient:
         session: Session | None = None,
         trace_handler: Callable[[ArmRequestTrace], None] | None = None,
     ) -> None:
-        resolved_settings = settings or ArmClientSettings(timeout_seconds=timeout_seconds)
+        resolved_settings = settings or ArmClientSettings(
+            timeout_seconds=timeout_seconds
+        )
         if timeout_seconds != resolved_settings.timeout_seconds:
-            resolved_settings = replace(resolved_settings, timeout_seconds=timeout_seconds)
+            resolved_settings = replace(
+                resolved_settings, timeout_seconds=timeout_seconds
+            )
 
         self._settings = resolved_settings
         self._timeout_seconds = resolved_settings.timeout_seconds

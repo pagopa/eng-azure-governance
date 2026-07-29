@@ -6,9 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements.libs.diagnostics import DiagnosticsCollector
-from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
 from src.comitato.comitato_azure_retirements.libs import runtime_stages
+from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
+from src.comitato.comitato_azure_retirements.libs.diagnostics import (
+    DiagnosticsCollector,
+)
 from src.comitato.comitato_azure_retirements.libs.runtime_stages import (
     add_aggregate_contract_diagnostics,
     add_publication_exclusion_diagnostics,
@@ -17,8 +19,8 @@ from src.comitato.comitato_azure_retirements.libs.runtime_stages import (
     diagnostic_summary,
     enforce_mandatory_raw_rows,
     fixture_mode,
-    load_slide_stage_inputs,
     load_raw_stage_inputs,
+    load_slide_stage_inputs,
     manifest_degraded_mode,
     require_non_empty_stage_input,
     require_stage_input,
@@ -53,7 +55,9 @@ def test_fixture_mode_flattens_advisor_metadata_wrapper(
 ) -> None:
     metadata = {
         "id": "service-1",
-        "properties": {"sourceProperties": {"serviceRetirement": {"serviceId": "service-1"}}},
+        "properties": {
+            "sourceProperties": {"serviceRetirement": {"serviceId": "service-1"}}
+        },
     }
     captured: dict[str, object] = {}
     config = RuntimeConfig(
@@ -76,12 +80,16 @@ def test_fixture_mode_flattens_advisor_metadata_wrapper(
             return [{"properties": {"supportedValues": [metadata]}}]
         return []
 
-    def index_metadata(rows: list[dict[str, object]]) -> tuple[dict[str, object], dict[str, int]]:
+    def index_metadata(
+        rows: list[dict[str, object]],
+    ) -> tuple[dict[str, object], dict[str, int]]:
         captured["metadata"] = rows
         return {}, {}
 
     monkeypatch.setattr(runtime_stages, "load_fixture", load_fixture)
-    monkeypatch.setattr(runtime_stages, "index_metadata_with_collisions", index_metadata)
+    monkeypatch.setattr(
+        runtime_stages, "index_metadata_with_collisions", index_metadata
+    )
     monkeypatch.setattr(runtime_stages, "normalize_advisor_rows", lambda **_: [])
     monkeypatch.setattr(runtime_stages, "normalize_service_health_rows", lambda **_: [])
 
@@ -160,7 +168,9 @@ class _ErrorReporter:
         return None
 
 
-def test_enforce_mandatory_raw_rows_allows_intentionally_all_expired_service_health() -> None:
+def test_enforce_mandatory_raw_rows_allows_intentionally_all_expired_service_health() -> (
+    None
+):
     enforce_mandatory_raw_rows(
         diagnostics=DiagnosticsCollector("run-1"),
         reporter=_ErrorReporter(),
@@ -174,7 +184,9 @@ def test_enforce_mandatory_raw_rows_allows_intentionally_all_expired_service_hea
     )
 
 
-def test_enforce_mandatory_raw_rows_rejects_retained_but_unormalized_service_health() -> None:
+def test_enforce_mandatory_raw_rows_rejects_retained_but_unormalized_service_health() -> (
+    None
+):
     with pytest.raises(RuntimeError, match="Mandatory raw workflow outputs are empty"):
         enforce_mandatory_raw_rows(
             diagnostics=DiagnosticsCollector("run-1"),
@@ -189,7 +201,9 @@ def test_enforce_mandatory_raw_rows_rejects_retained_but_unormalized_service_hea
         )
 
 
-def test_require_stage_input_and_non_empty_guard_raise_clear_errors(tmp_path: Path) -> None:
+def test_require_stage_input_and_non_empty_guard_raise_clear_errors(
+    tmp_path: Path,
+) -> None:
     missing_path = tmp_path / "missing.tsv"
 
     with pytest.raises(RuntimeError, match="aggregate workflow requires input file"):
@@ -199,7 +213,9 @@ def test_require_stage_input_and_non_empty_guard_raise_clear_errors(tmp_path: Pa
         require_non_empty_stage_input([], stage_name="aggregate", path=missing_path)
 
 
-def test_resolve_optional_legacy_input_prefers_primary_then_legacy(tmp_path: Path) -> None:
+def test_resolve_optional_legacy_input_prefers_primary_then_legacy(
+    tmp_path: Path,
+) -> None:
     primary_path = tmp_path / "primary.tsv"
     legacy_path = tmp_path / "legacy.tsv"
 

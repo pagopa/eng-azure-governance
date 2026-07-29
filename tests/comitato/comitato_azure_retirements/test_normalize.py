@@ -173,7 +173,9 @@ def test_normalize_advisor_rows_emits_single_catalog_row_per_metadata_id() -> No
     assert rows == []
 
 
-def test_normalize_advisor_rows_keeps_only_retirements_in_next_year_with_resource() -> None:
+def test_normalize_advisor_rows_keeps_only_retirements_in_next_year_with_resource() -> (
+    None
+):
     resource_id = "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1"
     recommendations = [
         _recommendation(
@@ -280,7 +282,9 @@ def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
     assert all("raw_json" not in row for row in rows)
 
 
-def test_normalize_service_health_rows_filters_regions_and_uses_event_id_for_tracking() -> None:
+def test_normalize_service_health_rows_filters_regions_and_uses_event_id_for_tracking() -> (
+    None
+):
     event = {
         "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-1",
         "name": "event-1",
@@ -420,7 +424,9 @@ def test_normalize_service_health_rows_ignores_version_like_tokens_as_dates() ->
     )
 
     assert rows[0]["date_for_window"] == "2026-06-18"
-    assert "retirement_date_derived_from_text" not in rows[0]["diagnostic_flags"].split(",")
+    assert "retirement_date_derived_from_text" not in rows[0]["diagnostic_flags"].split(
+        ","
+    )
 
 
 def test_normalize_service_health_rows_preserves_service_region_pairs_from_callback() -> (

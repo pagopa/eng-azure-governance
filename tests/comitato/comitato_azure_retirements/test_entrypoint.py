@@ -9,7 +9,9 @@ from types import ModuleType
 import pytest
 
 from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
-from src.comitato.comitato_azure_retirements.libs.runtime_router import build_runtime_route
+from src.comitato.comitato_azure_retirements.libs.runtime_router import (
+    build_runtime_route,
+)
 
 
 def _entrypoint_path() -> Path:
@@ -73,11 +75,17 @@ def test_main_delegates_to_run_export_with_expected_arguments(
     monkeypatch.setattr(module, "parse_args", lambda: cfg)
     monkeypatch.setattr(module, "build_runtime_route", lambda _workflows: route)
     monkeypatch.setattr(module, "_load_run_export", lambda: fake_run_export)
-    monkeypatch.setattr(sys, "argv", ["comitato-azure-retirements.py", "--mode", "schema-only"])
+    monkeypatch.setattr(
+        sys, "argv", ["comitato-azure-retirements.py", "--mode", "schema-only"]
+    )
 
     assert module.main() == 0
     assert captured["cfg"] is cfg
-    assert captured["argv"] == ["comitato-azure-retirements.py", "--mode", "schema-only"]
+    assert captured["argv"] == [
+        "comitato-azure-retirements.py",
+        "--mode",
+        "schema-only",
+    ]
     assert captured["script_path"] == _entrypoint_path()
     assert captured["route"] == route
 
@@ -85,12 +93,14 @@ def test_main_delegates_to_run_export_with_expected_arguments(
 def test_main_returns_non_zero_exit_code_from_runtime_runner(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    module = _load_entrypoint(monkeypatch, "comitato_azure_retirements_entrypoint_exit_code")
+    module = _load_entrypoint(
+        monkeypatch, "comitato_azure_retirements_entrypoint_exit_code"
+    )
     cfg = _runtime_config(tmp_path)
     route = build_runtime_route(cfg.workflows)
 
     monkeypatch.setattr(module, "parse_args", lambda: cfg)
     monkeypatch.setattr(module, "build_runtime_route", lambda _workflows: route)
-    monkeypatch.setattr(module, "_load_run_export", lambda: (lambda **_: 7))
+    monkeypatch.setattr(module, "_load_run_export", lambda: lambda **_: 7)
 
     assert module.main() == 7

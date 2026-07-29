@@ -9,8 +9,8 @@ from typing import Any, Callable
 from .dates import normalize_datetime
 from .normalize_shared import service_health_deadlines
 from .regions import ALLOWED_REGIONS, canonical_allowed_region
-from .service_health_resources import ImpactedResource
 from .service_health_resource_resolution import ResourceEvidence
+from .service_health_resources import ImpactedResource
 from .service_health_text import html_to_ascii_text
 from .tsv import compact_json
 from .workflow_exports_utils import priority_label
@@ -79,14 +79,16 @@ def normalize_service_health_rows(
         if is_sensitive:
             details_fetch_status = "not_supported"
 
-        qualified_deadline, resolved_date_for_window, derived_from_text = service_health_deadlines(
-            title=title,
-            summary=summary,
-            description=description_problem,
-            recommended_actions=actions_text,
-            impact_mitigation=impact_mitigation,
-            impact_start=impact_start,
-            last_update=last_update,
+        qualified_deadline, resolved_date_for_window, derived_from_text = (
+            service_health_deadlines(
+                title=title,
+                summary=summary,
+                description=description_problem,
+                recommended_actions=actions_text,
+                impact_mitigation=impact_mitigation,
+                impact_start=impact_start,
+                last_update=last_update,
+            )
         )
 
         service_regions = event_impacted_service_regions(event)
@@ -114,9 +116,13 @@ def normalize_service_health_rows(
                 "guid": "",
                 "region": "",
             }
-            resource_rows = [(service_region, resource) for resource in indexed_resources]
+            resource_rows = [
+                (service_region, resource) for resource in indexed_resources
+            ]
         else:
-            resource_rows = [(service_region, None) for service_region in service_regions]
+            resource_rows = [
+                (service_region, None) for service_region in service_regions
+            ]
 
         for service_region, resource in resource_rows:
             region = str(service_region.get("region") or "")
@@ -147,9 +153,15 @@ def normalize_service_health_rows(
             if event.get("_resource_resolution_subscription_synthesized") is True:
                 flags.append("service_health_subscription_recovered_from_advisor")
 
-            resource_id = resource.resource_id if resource is not None else "not_available"
-            resource_group = resource.resource_group if resource is not None else "not_available"
-            resource_type = resource.resource_type if resource is not None else "not_available"
+            resource_id = (
+                resource.resource_id if resource is not None else "not_available"
+            )
+            resource_group = (
+                resource.resource_group if resource is not None else "not_available"
+            )
+            resource_type = (
+                resource.resource_type if resource is not None else "not_available"
+            )
             resolution_source = (
                 str(getattr(resource, "source", "service_health_arg"))
                 if resource is not None
@@ -185,7 +197,9 @@ def normalize_service_health_rows(
             )
             provenance = {
                 "event_source": "resource_health_events",
-                "resource_lookup_status": "found" if resource is not None else "unavailable",
+                "resource_lookup_status": "found"
+                if resource is not None
+                else "unavailable",
             }
             if resource is not None:
                 provenance["resource_source"] = resolution_source

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from datetime import date
-import re
 
 from .dates import parse_possible_date
 from .tsv import compact_json
@@ -47,7 +47,9 @@ def aggregate_group(
 
     platform_subscriptions: dict[str, set[str]] = defaultdict(set)
     for subscription_name in subscription_names:
-        platform_name = active_platform_map.get(normalize_key(subscription_name), UNKNOWN_PLATFORM)
+        platform_name = active_platform_map.get(
+            normalize_key(subscription_name), UNKNOWN_PLATFORM
+        )
         platform_subscriptions[platform_name].add(subscription_name)
 
     ordered_platforms = sorted(
@@ -62,8 +64,14 @@ def aggregate_group(
         }
     }
 
-    retirement_candidates = sorted_unique(str(row.get("retirement_date", "")) for row in rows)
-    parsed_dates = [candidate for candidate in retirement_candidates if parse_possible_date(candidate)]
+    retirement_candidates = sorted_unique(
+        str(row.get("retirement_date", "")) for row in rows
+    )
+    parsed_dates = [
+        candidate
+        for candidate in retirement_candidates
+        if parse_possible_date(candidate)
+    ]
     chosen_retirement_date = ""
     if parsed_dates:
         chosen_retirement_date = min(parsed_dates)
@@ -71,13 +79,17 @@ def aggregate_group(
     first_seen_date = min_iso_date(str(row.get("as_of_date", "")) for row in rows)
     last_seen_date = max_iso_date(str(row.get("as_of_date", "")) for row in rows)
 
-    retiring_feature = pick_human_text(str(row.get("retiring_feature", "")) for row in rows)
+    retiring_feature = pick_human_text(
+        str(row.get("retiring_feature", "")) for row in rows
+    )
     summary_text = pick_human_text(str(row.get("summary_text", "")) for row in rows)
     source = first_non_empty(str(row.get("source", "")) for row in rows)
     raw_problem = pick_human_text(
         str(row.get("_descrizione_problema_raw", "")) for row in rows
     )
-    action_required = pick_human_text(str(row.get("action_required", "")) for row in rows)
+    action_required = pick_human_text(
+        str(row.get("action_required", "")) for row in rows
+    )
     if not action_required:
         action_required = summary_text
 
@@ -86,7 +98,9 @@ def aggregate_group(
     )
 
     advice_type = first_non_empty([str(row.get("advice_type", "")) for row in rows])
-    computed_priority_label = priority_label(retirement_date=chosen_retirement_date, as_of_date=as_of_date)
+    computed_priority_label = priority_label(
+        retirement_date=chosen_retirement_date, as_of_date=as_of_date
+    )
 
     return {
         "source": source,
@@ -123,7 +137,9 @@ def _subscription_references(
             subscription_id = _first_subscription_id(row.get("source_identifiers"))
 
         if not subscription_name and subscription_id:
-            subscription_name = subscription_name_by_id.get(subscription_id, subscription_id)
+            subscription_name = subscription_name_by_id.get(
+                subscription_id, subscription_id
+            )
 
         if subscription_name:
             references.append(subscription_name)

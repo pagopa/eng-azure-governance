@@ -38,7 +38,10 @@ from .service_health_resource_resolution import (
     index_retirement_metadata,
     merge_resource_evidence,
 )
-from .service_health_resources import collect_impacted_resources, index_impacted_resources
+from .service_health_resources import (
+    collect_impacted_resources,
+    index_impacted_resources,
+)
 from .subscriptions import (
     build_subscription_name_map,
     collect_subscription_inventory,
@@ -104,12 +107,14 @@ def live_mode(
             always=True,
         )
 
-    subscription_inventory_rows, subscription_inventory_truncated, subscription_inventory_pages = (
-        collect_subscription_inventory(
-            client,
-            subscriptions=subscriptions,
-            management_groups=cfg.management_groups,
-        )
+    (
+        subscription_inventory_rows,
+        subscription_inventory_truncated,
+        subscription_inventory_pages,
+    ) = collect_subscription_inventory(
+        client,
+        subscriptions=subscriptions,
+        management_groups=cfg.management_groups,
     )
     subscription_name_map = build_subscription_name_map(subscription_inventory_rows)
     unresolved_subscription_ids = sorted(
@@ -126,7 +131,9 @@ def live_mode(
             message="Subscription names were unavailable; subscription IDs will be emitted",
             action_required="Review Resource Graph subscription inventory coverage",
             observed_count=len(unresolved_subscription_ids),
-            raw_context_json=compact_json({"subscription_ids": unresolved_subscription_ids}),
+            raw_context_json=compact_json(
+                {"subscription_ids": unresolved_subscription_ids}
+            ),
         )
     if subscription_inventory_truncated:
         diagnostics.add(
@@ -214,8 +221,7 @@ def live_mode(
         expired_event_ids=service_health_filter.expired_event_ids,
     )
     retained_tracking_ids = {
-        str(event.get("name") or event.get("id") or "")
-        for event in service_events
+        str(event.get("name") or event.get("id") or "") for event in service_events
     }
     metadata_by_tracking = index_retirement_metadata(
         advisor_metadata, retained_tracking_ids
@@ -268,7 +274,10 @@ def live_mode(
 
     direct_evidence = [
         impacted_resource_evidence(tracking_id, subscription_id, resource)
-        for (tracking_id, subscription_id), resources in impacted_resources_by_event.items()
+        for (
+            tracking_id,
+            subscription_id,
+        ), resources in impacted_resources_by_event.items()
         for resource in resources
     ]
     try:
@@ -327,7 +336,10 @@ def live_mode(
         recovered = sorted(
             {
                 subscription_id
-                for (resource_tracking, subscription_id) in resolution.resources_by_event
+                for (
+                    resource_tracking,
+                    subscription_id,
+                ) in resolution.resources_by_event
                 if resource_tracking == key
                 and not any(
                     str(event.get("_subscriptionId") or "").strip().lower()

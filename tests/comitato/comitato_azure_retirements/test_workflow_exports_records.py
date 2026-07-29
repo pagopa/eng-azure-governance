@@ -13,16 +13,44 @@ from src.comitato.comitato_azure_retirements.libs.workflow_exports_records impor
 
 def test_select_publication_records_uses_inclusive_one_year_window() -> None:
     records = [
-        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2026-07-28", "source_identifiers": ["lower"]},
-        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2027-07-28", "source_identifiers": ["upper"]},
-        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2026-07-27", "source_identifiers": ["expired"]},
-        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2027-07-29", "source_identifiers": ["future"]},
-        {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "not-a-date", "source_identifiers": ["invalid"]},
+        {
+            "source_system": "advisor_joined",
+            "platform_state": "New",
+            "publication_date": "2026-07-28",
+            "source_identifiers": ["lower"],
+        },
+        {
+            "source_system": "advisor_joined",
+            "platform_state": "New",
+            "publication_date": "2027-07-28",
+            "source_identifiers": ["upper"],
+        },
+        {
+            "source_system": "advisor_joined",
+            "platform_state": "New",
+            "publication_date": "2026-07-27",
+            "source_identifiers": ["expired"],
+        },
+        {
+            "source_system": "advisor_joined",
+            "platform_state": "New",
+            "publication_date": "2027-07-29",
+            "source_identifiers": ["future"],
+        },
+        {
+            "source_system": "advisor_joined",
+            "platform_state": "New",
+            "publication_date": "not-a-date",
+            "source_identifiers": ["invalid"],
+        },
     ]
 
     selection = select_publication_records(records, as_of_date=date(2026, 7, 28))
 
-    assert [record["source_identifiers"] for record in selection.records] == [["lower"], ["upper"]]
+    assert [record["source_identifiers"] for record in selection.records] == [
+        ["lower"],
+        ["upper"],
+    ]
     assert selection.excluded_by_reason == {
         "expired": ["expired"],
         "beyond_one_year": ["future"],
@@ -33,14 +61,28 @@ def test_select_publication_records_uses_inclusive_one_year_window() -> None:
 def test_select_publication_records_excludes_non_current_advisor_rows() -> None:
     selection = select_publication_records(
         [
-            {"source_system": "advisor_joined", "platform_state": "New", "publication_date": "2026-09-30", "source_identifiers": ["current"]},
-            {"source_system": "advisor_joined", "platform_state": "", "publication_date": "2026-09-30", "source_identifiers": ["recommendation-only"]},
+            {
+                "source_system": "advisor_joined",
+                "platform_state": "New",
+                "publication_date": "2026-09-30",
+                "source_identifiers": ["current"],
+            },
+            {
+                "source_system": "advisor_joined",
+                "platform_state": "",
+                "publication_date": "2026-09-30",
+                "source_identifiers": ["recommendation-only"],
+            },
         ],
         as_of_date=date(2026, 7, 28),
     )
 
-    assert [record["source_identifiers"] for record in selection.records] == [["current"]]
-    assert selection.excluded_by_reason["advisor_not_current"] == ["recommendation-only"]
+    assert [record["source_identifiers"] for record in selection.records] == [
+        ["current"]
+    ]
+    assert selection.excluded_by_reason["advisor_not_current"] == [
+        "recommendation-only"
+    ]
 
 
 def test_service_health_publication_selection_uses_impact_mitigation_time() -> None:
@@ -137,21 +179,23 @@ def test_advisor_records_skip_low_signal_metadata_rows() -> None:
 
 def test_advisor_records_use_approved_raw_lineage() -> None:
     rows = advisor_records(
-        [{
-            "service_name": "Azure Key Vault",
-            "retiring_feature": "Legacy API",
-            "short_description_problem": "Legacy API is retiring",
-            "short_description_solution": "Move to the supported API",
-            "description": "Do not use this inferred description",
-            "retirement_date": "2027-02-27",
-            "learn_more_link": "https://example.com/learn",
-            "action_link": "https://example.com/action-must-not-be-exported",
-            "source_system": "advisor_joined",
-            "source_id": "advisor-source",
-            "advisor_recommendation_id": "advisor-rec",
-            "platform_state": "New",
-            "as_of_date": "2026-07-28",
-        }]
+        [
+            {
+                "service_name": "Azure Key Vault",
+                "retiring_feature": "Legacy API",
+                "short_description_problem": "Legacy API is retiring",
+                "short_description_solution": "Move to the supported API",
+                "description": "Do not use this inferred description",
+                "retirement_date": "2027-02-27",
+                "learn_more_link": "https://example.com/learn",
+                "action_link": "https://example.com/action-must-not-be-exported",
+                "source_system": "advisor_joined",
+                "source_id": "advisor-source",
+                "advisor_recommendation_id": "advisor-rec",
+                "platform_state": "New",
+                "as_of_date": "2026-07-28",
+            }
+        ]
     )
 
     assert rows[0]["source"] == "advisor"
@@ -168,22 +212,24 @@ def test_advisor_records_use_approved_raw_lineage() -> None:
 
 def test_service_health_records_use_approved_raw_lineage() -> None:
     rows = service_health_records(
-        [{
-            "impacted_service": "Azure Monitor",
-            "title": "Legacy authentication retirement",
-            "short_description_solution": "Migrate to managed identity",
-            "recommended_actions": "Lower-priority action",
-            "summary": "Subscription impact summary https://example.com/summary",
-            "description_problem": "Raw problem https://example.com/problem",
-            "date_for_window": "2026-09-30",
-            "impact_mitigation_time": "2026-09-30T00:00:00Z",
-            "source_system": "resource_health_events",
-            "source_id": "health-source",
-            "event_id": "health-event",
-            "tracking_id": "health-track",
-            "event_sub_type": "Retirement",
-            "as_of_date": "2026-07-28",
-        }]
+        [
+            {
+                "impacted_service": "Azure Monitor",
+                "title": "Legacy authentication retirement",
+                "short_description_solution": "Migrate to managed identity",
+                "recommended_actions": "Lower-priority action",
+                "summary": "Subscription impact summary https://example.com/summary",
+                "description_problem": "Raw problem https://example.com/problem",
+                "date_for_window": "2026-09-30",
+                "impact_mitigation_time": "2026-09-30T00:00:00Z",
+                "source_system": "resource_health_events",
+                "source_id": "health-source",
+                "event_id": "health-event",
+                "tracking_id": "health-track",
+                "event_sub_type": "Retirement",
+                "as_of_date": "2026-07-28",
+            }
+        ]
     )
 
     assert rows[0]["source"] == "service-health"

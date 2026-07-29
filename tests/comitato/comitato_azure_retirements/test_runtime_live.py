@@ -5,9 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
-from src.comitato.comitato_azure_retirements.libs.diagnostics import DiagnosticsCollector
 from src.comitato.comitato_azure_retirements.libs import runtime_live
+from src.comitato.comitato_azure_retirements.libs.config import RuntimeConfig
+from src.comitato.comitato_azure_retirements.libs.diagnostics import (
+    DiagnosticsCollector,
+)
 from src.comitato.comitato_azure_retirements.libs.service_health_resource_resolution import (
     ResourceEvidence,
 )
@@ -63,7 +65,9 @@ class _DebugLogger:
         return None
 
 
-def _runtime_config(output_root: Path, *, allow_degraded: bool = False) -> RuntimeConfig:
+def _runtime_config(
+    output_root: Path, *, allow_degraded: bool = False
+) -> RuntimeConfig:
     return RuntimeConfig(
         mode="live",
         workflows=["raw"],
@@ -125,7 +129,9 @@ def test_live_mode_preserves_run_id_for_normalization(
         "collect_impacted_resources",
         lambda *_args, **_kwargs: ([], False, 1),
     )
-    monkeypatch.setattr(runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([], 1))
+    monkeypatch.setattr(
+        runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([], 1)
+    )
     monkeypatch.setattr(
         runtime_live,
         "collect_advisor_recommendations",
@@ -155,9 +161,17 @@ def test_live_mode_preserves_run_id_for_normalization(
             [],
         ),
     )
-    monkeypatch.setattr(runtime_live, "index_metadata_with_collisions", lambda *_args, **_kwargs: ({}, {}))
-    monkeypatch.setattr(runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(
+        runtime_live,
+        "index_metadata_with_collisions",
+        lambda *_args, **_kwargs: ({}, {}),
+    )
+    monkeypatch.setattr(
+        runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {}
+    )
+    monkeypatch.setattr(
+        runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {}
+    )
 
     def _capture_advisor_run_id(**kwargs):
         captured["advisor"] = kwargs["run_id"]
@@ -169,7 +183,9 @@ def test_live_mode_preserves_run_id_for_normalization(
         return []
 
     monkeypatch.setattr(runtime_live, "normalize_advisor_rows", _capture_advisor_run_id)
-    monkeypatch.setattr(runtime_live, "normalize_service_health_rows", _capture_service_run_id)
+    monkeypatch.setattr(
+        runtime_live, "normalize_service_health_rows", _capture_service_run_id
+    )
 
     runtime_live.live_mode(
         cfg=_runtime_config(tmp_path),
@@ -213,21 +229,64 @@ def test_live_mode_expands_events_from_advisor_resource_resolution(
 
     monkeypatch.setattr(runtime_live, "get_management_token", lambda: "token")
     monkeypatch.setattr(runtime_live, "ArmClient", lambda *_args, **_kwargs: object())
-    monkeypatch.setattr(runtime_live, "resolve_scope_subscriptions", lambda *_args, **_kwargs: (["sub-a", "sub-b"], {}))
-    monkeypatch.setattr(runtime_live, "collect_subscription_inventory", lambda *_args, **_kwargs: ([], False, 1))
-    monkeypatch.setattr(runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([
-        {
-            "id": "rec-1",
-            "sourceProperties": {"serviceRetirement": {"serviceHealth": {"trackingIds": ["XTKT-BW8"]}}},
-        }
-    ], 1))
-    monkeypatch.setattr(runtime_live, "collect_advisor_recommendations", lambda *_args, **_kwargs: ([], {"sub-a": 0, "sub-b": 0}, []))
-    monkeypatch.setattr(runtime_live, "collect_advisor_resource_graph", lambda *_args, **_kwargs: ([], False, 0))
-    monkeypatch.setattr(runtime_live, "collect_events_for_subscriptions", lambda *_args, **_kwargs: ([event], {"sub-a": 1}, []))
-    monkeypatch.setattr(runtime_live, "collect_impacted_resources", lambda *_args, **_kwargs: ([], False, 1))
-    monkeypatch.setattr(runtime_live, "index_metadata_with_collisions", lambda *_args, **_kwargs: ({}, {}))
-    monkeypatch.setattr(runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(
+        runtime_live,
+        "resolve_scope_subscriptions",
+        lambda *_args, **_kwargs: (["sub-a", "sub-b"], {}),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_subscription_inventory",
+        lambda *_args, **_kwargs: ([], False, 1),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_advisor_metadata",
+        lambda *_args, **_kwargs: (
+            [
+                {
+                    "id": "rec-1",
+                    "sourceProperties": {
+                        "serviceRetirement": {
+                            "serviceHealth": {"trackingIds": ["XTKT-BW8"]}
+                        }
+                    },
+                }
+            ],
+            1,
+        ),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_advisor_recommendations",
+        lambda *_args, **_kwargs: ([], {"sub-a": 0, "sub-b": 0}, []),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_advisor_resource_graph",
+        lambda *_args, **_kwargs: ([], False, 0),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_events_for_subscriptions",
+        lambda *_args, **_kwargs: ([event], {"sub-a": 1}, []),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "collect_impacted_resources",
+        lambda *_args, **_kwargs: ([], False, 1),
+    )
+    monkeypatch.setattr(
+        runtime_live,
+        "index_metadata_with_collisions",
+        lambda *_args, **_kwargs: ({}, {}),
+    )
+    monkeypatch.setattr(
+        runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {}
+    )
+    monkeypatch.setattr(
+        runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {}
+    )
     monkeypatch.setattr(
         runtime_live,
         "collect_advisor_retirement_evidence",
@@ -244,10 +303,18 @@ def test_live_mode_expands_events_from_advisor_resource_resolution(
                     status="active",
                 )
             ],
-            {"xtkt-bw8": {"query_failed": False, "truncated": False, "status": "active"}},
+            {
+                "xtkt-bw8": {
+                    "query_failed": False,
+                    "truncated": False,
+                    "status": "active",
+                }
+            },
         ),
     )
-    monkeypatch.setattr(runtime_live, "event_impacted_service_regions", lambda _event: [])
+    monkeypatch.setattr(
+        runtime_live, "event_impacted_service_regions", lambda _event: []
+    )
     monkeypatch.setattr(runtime_live, "build_recommended_actions", lambda _event: "")
     monkeypatch.setattr(runtime_live, "normalize_advisor_rows", lambda **_kwargs: [])
     monkeypatch.setattr(
@@ -267,11 +334,16 @@ def test_live_mode_expands_events_from_advisor_resource_resolution(
 
     expanded_events = captured["events"]
     assert {event["_subscriptionId"] for event in expanded_events} == {"sub-a", "sub-b"}
-    assert next(event for event in expanded_events if event["_subscriptionId"] == "sub-b")[
-        "_resource_resolution_subscription_synthesized"
-    ] is True
+    assert (
+        next(event for event in expanded_events if event["_subscriptionId"] == "sub-b")[
+            "_resource_resolution_subscription_synthesized"
+        ]
+        is True
+    )
     resolution_diagnostic = next(
-        row for row in diagnostics.rows() if row["check_id"] == "service_health_resource_resolution"
+        row
+        for row in diagnostics.rows()
+        if row["check_id"] == "service_health_resource_resolution"
     )
     assert "sub-b" in resolution_diagnostic["raw_context_json"]
 
@@ -305,7 +377,9 @@ def test_live_mode_degrades_when_resource_resolution_collector_fails(
         "collect_subscription_inventory",
         lambda *_args, **_kwargs: ([], False, 1),
     )
-    monkeypatch.setattr(runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([], 1))
+    monkeypatch.setattr(
+        runtime_live, "collect_advisor_metadata", lambda *_args, **_kwargs: ([], 1)
+    )
     monkeypatch.setattr(
         runtime_live,
         "collect_advisor_recommendations",
@@ -326,15 +400,27 @@ def test_live_mode_degrades_when_resource_resolution_collector_fails(
         "collect_impacted_resources",
         lambda *_args, **_kwargs: ([], False, 1),
     )
-    monkeypatch.setattr(runtime_live, "index_metadata_with_collisions", lambda *_args, **_kwargs: ({}, {}))
-    monkeypatch.setattr(runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {})
-    monkeypatch.setattr(runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {})
+    monkeypatch.setattr(
+        runtime_live,
+        "index_metadata_with_collisions",
+        lambda *_args, **_kwargs: ({}, {}),
+    )
+    monkeypatch.setattr(
+        runtime_live, "index_resource_graph", lambda *_args, **_kwargs: {}
+    )
+    monkeypatch.setattr(
+        runtime_live, "build_subscription_name_map", lambda *_args, **_kwargs: {}
+    )
     monkeypatch.setattr(
         runtime_live,
         "collect_advisor_retirement_evidence",
-        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("ARG unavailable")),
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(
+            RuntimeError("ARG unavailable")
+        ),
     )
-    monkeypatch.setattr(runtime_live, "event_impacted_service_regions", lambda _event: [])
+    monkeypatch.setattr(
+        runtime_live, "event_impacted_service_regions", lambda _event: []
+    )
     monkeypatch.setattr(runtime_live, "build_recommended_actions", lambda _event: "")
     monkeypatch.setattr(runtime_live, "normalize_advisor_rows", lambda **_kwargs: [])
     monkeypatch.setattr(

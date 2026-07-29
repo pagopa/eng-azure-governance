@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from html import unescape
-from html.parser import HTMLParser
 import re
 import unicodedata
+from html import unescape
+from html.parser import HTMLParser
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
-
 
 _BLOCK_TAGS = {"br", "div", "h1", "h2", "h3", "li", "ol", "p", "table", "tr", "ul"}
 _PUNCTUATION = str.maketrans(
@@ -65,7 +64,9 @@ class _TextExtractor(HTMLParser):
             self._append_boundary()
         if tag != "a":
             return
-        self.anchor_href = next((value or "" for key, value in attrs if key == "href"), "")
+        self.anchor_href = next(
+            (value or "" for key, value in attrs if key == "href"), ""
+        )
         self.anchor_parts = []
 
     def handle_endtag(self, tag: str) -> None:

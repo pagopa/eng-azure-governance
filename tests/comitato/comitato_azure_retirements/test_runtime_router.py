@@ -18,7 +18,10 @@ from src.comitato.comitato_azure_retirements.libs.runtime_router import (
         (["raw"], (StageAction.EXECUTE, StageAction.SKIP, StageAction.SKIP)),
         (["aggregate"], (StageAction.REUSE, StageAction.EXECUTE, StageAction.SKIP)),
         (["slide"], (StageAction.SKIP, StageAction.REUSE, StageAction.EXECUTE)),
-        (["raw", "slide"], (StageAction.EXECUTE, StageAction.REUSE, StageAction.EXECUTE)),
+        (
+            ["raw", "slide"],
+            (StageAction.EXECUTE, StageAction.REUSE, StageAction.EXECUTE),
+        ),
     ],
 )
 def test_build_runtime_route_assigns_stage_actions(

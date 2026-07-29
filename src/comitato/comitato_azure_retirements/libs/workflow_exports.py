@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import date
 from dataclasses import dataclass
-from pathlib import Path
+from datetime import date
 
 import pandas as pd
-import yaml
+
+from .service_health_text import html_to_ascii_text
 from .workflow_exports_grouping import (
     UNKNOWN_PLATFORM as GROUP_UNKNOWN_PLATFORM,
+)
+from .workflow_exports_grouping import (
     aggregate_group,
 )
 from .workflow_exports_records import (
@@ -25,7 +27,6 @@ from .workflow_exports_utils import (
     priority_rank,
     traceable_links_from_identifiers,
 )
-from .service_health_text import html_to_ascii_text
 
 RAW_ADVISOR_FILENAME = "01_azure_advisor_retirements_raw.tsv"
 RAW_SERVICE_HEALTH_FILENAME = "01_azure_service_health_advisories_raw.tsv"
@@ -43,37 +44,14 @@ class AggregateBuildResult:
     excluded_by_reason: dict[str, list[str]]
 
 
-def _group_records_by_advisory_key(frame: pd.DataFrame) -> list[tuple[str, list[dict[str, object]]]]:
+def _group_records_by_advisory_key(
+    frame: pd.DataFrame,
+) -> list[tuple[str, list[dict[str, object]]]]:
     # Pandas is intentionally isolated here to keep a future stdlib migration one-spot.
     grouped: list[tuple[str, list[dict[str, object]]]] = []
     for advisory_key, group in frame.groupby("advisory_key", sort=True):
         grouped.append((str(advisory_key), group.to_dict("records")))
     return grouped
-
-
-def load_active_subscription_platform_map(platforms_path: Path) -> dict[str, str]:
-    """Load an active-only reverse map of subscription name to platform name."""
-    payload = yaml.safe_load(platforms_path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        return {}
-
-    reverse_map: dict[str, str] = {}
-    for platform_name, platform_payload in payload.items():
-        if not isinstance(platform_name, str) or not isinstance(platform_payload, dict):
-            continue
-
-        active_subscriptions = platform_payload.get("active")
-        if not isinstance(active_subscriptions, list):
-            continue
-
-        for subscription_name in active_subscriptions:
-            if not isinstance(subscription_name, str):
-                continue
-            normalized_subscription = normalize_key(subscription_name)
-            if normalized_subscription:
-                reverse_map[normalized_subscription] = platform_name
-
-    return reverse_map
 
 
 def _group_records(
@@ -171,7 +149,9 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
         action_required = html_to_ascii_text(
             str(row.get("action_required", "") or row.get("summary_text", ""))
         )
-        raw_problem = row.get("_descrizione_problema_raw", "") or row.get("details_text", "")
+        raw_problem = row.get("_descrizione_problema_raw", "") or row.get(
+            "details_text", ""
+        )
         complete_description = " ".join(
             value
             for value in (
@@ -220,8 +200,6 @@ def build_slide_rows(aggregate_rows: list[dict[str, str]]) -> list[dict[str, str
         )
     )
     return projected_rows
-
-
 
 
 def _build_advisory_key(

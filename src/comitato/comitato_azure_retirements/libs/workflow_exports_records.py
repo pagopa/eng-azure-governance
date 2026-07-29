@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .dates import parse_possible_date
-from .dates import add_calendar_months
+from .dates import add_calendar_months, parse_possible_date
 from .normalize_shared import parse_retirement_date_candidate
 from .workflow_exports_utils import (
     DATE_CANDIDATE_PATTERN,
@@ -24,7 +23,11 @@ class PublicationSelection:
 def _record_identifiers(record: dict[str, object]) -> list[str]:
     identifiers = record.get("source_identifiers", [])
     if isinstance(identifiers, list):
-        values = [str(identifier).strip() for identifier in identifiers if str(identifier).strip()]
+        values = [
+            str(identifier).strip()
+            for identifier in identifiers
+            if str(identifier).strip()
+        ]
     else:
         values = []
     if values:
@@ -42,19 +45,30 @@ def select_publication_records(
 
     for record in records:
         source_system = str(record.get("source_system") or "")
-        if source_system.startswith("advisor") and str(record.get("platform_state") or "") != "New":
-            excluded.setdefault("advisor_not_current", []).extend(_record_identifiers(record))
+        if (
+            source_system.startswith("advisor")
+            and str(record.get("platform_state") or "") != "New"
+        ):
+            excluded.setdefault("advisor_not_current", []).extend(
+                _record_identifiers(record)
+            )
             continue
 
-        publication_date = parse_possible_date(str(record.get("publication_date") or ""))
+        publication_date = parse_possible_date(
+            str(record.get("publication_date") or "")
+        )
         if publication_date is None:
-            excluded.setdefault("missing_or_invalid_date", []).extend(_record_identifiers(record))
+            excluded.setdefault("missing_or_invalid_date", []).extend(
+                _record_identifiers(record)
+            )
             continue
         if publication_date < as_of_date:
             excluded.setdefault("expired", []).extend(_record_identifiers(record))
             continue
         if publication_date > upper_bound:
-            excluded.setdefault("beyond_one_year", []).extend(_record_identifiers(record))
+            excluded.setdefault("beyond_one_year", []).extend(
+                _record_identifiers(record)
+            )
             continue
         selected.append(record)
 
@@ -76,26 +90,38 @@ def normalize_retirement_date(
 ) -> tuple[str, str, bool]:
     parsed_explicit = parse_possible_date(explicit_date)
     if parsed_explicit:
-        return parsed_explicit.isoformat(), "exact" if exact_quality else "derived", False
+        return (
+            parsed_explicit.isoformat(),
+            "exact" if exact_quality else "derived",
+            False,
+        )
 
     for text in source_texts:
         if not text:
             continue
         for candidate in DATE_CANDIDATE_PATTERN.findall(text):
-            resolved_candidate, derived_from_text = parse_retirement_date_candidate(candidate)
+            resolved_candidate, derived_from_text = parse_retirement_date_candidate(
+                candidate
+            )
             if resolved_candidate:
                 return resolved_candidate, "derived", derived_from_text
 
     return "", "missing", False
 
 
-def classify_service_health_type(*, title: str, summary: str, description: str, event_sub_type: str) -> str:
+def classify_service_health_type(
+    *, title: str, summary: str, description: str, event_sub_type: str
+) -> str:
     joined_text = " ".join([title, summary, description, event_sub_type]).lower()
     if "deprecat" in joined_text:
         return "service_health_deprecation"
     if event_sub_type.strip().lower() == "retirement":
         return "service_health_retirement"
-    if "retire" in joined_text or "end of support" in joined_text or "sunset" in joined_text:
+    if (
+        "retire" in joined_text
+        or "end of support" in joined_text
+        or "sunset" in joined_text
+    ):
         return "service_health_retirement"
     return "other_advisory"
 
@@ -116,7 +142,10 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
             ]
         )
         action_required = first_non_empty(
-            [row.get("short_description_solution", ""), row.get("short_description_problem", "")]
+            [
+                row.get("short_description_solution", ""),
+                row.get("short_description_problem", ""),
+            ]
         )
         technology_or_service = row.get("service_name", "")
 
@@ -137,7 +166,8 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
                 "retirement_date": retirement_date,
                 "subscription_id": row.get("subscription_id", ""),
                 "subscription_name": row.get("subscription_name", ""),
-                "source_system": row.get("source_system", "advisor_joined") or "advisor_joined",
+                "source_system": row.get("source_system", "advisor_joined")
+                or "advisor_joined",
                 "source_identifiers": source_identifiers,
                 "source_links": explicit_links,
                 "publication_date": row.get("retirement_date", ""),
@@ -151,12 +181,20 @@ def advisor_records(advisor_rows: list[dict[str, str]]) -> list[dict[str, object
     return records
 
 
-def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str, object]]:
+def service_health_records(
+    service_rows: list[dict[str, str]],
+) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     for row in service_rows:
-        description_problem = row.get("description_problem", "") or row.get("description", "")
+        description_problem = row.get("description_problem", "") or row.get(
+            "description", ""
+        )
         source_identifiers = sorted_unique(
-            [row.get("event_id", ""), row.get("tracking_id", ""), row.get("source_id", "")]
+            [
+                row.get("event_id", ""),
+                row.get("tracking_id", ""),
+                row.get("source_id", ""),
+            ]
         )
         retirement_date = row.get("date_for_window", "")
         links = extract_links(
@@ -188,7 +226,8 @@ def service_health_records(service_rows: list[dict[str, str]]) -> list[dict[str,
                 "retirement_date": retirement_date,
                 "subscription_id": row.get("subscription_id", ""),
                 "subscription_name": row.get("subscription_name", ""),
-                "source_system": row.get("source_system", "resource_health_events") or "resource_health_events",
+                "source_system": row.get("source_system", "resource_health_events")
+                or "resource_health_events",
                 "source_identifiers": source_identifiers,
                 "source_links": links,
                 "publication_date": row.get("impact_mitigation_time", ""),

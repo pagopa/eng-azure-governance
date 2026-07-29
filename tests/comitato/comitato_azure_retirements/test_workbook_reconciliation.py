@@ -8,7 +8,9 @@ from src.comitato.comitato_azure_retirements.libs.workflow_exports import (
     build_aggregate_rows,
 )
 
-FIXTURE_PATH = Path(__file__).parent / "fixtures/workbook_impacted_services_2026-07-28.csv"
+FIXTURE_PATH = (
+    Path(__file__).parent / "fixtures/workbook_impacted_services_2026-07-28.csv"
+)
 
 
 def test_approved_workbook_keys_and_resource_counts_reconcile() -> None:

@@ -5,15 +5,17 @@ from datetime import date
 from src.comitato.comitato_azure_retirements.libs.normalize_service_health import (
     normalize_service_health_rows,
 )
-from src.comitato.comitato_azure_retirements.libs.service_health_resources import (
-    ImpactedResource,
-)
 from src.comitato.comitato_azure_retirements.libs.service_health_resource_resolution import (
     ResourceEvidence,
 )
+from src.comitato.comitato_azure_retirements.libs.service_health_resources import (
+    ImpactedResource,
+)
 
 
-def health_event(tracking_id: str, subscription_id: str, description: str) -> dict[str, object]:
+def health_event(
+    tracking_id: str, subscription_id: str, description: str
+) -> dict[str, object]:
     return {
         "id": (
             f"/subscriptions/{subscription_id}/providers/"
@@ -60,7 +62,9 @@ def test_normalized_resource_row_has_ascii_description_priority_and_resource() -
                 )
             ]
         },
-        event_impacted_service_regions=lambda event: [{"name": "Storage", "guid": "", "region": "westeurope"}],
+        event_impacted_service_regions=lambda event: [
+            {"name": "Storage", "guid": "", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda event: "",
     )
 
@@ -82,13 +86,23 @@ def test_normalized_row_never_leaves_subscription_or_resource_fields_blank() -> 
         events=[health_event("TRK-1", "sub-1", "No qualified deadline")],
         subscription_name_map={},
         impacted_resources_by_event={},
-        event_impacted_service_regions=lambda event: [{"name": "Storage", "guid": "", "region": "westeurope"}],
+        event_impacted_service_regions=lambda event: [
+            {"name": "Storage", "guid": "", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda event: "",
     )[0]
 
     assert row["subscription_name"] == "sub-1"
     assert row["priority"] == "Debito"
-    assert [row[key] for key in ("resource_granularity", "resource_id", "resource_group", "resource_type")] == [
+    assert [
+        row[key]
+        for key in (
+            "resource_granularity",
+            "resource_id",
+            "resource_group",
+            "resource_type",
+        )
+    ] == [
         "not_available",
         "not_available",
         "not_available",
@@ -98,7 +112,9 @@ def test_normalized_row_never_leaves_subscription_or_resource_fields_blank() -> 
     assert row["resource_resolution_status"] == "not_published"
 
 
-def test_normalize_service_health_rows_emits_advisor_provenance_and_recovery_flag() -> None:
+def test_normalize_service_health_rows_emits_advisor_provenance_and_recovery_flag() -> (
+    None
+):
     event = health_event("TRK-1", "sub-2", "Advisor recovered")
     event["_resource_resolution_subscription_synthesized"] = True
     rows = normalize_service_health_rows(
@@ -123,14 +139,19 @@ def test_normalize_service_health_rows_emits_advisor_provenance_and_recovery_fla
                 )
             ]
         },
-        event_impacted_service_regions=lambda _event: [{"name": "Web", "guid": "", "region": "westeurope"}],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Web", "guid": "", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "",
     )
 
     assert rows[0]["resource_resolution_source"] == "advisor_metadata_query"
     assert rows[0]["recommendation_type_id"] == "rec-1"
     assert rows[0]["current_query_match"] == "true"
-    assert "service_health_subscription_recovered_from_advisor" in rows[0]["diagnostic_flags"]
+    assert (
+        "service_health_subscription_recovered_from_advisor"
+        in rows[0]["diagnostic_flags"]
+    )
 
 
 def test_normalize_service_health_rows_marks_sensitive_without_description() -> None:

@@ -26,11 +26,11 @@ from .service_health_resources import index_impacted_resources
 from .subscriptions import build_subscription_name_map
 from .tsv import compact_json, read_tsv
 from .workflow_exports import (
+    AGGREGATE_FILENAME,
     LEGACY_RAW_ADVISOR_FILENAME,
     LEGACY_RAW_SERVICE_HEALTH_FILENAME,
     RAW_ADVISOR_FILENAME,
     RAW_SERVICE_HEALTH_FILENAME,
-    AGGREGATE_FILENAME,
 )
 
 MANIFEST_DEGRADED_CHECK_IDS = {
@@ -66,9 +66,7 @@ def add_service_health_expired_diagnostic(
         message="Service Health events with elapsed End time were excluded before normalization",
         action_required="None",
         observed_count=len(expired_event_ids),
-        raw_context_json=compact_json(
-            {"tracking_ids": sorted(set(expired_event_ids))}
-        ),
+        raw_context_json=compact_json({"tracking_ids": sorted(set(expired_event_ids))}),
     )
 
 
@@ -186,7 +184,11 @@ def add_live_empty_output_diagnostics(
         reporter.warning("Advisor aggregate produced zero rows")
 
     if not service_rows:
-        severity = "warning" if service_source_count == 0 or service_intentionally_empty else "error"
+        severity = (
+            "warning"
+            if service_source_count == 0 or service_intentionally_empty
+            else "error"
+        )
         diagnostics.add(
             severity=severity,
             check_id="service_rows_empty",
@@ -267,7 +269,9 @@ def add_service_health_contract_diagnostics(
 ) -> None:
     checks: list[tuple[str, list[int], str]] = []
     blank_tracking = [
-        index + 1 for index, row in enumerate(rows) if not row.get("tracking_id", "").strip()
+        index + 1
+        for index, row in enumerate(rows)
+        if not row.get("tracking_id", "").strip()
     ]
     noncanonical_description = [
         index + 1
@@ -277,7 +281,9 @@ def add_service_health_contract_diagnostics(
         or ">" in row.get("description_problem", "")
     ]
     blank_priority = [
-        index + 1 for index, row in enumerate(rows) if not row.get("priority", "").strip()
+        index + 1
+        for index, row in enumerate(rows)
+        if not row.get("priority", "").strip()
     ]
     blank_subscription = [
         index + 1
@@ -289,7 +295,12 @@ def add_service_health_contract_diagnostics(
         for index, row in enumerate(rows)
         if any(
             not row.get(key, "").strip()
-            for key in ("resource_granularity", "resource_id", "resource_group", "resource_type")
+            for key in (
+                "resource_granularity",
+                "resource_id",
+                "resource_group",
+                "resource_type",
+            )
         )
     ]
     blank_resource_resolution_contract = [
@@ -308,13 +319,21 @@ def add_service_health_contract_diagnostics(
     ]
     checks.extend(
         [
-            ("service_health_blank_tracking_id", blank_tracking, "Service Health tracking_id is blank"),
+            (
+                "service_health_blank_tracking_id",
+                blank_tracking,
+                "Service Health tracking_id is blank",
+            ),
             (
                 "service_health_noncanonical_description_problem",
                 noncanonical_description,
                 "Service Health description_problem is not canonical ASCII text",
             ),
-            ("service_health_blank_priority", blank_priority, "Service Health priority is blank"),
+            (
+                "service_health_blank_priority",
+                blank_priority,
+                "Service Health priority is blank",
+            ),
             (
                 "service_health_blank_subscription_name",
                 blank_subscription,
@@ -377,7 +396,9 @@ def fixture_mode(
     advisor_metadata = flatten_advisor_metadata_items(
         load_fixture(cfg.fixture_dir / "advisor_metadata.json")
     )
-    advisor_recommendations = load_fixture(cfg.fixture_dir / "advisor_recommendations.json")
+    advisor_recommendations = load_fixture(
+        cfg.fixture_dir / "advisor_recommendations.json"
+    )
     advisor_graph_rows = load_fixture(cfg.fixture_dir / "advisor_resource_graph.json")
     collected_service_health_events = load_fixture(
         cfg.fixture_dir / "service_health_events.json"
@@ -403,7 +424,9 @@ def fixture_mode(
         tracking_ids=retained_tracking_ids,
     )
 
-    metadata_by_key, metadata_collisions = index_metadata_with_collisions(advisor_metadata)
+    metadata_by_key, metadata_collisions = index_metadata_with_collisions(
+        advisor_metadata
+    )
     graph_by_key = index_resource_graph(advisor_graph_rows)
     subscription_name_map = build_subscription_name_map(subscription_rows)
 
@@ -477,8 +500,14 @@ def fixture_mode(
         counts_by_source,
         counts_by_file,
         [{"kind": "advisor_metadata", "item": item} for item in advisor_metadata]
-        + [{"kind": "advisor_recommendation", "item": item} for item in advisor_recommendations],
-        [{"kind": "service_health_event", "item": item} for item in service_health_events],
+        + [
+            {"kind": "advisor_recommendation", "item": item}
+            for item in advisor_recommendations
+        ],
+        [
+            {"kind": "service_health_event", "item": item}
+            for item in service_health_events
+        ],
     )
 
 
@@ -507,7 +536,9 @@ def canonicalize_service_health_input_row(row: dict[str, str]) -> dict[str, str]
     return canonical
 
 
-def require_non_empty_stage_input(rows: list[dict[str, str]], *, stage_name: str, path: Path) -> None:
+def require_non_empty_stage_input(
+    rows: list[dict[str, str]], *, stage_name: str, path: Path
+) -> None:
     if rows:
         return
     raise RuntimeError(
@@ -516,7 +547,9 @@ def require_non_empty_stage_input(rows: list[dict[str, str]], *, stage_name: str
     )
 
 
-def load_raw_stage_inputs(output_dir: Path) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+def load_raw_stage_inputs(
+    output_dir: Path,
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     advisor_path = resolve_optional_legacy_input(
         output_dir / RAW_ADVISOR_FILENAME,
         legacy_filename=LEGACY_RAW_ADVISOR_FILENAME,
@@ -532,8 +565,12 @@ def load_raw_stage_inputs(output_dir: Path) -> tuple[list[dict[str, str]], list[
         canonicalize_service_health_input_row(row)
         for row in read_tsv(service_health_path)
     ]
-    require_non_empty_stage_input(advisor_rows, stage_name="aggregate", path=advisor_path)
-    require_non_empty_stage_input(service_rows, stage_name="aggregate", path=service_health_path)
+    require_non_empty_stage_input(
+        advisor_rows, stage_name="aggregate", path=advisor_path
+    )
+    require_non_empty_stage_input(
+        service_rows, stage_name="aggregate", path=service_health_path
+    )
     return advisor_rows, service_rows
 
 
@@ -569,6 +606,7 @@ def add_aggregate_contract_diagnostics(
             observed_count=len(gap_row_indexes),
             raw_context_json=compact_json({"row_numbers": gap_row_indexes}),
         )
+
 
 def add_slide_source_link_diagnostics(
     *, diagnostics: DiagnosticsCollector, slide_rows: list[dict[str, str]]

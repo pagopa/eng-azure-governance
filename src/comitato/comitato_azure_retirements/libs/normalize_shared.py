@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import re
+from datetime import datetime
 
 from .dates import parse_possible_date
 
@@ -111,7 +111,9 @@ def service_health_deadlines(
     if not qualified_deadline:
         for text in [title, summary, recommended_actions, description]:
             for candidate in DATE_CANDIDATE_PATTERN.findall(text):
-                qualified_deadline, derived_from_text = parse_retirement_date_candidate(candidate)
+                qualified_deadline, derived_from_text = parse_retirement_date_candidate(
+                    candidate
+                )
                 if qualified_deadline:
                     break
             if qualified_deadline:

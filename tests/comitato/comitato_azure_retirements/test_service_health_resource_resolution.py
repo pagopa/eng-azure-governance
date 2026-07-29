@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+import pytest
+
 from src.comitato.comitato_azure_retirements.libs.service_health_resource_resolution import (
+    ResourceEvidence,
     build_advisor_association_query,
     collect_advisor_retirement_evidence,
+    expand_events_for_resource_subscriptions,
     index_retirement_metadata,
     merge_resource_evidence,
-    expand_events_for_resource_subscriptions,
-    ResourceEvidence,
     validate_metadata_data_source_query,
 )
-import pytest
 
 
 def test_index_retirement_metadata_maps_every_requested_tracking_id() -> None:
@@ -32,7 +33,9 @@ def test_index_retirement_metadata_maps_every_requested_tracking_id() -> None:
     assert indexed["missing"] == []
 
 
-def test_index_retirement_metadata_is_tolerant_and_deduplicates_recommendations() -> None:
+def test_index_retirement_metadata_is_tolerant_and_deduplicates_recommendations() -> (
+    None
+):
     rows = [
         {
             "id": "rec-type-1",
@@ -199,7 +202,9 @@ def test_collect_advisor_retirement_evidence_does_not_use_association_id_as_reso
     assert diagnostics["trk-1"]["malformed_resource_ids"] == 1
 
 
-def _health_event(tracking_id: str, subscription_id: str, last_update: str = "") -> dict[str, object]:
+def _health_event(
+    tracking_id: str, subscription_id: str, last_update: str = ""
+) -> dict[str, object]:
     return {
         "name": tracking_id,
         "_subscriptionId": subscription_id,
@@ -207,7 +212,13 @@ def _health_event(tracking_id: str, subscription_id: str, last_update: str = "")
     }
 
 
-def _resource(subscription_id: str, name: str, *, status: str = "active", source: str = "advisor_retirement_recommendation") -> ResourceEvidence:
+def _resource(
+    subscription_id: str,
+    name: str,
+    *,
+    status: str = "active",
+    source: str = "advisor_retirement_recommendation",
+) -> ResourceEvidence:
     return ResourceEvidence(
         tracking_id="XTKT-BW8",
         subscription_id=subscription_id,
@@ -220,7 +231,9 @@ def _resource(subscription_id: str, name: str, *, status: str = "active", source
     )
 
 
-def test_merge_resource_evidence_prefers_direct_and_active_and_excludes_deleted() -> None:
+def test_merge_resource_evidence_prefers_direct_and_active_and_excludes_deleted() -> (
+    None
+):
     direct = _resource("sub-a", "a", source="service_health_arg")
     advisor = _resource("SUB-A", "A", status="resolved")
     deleted = ResourceEvidence(

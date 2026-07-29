@@ -29,7 +29,10 @@ def test_index_impacted_resources_uses_verified_azure_fields() -> None:
 
     assert indexed[("trk-1", "sub-1")][0].resource_id == target
     assert indexed[("trk-1", "sub-1")][0].resource_group == "rg-one"
-    assert indexed[("trk-1", "sub-1")][0].resource_type == "Microsoft.Storage/storageAccounts"
+    assert (
+        indexed[("trk-1", "sub-1")][0].resource_type
+        == "Microsoft.Storage/storageAccounts"
+    )
     assert indexed[("trk-1", "sub-1")][0].source == "service_health_arg"
     assert indexed[("trk-1", "sub-1")][0].status == "active"
     assert indexed[("trk-1", "sub-1")][0].resource_exists is True
@@ -43,7 +46,9 @@ def test_index_impacted_resources_ignores_unrequested_tracking_ids() -> None:
                 "TRK-OTHER/impactedResources/item-one"
             ),
             "subscriptionId": "sub-1",
-            "properties": {"targetResourceId": "/subscriptions/sub-1/resourceGroups/rg-one"},
+            "properties": {
+                "targetResourceId": "/subscriptions/sub-1/resourceGroups/rg-one"
+            },
         }
     ]
     assert index_impacted_resources(rows, tracking_ids={"TRK-1"}) == {}

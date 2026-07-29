@@ -111,7 +111,9 @@ def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() ->
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
 
 
-def test_collect_events_for_subscriptions_retries_without_query_start_time_on_502() -> None:
+def test_collect_events_for_subscriptions_retries_without_query_start_time_on_502() -> (
+    None
+):
     client = QueryStartRetryClient()
 
     rows, pages, failures = collect_events_for_subscriptions(
@@ -330,7 +332,10 @@ def test_filter_health_advisory_events_keeps_only_active_warning_or_critical_adv
     filtered = filter_health_advisory_events(events, as_of_date=date(2026, 7, 28))
 
     assert isinstance(filtered, HealthAdvisoryFilterResult)
-    assert [event["name"] for event in filtered.events] == ["keep-warning", "keep-critical"]
+    assert [event["name"] for event in filtered.events] == [
+        "keep-warning",
+        "keep-critical",
+    ]
 
 
 def test_filter_health_advisory_events_filters_expired_end_time_only() -> None:

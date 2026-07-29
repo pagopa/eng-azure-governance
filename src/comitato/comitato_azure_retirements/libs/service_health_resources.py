@@ -9,7 +9,6 @@ from .arm_client import ArmClient
 from .resource_graph import query_resource_graph
 from .tsv import compact_json
 
-
 IMPACTED_RESOURCES_QUERY = """
 servicehealthresources
 | where type =~ "microsoft.resourcehealth/events/impactedresources"
@@ -73,7 +72,9 @@ def _resource_group(resource_id: str) -> str:
 def index_impacted_resources(
     rows: list[dict[str, Any]], *, tracking_ids: set[str]
 ) -> dict[tuple[str, str], list[ImpactedResource]]:
-    requested_tracking_ids = {value.strip().lower() for value in tracking_ids if value.strip()}
+    requested_tracking_ids = {
+        value.strip().lower() for value in tracking_ids if value.strip()
+    }
     indexed: dict[tuple[str, str], list[ImpactedResource]] = {}
     seen: set[tuple[str, str, str, str, str, str]] = set()
 
@@ -87,8 +88,12 @@ def index_impacted_resources(
         properties = row.get("properties")
         if not isinstance(properties, dict):
             properties = {}
-        resource_id = str(properties.get("targetResourceId") or "").strip() or "not_available"
-        resource_type = str(properties.get("targetResourceType") or "").strip() or "not_available"
+        resource_id = (
+            str(properties.get("targetResourceId") or "").strip() or "not_available"
+        )
+        resource_type = (
+            str(properties.get("targetResourceType") or "").strip() or "not_available"
+        )
         region = str(properties.get("targetRegion") or "").strip() or "not_available"
         info = properties.get("info", [])
         resource = ImpactedResource(

@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
-from datetime import datetime
 import json
 import re
+from dataclasses import dataclass, replace
+from datetime import datetime
 from typing import Any
 
 from .advisor import metadata_field
@@ -170,7 +170,9 @@ def _merge_info_json(first: ResourceEvidence, second: ResourceEvidence) -> str:
     if not isinstance(decoded, dict):
         decoded = {"source_info": decoded}
     decoded["resolution_sources"] = sorted(set(sources))
-    return json.dumps(decoded, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return json.dumps(
+        decoded, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    )
 
 
 def _evidence_priority(item: ResourceEvidence) -> tuple[int, int]:
@@ -208,7 +210,11 @@ def merge_resource_evidence(
                 source_counts[tracking_key].get(raw_item.source, 0) + 1
             )
             resource_key = raw_item.resource_id.strip().lower()
-            if not raw_item.resource_exists or not resource_key or resource_key == "not_available":
+            if (
+                not raw_item.resource_exists
+                or not resource_key
+                or resource_key == "not_available"
+            ):
                 excluded[tracking_key] += 1
                 continue
             subscription_key = raw_item.subscription_id.strip().lower()
@@ -218,11 +224,16 @@ def merge_resource_evidence(
                 selected[identity] = raw_item
                 continue
             preferred = min((existing, raw_item), key=_evidence_priority)
-            status = "active" if existing.status == "active" or raw_item.status == "active" else "resolved"
+            status = (
+                "active"
+                if existing.status == "active" or raw_item.status == "active"
+                else "resolved"
+            )
             selected[identity] = replace(
                 preferred,
                 status=status,
-                current_query_match=existing.current_query_match or raw_item.current_query_match,
+                current_query_match=existing.current_query_match
+                or raw_item.current_query_match,
                 recommendation_type_id=(
                     preferred.recommendation_type_id
                     or existing.recommendation_type_id
@@ -316,7 +327,11 @@ def _quote_kql(value: str) -> str:
 
 def build_advisor_association_query(recommendation_type_ids: set[str]) -> str:
     values = sorted(
-        {_quote_kql(str(value).strip()) for value in recommendation_type_ids if str(value).strip()}
+        {
+            _quote_kql(str(value).strip())
+            for value in recommendation_type_ids
+            if str(value).strip()
+        }
     )
     quoted = ", ".join(f'"{value}"' for value in values) or '"__none__"'
     return f"""
@@ -478,8 +493,7 @@ def collect_advisor_retirement_evidence(
     management_groups: list[str],
 ) -> tuple[list[ResourceEvidence], dict[str, dict[str, object]]]:
     diagnostics = {
-        tracking_id.lower(): _diagnostic_entry()
-        for tracking_id in metadata_by_tracking
+        tracking_id.lower(): _diagnostic_entry() for tracking_id in metadata_by_tracking
     }
     evidence: list[ResourceEvidence] = []
     by_recommendation = _tracking_for_recommendation(metadata_by_tracking)
@@ -506,7 +520,9 @@ def collect_advisor_retirement_evidence(
         for row in advisor_rows:
             if not isinstance(row, dict):
                 continue
-            recommendation_id = str(row.get("recommendationTypeId") or "").strip().lower()
+            recommendation_id = (
+                str(row.get("recommendationTypeId") or "").strip().lower()
+            )
             for tracking_id in by_recommendation.get(recommendation_id, []):
                 item = _evidence_from_row(
                     row,
@@ -520,9 +536,13 @@ def collect_advisor_retirement_evidence(
                 diagnostic = diagnostics[tracking_id]
                 _add_source_count(diagnostic, item.source)
                 if not item.resource_exists:
-                    diagnostic["excluded_deleted"] = int(diagnostic["excluded_deleted"]) + 1
+                    diagnostic["excluded_deleted"] = (
+                        int(diagnostic["excluded_deleted"]) + 1
+                    )
                 if item.resource_id == "not_available":
-                    diagnostic["malformed_resource_ids"] = int(diagnostic["malformed_resource_ids"]) + 1
+                    diagnostic["malformed_resource_ids"] = (
+                        int(diagnostic["malformed_resource_ids"]) + 1
+                    )
 
     seen_queries: set[tuple[str, str]] = set()
     for tracking_id, metadata_items in metadata_by_tracking.items():
@@ -530,7 +550,10 @@ def collect_advisor_retirement_evidence(
         for metadata in metadata_items:
             if not metadata.data_source_query:
                 continue
-            query_key = (metadata.recommendation_type_id.lower(), metadata.data_source_query)
+            query_key = (
+                metadata.recommendation_type_id.lower(),
+                metadata.data_source_query,
+            )
             if query_key in seen_queries:
                 continue
             seen_queries.add(query_key)
@@ -556,7 +579,9 @@ def collect_advisor_retirement_evidence(
                 affected = diagnostics.get(affected_tracking_id.lower())
                 if affected is not None:
                     affected["metadata_pages"] = int(affected["metadata_pages"]) + pages
-                    affected["truncated"] = bool(affected["truncated"]) or bool(truncated)
+                    affected["truncated"] = bool(affected["truncated"]) or bool(
+                        truncated
+                    )
             for row in rows:
                 if not isinstance(row, dict):
                     continue

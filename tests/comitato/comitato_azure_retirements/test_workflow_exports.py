@@ -2,44 +2,20 @@ from __future__ import annotations
 
 from datetime import date
 
-from src.comitato.comitato_azure_retirements.libs.workflow_exports import (
-    AggregateBuildResult,
-    UNKNOWN_PLATFORM,
-    build_aggregate_rows,
-    build_slide_rows,
-    load_active_subscription_platform_map,
-)
 from src.comitato.comitato_azure_retirements.libs.schemas import (
     AGGREGATE_HEADERS,
     SLIDE_HEADERS,
+)
+from src.comitato.comitato_azure_retirements.libs.workflow_exports import (
+    UNKNOWN_PLATFORM,
+    AggregateBuildResult,
+    build_aggregate_rows,
+    build_slide_rows,
 )
 from src.comitato.comitato_azure_retirements.libs.workflow_exports_utils import (
     PRIORITY_LABEL_RANK,
     priority_label,
 )
-
-
-def test_load_active_subscription_platform_map_uses_active_only(tmp_path) -> None:  # type: ignore[no-untyped-def]
-    platforms_file = tmp_path / "platforms.yaml"
-    platforms_file.write_text(
-        """
-IO:
-  active:
-    - PROD-IO
-  disabled:
-    - DEV-IO
-SelfCare:
-  active:
-    - PROD-SelfCare
-""".strip(),
-        encoding="utf-8",
-    )
-
-    mapping = load_active_subscription_platform_map(platforms_file)
-
-    assert mapping["prod-io"] == "IO"
-    assert mapping["prod-selfcare"] == "SelfCare"
-    assert "dev-io" not in mapping
 
 
 def test_build_aggregate_rows_groups_platforms_and_unknown_bucket() -> None:
@@ -128,8 +104,12 @@ def test_build_aggregate_rows_separates_advisor_and_service_health_records() -> 
     )
 
     assert isinstance(result, AggregateBuildResult)
-    assert all(row["advice_type"] == "advisor_retirement" for row in result.advisor_rows)
-    assert all(row["advice_type"] != "advisor_retirement" for row in result.service_health_rows)
+    assert all(
+        row["advice_type"] == "advisor_retirement" for row in result.advisor_rows
+    )
+    assert all(
+        row["advice_type"] != "advisor_retirement" for row in result.service_health_rows
+    )
 
 
 def test_build_aggregate_rows_skips_low_signal_catalog_rows() -> None:
@@ -179,7 +159,9 @@ def test_build_aggregate_rows_skips_low_signal_catalog_rows() -> None:
     assert aggregate_rows[0]["source_links"] == "https://example.com/learn"
 
 
-def test_build_aggregate_rows_does_not_synthesize_source_links_from_advisor_identifiers() -> None:
+def test_build_aggregate_rows_does_not_synthesize_source_links_from_advisor_identifiers() -> (
+    None
+):
     advisor_source_id = (
         "/subscriptions/sub-1/resourceGroups/rg-test/providers/Microsoft.Storage/"
         "storageAccounts/storage01/providers/Microsoft.Advisor/recommendations/rec-1"
@@ -214,7 +196,9 @@ def test_build_aggregate_rows_does_not_synthesize_source_links_from_advisor_iden
     assert aggregate_rows[0]["source_links"] == ""
 
 
-def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscription_id() -> None:
+def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscription_id() -> (
+    None
+):
     advisor_rows = [
         {
             "retiring_feature": "Known subscription row",
@@ -254,14 +238,21 @@ def test_build_aggregate_rows_backfills_blank_subscription_name_from_subscriptio
     ).advisor_rows
 
     blank_row = next(
-        row for row in aggregate_rows if row["retiring_feature"] == "Blank subscription row"
+        row
+        for row in aggregate_rows
+        if row["retiring_feature"] == "Blank subscription row"
     )
     assert blank_row["impacted_platforms"] == "IO"
     assert blank_row["impacted_subscriptions"] == "PROD-IO"
-    assert blank_row["impacted_platforms_subscriptions_json"] == '{"platforms":{"IO":["PROD-IO"]}}'
+    assert (
+        blank_row["impacted_platforms_subscriptions_json"]
+        == '{"platforms":{"IO":["PROD-IO"]}}'
+    )
 
 
-def test_build_aggregate_rows_does_not_synthesize_source_links_from_service_health_identifiers() -> None:
+def test_build_aggregate_rows_does_not_synthesize_source_links_from_service_health_identifiers() -> (
+    None
+):
     source_identifier = "Microsoft.ResourceHealth/events/ABCD-123"
     service_rows = [
         {

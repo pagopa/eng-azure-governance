@@ -84,12 +84,16 @@ def pick_human_text(values: Iterable[object]) -> str:
 
 
 def min_iso_date(values: Iterable[object]) -> str:
-    valid_dates = sorted(str(value) for value in values if parse_possible_date(str(value)))
+    valid_dates = sorted(
+        str(value) for value in values if parse_possible_date(str(value))
+    )
     return valid_dates[0] if valid_dates else ""
 
 
 def max_iso_date(values: Iterable[object]) -> str:
-    valid_dates = sorted(str(value) for value in values if parse_possible_date(str(value)))
+    valid_dates = sorted(
+        str(value) for value in values if parse_possible_date(str(value))
+    )
     return valid_dates[-1] if valid_dates else ""
 
 
@@ -128,7 +132,9 @@ def portal_link_from_identifier(identifier: object) -> str:
         return ""
 
     lower_identifier = clean_identifier.lower()
-    if lower_identifier.startswith("https://") or lower_identifier.startswith("http://"):
+    if lower_identifier.startswith("https://") or lower_identifier.startswith(
+        "http://"
+    ):
         return clean_identifier
 
     if clean_identifier.startswith("/"):
@@ -138,7 +144,9 @@ def portal_link_from_identifier(identifier: object) -> str:
 
 
 def traceable_links_from_identifiers(identifiers: Iterable[object]) -> list[str]:
-    return sorted_unique(portal_link_from_identifier(identifier) for identifier in identifiers)
+    return sorted_unique(
+        portal_link_from_identifier(identifier) for identifier in identifiers
+    )
 
 
 def infer_technology_from_text(*, candidates: Iterable[object]) -> str:

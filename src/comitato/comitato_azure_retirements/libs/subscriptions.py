@@ -8,7 +8,6 @@ from typing import Any
 from .arm_client import ArmClient
 from .resource_graph import query_resource_graph
 
-
 SUBSCRIPTION_INVENTORY_QUERY = """
 resourcecontainers
 | where type =~ "microsoft.resources/subscriptions"

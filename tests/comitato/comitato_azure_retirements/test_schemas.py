@@ -7,6 +7,8 @@ from src.comitato.comitato_azure_retirements.libs.schemas import (
     SERVICE_HEALTH_HEADERS,
     SLIDE_HEADERS,
 )
+
+
 def _assert_unique_non_empty_headers(headers: list[str]) -> None:
     assert headers
     assert len(headers) == len(set(headers))
@@ -40,7 +42,10 @@ def test_raw_headers_start_with_canonical_service_health_contract() -> None:
         "description_problem",
     ]
     assert "description" not in SERVICE_HEALTH_HEADERS
-    assert ADVISOR_HEADERS[2:4] == ["short_description_problem", "recommendation_type_id"]
+    assert ADVISOR_HEADERS[2:4] == [
+        "short_description_problem",
+        "recommendation_type_id",
+    ]
     assert ADVISOR_HEADERS.index("description") == ADVISOR_HEADERS.index("label") + 1
 
 

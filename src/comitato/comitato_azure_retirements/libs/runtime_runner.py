@@ -11,6 +11,7 @@ from .advisor import ADVISOR_API_VERSION
 from .config import RuntimeConfig
 from .debug_log import DebugRunLogger
 from .diagnostics import DiagnosticsCollector, build_manifest, utc_now
+from .platform_catalog import load_active_subscription_platform_map
 from .runtime_live import live_mode
 from .runtime_logging import ExecutionReporter
 from .runtime_paths import (
@@ -50,12 +51,15 @@ from .workflow_exports import (
     SLIDE_FILENAME,
     build_aggregate_rows,
     build_slide_rows,
-    load_active_subscription_platform_map,
 )
 
 
-def _platforms_source_path(script_path: Path) -> Path:
-    return script_path.resolve().parents[2] / "_source_of_truth" / "platforms.yaml"
+def _eng_finops_platforms_source_path(script_path: Path) -> Path:
+    return (
+        script_path.resolve().parents[2]
+        / "_source_of_truth"
+        / "eng-finops-platforms.yaml"
+    )
 
 
 def _default_counts_by_source() -> dict[str, int]:
@@ -159,7 +163,8 @@ def _run_raw_stage(
             for row in diagnostics.rows()
             if row["severity"] == "error"
             and row["check_id"].startswith("service_health_")
-            and row["check_id"] in {
+            and row["check_id"]
+            in {
                 "service_health_blank_tracking_id",
                 "service_health_noncanonical_description_problem",
                 "service_health_blank_priority",
@@ -169,7 +174,9 @@ def _run_raw_stage(
             }
         ]
         if contract_errors:
-            raise RuntimeError("Service Health raw contract validation failed before publication")
+            raise RuntimeError(
+                "Service Health raw contract validation failed before publication"
+            )
     if cfg.mode != "schema-only":
         enforce_mandatory_raw_rows(
             diagnostics=diagnostics,
@@ -236,7 +243,7 @@ def _run_aggregate_stage(
     *,
     cfg: RuntimeConfig,
     output_dir: Path,
-    platforms_source_path: Path,
+    eng_finops_platforms_source_path: Path,
     diagnostics: DiagnosticsCollector,
     reporter: ExecutionReporter,
     debug_logger: DebugRunLogger,
@@ -247,7 +254,9 @@ def _run_aggregate_stage(
     reporter.section(
         "🧮", "Aggregate Stage", "Build normalized grouped advisory contract"
     )
-    platform_map = load_active_subscription_platform_map(platforms_source_path)
+    platform_map = load_active_subscription_platform_map(
+        eng_finops_platforms_source_path
+    )
     aggregate_result = build_aggregate_rows(
         advisor_rows=advisor_rows,
         service_rows=service_rows,
@@ -431,7 +440,7 @@ def run_export(
         debug_logger=debug_logger,
         console_level=cfg.logging.console_level,
     )
-    platforms_source_path = _platforms_source_path(script_path)
+    eng_finops_platforms_source_path = _eng_finops_platforms_source_path(script_path)
 
     diagnostics = DiagnosticsCollector(run_id)
     diagnostics.add(
@@ -557,7 +566,7 @@ def run_export(
             aggregate_rows = _run_aggregate_stage(
                 cfg=cfg,
                 output_dir=output_dir,
-                platforms_source_path=platforms_source_path,
+                eng_finops_platforms_source_path=eng_finops_platforms_source_path,
                 diagnostics=diagnostics,
                 reporter=reporter,
                 debug_logger=debug_logger,

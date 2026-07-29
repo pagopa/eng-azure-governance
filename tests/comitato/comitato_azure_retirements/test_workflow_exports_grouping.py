@@ -54,9 +54,10 @@ def test_aggregate_group_builds_platform_map_dates_and_priority() -> None:
     assert grouped["source"] == "advisor"
     assert grouped["_descrizione_problema_raw"] == "TLS 1.0 is deprecated"
     assert grouped["impacted_platforms"] == "IO, Unknown Platform"
-    assert f'"{UNKNOWN_PLATFORM}":["UNMAPPED-SUB"]' in grouped[
-        "impacted_platforms_subscriptions_json"
-    ]
+    assert (
+        f'"{UNKNOWN_PLATFORM}":["UNMAPPED-SUB"]'
+        in grouped["impacted_platforms_subscriptions_json"]
+    )
     assert grouped["retirement_date"] == "2026-06-01"
     assert "retirement_date_quality" not in grouped
     assert "details_text" not in grouped
@@ -94,4 +95,7 @@ def test_aggregate_group_falls_back_to_subscription_id_from_source_identifier() 
 
     assert grouped["impacted_platforms"] == UNKNOWN_PLATFORM
     assert grouped["impacted_subscriptions"] == "sub-1"
-    assert grouped["impacted_platforms_subscriptions_json"] == '{"platforms":{"Unknown Platform":["sub-1"]}}'
+    assert (
+        grouped["impacted_platforms_subscriptions_json"]
+        == '{"platforms":{"Unknown Platform":["sub-1"]}}'
+    )

@@ -32,13 +32,13 @@ def test_default_counts_by_source_contains_expected_collectors() -> None:
     }
 
 
-def test_platforms_source_path_resolves_source_of_truth_location() -> None:
+def test_eng_finops_platforms_source_path_resolves_source_of_truth_location() -> None:
     script_path = Path(
         "src/comitato/comitato_azure_retirements/comitato-azure-retirements.py"
     ).resolve()
 
-    assert runtime_runner._platforms_source_path(script_path) == (
-        script_path.parents[2] / "_source_of_truth" / "platforms.yaml"
+    assert runtime_runner._eng_finops_platforms_source_path(script_path) == (
+        script_path.parents[2] / "_source_of_truth" / "eng-finops-platforms.yaml"
     )
 
 
@@ -73,7 +73,7 @@ def test_aggregate_stage_persists_combined_sources_without_supplemental_report(
     result = runtime_runner._run_aggregate_stage(
         cfg=type("Config", (), {"as_of_date": date(2026, 7, 28)})(),
         output_dir=tmp_path,
-        platforms_source_path=tmp_path / "platforms.yaml",
+        eng_finops_platforms_source_path=tmp_path / "eng-finops-platforms.yaml",
         diagnostics=DiagnosticsCollector("run-1"),
         reporter=_StageReporter(),
         debug_logger=_StageLogger(),
