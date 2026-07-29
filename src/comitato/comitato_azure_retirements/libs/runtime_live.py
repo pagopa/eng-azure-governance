@@ -14,11 +14,11 @@ from .advisor import (
 )
 from .arm_client import ArmClient, ArmClientSettings
 from .auth import get_management_token
+from .concurrency import effective_worker_count
 from .config import RuntimeConfig
 from .debug_log import DebugRunLogger
 from .diagnostics import DiagnosticsCollector
 from .normalize import normalize_advisor_rows, normalize_service_health_rows
-from .concurrency import effective_worker_count
 from .runtime_logging import ExecutionReporter
 from .runtime_paths import scope_mode
 from .runtime_stages import (
