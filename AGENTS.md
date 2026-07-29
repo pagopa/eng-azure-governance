@@ -117,6 +117,22 @@ source files when (a) modifying/debugging specific code, (b) the graph lacks the
 
 Type `/graphify` in Copilot Chat to build or update the graph.
 
+## Agent skills
+
+### Issue tracker
+
+Issues and specs are tracked as local Markdown files under `.scratch/`. See
+`docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Triage states use the five canonical Matt Pocock skill labels. See
+`docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Domain documentation uses a single-context layout. See `docs/agents/domain.md`.
+
 ## Optional Repository-Local Policy
 
 If `AGENTS.local.md` exists next to this file, load and apply it after this
