@@ -494,7 +494,6 @@ def run_export(
         advisor_rows: list[dict[str, str]] = []
         service_rows: list[dict[str, str]] = []
         aggregate_rows: list[dict[str, str]] = []
-        service_health_aggregate_rows: list[dict[str, str]] = []
         slide_input_rows: list[dict[str, str]] = []
         counts_by_source = _default_counts_by_source()
         counts_by_file: dict[str, int] = {}

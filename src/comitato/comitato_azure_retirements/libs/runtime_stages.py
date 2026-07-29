@@ -11,7 +11,6 @@ from .advisor import (
     index_metadata_with_collisions,
     index_resource_graph,
 )
-from .concurrency import effective_worker_count
 from .config import RuntimeConfig
 from .diagnostics import DiagnosticsCollector
 from .normalize import normalize_advisor_rows, normalize_service_health_rows
