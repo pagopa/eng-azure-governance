@@ -8,6 +8,7 @@ from time import perf_counter
 from typing import Any
 
 from .arm_client import ArmClient
+from .concurrency import effective_worker_count
 from .debug_log import DebugRunLogger
 from .resource_graph import query_resource_graph
 
@@ -16,14 +17,11 @@ ADVISOR_API_VERSION = "2025-01-01"
 SubscriptionProgressCallback = Callable[[str, int, int, str, str | None], None]
 
 
-def _resolve_worker_count(
-    total_subscriptions: int, requested_workers: int | None
-) -> int:
-    if total_subscriptions <= 1:
-        return 1
-    if requested_workers is None:
-        return min(16, total_subscriptions)
-    return max(1, min(requested_workers, total_subscriptions))
+def _with_subscription_id(item: dict[str, Any], subscription: str) -> dict[str, Any]:
+    # Avoid mutating API payloads in-place; downstream still receives subscription context.
+    with_subscription = dict(item)
+    with_subscription["_subscriptionId"] = subscription
+    return with_subscription
 
 
 def _collect_subscription_recommendations(
@@ -42,10 +40,7 @@ def _collect_subscription_recommendations(
     page = client.list_with_nextlink(url, params=params)
 
     elapsed_ms = int((perf_counter() - started_at) * 1000)
-    rows = page.items
-    for item in rows:
-        item["_subscriptionId"] = subscription
-    return rows, page.page_count, elapsed_ms
+    return page.items, page.page_count, elapsed_ms
 
 
 def collect_advisor_metadata(client: ArmClient) -> tuple[list[dict[str, Any]], int]:
@@ -56,7 +51,20 @@ def collect_advisor_metadata(client: ArmClient) -> tuple[list[dict[str, Any]], i
         "$expand": "ibiza",
     }
     page = client.list_with_nextlink(url, params=params)
-    return page.items, page.page_count
+    return flatten_advisor_metadata_items(page.items), page.page_count
+
+
+def flatten_advisor_metadata_items(
+    items: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    flattened: list[dict[str, Any]] = []
+    for item in items:
+        supported = metadata_field(item, "supportedValues")
+        if isinstance(supported, list):
+            flattened.extend(row for row in supported if isinstance(row, dict))
+        else:
+            flattened.append(item)
+    return flattened
 
 
 def collect_advisor_recommendations(
@@ -66,6 +74,7 @@ def collect_advisor_recommendations(
     allow_degraded: bool = False,
     on_subscription_update: SubscriptionProgressCallback | None = None,
     max_workers: int | None = None,
+    resolved_worker_count: int | None = None,
     debug_logger: DebugRunLogger | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int], list[dict[str, str]]]:
     all_rows: list[dict[str, Any]] = []
@@ -74,7 +83,10 @@ def collect_advisor_recommendations(
     failures: list[dict[str, str]] = []
     total_subscriptions = len(subscriptions)
 
-    worker_count = _resolve_worker_count(total_subscriptions, max_workers)
+    worker_count = effective_worker_count(
+        total_subscriptions,
+        resolved_worker_count if resolved_worker_count is not None else max_workers,
+    )
     if debug_logger is not None:
         debug_logger.info(
             "advisor_parallel_collection_started",
@@ -122,15 +134,16 @@ def collect_advisor_recommendations(
                         total=total_subscriptions,
                     )
                 if not allow_degraded:
-                    for pending in future_to_subscription:
-                        if pending is not future and not pending.done():
-                            pending.cancel()
+                    # ThreadPoolExecutor cannot reliably stop already-running tasks.
+                    # Re-raising preserves strict behavior while the executor drains.
                     raise
                 failures.append({"subscription_id": subscription, "error": error_text})
                 continue
 
             page_by_subscription[subscription] = page_count
-            rows_by_subscription[subscription] = rows
+            rows_by_subscription[subscription] = [
+                _with_subscription_id(item, subscription) for item in rows
+            ]
             if on_subscription_update is not None:
                 on_subscription_update(
                     subscription, completed, total_subscriptions, "ok", None
@@ -200,14 +213,57 @@ def _extract_metadata_id(item: dict[str, Any]) -> str:
     return str(item.get("id") or "")
 
 
+def metadata_field(item: dict[str, Any], field_name: str, default: Any = None) -> Any:
+    """Read a metadata field from expanded live rows or legacy nested rows."""
+    if field_name in item:
+        return item[field_name]
+
+    properties = item.get("properties")
+    if isinstance(properties, dict):
+        return properties.get(field_name, default)
+    return default
+
+
+def metadata_shape_issues(
+    metadata_rows: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Return structural metadata issues without copying source payload values."""
+    issues: list[dict[str, str]] = []
+    expected_types: tuple[tuple[str, tuple[type[Any], ...]], ...] = (
+        ("properties", (dict, list, type(None))),
+        ("sourceProperties", (dict, type(None))),
+        ("resourceMetadata", (dict, type(None))),
+    )
+    for item in metadata_rows:
+        metadata_id = str(item.get("id") or "")
+        for field_name, allowed_types in expected_types:
+            if field_name not in item:
+                continue
+            value = item[field_name]
+            if isinstance(value, allowed_types):
+                continue
+            issues.append(
+                {
+                    "metadata_id": metadata_id,
+                    "field": field_name,
+                    "actual_type": type(value).__name__,
+                }
+            )
+    return issues
+
+
 def _extract_metadata_recommendation_type_id(item: dict[str, Any]) -> str:
-    source_properties = item.get("properties", {}).get("sourceProperties", {})
+    source_properties = metadata_field(item, "sourceProperties", {})
+    if not isinstance(source_properties, dict):
+        source_properties = {}
     service_retirement = source_properties.get("serviceRetirement", {})
+    if not isinstance(service_retirement, dict):
+        service_retirement = {}
     candidate = service_retirement.get("serviceId")
     if candidate:
         return str(candidate)
 
-    supported_values = item.get("properties", {}).get("supportedValues", [])
+    supported_values = metadata_field(item, "supportedValues", [])
     if isinstance(supported_values, list):
         for supported in supported_values:
             if not isinstance(supported, dict):
@@ -218,16 +274,27 @@ def _extract_metadata_recommendation_type_id(item: dict[str, Any]) -> str:
     return ""
 
 
-def index_metadata(metadata_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+def index_metadata_with_collisions(
+    metadata_rows: list[dict[str, Any]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, int]]:
     indexed: dict[str, dict[str, Any]] = {}
+    collisions: dict[str, int] = {}
     for row in metadata_rows:
         keys = {
             _extract_metadata_id(row),
             _extract_metadata_recommendation_type_id(row),
         }
         for key in keys:
-            if key:
-                indexed[key] = row
+            if not key:
+                continue
+            if key in indexed and indexed[key] is not row:
+                collisions[key] = collisions.get(key, 0) + 1
+            indexed[key] = row
+    return indexed, collisions
+
+
+def index_metadata(metadata_rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    indexed, _ = index_metadata_with_collisions(metadata_rows)
     return indexed
 
 

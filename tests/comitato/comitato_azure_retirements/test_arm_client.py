@@ -144,6 +144,29 @@ def test_get_json_wraps_http_errors() -> None:
         client.get_json("https://example.test/items")
 
 
+def test_get_json_truncates_and_sanitizes_http_error_text() -> None:
+    long_error_text = "Too Many Requests\n" + ("x" * 1024)
+    session = FakeSession(
+        [
+            FakeResponse(
+                url="https://example.test/items",
+                status_code=429,
+                text=long_error_text,
+            )
+        ]
+    )
+    client = ArmClient("token", session=session)
+
+    with pytest.raises(RuntimeError) as captured:
+        client.get_json("https://example.test/items")
+
+    message = str(captured.value)
+    assert "HTTP 429" in message
+    assert "Too Many Requests" in message
+    assert "\n" not in message
+    assert "... [truncated]" in message
+
+
 def test_get_json_wraps_invalid_json() -> None:
     session = FakeSession(
         [FakeResponse(url="https://example.test/items", json_error=True)]

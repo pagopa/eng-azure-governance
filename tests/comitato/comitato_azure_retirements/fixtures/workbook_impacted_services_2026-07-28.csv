@@ -1,0 +1,9 @@
+Service Name,Retiring Feature,Retirement Date,Actions,# Resources
+Virtual network gateway,Non-AZ VPNs,2026-09-30,Upgrade configuration,8
+Application gateway,WAF v2 Config,2027-03-31,Upgrade configuration,6
+Availability test,Single URL Ping Test,2026-09-30,Update availability test,7
+Storage Account,Legacy Blob and General-Purpose v1 storage accounts,2026-10-13,Migrate storage accounts,24
+Kubernetes service,Legacy authentication for Container Insights - Azure Monitor,2026-09-30,Update authentication,12
+Key vault,API versions prior to 2026-02-01,2027-02-27,Upgrade API version,108
+Kubernetes service,Azure Kubernetes Service support for Ubuntu 22.04,2027-06-30,Upgrade node image,14
+App service,TLS 1.0 and 1.1 support in Azure Functions,2027-05-31,Upgrade TLS,2

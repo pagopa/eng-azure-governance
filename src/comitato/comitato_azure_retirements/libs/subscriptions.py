@@ -6,6 +6,13 @@ from collections.abc import Iterable
 from typing import Any
 
 from .arm_client import ArmClient
+from .resource_graph import query_resource_graph
+
+SUBSCRIPTION_INVENTORY_QUERY = """
+resourcecontainers
+| where type =~ "microsoft.resources/subscriptions"
+| project subscriptionId, subscriptionName=name
+""".strip()
 
 
 def discover_subscriptions_for_management_group(
@@ -52,6 +59,21 @@ def build_subscription_name_map(rows: Iterable[dict[str, Any]]) -> dict[str, str
     for row in rows:
         subscription_id = str(row.get("subscriptionId", "")).strip()
         subscription_name = str(row.get("subscriptionName", "")).strip()
-        if subscription_id and subscription_name and subscription_id not in mapping:
-            mapping[subscription_id] = subscription_name
+        key = subscription_id.lower()
+        if key and subscription_name and key not in mapping:
+            mapping[key] = subscription_name
     return mapping
+
+
+def collect_subscription_inventory(
+    client: ArmClient,
+    *,
+    subscriptions: list[str],
+    management_groups: list[str],
+) -> tuple[list[dict[str, Any]], bool, int]:
+    return query_resource_graph(
+        client,
+        query=SUBSCRIPTION_INVENTORY_QUERY,
+        subscriptions=subscriptions,
+        management_groups=management_groups,
+    )

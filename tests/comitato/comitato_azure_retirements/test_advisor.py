@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from typing import Any, cast
 
+from src.comitato.comitato_azure_retirements.libs import advisor
 from src.comitato.comitato_azure_retirements.libs.advisor import (
+    collect_advisor_metadata,
     collect_advisor_recommendations,
+    flatten_advisor_metadata_items,
     index_metadata,
+    index_metadata_with_collisions,
     index_resource_graph,
 )
 from src.comitato.comitato_azure_retirements.libs.arm_client import ArmPageResult
@@ -35,6 +39,48 @@ def test_collect_advisor_recommendations_tags_subscription_id() -> None:
     assert pages == {"sub-1": 2, "sub-2": 2}
     assert [row["_subscriptionId"] for row in rows] == ["sub-1", "sub-2"]
     assert failures == []
+
+
+def test_flatten_advisor_metadata_items_expands_supported_values() -> None:
+    metadata = {"id": "service-1", "properties": {"sourceProperties": {}}}
+    wrapper = {"properties": {"supportedValues": [metadata]}}
+
+    assert flatten_advisor_metadata_items([wrapper]) == [metadata]
+
+
+def test_flatten_advisor_metadata_items_preserves_direct_rows() -> None:
+    metadata = {"id": "service-1", "properties": {"sourceProperties": {}}}
+
+    assert flatten_advisor_metadata_items([metadata]) == [metadata]
+
+
+class MetadataArmClient:
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del url, params, items_key
+        metadata = {
+            "id": "service-1",
+            "properties": {
+                "sourceProperties": {"serviceRetirement": {"serviceId": "service-1"}}
+            },
+        }
+        return ArmPageResult(
+            items=[{"properties": {"supportedValues": [metadata]}}],
+            page_count=3,
+        )
+
+
+def test_collect_advisor_metadata_returns_indexable_flattened_rows() -> None:
+    rows, page_count = collect_advisor_metadata(cast(Any, MetadataArmClient()))
+
+    indexed = index_metadata(rows)
+
+    assert page_count == 3
+    assert indexed["service-1"] is rows[0]
 
 
 def test_collect_advisor_recommendations_emits_progress_updates() -> None:
@@ -90,6 +136,30 @@ def test_collect_advisor_recommendations_records_failures_in_degraded_mode() -> 
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
 
 
+class StablePayloadAdvisorClient(FakeArmClient):
+    def __init__(self) -> None:
+        super().__init__()
+        self.payload = [{"id": "rec-sub-1"}]
+
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del url, params, items_key
+        return ArmPageResult(items=self.payload, page_count=1)
+
+
+def test_collect_advisor_recommendations_does_not_mutate_payload_items() -> None:
+    client = StablePayloadAdvisorClient()
+
+    rows, _, _ = collect_advisor_recommendations(cast(Any, client), ["sub-1"])
+
+    assert rows[0]["_subscriptionId"] == "sub-1"
+    assert "_subscriptionId" not in client.payload[0]
+
+
 def test_collect_advisor_recommendations_marks_degraded_failures_as_warning() -> None:
     client = FailingAdvisorArmClient()
     updates: list[tuple[str, int, int, str, str | None]] = []
@@ -128,6 +198,95 @@ def test_index_metadata_maps_id_and_service_id_keys() -> None:
 
     assert indexed["meta-1"] is metadata
     assert indexed["service-1"] is metadata
+
+
+def test_index_metadata_supports_expanded_live_metadata_shape() -> None:
+    metadata = {
+        "id": "meta-live",
+        "properties": [
+            {"name": "retirementDate", "value": "2027-01-31"},
+            {"name": "serviceId", "value": "service-live"},
+        ],
+        "sourceProperties": {
+            "serviceRetirement": {
+                "serviceId": "service-live",
+                "retirementDate": "2027-01-31",
+            }
+        },
+    }
+
+    indexed = index_metadata([metadata])
+
+    assert indexed["meta-live"] is metadata
+    assert indexed["service-live"] is metadata
+
+
+def test_index_metadata_keeps_id_when_expanded_properties_are_missing() -> None:
+    metadata = {"id": "meta-without-properties", "properties": None}
+
+    indexed = index_metadata([metadata])
+
+    assert indexed == {"meta-without-properties": metadata}
+
+
+def test_metadata_shape_issues_report_only_unknown_field_types() -> None:
+    assert hasattr(advisor, "metadata_shape_issues"), (
+        "metadata shape validation is missing"
+    )
+    rows = [
+        {
+            "id": "known-live",
+            "properties": [{"name": "serviceId", "value": "service-live"}],
+            "sourceProperties": {"serviceRetirement": {}},
+        },
+        {"id": "known-empty", "properties": None},
+        {
+            "id": "unknown-shape",
+            "properties": "not-a-supported-shape",
+            "sourceProperties": ["not-a-mapping"],
+        },
+    ]
+
+    assert advisor.metadata_shape_issues(rows) == [
+        {
+            "metadata_id": "unknown-shape",
+            "field": "properties",
+            "actual_type": "str",
+        },
+        {
+            "metadata_id": "unknown-shape",
+            "field": "sourceProperties",
+            "actual_type": "list",
+        },
+    ]
+
+
+def test_index_metadata_with_collisions_reports_duplicate_keys() -> None:
+    metadata_a = {
+        "id": "meta-a",
+        "properties": {
+            "sourceProperties": {
+                "serviceRetirement": {
+                    "serviceId": "service-1",
+                }
+            }
+        },
+    }
+    metadata_b = {
+        "id": "meta-b",
+        "properties": {
+            "sourceProperties": {
+                "serviceRetirement": {
+                    "serviceId": "service-1",
+                }
+            }
+        },
+    }
+
+    indexed, collisions = index_metadata_with_collisions([metadata_a, metadata_b])
+
+    assert indexed["service-1"] is metadata_b
+    assert collisions["service-1"] == 1
 
 
 def test_index_resource_graph_uses_lowercase_resource_id_key() -> None:

@@ -10,15 +10,22 @@ from src.comitato.comitato_azure_retirements.libs.schemas import SERVICE_HEALTH_
 
 
 def _recommendation(
-    *, recommendation_type_id: str, resource_id: str, learn_more_link: str = ""
+    *,
+    recommendation_type_id: str,
+    resource_id: str,
+    learn_more_link: str = "",
+    retirement_date: str = "2026-06-30",
 ) -> dict[str, object]:
+    properties: dict[str, object] = {
+        "recommendationTypeId": recommendation_type_id,
+        "resourceMetadata": {"resourceId": resource_id},
+        "learnMoreLink": learn_more_link,
+    }
+    if retirement_date:
+        properties["extendedProperties"] = {"retirementDate": retirement_date}
     return {
         "id": "rec-1",
-        "properties": {
-            "recommendationTypeId": recommendation_type_id,
-            "resourceMetadata": {"resourceId": resource_id},
-            "learnMoreLink": learn_more_link,
-        },
+        "properties": properties,
         "_subscriptionId": "sub-1",
     }
 
@@ -163,10 +170,82 @@ def test_normalize_advisor_rows_emits_single_catalog_row_per_metadata_id() -> No
         resource_graph_by_key={},
     )
 
-    assert len(rows) == 1
-    assert rows[0]["record_type"] == "advisor_catalog_retirement"
-    assert rows[0]["advisor_metadata_id"] == "meta-1"
-    assert rows[0]["recommendation_type_id"] == "service-1"
+    assert rows == []
+
+
+def test_normalize_advisor_rows_keeps_only_retirements_in_next_year_with_resource() -> (
+    None
+):
+    resource_id = "/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1"
+    recommendations = [
+        _recommendation(
+            recommendation_type_id="within-window",
+            resource_id=resource_id,
+            retirement_date="2027-06-18",
+        ),
+        _recommendation(
+            recommendation_type_id="at-upper-bound",
+            resource_id=resource_id,
+            retirement_date="2027-06-18",
+        ),
+        _recommendation(
+            recommendation_type_id="beyond-window",
+            resource_id=resource_id,
+            retirement_date="2027-06-19",
+        ),
+        _recommendation(
+            recommendation_type_id="without-date",
+            resource_id=resource_id,
+            retirement_date="",
+        ),
+        _recommendation(
+            recommendation_type_id="without-resource",
+            resource_id="",
+            retirement_date="2027-06-18",
+        ),
+    ]
+
+    rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        recommendations=recommendations,
+        metadata_by_key={},
+        resource_graph_by_key={},
+    )
+
+    assert [row["recommendation_type_id"] for row in rows] == [
+        "within-window",
+        "at-upper-bound",
+    ]
+
+
+def test_normalize_advisor_rows_gates_raw_json_by_flag() -> None:
+    recommendation = _recommendation(
+        recommendation_type_id="service-1",
+        resource_id="/subscriptions/sub-1/resourceGroups/rg-1/providers/Microsoft.Compute/virtualMachines/vm-1",
+    )
+
+    default_rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={},
+    )
+    verbose_rows = normalize_advisor_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        recommendations=[recommendation],
+        metadata_by_key={},
+        resource_graph_by_key={},
+        include_raw_json=True,
+    )
+
+    assert default_rows[0]["raw_json"] == ""
+    assert "recommendation" in verbose_rows[0]["raw_json"]
 
 
 def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
@@ -192,13 +271,57 @@ def test_service_health_schema_and_rows_do_not_embed_raw_json() -> None:
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "Storage", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope", "northeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Storage", "guid": "guid-1", "region": "westeurope"},
+            {"name": "Storage", "guid": "guid-1", "region": "northeurope"},
+        ],
         build_recommended_actions=lambda _event: "Review mitigation plan",
     )
 
     assert "raw_json" not in SERVICE_HEALTH_HEADERS
     assert all("raw_json" not in row for row in rows)
+
+
+def test_normalize_service_health_rows_filters_regions_and_uses_event_id_for_tracking() -> (
+    None
+):
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-1",
+        "name": "event-1",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "trackingId": "different-tracking-id",
+            "title": "Regional advisory",
+            "impact": {
+                "impactedService": "Storage",
+                "impactedRegions": ["Italy North", "Global", "eastus"],
+            },
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_service_regions=lambda _event: [
+            {"name": "Storage", "guid": "guid-1", "region": "Italy North"},
+            {"name": "Storage", "guid": "guid-1", "region": "Global"},
+            {"name": "Storage", "guid": "guid-1", "region": "eastus"},
+        ],
+        build_recommended_actions=lambda _event: "Review mitigation plan",
+    )
+
+    assert {(row["impacted_service"], row["impacted_region"]) for row in rows} == {
+        ("Storage", "italynorth"),
+        ("Storage", "global"),
+    }
+    assert all(row["tracking_id"] == row["event_id"] == "event-1" for row in rows)
+    assert all(row["short_description_solution"] == "Regional advisory" for row in rows)
 
 
 def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dates() -> (
@@ -227,12 +350,14 @@ def test_normalize_service_health_rows_prefers_explicit_deadline_over_impact_dat
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "AKS", "guid": "guid-1", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "Upgrade the node image.",
     )
 
     assert rows[0]["date_for_window"] == "2027-06-30"
+    assert "retirement_date_derived_from_text" in rows[0]["diagnostic_flags"].split(",")
 
 
 def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start() -> (
@@ -261,12 +386,47 @@ def test_normalize_service_health_rows_uses_mitigation_time_before_impact_start(
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [{"name": "AKS", "guid": "guid-1"}],
-        event_impacted_regions=lambda _event: ["westeurope"],
+        event_impacted_service_regions=lambda _event: [
+            {"name": "AKS", "guid": "guid-1", "region": "westeurope"}
+        ],
         build_recommended_actions=lambda _event: "Track migration guidance.",
     )
 
     assert rows[0]["date_for_window"] == "2027-01-15"
+
+
+def test_normalize_service_health_rows_ignores_version_like_tokens_as_dates() -> None:
+    event = {
+        "id": "/subscriptions/sub-1/providers/Microsoft.ResourceHealth/events/event-2b",
+        "name": "event-2b",
+        "_subscriptionId": "sub-1",
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "title": "AKS node image version 2.0 retirement guidance",
+            "summary": "Version 2.0 rollout guidance without a real deadline.",
+            "description": "No explicit retirement date in this advisory.",
+            "lastUpdateTime": "2026-06-18T12:00:00Z",
+        },
+    }
+
+    rows = normalize_service_health_rows(
+        run_id="run-1",
+        as_of_date=date(2026, 6, 18),
+        scope_mode="fixture",
+        events=[event],
+        subscription_name_map={"sub-1": "Subscription One"},
+        event_impacted_service_regions=lambda _event: [
+            {"name": "AKS", "guid": "guid-1", "region": "westeurope"}
+        ],
+        build_recommended_actions=lambda _event: "Track migration guidance.",
+    )
+
+    assert rows[0]["date_for_window"] == "2026-06-18"
+    assert "retirement_date_derived_from_text" not in rows[0]["diagnostic_flags"].split(
+        ","
+    )
 
 
 def test_normalize_service_health_rows_preserves_service_region_pairs_from_callback() -> (
@@ -292,11 +452,6 @@ def test_normalize_service_health_rows_preserves_service_region_pairs_from_callb
         scope_mode="fixture",
         events=[event],
         subscription_name_map={"sub-1": "Subscription One"},
-        event_impacted_services=lambda _event: [
-            {"name": "Azure Front Door", "guid": ""},
-            {"name": "Azure CDN", "guid": ""},
-        ],
-        event_impacted_regions=lambda _event: ["Global", "eastus"],
         event_impacted_service_regions=lambda _event: [
             {"name": "Azure Front Door", "guid": "", "region": "Global"},
             {"name": "Azure CDN", "guid": "", "region": "eastus"},
@@ -304,8 +459,7 @@ def test_normalize_service_health_rows_preserves_service_region_pairs_from_callb
         build_recommended_actions=lambda _event: "Review impact.",
     )
 
-    assert len(rows) == 2
+    assert len(rows) == 1
     assert {(row["impacted_service"], row["impacted_region"]) for row in rows} == {
-        ("Azure Front Door", "Global"),
-        ("Azure CDN", "eastus"),
+        ("Azure Front Door", "global"),
     }

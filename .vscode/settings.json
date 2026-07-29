@@ -22,5 +22,11 @@
     "*.tfvars": "terraform"
   },
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/src/comitato/comitato_azure_retirements/.venv/bin/python",
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
 }

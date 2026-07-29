@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from datetime import date
+
 from src.comitato.comitato_azure_retirements.libs.arm_client import ArmPageResult
 from src.comitato.comitato_azure_retirements.libs.service_health import (
+    HealthAdvisoryFilterResult,
     build_recommended_actions,
     collect_events_for_subscriptions,
     event_impacted_regions,
@@ -79,6 +82,20 @@ class FailingServiceHealthClient(FakeArmClient):
         return ArmPageResult(items=[{"name": "event-a"}], page_count=1)
 
 
+class QueryStartRetryClient(FakeArmClient):
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del items_key
+        self.calls.append((url, params))
+        if params and "queryStartTime" in params:
+            raise RuntimeError("HTTP 502 for test-sub")
+        return ArmPageResult(items=[{"name": "event-a"}], page_count=1)
+
+
 def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() -> None:
     client = FailingServiceHealthClient()
 
@@ -92,6 +109,53 @@ def test_collect_events_for_subscriptions_records_failures_in_degraded_mode() ->
     assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
     assert pages == {"sub-1": 1}
     assert failures == [{"subscription_id": "sub-2", "error": "HTTP 502 for sub-2"}]
+
+
+def test_collect_events_for_subscriptions_retries_without_query_start_time_on_502() -> (
+    None
+):
+    client = QueryStartRetryClient()
+
+    rows, pages, failures = collect_events_for_subscriptions(
+        client,
+        subscriptions=["sub-1"],
+        query_start_time="2025-01-01T00:00:00",
+    )
+
+    assert failures == []
+    assert pages == {"sub-1": 1}
+    assert [row["_subscriptionId"] for row in rows] == ["sub-1"]
+    assert len(client.calls) == 2
+    assert "queryStartTime" in (client.calls[0][1] or {})
+    assert client.calls[1][1] == {"api-version": "2025-05-01"}
+
+
+class StablePayloadServiceHealthClient(FakeArmClient):
+    def __init__(self) -> None:
+        super().__init__()
+        self.payload = [{"name": "event-a"}]
+
+    def list_with_nextlink(
+        self,
+        url: str,
+        params: dict[str, str] | None = None,
+        items_key: str = "value",
+    ) -> ArmPageResult:
+        del url, params, items_key
+        return ArmPageResult(items=self.payload, page_count=1)
+
+
+def test_collect_events_for_subscriptions_does_not_mutate_payload_items() -> None:
+    client = StablePayloadServiceHealthClient()
+
+    rows, _, _ = collect_events_for_subscriptions(
+        client,
+        subscriptions=["sub-1"],
+        query_start_time="2025-01-01T00:00:00",
+    )
+
+    assert rows[0]["_subscriptionId"] == "sub-1"
+    assert "_subscriptionId" not in client.payload[0]
 
 
 def test_collect_events_for_subscriptions_marks_degraded_failures_as_warning() -> None:
@@ -265,6 +329,41 @@ def test_filter_health_advisory_events_keeps_only_active_warning_or_critical_adv
         },
     ]
 
-    filtered = filter_health_advisory_events(events)
+    filtered = filter_health_advisory_events(events, as_of_date=date(2026, 7, 28))
 
-    assert [event["name"] for event in filtered] == ["keep-warning", "keep-critical"]
+    assert isinstance(filtered, HealthAdvisoryFilterResult)
+    assert [event["name"] for event in filtered.events] == [
+        "keep-warning",
+        "keep-critical",
+    ]
+
+
+def test_filter_health_advisory_events_filters_expired_end_time_only() -> None:
+    def event(name: str, mitigation_time: str | None) -> dict[str, object]:
+        properties: dict[str, object] = {
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+        }
+        if mitigation_time is not None:
+            properties["impactMitigationTime"] = mitigation_time
+        return {"name": name, "properties": properties}
+
+    result = filter_health_advisory_events(
+        [
+            event("9HB8-C00", "2026-03-31T13:51:10Z"),
+            event("equal-boundary", "2026-07-28T00:00:00Z"),
+            event("future", "2026-07-29T00:00:00Z"),
+            event("missing-end", None),
+            event("invalid-end", "not-a-date"),
+        ],
+        as_of_date=date(2026, 7, 28),
+    )
+
+    assert [event["name"] for event in result.events] == [
+        "equal-boundary",
+        "future",
+        "missing-end",
+        "invalid-end",
+    ]
+    assert result.expired_event_ids == ["9HB8-C00"]

@@ -3,13 +3,92 @@
 from __future__ import annotations
 
 import argparse
+import configparser
 import os
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 from typing import Sequence
 
 from .dates import add_calendar_months, parse_iso_date
+
+REL_CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "azure_rel.conf"
+LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
+
+
+@dataclass(frozen=True)
+class LoggingSettings:
+    enabled: bool = True
+    level: str = "INFO"
+    console_level: str = "INFO"
+    include_traceback: bool = True
+    log_directory: Path | None = None
+
+
+@dataclass(frozen=True)
+class RelConfig:
+    allowed_regions: frozenset[str]
+    logging: LoggingSettings
+
+
+def _normalized_region(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", value.strip().lower())
+
+
+def _configured_log_level(parser: configparser.ConfigParser, option: str) -> str:
+    level = parser.get("logging", option).strip().upper()
+    if level not in LOG_LEVELS:
+        raise ValueError(
+            f"logging.{option} must be one of: {', '.join(sorted(LOG_LEVELS))}"
+        )
+    return level
+
+
+def load_rel_config(path: Path = REL_CONFIG_PATH) -> RelConfig:
+    parser = configparser.ConfigParser(interpolation=None)
+    if not path.is_file():
+        raise FileNotFoundError(f"Azure retirements configuration not found: {path}")
+    parser.read(path, encoding="utf-8")
+
+    missing_sections = [
+        section for section in ("regions", "logging") if not parser.has_section(section)
+    ]
+    if missing_sections:
+        raise ValueError(
+            f"Missing azure_rel.conf section(s): {', '.join(missing_sections)}"
+        )
+
+    raw_regions = parser.get("regions", "allowed", fallback="")
+    allowed_regions = frozenset(
+        normalized
+        for item in raw_regions.replace(",", "\n").splitlines()
+        if (normalized := _normalized_region(item))
+    )
+    if not allowed_regions:
+        raise ValueError("regions.allowed must contain at least one Azure region")
+
+    raw_log_directory = parser.get("logging", "log_directory", fallback="").strip()
+    log_directory: Path | None = None
+    if raw_log_directory:
+        candidate = Path(raw_log_directory).expanduser()
+        log_directory = (
+            candidate if candidate.is_absolute() else path.parent / candidate
+        ).resolve()
+
+    return RelConfig(
+        allowed_regions=allowed_regions,
+        logging=LoggingSettings(
+            enabled=parser.getboolean("logging", "enabled"),
+            level=_configured_log_level(parser, "level"),
+            console_level=_configured_log_level(parser, "console_level"),
+            include_traceback=parser.getboolean("logging", "include_traceback"),
+            log_directory=log_directory,
+        ),
+    )
+
+
+DEFAULT_REL_CONFIG = load_rel_config()
 
 
 @dataclass(frozen=True)
@@ -26,6 +105,7 @@ class RuntimeConfig:
     allow_degraded: bool
     verbose: bool
     max_workers: int | None = None
+    logging: LoggingSettings = field(default_factory=lambda: DEFAULT_REL_CONFIG.logging)
 
 
 def _split_csv(value: str | None) -> list[str]:
@@ -188,4 +268,5 @@ def parse_args(argv: Sequence[str] | None = None) -> RuntimeConfig:
         allow_degraded=allow_degraded,
         verbose=verbose,
         max_workers=max_workers,
+        logging=DEFAULT_REL_CONFIG.logging,
     )

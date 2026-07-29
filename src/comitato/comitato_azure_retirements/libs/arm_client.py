@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 import requests
@@ -33,13 +33,24 @@ class ArmClientSettings:
     retry_attempts: int = 5
     backoff_factor: float = 1.0
     backoff_jitter: float = 0.5
-    pool_connections: int = 8
-    pool_maxsize: int = 8
+    # Default pool tracks the default worker cap used by runtime collectors.
+    pool_connections: int = 16
+    pool_maxsize: int = 16
 
 
 DEFAULT_RETRY_STATUS_CODES = (408, 429, 500, 502, 503, 504)
 DEFAULT_ALLOWED_METHODS = frozenset({"GET", "POST"})
 DEFAULT_USER_AGENT = "eng-azure-governance/comitato-azure-retirements"
+HTTP_ERROR_TEXT_MAX_CHARS = 512
+
+
+def _compact_http_error_text(raw_text: str) -> str:
+    normalized = " ".join(raw_text.split())
+    if not normalized:
+        return "<empty body>"
+    if len(normalized) <= HTTP_ERROR_TEXT_MAX_CHARS:
+        return normalized
+    return normalized[:HTTP_ERROR_TEXT_MAX_CHARS] + " ... [truncated]"
 
 
 def build_retry_policy(settings: ArmClientSettings | None = None) -> Retry:
@@ -85,12 +96,21 @@ class ArmClient:
         self,
         bearer_token: str,
         timeout_seconds: int = 60,
+        settings: ArmClientSettings | None = None,
         session: Session | None = None,
         trace_handler: Callable[[ArmRequestTrace], None] | None = None,
     ) -> None:
-        self._settings = ArmClientSettings(timeout_seconds=timeout_seconds)
-        self._timeout_seconds = timeout_seconds
-        self._session = session or build_session(bearer_token, self._settings)
+        resolved_settings = settings or ArmClientSettings(
+            timeout_seconds=timeout_seconds
+        )
+        if timeout_seconds != resolved_settings.timeout_seconds:
+            resolved_settings = replace(
+                resolved_settings, timeout_seconds=timeout_seconds
+            )
+
+        self._settings = resolved_settings
+        self._timeout_seconds = resolved_settings.timeout_seconds
+        self._session = session or build_session(bearer_token, resolved_settings)
         self._trace_handler = trace_handler
 
     def _request_json(
@@ -118,8 +138,9 @@ class ArmClient:
         try:
             response.raise_for_status()
         except HTTPError as exc:
+            error_text = _compact_http_error_text(response.text)
             raise RuntimeError(
-                f"HTTP {response.status_code} for {response.url}: {response.text}"
+                f"HTTP {response.status_code} for {response.url}: {error_text}"
             ) from exc
 
         try:

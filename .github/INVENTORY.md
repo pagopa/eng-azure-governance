@@ -89,6 +89,7 @@ This file is the exact path inventory for the live GitHub Copilot catalog in thi
 - `.github/skills/internal-spring-boot-development/SKILL.md`
 - `.github/skills/internal-terraform/SKILL.md`
 - `.github/skills/internal-writing-plans/SKILL.md`
+- `.github/skills/local-azure-retirements/SKILL.md`
 - `.github/skills/obra-brainstorming/SKILL.md`
 - `.github/skills/obra-dispatching-parallel-agents/SKILL.md`
 - `.github/skills/obra-executing-plans/SKILL.md`
@@ -126,6 +127,7 @@ These imported `openai-*` office skills remain support-only depth for repositori
 ## Prompts
 
 - `.github/prompts/internal-architecture-md-creator.prompt.md`
+- `.github/prompts/internal-azure-retirements-slide.prompt.md`
 - `.github/prompts/internal-copilot-resources-mega-review.prompt.md`
 - `.github/prompts/internal-mega-review.prompt.md`
 - `.github/prompts/internal-planning-kickoff.prompt.md`

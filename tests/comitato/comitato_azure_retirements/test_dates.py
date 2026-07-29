@@ -28,6 +28,7 @@ def test_days_and_months_to_retirement() -> None:
 
 def test_add_calendar_months_clamps_to_month_end() -> None:
     assert add_calendar_months(date(2026, 1, 31), 1) == date(2026, 2, 28)
+    assert add_calendar_months(date(2024, 2, 29), 12) == date(2025, 2, 28)
 
 
 def test_normalize_datetime_converts_to_utc() -> None:
