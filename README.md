@@ -80,3 +80,19 @@ Nessuno; tutto è definizione Policy/Initiative/Assignment.
 
 ### Note
 Stato Terraform su storage `tfinforg` (container `terraform-state`, chiavi es. `eng-azure-governance.policy_<module>.terraform.tfstate`).
+
+## Graphify
+
+The repository knowledge graph is stored locally under the ignored `graphify-out/` directory.
+Install Graphify from <https://github.com/safishamsi/graphify> and run:
+
+```sh
+make graphify-build
+make graphify-hooks
+make graphify-watch
+```
+
+`graphify-hooks` installs native `post-commit`, `post-checkout`, and `graph.json` merge hooks.
+The watcher rebuilds code changes after a debounce; document and data changes create
+`graphify-out/needs_update` and can be checked with `make graphify-check-update` before a
+semantic `graphify extract .` run using the configured LLM backend.
