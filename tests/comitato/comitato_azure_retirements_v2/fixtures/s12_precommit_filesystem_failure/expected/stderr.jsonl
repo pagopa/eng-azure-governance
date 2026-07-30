@@ -1,0 +1,1 @@
+{"artifact":"01_azure_advisor_retirements_raw.tsv","code":"filesystem_reread_failure","message":"filesystem reread failed before publication switch","record_ref":"","report":"all","run_id":"s12-fault","severity":"error","stage":"staging","subscription_id":""}

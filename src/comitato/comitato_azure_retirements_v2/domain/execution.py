@@ -47,10 +47,13 @@ class CatalogIdentity:
 @dataclass(frozen=True, slots=True)
 class DependencyPlan:
     stages: tuple[str, ...]
+    selected_paths: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.stages or len(set(self.stages)) != len(self.stages):
             raise ValueError("dependency plan stages must be non-empty and unique")
+        if len(set(self.selected_paths)) != len(self.selected_paths):
+            raise ValueError("dependency plan selected paths must be unique")
 
 
 @dataclass(frozen=True, slots=True)

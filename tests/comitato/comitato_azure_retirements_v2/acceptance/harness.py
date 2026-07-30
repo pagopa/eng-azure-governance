@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from hashlib import sha256
@@ -32,9 +33,10 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.commit import (
-    AtomicFilesystemPublicationStore,
-    read_current_tree,
+from src.comitato.comitato_azure_retirements_v2.publication.commit import read_current_tree
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
+    FaultInjectingPublicationStore,
+    FilesystemAtomicPublicationStore,
 )
 from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml import YamlPlatformCatalogSource
 
@@ -52,6 +54,7 @@ class Scenario:
     service_health_pages: tuple[dict[str, Any], ...]
     advisor_complete: bool = True
     service_health_complete: bool = True
+    publication_fault: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -119,7 +122,7 @@ class FixedRunIdFactory:
         return self.run_id
 
 
-class TemporaryAtomicPublicationStore(AtomicFilesystemPublicationStore):
+class TemporaryAtomicPublicationStore(FilesystemAtomicPublicationStore):
     def __init__(self, destination: Path) -> None:
         super().__init__(destination)
         self.candidates = []
@@ -179,7 +182,8 @@ def load_scenario(fixture_dir: Path) -> Scenario:
     payload = json.loads((fixture_dir / "scenario.json").read_text(encoding="utf-8"))
     _reject_sensitive_keys(payload)
     expected_keys = {"selector", "run_id", "as_of_date", "created_at", "expected_exit_status", "scope", "azure"}
-    if set(payload) != expected_keys:
+    optional_keys = {"publication_fault"}
+    if set(payload) - expected_keys - optional_keys or not expected_keys.issubset(payload):
         raise ValueError("scenario has an unsupported shape")
     scope_payload = payload["scope"]
     if set(scope_payload) != {"mode", "subscription_ids"}:
@@ -207,6 +211,7 @@ def load_scenario(fixture_dir: Path) -> Scenario:
         service_health_pages=tuple(azure["service_health"]["pages"]),
         advisor_complete=bool(azure["advisor"].get("complete", True)),
         service_health_complete=bool(azure["service_health"].get("complete", True)),
+        publication_fault=payload.get("publication_fault"),
     )
 
 
@@ -226,7 +231,20 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
             ),
             subscription_ids=tuple(sorted(catalog_subscriptions)),
         )
-    publication = TemporaryAtomicPublicationStore(destination)
+    seeded_current = scenario.fixture_dir / "seeded" / "current"
+    if seeded_current.is_dir():
+        seed_generation = destination / "generations" / "seed"
+        seed_generation.mkdir(parents=True, exist_ok=True)
+        for source in seeded_current.rglob("*"):
+            if source.is_file():
+                target = seed_generation / source.relative_to(seeded_current)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, target)
+        (destination / "current").write_text("generations/seed\n", encoding="utf-8")
+    if scenario.publication_fault:
+        publication = FaultInjectingPublicationStore(destination, fault=scenario.publication_fault)
+    else:
+        publication = TemporaryAtomicPublicationStore(destination)
     application = RetirementsApplication(
         scope_source=_FixedScopeSource(scenario.scope),
         catalog_source=_CatalogSource(catalog),

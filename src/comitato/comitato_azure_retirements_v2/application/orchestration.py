@@ -21,6 +21,7 @@ from ..domain.platforms import PlatformCatalogSnapshot
 from ..domain.execution import CatalogIdentity, ReportSelector, RunContext, RunRequest
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
+from ..publication.staging import PublicationError
 from ..domain.slides import SlideSelection, select_slides
 from ..publication.model import PublicationCandidate, RunResult
 from .planning import build_dependency_plan
@@ -29,6 +30,10 @@ from .planning import build_dependency_plan
 class ApplicationError(RuntimeError):
     """A stable application boundary failure before publication."""
 
+    def __init__(self, message: str, diagnostics=()) -> None:
+        self.diagnostics = tuple(diagnostics)
+        super().__init__(message)
+
 
 class PlatformCoverageError(ApplicationError):
     def __init__(self, diagnostics) -> None:
@@ -36,7 +41,8 @@ class PlatformCoverageError(ApplicationError):
         count = len(self.diagnostics)
         super().__init__(
             f"platform_mapping_unmapped_subscription: {count} unmapped subscription(s); "
-            "publication not changed"
+            "publication not changed",
+            self.diagnostics,
         )
 
 
@@ -44,7 +50,7 @@ class ContractValidationError(ApplicationError):
     def __init__(self, diagnostics, message: str) -> None:
         self.diagnostics = tuple(diagnostics)
         code = self.diagnostics[0].code if self.diagnostics else "unknown"
-        super().__init__(f"{message}: {code}")
+        super().__init__(f"{message}: {code}", self.diagnostics)
 
 
 class _LegacyEmptyCatalog:
@@ -102,14 +108,41 @@ class RetirementsApplication:
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
         )
-        generation = self.publication_store.stage(candidate)
-        receipt = self.publication_store.commit(generation)
+        try:
+            generation = self.publication_store.stage(candidate)
+        except PublicationError as exc:
+            raise self._translate_publication_error(exc, context, stage="staging") from exc
+        try:
+            receipt = self.publication_store.commit(generation)
+        except PublicationError as exc:
+            raise self._translate_publication_error(exc, context, stage="commit") from exc
         return RunResult(
             exit_status=0,
             context=context,
             candidate=candidate,
             publication_receipt=receipt,
         )
+
+    @staticmethod
+    def _translate_publication_error(
+        error: PublicationError,
+        context: RunContext,
+        *,
+        stage: str,
+    ) -> ApplicationError:
+        diagnostics = error.diagnostics
+        if not diagnostics:
+            diagnostics = (
+                Diagnostic(
+                    severity="error",
+                    code="publication_error",
+                    stage=stage,
+                    report=context.request.selector.value,
+                    run_id=context.run_id,
+                    message="publication failed before the current-generation switch",
+                ),
+            )
+        return ApplicationError("publication failed; current publication was not changed", diagnostics)
 
     @staticmethod
     def _as_of_date(request: RunRequest):

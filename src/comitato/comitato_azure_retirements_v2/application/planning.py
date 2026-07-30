@@ -3,6 +3,28 @@ from __future__ import annotations
 from ..domain.execution import DependencyPlan, ReportSelector
 
 
+SELECTED_PATHS = {
+    ReportSelector.ALL: (
+        "01_azure_advisor_retirements_raw.tsv",
+        "01_azure_advisor_retirements_raw.jsonl",
+        "01_azure_service_health_advisories_raw.tsv",
+        "01_azure_service_health_advisories_raw.jsonl",
+        "02_azure_retirements_aggregate.tsv",
+        "03_azure_retirements_slide.tsv",
+    ),
+    ReportSelector.ADVISOR: (
+        "01_azure_advisor_retirements_raw.tsv",
+        "01_azure_advisor_retirements_raw.jsonl",
+    ),
+    ReportSelector.SERVICE_HEALTH: (
+        "01_azure_service_health_advisories_raw.tsv",
+        "01_azure_service_health_advisories_raw.jsonl",
+    ),
+    ReportSelector.AGGREGATE: ("02_azure_retirements_aggregate.tsv",),
+    ReportSelector.SLIDES: ("03_azure_retirements_slide.tsv",),
+}
+
+
 def build_dependency_plan(selector: ReportSelector) -> DependencyPlan:
     if selector is ReportSelector.ALL:
         stages = (
@@ -39,4 +61,4 @@ def build_dependency_plan(selector: ReportSelector) -> DependencyPlan:
         )
     else:
         raise ValueError(f"unsupported report selector: {selector!r}")
-    return DependencyPlan(stages=stages)
+    return DependencyPlan(stages=stages, selected_paths=SELECTED_PATHS[selector])
