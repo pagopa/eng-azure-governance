@@ -13,6 +13,7 @@ class PublicationCandidate:
     dependency_plan: DependencyPlan
     artifacts: tuple[EncodedArtifact, ...]
     acquisitions: tuple[Any, ...]
+    slide_selection: Any = None
 
 
 @dataclass(frozen=True, slots=True)

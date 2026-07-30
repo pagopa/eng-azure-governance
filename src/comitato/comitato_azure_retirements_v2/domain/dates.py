@@ -5,6 +5,8 @@ from __future__ import annotations
 from calendar import monthrange
 from dataclasses import dataclass
 from datetime import date
+from enum import Enum
+import json
 
 
 def add_calendar_months(value: date, months: int) -> date:
@@ -16,6 +18,33 @@ def add_calendar_months(value: date, months: int) -> date:
     year, month_zero = divmod(month_index, 12)
     month = month_zero + 1
     return date(year, month, min(value.day, monthrange(year, month)[1]))
+
+
+@dataclass(frozen=True, slots=True)
+class CommitteeWindow:
+    as_of_date: date
+    months: int = 12
+
+    def __post_init__(self) -> None:
+        if self.months < 0:
+            raise ValueError("months must be non-negative")
+
+    @property
+    def lower_bound(self) -> date:
+        return self.as_of_date
+
+    @property
+    def upper_bound(self) -> date:
+        return add_calendar_months(self.as_of_date, self.months)
+
+
+class SlideEligibility(str, Enum):
+    ELIGIBLE = "eligible"
+    ELAPSED_RETIREMENT_DATE = "elapsed_retirement_date"
+    BEYOND_COMMITTEE_WINDOW = "beyond_committee_window"
+    MISSING_RETIREMENT_DATE = "missing_retirement_date"
+    INVALID_RETIREMENT_DATE = "invalid_retirement_date"
+    CONFLICTING_RETIREMENT_DATE = "conflicting_retirement_date"
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,4 +68,57 @@ def parse_retirement_date(raw_value: object, *, source_path: str = "", source_sy
     return RetirementDateClaim(raw, parsed, "exact", source_path, source_system, raw_record_ref)
 
 
-__all__ = ["RetirementDateClaim", "add_calendar_months", "parse_retirement_date"]
+def _strict_iso_date(raw_value: object) -> date | None:
+    raw = "" if raw_value is None else str(raw_value).strip()
+    if len(raw) != 10 or raw[4] != "-" or raw[7] != "-":
+        return None
+    try:
+        parsed = date.fromisoformat(raw)
+    except ValueError:
+        return None
+    return parsed if parsed.isoformat() == raw else None
+
+
+def _has_structured_exact_claim(aggregate, retirement_date: str) -> bool:
+    try:
+        claims = json.loads(aggregate["retirement_dates_json"])
+    except (KeyError, TypeError, json.JSONDecodeError):
+        return False
+    if not isinstance(claims, list):
+        return False
+    return any(
+        isinstance(claim, dict)
+        and claim.get("date") == retirement_date
+        and claim.get("quality", "exact") == "exact"
+        for claim in claims
+    )
+
+
+def classify_retirement_date(aggregate, window: CommitteeWindow) -> SlideEligibility:
+    quality = str(aggregate["retirement_date_quality"]).strip()
+    if quality == "missing":
+        return SlideEligibility.MISSING_RETIREMENT_DATE
+    if quality == "conflict":
+        return SlideEligibility.CONFLICTING_RETIREMENT_DATE
+    if quality != "exact":
+        return SlideEligibility.INVALID_RETIREMENT_DATE
+
+    raw_date = str(aggregate["retirement_date"]).strip()
+    retirement_date = _strict_iso_date(raw_date)
+    if retirement_date is None or not _has_structured_exact_claim(aggregate, raw_date):
+        return SlideEligibility.INVALID_RETIREMENT_DATE
+    if retirement_date < window.lower_bound:
+        return SlideEligibility.ELAPSED_RETIREMENT_DATE
+    if retirement_date > window.upper_bound:
+        return SlideEligibility.BEYOND_COMMITTEE_WINDOW
+    return SlideEligibility.ELIGIBLE
+
+
+__all__ = [
+    "CommitteeWindow",
+    "RetirementDateClaim",
+    "SlideEligibility",
+    "add_calendar_months",
+    "classify_retirement_date",
+    "parse_retirement_date",
+]

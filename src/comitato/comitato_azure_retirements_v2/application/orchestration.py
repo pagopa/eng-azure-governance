@@ -21,6 +21,7 @@ from ..domain.platforms import PlatformCatalogSnapshot
 from ..domain.execution import CatalogIdentity, ReportSelector, RunContext, RunRequest
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
+from ..domain.slides import SlideSelection, select_slides
 from ..publication.model import PublicationCandidate, RunResult
 from .planning import build_dependency_plan
 
@@ -93,12 +94,13 @@ class RetirementsApplication:
             run_id=context.run_id,
         )
 
-        artifacts = self._empty_artifacts(context, acquisitions, request, catalog)
+        artifacts, slide_selection = self._empty_artifacts(context, acquisitions, request, catalog)
         candidate = PublicationCandidate(
             context=context,
             dependency_plan=plan,
             artifacts=tuple(artifacts),
             acquisitions=tuple(acquisitions),
+            slide_selection=slide_selection,
         )
         generation = self.publication_store.stage(candidate)
         receipt = self.publication_store.commit(generation)
@@ -222,6 +224,7 @@ class RetirementsApplication:
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
+        slide_selection: SlideSelection | None = None
         if request.selector in (ReportSelector.ALL, ReportSelector.ADVISOR):
             advisor = ADVISOR_V1.empty_artifact(context)
             if "advisor" in by_source:
@@ -268,7 +271,14 @@ class RetirementsApplication:
                 checked = AGGREGATE_V1.validate(aggregate, context)
                 if not checked.is_valid:
                     raise ContractValidationError(checked.diagnostics, "invalid aggregate contract")
-            selected.append(AGGREGATE_V1.encode(aggregate))
+            if request.selector in (ReportSelector.ALL, ReportSelector.AGGREGATE):
+                selected.append(AGGREGATE_V1.encode(aggregate))
         if request.selector in (ReportSelector.ALL, ReportSelector.SLIDES):
-            selected.append(SLIDES_V1.encode(SLIDES_V1.empty_artifact(context)))
-        return selected
+            if aggregate is None:
+                raise ApplicationError("slides requires an aggregate artifact")
+            projected = select_slides(aggregate, context)
+            if not projected.is_valid or projected.value is None:
+                raise ContractValidationError(projected.diagnostics, "invalid slide contract")
+            slide_selection = projected.value
+            selected.append(SLIDES_V1.encode(slide_selection.artifact))
+        return selected, slide_selection

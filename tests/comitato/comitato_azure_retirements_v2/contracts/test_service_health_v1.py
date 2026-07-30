@@ -98,3 +98,19 @@ def test_normalize_service_health_rejects_unknown_classification() -> None:
 
     assert not result.is_valid
     assert result.diagnostics[0].code == "invalid_service_health_classification"
+
+
+def test_normalize_service_health_preserves_explicit_recommendation_type_edge() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["recommendationTypeId"] = "retirement-1"
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert result.value.artifact.records[0]["recommendation_type_id"] == "retirement-1"

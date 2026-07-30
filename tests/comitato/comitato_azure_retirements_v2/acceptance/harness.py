@@ -36,6 +36,7 @@ from src.comitato.comitato_azure_retirements_v2.publication.commit import (
     AtomicFilesystemPublicationStore,
     read_current_tree,
 )
+from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml import YamlPlatformCatalogSource
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,6 +59,8 @@ class ScenarioResult:
     exit_status: int
     stderr_jsonl: bytes
     current_tree: dict[str, bytes]
+    slide_selection: dict[str, tuple[str, ...]] = None
+    slide_records: tuple[dict[str, str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,7 +120,13 @@ class FixedRunIdFactory:
 
 
 class TemporaryAtomicPublicationStore(AtomicFilesystemPublicationStore):
-    pass
+    def __init__(self, destination: Path) -> None:
+        super().__init__(destination)
+        self.candidates = []
+
+    def stage(self, candidate):
+        self.candidates.append(candidate)
+        return super().stage(candidate)
 
 
 def _source_acquisition(
@@ -204,22 +213,26 @@ def load_scenario(fixture_dir: Path) -> Scenario:
 def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
     catalog_path = scenario.fixture_dir / "catalog.yaml"
     catalog_payload = yaml.safe_load(catalog_path.read_text(encoding="utf-8"))
-    catalog_subscriptions = tuple(
-        item["subscription_id"] for item in catalog_payload["subscriptions"]
-    )
-    catalog = _CatalogSnapshot(
-        identity=CatalogIdentity(
-            schema_version=catalog_payload["schema_version"],
-            sha256=sha256(catalog_path.read_bytes()).hexdigest(),
-        ),
-        subscription_ids=tuple(sorted(catalog_subscriptions)),
-    )
+    if "platforms" in catalog_payload:
+        catalog = YamlPlatformCatalogSource(catalog_path).load()
+    else:
+        catalog_subscriptions = tuple(
+            item["subscription_id"] for item in catalog_payload["subscriptions"]
+        )
+        catalog = _CatalogSnapshot(
+            identity=CatalogIdentity(
+                schema_version=catalog_payload["schema_version"],
+                sha256=sha256(catalog_path.read_bytes()).hexdigest(),
+            ),
+            subscription_ids=tuple(sorted(catalog_subscriptions)),
+        )
+    publication = TemporaryAtomicPublicationStore(destination)
     application = RetirementsApplication(
         scope_source=_FixedScopeSource(scenario.scope),
         catalog_source=_CatalogSource(catalog),
         advisor_source=ScriptedAdvisorSource(scenario.advisor_pages, scenario.advisor_complete),
         service_health_source=ScriptedServiceHealthSource(scenario.service_health_pages, scenario.service_health_complete),
-        publication_store=TemporaryAtomicPublicationStore(destination),
+        publication_store=publication,
         clock=FixedClock(scenario.created_at),
         run_id_factory=FixedRunIdFactory(scenario.run_id),
     )
@@ -242,6 +255,15 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         exit_status=exit_status,
         stderr_jsonl=(destination / "stderr.jsonl").read_bytes() if exit_status else (scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),
         current_tree=current_tree,
+        slide_selection=(
+            publication.candidates[0].slide_selection.excluded_by_reason
+            if publication.candidates and publication.candidates[0].slide_selection
+            else {}
+        ),
+        slide_records=tuple(
+            dict(row.values)
+            for row in (publication.candidates[0].slide_selection.artifact.records if publication.candidates and publication.candidates[0].slide_selection else ())
+        ),
     )
 
 

@@ -1,0 +1,12 @@
+{
+  "selector": "all",
+  "run_id": "s01-explicitly-correlated",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 0,
+  "scope": {"mode": "explicit", "subscription_ids": ["11111111-1111-1111-1111-111111111111"]},
+  "azure": {
+    "advisor": {"pages": [{"items": [{"id": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.Advisor/recommendations/s01-rec", "properties": {"recommendationStatus": "New", "recommendationTypeId": "s01-retirement", "resourceMetadata": {"resourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/s01"}, "retirementDate": "2027-03-31", "serviceName": "Storage", "retiringFeature": "S01 feature", "description": "Advisor evidence", "shortDescription": {"problem": "S01 problem"}, "actions": ["Migrate"], "learnMoreLink": "https://example.invalid/s01"}}], "next_link": null}]},
+    "service_health": {"pages": [{"items": [{"id": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.ResourceHealth/events/s01-event", "name": "S01-TRACK", "properties": {"trackingId": "S01-TRACK", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "recommendationTypeId": "s01-retirement", "impactMitigationTime": "2027-03-31", "description": "Service Health evidence", "impactedResources": [{"subscriptionId": "11111111-1111-1111-1111-111111111111", "resourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/s01"}]}}], "next_link": null}]}
+  }
+}

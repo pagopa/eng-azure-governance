@@ -1,5 +1,5 @@
 {
-  "selector": "service-health",
+  "selector": "all",
   "run_id": "s03-explicit-global",
   "as_of_date": "2026-07-30",
   "created_at": "2026-07-30T00:00:00Z",
