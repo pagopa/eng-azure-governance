@@ -4,6 +4,11 @@ from dataclasses import dataclass
 from typing import Any
 
 from ..acquisition.model import SourceAcquisition
+from ..application.advisor import AdvisorEnrichments, normalize_advisor
+from ..application.service_health import (
+    ServiceHealthSupplementalEvidence,
+    normalize_service_health,
+)
 from ..contracts import (
     ADVISOR_V1,
     AGGREGATE_V1,
@@ -46,9 +51,14 @@ class RetirementsApplication:
 
         acquisitions: list[SourceAcquisition] = []
         if "advisor" in plan.stages:
-            acquisitions.append(self._complete_empty_acquisition("advisor", self.advisor_source.acquire(context), context))
+            acquisitions.append(self._prepare_raw_acquisition("advisor", self.advisor_source.acquire(context), context))
         if "service-health" in plan.stages:
-            acquisitions.append(self._complete_empty_acquisition("service-health", self.service_health_source.acquire(context), context))
+            acquisitions.append(self._prepare_raw_acquisition("service-health", self.service_health_source.acquire(context), context))
+
+        if any(acquisition.records for acquisition in acquisitions):
+            raise ApplicationError(
+                "non-empty raw publication requires evidence-union coverage"
+            )
 
         artifacts = self._empty_artifacts(context, acquisitions, request)
         candidate = PublicationCandidate(
@@ -99,6 +109,30 @@ class RetirementsApplication:
         if acquisition.receipt.source_records != 0:
             raise ApplicationError(f"non-empty {source_name} path is not supported")
         return acquisition
+
+    @staticmethod
+    def _prepare_raw_acquisition(
+        source_name: str, acquisition: SourceAcquisition, context: RunContext
+    ) -> SourceAcquisition:
+        if not acquisition.receipt.is_complete:
+            raise ApplicationError(f"incomplete {source_name} acquisition")
+        if not acquisition.records:
+            if acquisition.receipt.source_records != 0:
+                raise ApplicationError(f"inconsistent {source_name} acquisition receipt")
+            return acquisition
+        if source_name == "advisor":
+            result = normalize_advisor(acquisition, context, AdvisorEnrichments())
+        else:
+            result = normalize_service_health(
+                acquisition, context, ServiceHealthSupplementalEvidence()
+            )
+        if not result.is_valid or result.value is None:
+            raise ApplicationError(f"invalid {source_name} raw contract")
+        return SourceAcquisition(
+            receipt=acquisition.receipt,
+            records=result.value.artifact.records,
+            companion_records=result.value.artifact.companion_records,
+        )
 
     @staticmethod
     def _empty_artifacts(

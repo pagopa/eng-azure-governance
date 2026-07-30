@@ -1,0 +1,19 @@
+{
+  "selector": "all",
+  "run_id": "s06-empty",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 0,
+  "scope": {
+    "mode": "explicit",
+    "subscription_ids": ["11111111-1111-1111-1111-111111111111"]
+  },
+  "azure": {
+    "advisor": {
+      "pages": [{"items": [], "next_link": null}]
+    },
+    "service_health": {
+      "pages": [{"items": [], "next_link": null}]
+    }
+  }
+}
