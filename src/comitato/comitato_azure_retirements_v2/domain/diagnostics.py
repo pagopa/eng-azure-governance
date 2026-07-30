@@ -26,6 +26,25 @@ class Diagnostic:
             self.artifact,
         )
 
+    def to_dict(self) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "severity": self.severity,
+            "code": self.code,
+            "stage": self.stage,
+            "report": self.report,
+            "run_id": self.run_id,
+            "subscription_id": self.subscription_id,
+            "record_ref": self.record_ref,
+            "artifact": self.artifact,
+            "message": self.message,
+        }
+        context = dict(self.context)
+        if self.code == "platform_mapping_unmapped_subscription":
+            payload["subscription_name"] = context.get("subscription_name", "")
+            refs = context.get("record_refs", "")
+            payload["record_refs"] = [item for item in refs.split(",") if item]
+        return payload
+
 
 def sort_diagnostics(
     diagnostics: tuple[Diagnostic, ...] | list[Diagnostic],

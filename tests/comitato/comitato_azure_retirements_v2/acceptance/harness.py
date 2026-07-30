@@ -246,6 +246,12 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
 
 
 def _diagnostic_jsonl(exc: Exception, scenario: Scenario) -> bytes:
+    diagnostics = getattr(exc, "diagnostics", ())
+    if diagnostics:
+        return b"".join(
+            (json.dumps(item.to_dict(), sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+            for item in diagnostics
+        )
     message = str(exc)
     if "conflicting payload" in message:
         code, stage = "conflicting_source_record", "acquisition"

@@ -150,6 +150,43 @@ def test_service_health_global_requires_explicit_global_evidence() -> None:
     assert row["subscription_evidence_source"] == "explicit_global"
 
 
+def test_service_health_non_global_without_affected_subscription_is_blocked() -> None:
+    event = _health_event()
+    event.pop("subscriptionId")
+    result = normalize_service_health(
+        _health_acquisition(event),
+        _context(ReportSelector.SERVICE_HEALTH, "service-health"),
+        ServiceHealthSupplementalEvidence(),
+    )
+    assert not result.is_valid
+    assert result.diagnostics[0].code == "missing_affected_subscription"
+    assert result.diagnostics[0].record_ref == "/subscriptions/sub-a/providers/Microsoft.ResourceHealth/events/event-1"
+
+
+def test_service_health_global_projection_rejects_affected_subscription_or_resource() -> None:
+    result = normalize_service_health(
+        _health_acquisition(_health_event(isGlobal=True)),
+        _context(ReportSelector.SERVICE_HEALTH, "service-health"),
+        ServiceHealthSupplementalEvidence(),
+    )
+    assert result.is_valid and result.value is not None
+    artifact = result.value.artifact
+    row = dict(artifact.records[0])
+    row["subscription_id"] = "sub-a"
+    invalid = Artifact(
+        contract=SERVICE_HEALTH_V1.name,
+        schema_version=1,
+        run_id=artifact.run_id,
+        records=(row,),
+        companion_records=artifact.companion_records,
+    )
+    checked = SERVICE_HEALTH_V1.validate(
+        invalid, _context(ReportSelector.SERVICE_HEALTH, "service-health")
+    )
+    assert not checked.is_valid
+    assert any(item.code == "global_evidence_has_subscription" for item in checked.diagnostics)
+
+
 def test_service_health_keeps_direct_and_supplemental_resource_associations() -> None:
     event = _health_event(
         trackingId="TRACK-1",

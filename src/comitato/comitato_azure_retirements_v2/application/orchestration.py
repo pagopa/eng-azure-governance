@@ -16,12 +16,40 @@ from ..contracts import (
     SLIDES_V1,
 )
 from ..domain.execution import CatalogIdentity, ReportSelector, RunContext, RunRequest
+from ..domain.coverage import validate_platform_coverage
+from ..domain.diagnostics import Diagnostic
 from ..publication.model import PublicationCandidate, RunResult
 from .planning import build_dependency_plan
 
 
 class ApplicationError(RuntimeError):
     """A stable application boundary failure before publication."""
+
+
+class PlatformCoverageError(ApplicationError):
+    def __init__(self, diagnostics) -> None:
+        self.diagnostics = tuple(diagnostics)
+        count = len(self.diagnostics)
+        super().__init__(
+            f"platform_mapping_unmapped_subscription: {count} unmapped subscription(s); "
+            "publication not changed"
+        )
+
+
+class ContractValidationError(ApplicationError):
+    def __init__(self, diagnostics, message: str) -> None:
+        self.diagnostics = tuple(diagnostics)
+        code = self.diagnostics[0].code if self.diagnostics else "unknown"
+        super().__init__(f"{message}: {code}")
+
+
+class _LegacyEmptyCatalog:
+    def lookup(self, subscription_id: str):
+        return None
+
+
+def _empty_catalog_for_legacy_check() -> _LegacyEmptyCatalog:
+    return _LegacyEmptyCatalog()
 
 
 @dataclass(slots=True)
@@ -38,7 +66,6 @@ class RetirementsApplication:
         plan = build_dependency_plan(request.selector)
         scope = self.scope_source.resolve(request)
         catalog = self.catalog_source.load()
-        self._validate_catalog_coverage(scope.subscription_ids, catalog)
         context = RunContext(
             run_id=self.run_id_factory.new_id(),
             as_of_date=self._as_of_date(request),
@@ -55,10 +82,13 @@ class RetirementsApplication:
         if "service-health" in plan.stages:
             acquisitions.append(self._prepare_raw_acquisition("service-health", self.service_health_source.acquire(context), context))
 
-        if any(acquisition.records for acquisition in acquisitions):
-            raise ApplicationError(
-                "non-empty raw publication requires evidence-union coverage"
-            )
+        self._validate_catalog_coverage(
+            scope.subscription_ids,
+            acquisitions,
+            catalog,
+            report=request.selector.value,
+            run_id=context.run_id,
+        )
 
         artifacts = self._empty_artifacts(context, acquisitions, request)
         candidate = PublicationCandidate(
@@ -88,15 +118,51 @@ class RetirementsApplication:
     def _catalog_identity(catalog: Any) -> CatalogIdentity:
         identity = getattr(catalog, "identity", None)
         if not isinstance(identity, CatalogIdentity):
-            raise ApplicationError("catalog does not expose a valid identity")
+            try:
+                identity = CatalogIdentity(catalog.schema_version, catalog.sha256)
+            except (AttributeError, TypeError, ValueError) as exc:
+                raise ApplicationError("catalog does not expose a valid identity") from exc
         return identity
 
     @staticmethod
-    def _validate_catalog_coverage(subscription_ids: tuple[str, ...], catalog: Any) -> None:
+    def _validate_catalog_coverage(
+        subscription_ids: tuple[str, ...],
+        acquisitions: list[SourceAcquisition],
+        catalog: Any,
+        *,
+        report: str,
+        run_id: str,
+    ) -> None:
+        records = tuple(
+            record
+            for acquisition in acquisitions
+            for record in acquisition.records
+        )
+        if callable(getattr(catalog, "lookup", None)):
+            result = validate_platform_coverage(
+                subscription_ids, records, catalog, report=report, run_id=run_id
+            )
+            if not result.is_valid:
+                raise PlatformCoverageError(result.diagnostics)
+            return
+
+        # Keep the narrow test/catalog port used by the earlier empty-run gate.
         covered = set(getattr(catalog, "subscription_ids", ()))
-        missing = sorted(set(subscription_ids) - covered)
+        required = set(subscription_ids)
+        for record in records:
+            raw_id = str(record.get("subscription_id", ""))
+            if raw_id:
+                required.add(raw_id)
+        missing = sorted(required - covered)
         if missing:
-            raise ApplicationError(f"catalog does not cover scope: {', '.join(missing)}")
+            raise PlatformCoverageError(
+                tuple(
+                    validate_platform_coverage(
+                        (item,), (), _empty_catalog_for_legacy_check(), report=report, run_id=run_id
+                    ).diagnostics[0]
+                    for item in missing
+                )
+            )
 
     @staticmethod
     def _complete_empty_acquisition(
@@ -127,13 +193,17 @@ class RetirementsApplication:
                 acquisition, context, ServiceHealthSupplementalEvidence()
             )
         if not result.is_valid or result.value is None:
-            code = result.diagnostics[0].code if result.diagnostics else "unknown_raw_contract_error"
-            raise ApplicationError(f"invalid {source_name} raw contract: {code}")
+            raise ContractValidationError(
+                result.diagnostics,
+                f"invalid {source_name} raw contract",
+            )
         contract = ADVISOR_V1 if source_name == "advisor" else SERVICE_HEALTH_V1
         contract_result = contract.validate(result.value.artifact, context)
         if not contract_result.is_valid:
-            code = contract_result.diagnostics[0].code
-            raise ApplicationError(f"invalid {source_name} raw contract: {code}")
+            raise ContractValidationError(
+                contract_result.diagnostics,
+                f"invalid {source_name} raw contract",
+            )
         return SourceAcquisition(
             receipt=acquisition.receipt,
             records=result.value.artifact.records,
@@ -155,6 +225,7 @@ class RetirementsApplication:
                     contract=advisor.contract,
                     schema_version=advisor.schema_version,
                     run_id=advisor.run_id,
+                    records=by_source["advisor"].records,
                     companion_records=by_source["advisor"].companion_records,
                 )
             selected.extend((ADVISOR_V1.encode(advisor), ADVISOR_V1.encode_companion(advisor)))
@@ -165,6 +236,7 @@ class RetirementsApplication:
                     contract=health.contract,
                     schema_version=health.schema_version,
                     run_id=health.run_id,
+                    records=by_source["service-health"].records,
                     companion_records=by_source["service-health"].companion_records,
                 )
             selected.extend((SERVICE_HEALTH_V1.encode(health), SERVICE_HEALTH_V1.encode_companion(health)))

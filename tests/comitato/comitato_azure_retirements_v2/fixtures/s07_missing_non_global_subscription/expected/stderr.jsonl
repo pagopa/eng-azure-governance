@@ -1,0 +1,1 @@
+{"artifact":"","code":"missing_affected_subscription","message":"","record_ref":"/providers/Microsoft.ResourceHealth/events/s07-event","report":"service-health","run_id":"s07-missing-subscription","severity":"error","stage":"normalization","subscription_id":""}

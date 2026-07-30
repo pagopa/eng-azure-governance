@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from uuid import UUID
-from typing import Any
+from collections.abc import Mapping
 
 from .diagnostics import Diagnostic, ValidationResult
 
@@ -12,6 +12,8 @@ class SubscriptionId:
     value: str
 
     def __post_init__(self) -> None:
+        if not isinstance(self.value, str):
+            raise TypeError("subscription ID must be a string")
         canonical = str(UUID(self.value)).lower()
         object.__setattr__(self, "value", canonical)
 
@@ -26,10 +28,12 @@ class PlatformAssignment:
     subscription_name: str
 
     def __post_init__(self) -> None:
-        if not self.platform.strip() or self.platform == "ALL":
+        if not isinstance(self.platform, str) or not self.platform.strip() or self.platform.casefold() == "all":
             raise ValueError("platform name must be non-empty and not ALL")
-        if not self.subscription_name.strip():
+        if not isinstance(self.subscription_name, str) or not self.subscription_name.strip():
             raise ValueError("subscription name must be non-empty")
+        object.__setattr__(self, "platform", self.platform.strip())
+        object.__setattr__(self, "subscription_name", self.subscription_name.strip())
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,8 +43,14 @@ class PlatformCatalogSnapshot:
     assignments: tuple[PlatformAssignment, ...]
 
     def __post_init__(self) -> None:
-        if self.schema_version != 1:
+        if type(self.schema_version) is not int or self.schema_version != 1:
             raise ValueError("unsupported platform catalog schema")
+        if (
+            not isinstance(self.sha256, str)
+            or len(self.sha256) != 64
+            or any(character not in "0123456789abcdef" for character in self.sha256)
+        ):
+            raise ValueError("platform catalog sha256 must be lowercase hexadecimal")
         ids = [item.subscription_id.value for item in self.assignments]
         if len(ids) != len(set(ids)):
             raise ValueError("duplicate subscription assignment")
@@ -56,11 +66,34 @@ class PlatformCatalogSnapshot:
     def active_ids(self) -> tuple[str, ...]:
         return tuple(sorted(item.subscription_id.value for item in self.assignments))
 
+    @property
+    def subscription_ids(self) -> tuple[str, ...]:
+        """Compatibility view used by the orchestration port."""
+        return self.active_ids
+
+    @property
+    def identity(self):
+        from .execution import CatalogIdentity
+
+        return CatalogIdentity(self.schema_version, self.sha256)
+
 
 @dataclass(frozen=True, slots=True)
 class PlatformProjection:
     platforms: tuple[str, ...]
     platforms_subscriptions: dict[str, tuple[dict[str, str], ...]]
+
+    def __post_init__(self) -> None:
+        if tuple(sorted(set(self.platforms))) != self.platforms:
+            raise ValueError("platform projection names must be sorted and unique")
+        if tuple(self.platforms) != tuple(self.platforms_subscriptions):
+            raise ValueError("platform projection keys must match platform names")
+        if self.platforms == ("ALL",) and self.platforms_subscriptions != {"ALL": ()}:
+            raise ValueError("global platform projection must be exactly ALL")
+
+    @property
+    def subscriptions(self) -> dict[str, tuple[dict[str, str], ...]]:
+        return self.platforms_subscriptions
 
 
 def project_platforms(
@@ -103,7 +136,10 @@ def project_platforms(
         groups.setdefault(platform, []).append({"subscription_id": raw_id, "subscription_name": name})
     if missing:
         return ValidationResult.invalid(tuple(missing))
-    ordered = {key: tuple(sorted(value, key=lambda item: item["subscription_id"])) for key, value in sorted(groups.items())}
+    ordered = {
+        key: tuple(sorted(value, key=lambda item: item["subscription_id"]))
+        for key, value in sorted(groups.items())
+    }
     return ValidationResult.valid(PlatformProjection(tuple(ordered), ordered))
 
 

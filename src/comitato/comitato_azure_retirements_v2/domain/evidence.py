@@ -18,5 +18,15 @@ class ServiceHealthEventEvidence:
     payload: Mapping[str, Any]
     collection_subscription_id: str = ""
 
+    @property
+    def is_explicit_global(self) -> bool:
+        properties = self.payload.get("properties", {})
+        if not isinstance(properties, Mapping):
+            return False
+        marker = properties.get("isGlobal")
+        return marker is True or (
+            isinstance(marker, str) and marker.casefold() == "true"
+        )
+
 
 __all__ = ["AdvisorRecommendationEvidence", "ServiceHealthEventEvidence"]

@@ -47,9 +47,16 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
             row_refs.append(ref)
             if row.get("run_id") != context.run_id or row.get("schema_version") != "1" or row.get("record_type") not in {"service_health_event_global", "service_health_event_resource", "service_health_event_service_region", "service_health_event_subscription"} or row.get("source_system") != "azure_service_health" or row.get("status", "").casefold() != "active" or not row.get("tracking_id"):
                 diagnostics.append(Diagnostic("error", "invalid_service_health_row", "validation", "service-health", context.run_id, record_ref=event_id))
-            if row.get("record_type") == "service_health_event_global" and row.get("subscription_evidence_source") != "explicit_global":
+            is_global = row.get("record_type") == "service_health_event_global"
+            if is_global and row.get("subscription_evidence_source") != "explicit_global":
                 diagnostics.append(Diagnostic("error", "global_evidence_not_explicit", "validation", "service-health", context.run_id, record_ref=event_id))
-            if row.get("record_type") != "service_health_event_global" and (not row.get("subscription_id") or not row.get("collection_subscription_id")):
+            if is_global and row.get("subscription_id"):
+                diagnostics.append(Diagnostic("error", "global_evidence_has_subscription", "validation", "service-health", context.run_id, record_ref=event_id))
+            if is_global and row.get("published_resource_id"):
+                diagnostics.append(Diagnostic("error", "global_evidence_has_resource", "validation", "service-health", context.run_id, record_ref=event_id))
+            if not is_global and row.get("subscription_evidence_source") == "explicit_global":
+                diagnostics.append(Diagnostic("error", "global_evidence_not_global", "validation", "service-health", context.run_id, record_ref=event_id))
+            if not is_global and (not row.get("subscription_id") or not row.get("collection_subscription_id")):
                 diagnostics.append(Diagnostic("error", "missing_affected_subscription", "validation", "service-health", context.run_id, record_ref=event_id))
             if row.get("retirement_date_quality") not in {"exact", "missing", "invalid"}:
                 diagnostics.append(Diagnostic("error", "invalid_retirement_date_quality", "validation", "service-health", context.run_id, record_ref=event_id))

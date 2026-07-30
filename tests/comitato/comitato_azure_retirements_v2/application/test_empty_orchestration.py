@@ -20,6 +20,21 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
 
 
 SUBSCRIPTION_ID = "11111111-1111-1111-1111-111111111111"
+UNMAPPED_SUBSCRIPTION_ID = "22222222-2222-2222-2222-222222222222"
+
+
+def advisor_payload(subscription_id: str = SUBSCRIPTION_ID) -> dict[str, object]:
+    return {
+        "id": f"/subscriptions/{subscription_id}/providers/Microsoft.Advisor/recommendations/rec-1",
+        "subscriptionId": subscription_id,
+        "properties": {
+            "recommendationStatus": "New",
+            "recommendationTypeId": "retirement-type",
+            "resourceMetadata": {
+                "resourceId": f"/subscriptions/{subscription_id}/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"
+            },
+        },
+    }
 
 
 @dataclass
@@ -159,21 +174,41 @@ def test_non_empty_scripted_source_is_not_claimed_complete() -> None:
     assert publication.staged == []
 
 
-def test_non_empty_raw_publication_waits_for_evidence_union_coverage() -> None:
+def test_non_empty_raw_publication_is_allowed_after_coverage() -> None:
     log = EventLog()
     publication = FakePublicationStore()
 
-    with pytest.raises(ApplicationError, match="evidence-union coverage"):
+    result = build_application(
+        log, publication, records=(advisor_payload(),)
+    ).run(RunRequest(ReportSelector.ADVISOR))
+
+    assert result.exit_status == 0
+    assert len(publication.staged) == 1
+
+
+def test_covered_advisor_selector_publishes_only_raw_pair() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+
+    result = build_application(
+        log, publication, records=(advisor_payload(),)
+    ).run(RunRequest(ReportSelector.ADVISOR))
+
+    assert result.exit_status == 0
+    assert [artifact.logical_path for artifact in publication.staged[0].artifacts] == [
+        "01_azure_advisor_retirements_raw.tsv",
+        "01_azure_advisor_retirements_raw.jsonl",
+    ]
+    assert publication.committed == [publication.staged[0]]
+
+
+def test_unmapped_evidence_subscription_blocks_before_staging() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+
+    with pytest.raises(ApplicationError, match="platform_mapping_unmapped_subscription"):
         build_application(
-            log,
-            publication,
-            records=(
-                {
-                    "id": "advisor-1",
-                    "subscriptionId": SUBSCRIPTION_ID,
-                    "properties": {"recommendationStatus": "New"},
-                },
-            ),
+            log, publication, records=(advisor_payload(UNMAPPED_SUBSCRIPTION_ID),)
         ).run(RunRequest(ReportSelector.ADVISOR))
 
     assert publication.staged == []
