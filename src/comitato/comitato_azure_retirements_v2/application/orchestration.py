@@ -15,6 +15,9 @@ from ..contracts import (
     SERVICE_HEALTH_V1,
     SLIDES_V1,
 )
+from ..contracts.model import Artifact
+from ..contracts.aggregate_v1 import build_aggregate
+from ..domain.platforms import PlatformCatalogSnapshot
 from ..domain.execution import CatalogIdentity, ReportSelector, RunContext, RunRequest
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
@@ -90,7 +93,7 @@ class RetirementsApplication:
             run_id=context.run_id,
         )
 
-        artifacts = self._empty_artifacts(context, acquisitions, request)
+        artifacts = self._empty_artifacts(context, acquisitions, request, catalog)
         candidate = PublicationCandidate(
             context=context,
             dependency_plan=plan,
@@ -215,6 +218,7 @@ class RetirementsApplication:
         context: RunContext,
         acquisitions: list[SourceAcquisition],
         request: RunRequest,
+        catalog: Any,
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
@@ -241,7 +245,30 @@ class RetirementsApplication:
                 )
             selected.extend((SERVICE_HEALTH_V1.encode(health), SERVICE_HEALTH_V1.encode_companion(health)))
         if request.selector in (ReportSelector.ALL, ReportSelector.AGGREGATE, ReportSelector.SLIDES):
-            selected.append(AGGREGATE_V1.encode(AGGREGATE_V1.empty_artifact(context)))
+            aggregate = AGGREGATE_V1.empty_artifact(context)
+            if any(acquisition.records for acquisition in acquisitions):
+                if not isinstance(catalog, PlatformCatalogSnapshot):
+                    raise ApplicationError("aggregate requires a validated platform catalog snapshot")
+                def records_for(source: str):
+                    acquisition = by_source.get(source)
+                    return acquisition.records if acquisition is not None else ()
+
+                aggregate_records = build_aggregate(
+                    records_for("advisor"),
+                    records_for("service-health"),
+                    context=context,
+                    catalog=catalog,
+                )
+                aggregate = Artifact(
+                    contract=aggregate.contract,
+                    schema_version=aggregate.schema_version,
+                    run_id=aggregate.run_id,
+                    records=aggregate_records,
+                )
+                checked = AGGREGATE_V1.validate(aggregate, context)
+                if not checked.is_valid:
+                    raise ContractValidationError(checked.diagnostics, "invalid aggregate contract")
+            selected.append(AGGREGATE_V1.encode(aggregate))
         if request.selector in (ReportSelector.ALL, ReportSelector.SLIDES):
             selected.append(SLIDES_V1.encode(SLIDES_V1.empty_artifact(context)))
         return selected
