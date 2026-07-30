@@ -45,17 +45,30 @@ def _date_value(value: Any) -> tuple[str, str]:
     return parsed.isoformat(), "exact"
 
 
-def _timestamp(value: Any) -> str:
+def _lookup(value: Mapping[str, Any], key: str) -> tuple[Mapping[str, Any] | None, bool]:
+    candidate = value.get(key)
+    if isinstance(candidate, Mapping):
+        return candidate, False
+    if isinstance(candidate, (tuple, list)):
+        matches = tuple(item for item in candidate if isinstance(item, Mapping))
+        if len(matches) == 1:
+            return matches[0], False
+        if len(matches) > 1:
+            return None, True
+    return None, False
+
+
+def _timestamp(value: Any) -> tuple[str, str]:
     raw = "" if value is None else str(value)
     if not raw:
-        return ""
+        return "", ""
     try:
         parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
         if parsed.tzinfo is None:
             parsed = parsed.replace(tzinfo=timezone.utc)
-        return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+        return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"), ""
     except ValueError:
-        return raw
+        return "", "invalid_last_updated"
 
 
 def _subscription_id(record: Mapping[str, Any], recommendation_id: str) -> str:
@@ -103,12 +116,18 @@ def normalize_advisor(
         recommendation_id = str(
             recommendation.get("id") or recommendation.get("advisorRecommendationId") or ""
         )
+        if not recommendation_id:
+            diagnostics.append(Diagnostic("error", "missing_recommendation_id", "normalization", "advisor", context.run_id))
+            continue
         status = str(properties.get("recommendationStatus") or "")
         if status.casefold() != "new":
             if not status or status.casefold() not in {"inprogress", "completed", "postponed", "dismissed"}:
                 diagnostics.append(Diagnostic("error", "invalid_recommendation_status", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
             continue
         subscription_id = _subscription_id(recommendation, recommendation_id)
+        if not subscription_id:
+            diagnostics.append(Diagnostic("error", "missing_subscription_id", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
+            continue
         metadata = _mapping(properties.get("resourceMetadata"))
         published = str(metadata.get("resourceId") or metadata.get("resource_id") or "")
         linkage = "resource_id"
@@ -129,9 +148,48 @@ def normalize_advisor(
         if retirement_quality == "invalid":
             flags.add("invalid_retirement_date")
         short_description = _mapping(properties.get("shortDescription"))
-        description = str(properties.get("description") or "")
+        metadata_record, metadata_ambiguous = _lookup(enrichments.metadata, f"{properties.get('recommendationTypeId', '')}\0{normalized}") if isinstance(enrichments.metadata, Mapping) else (None, False)
+        if metadata_record is None and not metadata_ambiguous and isinstance(enrichments.metadata, Mapping):
+            metadata_record, metadata_ambiguous = _lookup(enrichments.metadata, recommendation_id)
+        resource_record, resource_ambiguous = _lookup(enrichments.resources, normalized) if isinstance(enrichments.resources, Mapping) else (None, False)
+        subscription_record, subscription_ambiguous = _lookup(enrichments.subscriptions, subscription_id) if isinstance(enrichments.subscriptions, Mapping) else (None, False)
+        if metadata_ambiguous:
+            diagnostics.append(Diagnostic("error", "ambiguous_metadata_enrichment", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
+        if resource_ambiguous:
+            diagnostics.append(Diagnostic("error", "ambiguous_resource_enrichment", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
+        if subscription_ambiguous:
+            diagnostics.append(Diagnostic("error", "ambiguous_subscription_enrichment", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
+        metadata_record = metadata_record or {}
+        resource_record = resource_record or {}
+        subscription_record = subscription_record or {}
+        description = str(properties.get("description") or metadata_record.get("description") or "")
+        resource_name = str(resource_record.get("name") or name)
+        resource_group = str(resource_record.get("resourceGroup") or resource_record.get("resource_group") or group)
+        resource_type = str(resource_record.get("type") or resource_record.get("resourceType") or resource_type)
+        location = str(resource_record.get("location") or "")
+        tags = resource_record.get("tags") if isinstance(resource_record.get("tags"), Mapping) else {}
+        metadata_id = str(metadata_record.get("id") or metadata_record.get("metadataId") or "")
+        service_name = str(properties.get("serviceName") or metadata_record.get("serviceName") or "")
+        retiring_feature = str(properties.get("retiringFeature") or metadata_record.get("retiringFeature") or "")
+        subscription_name = str(subscription_record.get("name") or "")
+        metadata_status = "matched" if metadata_record else "missing"
+        resource_status = "matched" if resource_record else "missing"
+        subscription_status = "matched" if subscription_record else "missing"
         if not description and not short_description.get("problem"):
             flags.add("missing_description")
+        if metadata_status == "missing":
+            flags.add("metadata_not_found")
+        if resource_status == "missing":
+            flags.add("resource_inventory_not_found")
+        if subscription_status == "missing":
+            flags.add("subscription_inventory_not_found")
+        embedded_subscription = re.search(r"/subscriptions/([^/]+)", published, re.IGNORECASE)
+        if embedded_subscription and embedded_subscription.group(1).casefold() != subscription_id.casefold():
+            diagnostics.append(Diagnostic("error", "resource_subscription_mismatch", "normalization", "advisor", context.run_id, subscription_id=subscription_id, record_ref=recommendation_id))
+        last_updated_raw = properties.get("lastUpdated") or properties.get("lastUpdatedTime")
+        last_updated, last_updated_flag = _timestamp(last_updated_raw)
+        if last_updated_flag:
+            diagnostics.append(Diagnostic("error", last_updated_flag, "normalization", "advisor", context.run_id, record_ref=recommendation_id))
         ref = sha256(f"{context.run_id}\0{recommendation_id}".encode()).hexdigest()
         row: dict[str, str] = {column: "" for column in ADVISOR_V1.header}
         row.update(
@@ -146,12 +204,18 @@ def normalize_advisor(
                 "recommendation_type_id": str(properties.get("recommendationTypeId") or ""),
                 "recommendation_status": status,
                 "subscription_id": subscription_id,
+                "subscription_name": subscription_name,
                 "resource_linkage_source": linkage,
                 "published_resource_id": published,
                 "normalized_resource_id": normalized,
-                "resource_name": name,
-                "resource_group": group,
+                "resource_name": resource_name,
+                "resource_group": resource_group,
                 "resource_type": resource_type,
+                "location": location,
+                "tags_json": _canonical(tags),
+                "advisor_metadata_id": metadata_id,
+                "service_name": service_name,
+                "retiring_feature": retiring_feature,
                 "retirement_date_raw": str(retirement_raw or ""),
                 "retirement_date": retirement_date,
                 "retirement_date_source": "properties.retirementDate" if retirement_raw else "",
@@ -160,7 +224,7 @@ def normalize_advisor(
                 "risk": str(properties.get("risk") or ""),
                 "category": str(properties.get("category") or ""),
                 "sub_category": str(properties.get("subcategory") or properties.get("subCategory") or ""),
-                "last_updated": _timestamp(properties.get("lastUpdated") or properties.get("lastUpdatedTime")),
+                "last_updated": last_updated,
                 "label": str(properties.get("label") or ""),
                 "short_description_problem": str(short_description.get("problem") or ""),
                 "short_description_solution": str(short_description.get("solution") or ""),
@@ -168,11 +232,11 @@ def normalize_advisor(
                 "potential_benefits": str(properties.get("potentialBenefits") or ""),
                 "learn_more_link": str(properties.get("learnMoreLink") or ""),
                 "actions_json": _canonical(properties.get("actions") or []),
-                "metadata_match_status": "missing",
-                "resource_inventory_match_status": "missing",
-                "subscription_inventory_match_status": "missing",
+                "metadata_match_status": metadata_status,
+                "resource_inventory_match_status": resource_status,
+                "subscription_inventory_match_status": subscription_status,
                 "diagnostic_flags": ",".join(sorted(flags)),
-                "provenance_json": _canonical({"recommendation_id": recommendation_id, "resource_linkage": linkage, "api_version": acquisition.receipt.api_version}),
+                "provenance_json": _canonical({"recommendation_id": recommendation_id, "resource_linkage": linkage, "api_version": acquisition.receipt.api_version, "acquisition": "advisor.recommendations", "lookup_keys": {"metadata": f"{properties.get('recommendationTypeId', '')}\0{normalized}", "resource": normalized, "subscription": subscription_id}, "match_status": {"metadata": metadata_status, "resource": resource_status, "subscription": subscription_status}, "fields": {"resource_id": "properties.resourceMetadata.resourceId" if linkage == "resource_id" else "properties.resourceMetadata.id" if linkage == "legacy_id" else "", "description": "properties.description" if properties.get("description") else "advisor_metadata.description" if metadata_record.get("description") else ""}}),
                 "raw_record_ref": ref,
             }
         )
@@ -184,9 +248,9 @@ def normalize_advisor(
                 "raw_record_ref": ref,
                 "advisor_recommendation_id": recommendation_id,
                 "recommendation": recommendation,
-                "advisor_metadata": None,
-                "resource_inventory": None,
-                "subscription_inventory": None,
+                "advisor_metadata": metadata_record or None,
+                "resource_inventory": resource_record or None,
+                "subscription_inventory": subscription_record or None,
             }
         )
     if diagnostics:

@@ -1,4 +1,7 @@
 from collections.abc import Mapping
+from datetime import date, datetime
+import json
+import re
 
 from ..domain.diagnostics import Diagnostic, ValidationResult
 from ._base import TsvContract
@@ -28,9 +31,12 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
     def validate(self, artifact, context):
         base = super().validate(artifact, context)
         diagnostics: list[Diagnostic] = []
-        event_ids: set[str] = set()
         refs: set[str] = set()
+        row_refs: list[str] = []
         for row in artifact.records:
+            if set(row) != set(self.header):
+                diagnostics.append(Diagnostic("error", "invalid_service_health_columns", "validation", "service-health", context.run_id))
+                continue
             event_id = row.get("service_health_event_id", "")
             ref = row.get("raw_record_ref", "")
             if not event_id or not ref:
@@ -38,14 +44,49 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
             if not ref or ref in refs:
                 diagnostics.append(Diagnostic("error", "duplicate_raw_record_ref", "validation", "service-health", context.run_id, record_ref=ref))
             refs.add(ref)
-            event_ids.add(event_id)
-            if row.get("run_id") != context.run_id or row.get("status", "").casefold() != "active" or not row.get("tracking_id"):
+            row_refs.append(ref)
+            if row.get("run_id") != context.run_id or row.get("schema_version") != "1" or row.get("record_type") not in {"service_health_event_global", "service_health_event_resource", "service_health_event_service_region", "service_health_event_subscription"} or row.get("source_system") != "azure_service_health" or row.get("status", "").casefold() != "active" or not row.get("tracking_id"):
                 diagnostics.append(Diagnostic("error", "invalid_service_health_row", "validation", "service-health", context.run_id, record_ref=event_id))
-            if row.get("record_type") != "service_health_event_global" and not row.get("subscription_id"):
+            if row.get("record_type") == "service_health_event_global" and row.get("subscription_evidence_source") != "explicit_global":
+                diagnostics.append(Diagnostic("error", "global_evidence_not_explicit", "validation", "service-health", context.run_id, record_ref=event_id))
+            if row.get("record_type") != "service_health_event_global" and (not row.get("subscription_id") or not row.get("collection_subscription_id")):
                 diagnostics.append(Diagnostic("error", "missing_affected_subscription", "validation", "service-health", context.run_id, record_ref=event_id))
-        companion_refs = {str(item.get("raw_record_ref", "")) for item in artifact.companion_records}
-        if refs != companion_refs:
+            if row.get("retirement_date_quality") not in {"exact", "missing", "invalid"}:
+                diagnostics.append(Diagnostic("error", "invalid_retirement_date_quality", "validation", "service-health", context.run_id, record_ref=event_id))
+            if row.get("retirement_date"):
+                try:
+                    date.fromisoformat(row["retirement_date"])
+                except ValueError:
+                    diagnostics.append(Diagnostic("error", "invalid_retirement_date", "validation", "service-health", context.run_id, record_ref=event_id))
+            for field in ("impact_start_time", "impact_mitigation_time", "last_update_time"):
+                if row.get(field):
+                    try:
+                        datetime.fromisoformat(row[field].replace("Z", "+00:00"))
+                    except ValueError:
+                        diagnostics.append(Diagnostic("error", f"invalid_{field}", "validation", "service-health", context.run_id, record_ref=event_id))
+            if row.get("published_resource_id"):
+                normalized = re.sub(r"/+", "/", row["published_resource_id"].strip()).casefold().rstrip("/")
+                if normalized != row.get("normalized_resource_id", ""):
+                    diagnostics.append(Diagnostic("error", "resource_normalization_mismatch", "validation", "service-health", context.run_id, record_ref=event_id))
+            for field in ("provenance_json",):
+                if row.get(field):
+                    try:
+                        json.loads(row[field])
+                    except json.JSONDecodeError:
+                        diagnostics.append(Diagnostic("error", f"invalid_{field}", "validation", "service-health", context.run_id, record_ref=event_id))
+            for field, allowed in {
+                "resource_inventory_match_status": {"matched", "missing", "ambiguous", "not_applicable"},
+                "subscription_inventory_match_status": {"matched", "missing", "not_applicable"},
+                "description_quality": {"full_article", "description_fallback", "sensitive_unavailable", "missing"},
+            }.items():
+                if row.get(field) not in allowed:
+                    diagnostics.append(Diagnostic("error", f"invalid_{field}", "validation", "service-health", context.run_id, record_ref=event_id))
+        companion_refs = tuple(str(item.get("raw_record_ref", "")) for item in artifact.companion_records if isinstance(item, Mapping))
+        if len(companion_refs) != len(artifact.records) or tuple(row_refs) != companion_refs or len(set(companion_refs)) != len(companion_refs):
             diagnostics.append(Diagnostic("error", "raw_pair_bijection_failed", "validation", "service-health", context.run_id))
+        for row, companion in zip(artifact.records, artifact.companion_records, strict=False):
+            if not isinstance(companion, Mapping) or companion.get("raw_record_ref") != row.get("raw_record_ref"):
+                diagnostics.append(Diagnostic("error", "raw_evidence_not_reproducible", "validation", "service-health", context.run_id, record_ref=row.get("service_health_event_id", "")))
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
         return base
@@ -57,3 +98,15 @@ SERVICE_HEALTH_V1 = ServiceHealthV1Contract(
     path="01_azure_service_health_advisories_raw.tsv",
     companion_path="01_azure_service_health_advisories_raw.jsonl",
 )
+
+
+def encode(artifact):
+    return SERVICE_HEALTH_V1.encode(artifact)
+
+
+def decode(data: bytes):
+    return SERVICE_HEALTH_V1.decode(data)
+
+
+def validate(artifact, context):
+    return SERVICE_HEALTH_V1.validate(artifact, context)

@@ -42,7 +42,7 @@ def acquisition() -> SourceAcquisition:
         records=(
             {
                 "id": "/subscriptions/sub-a/providers/Microsoft.ResourceHealth/events/event-1",
-                "name": "event-1",
+                "name": "TRACK-1",
                 "properties": {
                     "trackingId": "TRACK-1",
                     "eventType": "HealthAdvisory",
@@ -84,3 +84,17 @@ def test_normalize_service_health_renders_complete_article_and_preserves_associa
 
     encoded = SERVICE_HEALTH_V1.encode(artifact)
     assert tuple(encoded.data.splitlines()[0].decode().split("\t")) == SERVICE_HEALTH_V1_HEADER
+
+
+def test_normalize_service_health_rejects_unknown_classification() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["level"] = "Notice"
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert not result.is_valid
+    assert result.diagnostics[0].code == "invalid_service_health_classification"

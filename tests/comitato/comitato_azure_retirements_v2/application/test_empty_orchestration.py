@@ -153,7 +153,7 @@ def test_non_empty_scripted_source_is_not_claimed_complete() -> None:
         build_application(
             log,
             publication,
-            records=( {"advisor_recommendation_id": "rec-1"}, ),
+            records=({"advisor_recommendation_id": "rec-1"},),
         ).run(RunRequest(ReportSelector.ALL))
 
     assert publication.staged == []
@@ -167,7 +167,13 @@ def test_non_empty_raw_publication_waits_for_evidence_union_coverage() -> None:
         build_application(
             log,
             publication,
-            records=({"id": "advisor-1", "properties": {"recommendationStatus": "New"}},),
+            records=(
+                {
+                    "id": "advisor-1",
+                    "subscriptionId": SUBSCRIPTION_ID,
+                    "properties": {"recommendationStatus": "New"},
+                },
+            ),
         ).run(RunRequest(ReportSelector.ADVISOR))
 
     assert publication.staged == []

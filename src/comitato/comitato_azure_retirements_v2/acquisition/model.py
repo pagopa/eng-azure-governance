@@ -13,12 +13,15 @@ class AcquisitionReceipt:
     pages: int
     source_records: int
     complete: bool
+    continuation_tokens: tuple[str, ...] = ()
+    failed_subscriptions: tuple[str, ...] = ()
 
     @property
     def is_complete(self) -> bool:
         return (
             self.complete
             and self.expected_subscriptions == self.completed_subscriptions
+            and not self.failed_subscriptions
         )
 
 

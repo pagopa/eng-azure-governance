@@ -85,3 +85,20 @@ def test_normalize_advisor_preserves_the_complete_recommendation_evidence_pair()
 
     encoded = ADVISOR_V1.encode(pair.artifact)
     assert tuple(encoded.data.splitlines()[0].decode().split("\t")) == ADVISOR_V1_HEADER
+
+
+def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_it() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["recommendationStatus"] = "Unexpected"
+    result = normalize_advisor(
+        SourceAcquisition(
+            receipt=acquisition().receipt,
+            records=(payload,),
+        ),
+        context(),
+        AdvisorEnrichments(),
+    )
+
+    assert not result.is_valid
+    assert result.diagnostics[0].code == "invalid_recommendation_status"

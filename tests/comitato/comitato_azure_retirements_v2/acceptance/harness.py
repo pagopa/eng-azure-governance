@@ -13,7 +13,14 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
+from src.comitato.comitato_azure_retirements_v2.acquisition.paging import (
+    AcquisitionIntegrityError,
+    ScriptedRequest,
+    SourcePage,
+    collect_complete_pages,
+)
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+    ApplicationError,
     RetirementsApplication,
 )
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
@@ -42,6 +49,8 @@ class Scenario:
     scope: Scope
     advisor_pages: tuple[dict[str, Any], ...]
     service_health_pages: tuple[dict[str, Any], ...]
+    advisor_complete: bool = True
+    service_health_complete: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,17 +85,19 @@ class _CatalogSource:
 @dataclass(frozen=True, slots=True)
 class ScriptedAdvisorSource:
     pages: tuple[dict[str, Any], ...]
+    complete: bool = True
 
     def acquire(self, context: RunContext) -> SourceAcquisition:
-        return _source_acquisition("advisor", self.pages, context)
+        return _source_acquisition("advisor", self.pages, context, self.complete, lambda item: item.get("id", ""))
 
 
 @dataclass(frozen=True, slots=True)
 class ScriptedServiceHealthSource:
     pages: tuple[dict[str, Any], ...]
+    complete: bool = True
 
     def acquire(self, context: RunContext) -> SourceAcquisition:
-        return _source_acquisition("service-health", self.pages, context)
+        return _source_acquisition("service-health", self.pages, context, self.complete, lambda item: item.get("id", ""))
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,20 +121,37 @@ class TemporaryAtomicPublicationStore(AtomicFilesystemPublicationStore):
 
 
 def _source_acquisition(
-    name: str, pages: tuple[dict[str, Any], ...], context: RunContext
+    name: str,
+    pages: tuple[dict[str, Any], ...],
+    context: RunContext,
+    complete: bool,
+    identity_of: Any,
 ) -> SourceAcquisition:
-    records = tuple(item for page in pages for item in page.get("items", ()))
+    subscription_id = context.scope.subscription_ids[0] if context.scope.subscription_ids else ""
+    scripted_pages = tuple(
+        SourcePage(
+            subscription_id=subscription_id,
+            items=tuple(page.get("items", ())),
+            continuation_token=page.get("continuation_token") or page.get("next_link"),
+        )
+        for page in pages
+    )
+    acquisition = collect_complete_pages(
+        (ScriptedRequest(subscription_id, scripted_pages, complete=complete),),
+        identity_of,
+    )
     return SourceAcquisition(
         receipt=AcquisitionReceipt(
             source=name,
             api_version="test-v1",
-            expected_subscriptions=len(context.scope.subscription_ids),
-            completed_subscriptions=len(context.scope.subscription_ids),
-            pages=len(pages),
-            source_records=len(records),
-            complete=True,
+            expected_subscriptions=acquisition.receipt.expected_subscriptions,
+            completed_subscriptions=acquisition.receipt.completed_subscriptions,
+            pages=acquisition.receipt.pages,
+            source_records=acquisition.receipt.source_records,
+            complete=acquisition.receipt.complete,
+            continuation_tokens=acquisition.receipt.continuation_tokens,
         ),
-        records=records,
+        records=acquisition.records,
     )
 
 
@@ -168,6 +196,8 @@ def load_scenario(fixture_dir: Path) -> Scenario:
         ),
         advisor_pages=tuple(azure["advisor"]["pages"]),
         service_health_pages=tuple(azure["service_health"]["pages"]),
+        advisor_complete=bool(azure["advisor"].get("complete", True)),
+        service_health_complete=bool(azure["service_health"].get("complete", True)),
     )
 
 
@@ -187,21 +217,53 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
     application = RetirementsApplication(
         scope_source=_FixedScopeSource(scenario.scope),
         catalog_source=_CatalogSource(catalog),
-        advisor_source=ScriptedAdvisorSource(scenario.advisor_pages),
-        service_health_source=ScriptedServiceHealthSource(scenario.service_health_pages),
+        advisor_source=ScriptedAdvisorSource(scenario.advisor_pages, scenario.advisor_complete),
+        service_health_source=ScriptedServiceHealthSource(scenario.service_health_pages, scenario.service_health_complete),
         publication_store=TemporaryAtomicPublicationStore(destination),
         clock=FixedClock(scenario.created_at),
         run_id_factory=FixedRunIdFactory(scenario.run_id),
     )
-    application.run(
-        RunRequest(
-            selector=scenario.selector,
-            subscription_ids=scenario.scope.subscription_ids,
-            as_of_date=scenario.as_of_date,
+    try:
+        application.run(
+            RunRequest(
+                selector=scenario.selector,
+                subscription_ids=scenario.scope.subscription_ids,
+                as_of_date=scenario.as_of_date,
+            )
         )
-    )
+        exit_status = 0
+    except (ApplicationError, AcquisitionIntegrityError, ValueError) as exc:
+        exit_status = 1
+        (destination / "stderr.jsonl").write_bytes(_diagnostic_jsonl(exc, scenario))
+    current_tree = {}
+    if (destination / "current").exists():
+        current_tree = read_current_tree(destination)
     return ScenarioResult(
-        exit_status=scenario.expected_exit_status,
-        stderr_jsonl=(scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),
-        current_tree=read_current_tree(destination),
+        exit_status=exit_status,
+        stderr_jsonl=(destination / "stderr.jsonl").read_bytes() if exit_status else (scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),
+        current_tree=current_tree,
     )
+
+
+def _diagnostic_jsonl(exc: Exception, scenario: Scenario) -> bytes:
+    message = str(exc)
+    if "conflicting payload" in message:
+        code, stage = "conflicting_source_record", "acquisition"
+    elif "incomplete acquisition" in message:
+        code, stage = "incomplete_acquisition", "acquisition"
+    elif "invalid_service_health_classification" in message or "invalid service-health raw contract" in message:
+        code, stage = "invalid_service_health_classification", "validation"
+    else:
+        code, stage = "application_error", "validation"
+    payload = {
+        "artifact": "",
+        "code": code,
+        "message": message,
+        "record_ref": "",
+        "report": scenario.selector.value,
+        "run_id": scenario.run_id,
+        "severity": "error",
+        "stage": stage,
+        "subscription_id": "",
+    }
+    return (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")

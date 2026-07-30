@@ -16,6 +16,7 @@ class AcquisitionIntegrityError(ValueError):
 class ScriptedRequest:
     subscription_id: str
     pages: tuple[SourcePage, ...]
+    complete: bool = True
 
 
 def _canonical(value: Any) -> str:
@@ -30,6 +31,10 @@ def collect_complete_pages(
     records: dict[tuple[str, str], SourceRecord] = {}
     pages_seen = 0
     for request in requests:
+        if not request.complete:
+            raise AcquisitionIntegrityError(
+                f"incomplete acquisition for subscription: {request.subscription_id}"
+            )
         seen_tokens: set[str] = set()
         for page in request.pages:
             if page.subscription_id != request.subscription_id:
@@ -77,6 +82,12 @@ def collect_complete_pages(
         pages=pages_seen,
         source_records=len(ordered),
         complete=True,
+        continuation_tokens=tuple(
+            page.continuation_token
+            for request in requests
+            for page in request.pages
+            if page.continuation_token is not None
+        ),
     )
     return SourceAcquisition(receipt=receipt, records=ordered)
 

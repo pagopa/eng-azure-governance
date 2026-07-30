@@ -127,7 +127,13 @@ class RetirementsApplication:
                 acquisition, context, ServiceHealthSupplementalEvidence()
             )
         if not result.is_valid or result.value is None:
-            raise ApplicationError(f"invalid {source_name} raw contract")
+            code = result.diagnostics[0].code if result.diagnostics else "unknown_raw_contract_error"
+            raise ApplicationError(f"invalid {source_name} raw contract: {code}")
+        contract = ADVISOR_V1 if source_name == "advisor" else SERVICE_HEALTH_V1
+        contract_result = contract.validate(result.value.artifact, context)
+        if not contract_result.is_valid:
+            code = contract_result.diagnostics[0].code
+            raise ApplicationError(f"invalid {source_name} raw contract: {code}")
         return SourceAcquisition(
             receipt=acquisition.receipt,
             records=result.value.artifact.records,
