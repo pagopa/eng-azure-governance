@@ -1,0 +1,27 @@
+from ._base import TsvContract
+
+HEADER = (
+    "schema_version", "run_id", "as_of_date", "scope_mode", "record_type",
+    "source_system", "service_health_event_id", "event_name", "tracking_id",
+    "collection_subscription_id", "subscription_id", "subscription_name",
+    "subscription_evidence_source", "event_type", "event_sub_type", "event_source",
+    "event_level", "status", "title", "summary", "description_problem",
+    "description_quality", "recommended_actions", "impact_start_time_raw",
+    "impact_start_time", "impact_mitigation_time_raw", "impact_mitigation_time",
+    "last_update_time_raw", "last_update_time", "retirement_date_raw", "retirement_date",
+    "retirement_date_source", "retirement_date_quality", "impacted_service",
+    "impacted_service_guid", "impacted_region", "normalized_impacted_region",
+    "resource_evidence_source", "resource_evidence_status", "published_resource_id",
+    "normalized_resource_id", "resource_name", "resource_group", "resource_type",
+    "resource_location", "recommendation_type_id", "advisor_platform_state",
+    "current_query_match", "resource_inventory_match_status",
+    "subscription_inventory_match_status", "is_sensitive", "details_fetch_status",
+    "diagnostic_flags", "provenance_json", "raw_record_ref",
+)
+
+SERVICE_HEALTH_V1 = TsvContract(
+    name="service-health",
+    header=HEADER,
+    path="01_azure_service_health_advisories_raw.tsv",
+    companion_path="01_azure_service_health_advisories_raw.jsonl",
+)

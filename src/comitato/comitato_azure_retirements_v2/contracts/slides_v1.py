@@ -1,0 +1,24 @@
+from ._base import TsvContract
+
+HEADER = (
+    "schema_version", "aggregate_schema_version", "run_id", "as_of_date",
+    "aggregate_id", "correlation_status", "correlation_basis", "source_event_keys_json",
+    "correlation_candidates_json", "source_systems_json", "record_types_json",
+    "raw_record_refs_json", "advisor_recommendation_ids_json",
+    "advisor_recommendation_type_ids_json", "service_health_event_ids_json",
+    "service_health_tracking_ids_json", "technology_or_service", "retiring_feature",
+    "advisor_problem_descriptions_json", "service_health_problem_descriptions_json",
+    "advisor_actions_json", "service_health_actions_json", "retirement_date",
+    "retirement_date_quality", "retirement_dates_json", "retirement_date_sources_json",
+    "affected_subscription_ids_json", "affected_subscription_names_json", "is_global",
+    "platforms_json", "platforms_subscriptions_json", "published_resource_ids_json",
+    "normalized_resource_ids_json", "impacted_services_json", "impacted_regions_json",
+    "source_links_json", "diagnostic_flags", "provenance_json", "comitato_priorità",
+    "comitato_descrizione_completa", "comitato_retirement_date", "comitato_piattaforme",
+)
+
+SLIDES_V1 = TsvContract(
+    name="slides",
+    header=HEADER,
+    path="03_azure_retirements_slide.tsv",
+)
