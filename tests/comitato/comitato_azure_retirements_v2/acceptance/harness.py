@@ -76,7 +76,7 @@ class _CatalogSnapshot:
 class _FixedScopeSource:
     scope: Scope
 
-    def resolve(self, request: RunRequest) -> Scope:
+    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope:
         return self.scope
 
 

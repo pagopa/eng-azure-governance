@@ -1,5 +1,5 @@
 import os
-import pty
+import shlex
 import shutil
 import stat
 import subprocess
@@ -50,29 +50,28 @@ class FakeV2Launcher:
         return self.run(*arguments)
 
     def run_tty(self, *arguments: str) -> LauncherResult:
-        master, slave = pty.openpty()
-        process = subprocess.Popen(
-            ["bash", str(self.launcher), *arguments],
+        stdout_path = self.root / "interactive-stdout.txt"
+        command = " ".join(
+            [
+                "bash",
+                shlex.quote(str(self.launcher)),
+                *(shlex.quote(argument) for argument in arguments),
+                ">",
+                shlex.quote(str(stdout_path)),
+            ]
+        )
+        completed = subprocess.run(
+            ["script", "-q", "/dev/null", "bash", "-c", command],
             cwd=self.root,
             env=self._environment(),
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=slave,
+            capture_output=True,
+            text=True,
+            check=False,
         )
-        os.close(slave)
-        stdout, _ = process.communicate()
-        stderr_chunks: list[bytes] = []
-        try:
-            while True:
-                stderr_chunks.append(os.read(master, 4096))
-        except OSError:
-            pass
-        finally:
-            os.close(master)
         return self._result(
-            process.returncode,
-            stdout.decode("utf-8"),
-            b"".join(stderr_chunks).decode("utf-8"),
+            completed.returncode,
+            stdout_path.read_text(encoding="utf-8") if stdout_path.exists() else "",
+            completed.stdout + completed.stderr,
         )
 
 

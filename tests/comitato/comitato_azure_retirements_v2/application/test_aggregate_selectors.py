@@ -24,7 +24,7 @@ def advisor_payload() -> dict[str, object]:
 
 
 class ScopeSource:
-    def resolve(self, request):
+    def resolve(self, request, *, run_id: str = ""):
         return Scope((SUBSCRIPTION,), mode="explicit")
 
 

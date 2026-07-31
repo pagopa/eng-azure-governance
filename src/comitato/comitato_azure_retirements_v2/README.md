@@ -33,6 +33,52 @@ validated before it replaces the target month. Failed runs return a non-zero
 status and emit sorted JSONL diagnostics on stderr without changing the
 existing monthly bundle.
 
+## Operator Output And Logging
+
+The launcher and direct module entry point have different defaults:
+
+- `run.sh` appends `--output-format human` when no output format was supplied.
+  It shows the human layout and bootstrap status lines only when stderr is an
+  interactive TTY.
+- Direct `python -m src.comitato.comitato_azure_retirements_v2` execution
+  defaults to machine output. Successful runs write one JSON value and a
+  newline to stdout. Failures write sorted JSONL diagnostics to stderr.
+- `--output-format json` always uses the machine contract, even in a TTY.
+- `--output-format human` uses Rich on stderr only in a TTY. In non-TTY
+  execution it falls back to the machine JSON or JSONL contract.
+- Launcher bootstrap status lines are suppressed in non-TTY execution and
+  whenever an explicit JSON format is supplied. Human output never shares
+  stdout with machine payloads.
+
+Every enabled run writes a UTF-8 plain-text debug log. The default path is:
+
+```text
+tmp/comitato/comitato_azure_retirements_v2/exports/YYYY/MM/<YYYYMMDDHHMM>_<run-id>_debug.log
+```
+
+The month partition is based on the run start time. `--log-directory` changes
+the debug-log root while preserving the same `YYYY/MM` partition and filename
+pattern. This path is separate from `--output-path`: changing logging settings
+does not redirect, replace, or otherwise alter the published artifact bundle.
+
+Use the logging flags as follows:
+
+- `--output-format {human,json}` selects the process output contract.
+- `--verbose` includes additional non-failing runtime events in the human
+  console and debug log.
+- `--log-level LEVEL` sets the minimum level written to the debug log.
+- `--console-level LEVEL` sets the minimum level rendered in human mode.
+  Accepted levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`.
+- `--no-debug-log` disables the durable text log and creates no log directory.
+- `--log-directory PATH` selects a separate debug-log root without creating it
+  during argument parsing.
+
+Debug events contain bounded lifecycle metadata such as stage names, source
+names, counts, logical paths, status codes, and run or subscription identifiers.
+They never contain bearer tokens, authorization or request headers, URL query
+strings, complete request payloads, or response bodies. Debug logging is
+independent of publication success and does not change artifact bytes.
+
 Examples:
 
 ```bash
@@ -43,4 +89,26 @@ bash src/comitato/comitato_azure_retirements_v2/run.sh \
   --as-of-date 2026-07-31 \
   --catalog-path config/eng-finops-platforms.yaml \
   --output-path src/comitato/comitato_azure_retirements_v2/exports
+```
+
+For an interactive operator run, omit `--output-format` and keep stderr
+attached to the terminal:
+
+```bash
+bash src/comitato/comitato_azure_retirements_v2/run.sh \
+  --report all \
+  --subscriptions 00000000-0000-0000-0000-000000000000 \
+  --as-of-date 2026-07-31
+```
+
+For automation, select JSON explicitly and parse stdout while keeping stderr
+available for JSONL diagnostics:
+
+```bash
+python3 -m src.comitato.comitato_azure_retirements_v2 \
+  --output-format json \
+  --report aggregate \
+  --subscriptions 00000000-0000-0000-0000-000000000000 \
+  > result.json
+python3 -c 'import json, pathlib; print(json.loads(pathlib.Path("result.json").read_text())["status"])'
 ```
