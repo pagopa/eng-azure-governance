@@ -33,7 +33,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import read_current_tree
+from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import read_monthly_tree
 from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,
@@ -232,15 +232,14 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
             subscription_ids=tuple(sorted(catalog_subscriptions)),
         )
     seeded_current = scenario.fixture_dir / "seeded" / "current"
+    monthly_bundle = destination / f"{scenario.as_of_date.year:04d}" / f"{scenario.as_of_date.month:02d}"
     if seeded_current.is_dir():
-        seed_generation = destination / "generations" / "seed"
-        seed_generation.mkdir(parents=True, exist_ok=True)
+        monthly_bundle.mkdir(parents=True, exist_ok=True)
         for source in seeded_current.rglob("*"):
             if source.is_file():
-                target = seed_generation / source.relative_to(seeded_current)
+                target = monthly_bundle / source.relative_to(seeded_current)
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
-        (destination / "current").write_text("generations/seed\n", encoding="utf-8")
     if scenario.publication_fault:
         publication = FaultInjectingPublicationStore(destination, fault=scenario.publication_fault)
     else:
@@ -267,8 +266,8 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         exit_status = 1
         (destination / "stderr.jsonl").write_bytes(_diagnostic_jsonl(exc, scenario))
     current_tree = {}
-    if (destination / "current").exists():
-        current_tree = read_current_tree(destination)
+    if monthly_bundle.exists():
+        current_tree = read_monthly_tree(destination, scenario.as_of_date)
     return ScenarioResult(
         exit_status=exit_status,
         stderr_jsonl=(destination / "stderr.jsonl").read_bytes() if exit_status else (scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),

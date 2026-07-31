@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -7,7 +8,7 @@ from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication 
     FilesystemAtomicPublicationStore,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
-    read_current_tree,
+    read_monthly_tree,
 )
 from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationError
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
@@ -15,12 +16,11 @@ from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publica
 )
 
 
-def _seed(destination: Path) -> tuple[bytes, bytes]:
-    generation = destination / "generations" / "seed"
-    generation.mkdir(parents=True)
-    (generation / "sentinel.txt").write_bytes(b"seeded-current")
-    (destination / "current").write_bytes(b"generations/seed\n")
-    return (destination / "current").read_bytes(), (generation / "sentinel.txt").read_bytes()
+def _seed(destination: Path) -> bytes:
+    monthly_bundle = destination / "2026" / "07"
+    monthly_bundle.mkdir(parents=True)
+    (monthly_bundle / "sentinel.txt").write_bytes(b"seeded-current")
+    return (monthly_bundle / "sentinel.txt").read_bytes()
 
 
 def _private_entries(destination: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
@@ -44,15 +44,39 @@ def test_store_rejects_destination_capability_mismatch(tmp_path: Path) -> None:
         FilesystemAtomicPublicationStore(destination).publish(empty_candidate())
 
 
-def test_publish_exposes_one_complete_generation(tmp_path: Path) -> None:
+def test_publish_exposes_one_complete_monthly_bundle(tmp_path: Path) -> None:
     store = FilesystemAtomicPublicationStore(tmp_path)
 
     receipt = store.publish(empty_candidate())
 
-    assert (tmp_path / "current").read_text(encoding="utf-8") == (
-        f"generations/{receipt.generation}\n"
-    )
-    assert read_current_tree(tmp_path)["publication-manifest.json"]
+    assert receipt.generation == "2026/07"
+    assert receipt.current_reference == "2026/07"
+    assert read_monthly_tree(tmp_path, date(2026, 7, 30))["publication-manifest.json"]
+    assert not (tmp_path / "current").exists()
+    assert not (tmp_path / "generations").exists()
+
+
+def test_publish_replaces_the_complete_monthly_bundle(tmp_path: Path) -> None:
+    store = FilesystemAtomicPublicationStore(tmp_path)
+    july = tmp_path / "2026" / "07"
+    august = tmp_path / "2026" / "08"
+    july.mkdir(parents=True)
+
+    store.publish(empty_candidate())
+    (july / "stale-artifact.tsv").write_bytes(b"stale")
+
+    second_july_receipt = store.publish(empty_candidate())
+
+    assert second_july_receipt.current_reference == "2026/07"
+    assert not (july / "stale-artifact.tsv").exists()
+    assert (july / "publication-manifest.json").is_file()
+    assert not (tmp_path / "current").exists()
+    assert not (tmp_path / "generations").exists()
+
+    store.publish(empty_candidate(as_of_date=date(2026, 8, 1)))
+
+    assert (july / "publication-manifest.json").is_file()
+    assert (august / "publication-manifest.json").is_file()
 
 
 def test_store_exposes_only_publish_as_the_transaction_operation(
@@ -76,32 +100,25 @@ def test_precommit_fault_restores_complete_publication_state(
 ) -> None:
     published_before = _seed(tmp_path)
     private_before = _private_entries(tmp_path)
-    generations_before = tuple(
-        sorted(path.name for path in (tmp_path / "generations").iterdir())
-    )
     store = FaultInjectingPublicationStore(tmp_path, fault=fault)
 
     with pytest.raises(PublicationError):
         store.publish(empty_candidate())
 
-    assert (
-        (tmp_path / "current").read_bytes(),
-        (tmp_path / "generations" / "seed" / "sentinel.txt").read_bytes(),
-    ) == published_before
+    assert (tmp_path / "2026" / "07" / "sentinel.txt").read_bytes() == published_before
     assert _private_entries(tmp_path) == private_before
-    assert tuple(
-        sorted(path.name for path in (tmp_path / "generations").iterdir())
-    ) == generations_before
+    assert not (tmp_path / "current").exists()
+    assert not (tmp_path / "generations").exists()
 
 
-def test_success_switches_one_current_reference_and_publishes_complete_generation(tmp_path: Path) -> None:
+def test_success_replaces_one_monthly_bundle_with_complete_artifacts(tmp_path: Path) -> None:
     _seed(tmp_path)
     store = FilesystemAtomicPublicationStore(tmp_path)
 
     receipt = store.publish(empty_candidate())
 
-    assert (tmp_path / "current").read_text() == f"generations/{receipt.generation}\n"
-    assert read_current_tree(tmp_path)["publication-manifest.json"]
+    assert receipt.current_reference == "2026/07"
+    assert read_monthly_tree(tmp_path, date(2026, 7, 30))["publication-manifest.json"]
 
 
 def test_post_commit_cleanup_failure_is_warning_and_does_not_roll_back(tmp_path: Path) -> None:
@@ -110,6 +127,6 @@ def test_post_commit_cleanup_failure_is_warning_and_does_not_roll_back(tmp_path:
 
     receipt = store.publish(empty_candidate())
 
-    assert (tmp_path / "generations" / receipt.generation).is_dir()
-    assert store.warnings == ("superseded generation cleanup failed",)
-    assert read_current_tree(tmp_path)["publication-manifest.json"]
+    assert (tmp_path / receipt.current_reference).is_dir()
+    assert store.warnings == ("superseded monthly bundle cleanup failed",)
+    assert read_monthly_tree(tmp_path, date(2026, 7, 30))["publication-manifest.json"]

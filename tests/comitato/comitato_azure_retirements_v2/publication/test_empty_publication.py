@@ -30,14 +30,14 @@ from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationError,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
-    read_current_tree,
+    read_monthly_tree,
 )
 
 
-def empty_candidate() -> PublicationCandidate:
+def empty_candidate(*, as_of_date: date = date(2026, 7, 30)) -> PublicationCandidate:
     context = RunContext(
         run_id="s06-empty",
-        as_of_date=date(2026, 7, 30),
+        as_of_date=as_of_date,
         created_at=datetime(2026, 7, 30, tzinfo=timezone.utc),
         request=RunRequest(selector=ReportSelector.ALL),
         scope=Scope(
@@ -75,10 +75,10 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path:
     store = FilesystemAtomicPublicationStore(tmp_path)
 
     receipt = store.publish(candidate)
-    tree = read_current_tree(tmp_path)
+    tree = read_monthly_tree(tmp_path, candidate.context.as_of_date)
     manifest = json.loads(tree["publication-manifest.json"])
 
-    assert receipt.current_reference.startswith("generations/")
+    assert receipt.current_reference == "2026/07"
     assert [item["path"] for item in manifest["artifacts"]] == [
         artifact.logical_path for artifact in candidate.artifacts
     ]
@@ -90,15 +90,14 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path:
 
 
 def test_failed_commit_leaves_existing_current_generation_unchanged(tmp_path: Path) -> None:
-    seeded = tmp_path / "generations" / "seed"
+    seeded = tmp_path / "2026" / "07"
     seeded.mkdir(parents=True)
     (seeded / "sentinel.txt").write_bytes(b"seeded-current")
-    (tmp_path / "current").write_text("generations/seed\n", encoding="utf-8")
-    before = (tmp_path / "current").read_bytes(), (seeded / "sentinel.txt").read_bytes()
+    before = (seeded / "sentinel.txt").read_bytes()
 
     store = FilesystemAtomicPublicationStore(tmp_path, fail_before_switch=True)
 
-    with pytest.raises(PublicationError, match="before atomic current switch"):
+    with pytest.raises(PublicationError, match="before monthly publication switch"):
         store.publish(empty_candidate())
 
-    assert ((tmp_path / "current").read_bytes(), (seeded / "sentinel.txt").read_bytes()) == before
+    assert (seeded / "sentinel.txt").read_bytes() == before

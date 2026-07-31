@@ -18,7 +18,7 @@ _COMMIT_FAULTS = {"before_switch", "durable_marker"}
 
 
 class FilesystemAtomicPublicationStore:
-    """Publish a validated generation through one atomic current-reference switch."""
+    """Publish one validated, replaceable bundle for the candidate's month."""
 
     def __init__(self, destination: Path, *, fail_before_switch: bool = False) -> None:
         self.destination = destination
@@ -51,14 +51,10 @@ class FilesystemAtomicPublicationStore:
             self.destination.mkdir(parents=True, exist_ok=True)
             if not self.destination.is_dir():
                 raise OSError("destination is not a directory")
-            (self.destination / ".staging").mkdir(exist_ok=True)
-            (self.destination / "generations").mkdir(exist_ok=True)
-            if (self.destination / "current").exists() and not (self.destination / "current").is_file():
-                raise OSError("current reference is not a file")
-            if (self.destination / ".staging").stat().st_dev != self.destination.stat().st_dev:
+            staging_root = self.destination / ".staging"
+            staging_root.mkdir(exist_ok=True)
+            if staging_root.stat().st_dev != self.destination.stat().st_dev:
                 raise OSError("staging is on a different filesystem")
-            if (self.destination / "generations").stat().st_dev != self.destination.stat().st_dev:
-                raise OSError("generations are on a different filesystem")
         except OSError as exc:
             diagnostic = Diagnostic(
                 severity="error",
@@ -78,7 +74,7 @@ class FilesystemAtomicPublicationStore:
     def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
         self._preflight()
         if self.fail_before_switch:
-            raise PublicationError("fault injected before atomic current switch")
+            raise PublicationError("fault injected before monthly publication switch")
         generation_dir = Path(generation.generation_dir)
         staging_root = self.destination / ".staging"
         try:
@@ -92,47 +88,49 @@ class FilesystemAtomicPublicationStore:
                 Diagnostic("error", "cross_device_publication", "commit", "", "", message="publication generation is not on the destination filesystem")
             )
 
-        old_reference = self._read_reference()
-        final_generation = self.destination / "generations" / generation_dir.name
-        temporary_reference = self.destination / f".current-{generation_dir.name}.tmp"
-        try:
-            os.replace(generation_dir, final_generation)
-            reference = f"generations/{final_generation.name}\n"
-            if temporary_reference.exists():
-                temporary_reference.unlink()
-            with temporary_reference.open("wb") as handle:
-                handle.write(reference.encode("utf-8"))
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.replace(temporary_reference, self.destination / "current")
-        except OSError as exc:
-            temporary_reference.unlink(missing_ok=True)
-            shutil.rmtree(final_generation, ignore_errors=True)
+        candidate = getattr(self, "_candidate", None)
+        if candidate is None:
             raise PublicationError(
-                Diagnostic("error", "commit_failure", "commit", "", "", message="atomic publication switch failed")
+                Diagnostic("error", "missing_publication_candidate", "commit", "", "", message="publication candidate is unavailable")
+            )
+        month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
+        monthly_bundle = self.destination / month_reference
+        backup_bundle = self.destination / ".staging" / f"{generation_dir.name}-previous"
+        previous_bundle_moved = False
+        new_bundle_moved = False
+        try:
+            monthly_bundle.parent.mkdir(parents=True, exist_ok=True)
+            if monthly_bundle.exists() and not monthly_bundle.is_dir():
+                raise OSError("monthly publication path is not a directory")
+            if backup_bundle.exists():
+                raise OSError("monthly publication backup already exists")
+            if monthly_bundle.exists():
+                os.replace(monthly_bundle, backup_bundle)
+                previous_bundle_moved = True
+            os.replace(generation_dir, monthly_bundle)
+            new_bundle_moved = True
+        except OSError as exc:
+            if new_bundle_moved:
+                shutil.rmtree(monthly_bundle, ignore_errors=True)
+            if previous_bundle_moved and backup_bundle.exists():
+                try:
+                    os.replace(backup_bundle, monthly_bundle)
+                except OSError:
+                    self._warnings.append("superseded monthly bundle restoration failed")
+            shutil.rmtree(generation_dir, ignore_errors=True)
+            raise PublicationError(
+                Diagnostic("error", "commit_failure", "commit", "", "", message="monthly publication replacement failed")
             ) from exc
 
-        if old_reference:
-            old_generation = self.destination / old_reference
+        if previous_bundle_moved:
             try:
-                shutil.rmtree(old_generation)
+                shutil.rmtree(backup_bundle)
             except OSError:
-                self._warnings.append("superseded generation cleanup failed")
+                self._warnings.append("superseded monthly bundle cleanup failed")
         return PublicationReceipt(
-            generation=final_generation.name,
-            current_reference=reference.strip(),
+            generation=month_reference,
+            current_reference=month_reference,
         )
-
-    def _read_reference(self) -> str:
-        current = self.destination / "current"
-        if not current.exists():
-            return ""
-        value = current.read_text(encoding="utf-8").strip()
-        if not value or not value.startswith("generations/") or ".." in Path(value).parts:
-            raise PublicationError(
-                Diagnostic("error", "invalid_current_reference", "commit", "", "", message="current publication reference is invalid")
-            )
-        return value
 
 
 class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
@@ -182,9 +180,13 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
                 )
             )
         if self.fault == "cleanup":
-            old_reference = self._read_reference()
+            candidate = getattr(self, "_candidate", None)
+            had_previous_bundle = False
+            if candidate is not None:
+                month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
+                had_previous_bundle = (self.destination / month_reference).exists()
             receipt = super()._commit(generation)
-            if old_reference:
-                self._warnings.append("superseded generation cleanup failed")
+            if had_previous_bundle:
+                self._warnings.append("superseded monthly bundle cleanup failed")
             return receipt
         return super()._commit(generation)

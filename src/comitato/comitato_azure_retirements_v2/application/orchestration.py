@@ -142,10 +142,10 @@ class RetirementsApplication:
                     stage=stage,
                     report=context.request.selector.value,
                     run_id=context.run_id,
-                    message="publication failed before the current-generation switch",
+                    message="publication failed before the monthly bundle replacement",
                 ),
             )
-        return ApplicationError("publication failed; current publication was not changed", diagnostics)
+        return ApplicationError("publication failed; existing monthly bundle was not changed", diagnostics)
 
     @staticmethod
     def _as_of_date(request: RunRequest):

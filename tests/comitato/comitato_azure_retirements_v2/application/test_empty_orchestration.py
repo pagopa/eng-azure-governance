@@ -115,7 +115,7 @@ class FakePublicationStore:
         self.published.append(candidate)
         return PublicationReceipt(
             generation="test-generation",
-            current_reference="generations/test-generation",
+            current_reference="2026/07",
         )
 
 
@@ -164,9 +164,7 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
         "03_azure_retirements_slide.tsv",
     ]
     assert len(publication.published) == 1
-    assert result.publication_receipt.current_reference == (
-        "generations/test-generation"
-    )
+    assert result.publication_receipt.current_reference == "2026/07"
 
 
 def test_incomplete_receipt_blocks_staging() -> None:
@@ -244,9 +242,7 @@ def test_application_uses_one_publish_operation() -> None:
     )
 
     assert len(publication.published) == 1
-    assert result.publication_receipt.current_reference == (
-        "generations/test-generation"
-    )
+    assert result.publication_receipt.current_reference == "2026/07"
 
 
 def test_application_asks_catalog_for_one_plan() -> None:

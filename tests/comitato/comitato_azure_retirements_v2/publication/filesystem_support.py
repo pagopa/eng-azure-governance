@@ -1,9 +1,9 @@
+from datetime import date
 from pathlib import Path
 
 
-def read_current_tree(destination: Path) -> dict[str, bytes]:
-    reference = (destination / "current").read_text(encoding="utf-8").strip()
-    current = destination / reference
+def read_monthly_tree(destination: Path, as_of_date: date) -> dict[str, bytes]:
+    current = destination / f"{as_of_date.year:04d}" / f"{as_of_date.month:02d}"
     return {
         path.relative_to(current).as_posix(): path.read_bytes()
         for path in sorted(current.rglob("*"))

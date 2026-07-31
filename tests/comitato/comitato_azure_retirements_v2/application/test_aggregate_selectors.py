@@ -67,7 +67,7 @@ class Publication:
         self.staged.append(candidate)
         return PublicationReceipt(
             generation="test-generation",
-            current_reference="generations/test-generation",
+            current_reference="2026/07",
         )
 
 

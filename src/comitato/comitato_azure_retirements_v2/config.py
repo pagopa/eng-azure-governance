@@ -14,7 +14,7 @@ from .domain.execution import ReportSelector, RunRequest
 
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
-_DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "output"
+_DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
 
 
 @dataclass(frozen=True, slots=True)
