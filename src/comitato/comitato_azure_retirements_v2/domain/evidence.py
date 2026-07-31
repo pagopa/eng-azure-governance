@@ -7,26 +7,17 @@ from typing import Any, Mapping
 
 
 @dataclass(frozen=True, slots=True)
-class AdvisorRecommendationEvidence:
-    recommendation_id: str
-    payload: Mapping[str, Any]
+class AdvisorEnrichments:
+    metadata: Mapping[str, Mapping[str, Any]] = ()
+    resources: Mapping[str, Mapping[str, Any]] = ()
+    subscriptions: Mapping[str, Mapping[str, Any]] = ()
 
 
 @dataclass(frozen=True, slots=True)
-class ServiceHealthEventEvidence:
-    event_id: str
-    payload: Mapping[str, Any]
-    collection_subscription_id: str = ""
-
-    @property
-    def is_explicit_global(self) -> bool:
-        properties = self.payload.get("properties", {})
-        if not isinstance(properties, Mapping):
-            return False
-        marker = properties.get("isGlobal")
-        return marker is True or (
-            isinstance(marker, str) and marker.casefold() == "true"
-        )
+class ServiceHealthSupplementalEvidence:
+    advisor_records: tuple[Mapping[str, Any], ...] = ()
+    resource_inventory: Mapping[str, Mapping[str, Any]] = ()
+    subscription_inventory: Mapping[str, Mapping[str, Any]] = ()
 
 
-__all__ = ["AdvisorRecommendationEvidence", "ServiceHealthEventEvidence"]
+__all__ = ["AdvisorEnrichments", "ServiceHealthSupplementalEvidence"]

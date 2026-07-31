@@ -51,13 +51,6 @@ class PublicationManifest:
 
 
 @dataclass(frozen=True, slots=True)
-class ValidatedStagedGeneration:
-    generation_dir: Any
-    manifest: dict[str, Any]
-    artifacts: tuple[EncodedArtifact, ...]
-
-
-@dataclass(frozen=True, slots=True)
 class RunResult:
     exit_status: int
     context: RunContext

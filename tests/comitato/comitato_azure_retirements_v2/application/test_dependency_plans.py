@@ -66,11 +66,30 @@ def _artifact(path: str, *, run_id: str = "run-1", as_of_date: str = "2026-07-30
     return EncodedArtifact(path, data, 1, media_type, 1, run_id)
 
 
-@pytest.mark.parametrize("selector", tuple(ReportSelector))
-def test_dependency_plan_declares_exact_selected_artifact_closure(selector: ReportSelector) -> None:
+@pytest.mark.parametrize(
+    ("selector", "advisor", "service_health", "aggregate", "slides"),
+    (
+        (ReportSelector.ALL, True, True, True, True),
+        (ReportSelector.ADVISOR, True, False, False, False),
+        (ReportSelector.SERVICE_HEALTH, False, True, False, False),
+        (ReportSelector.AGGREGATE, True, True, True, False),
+        (ReportSelector.SLIDES, True, True, True, True),
+    ),
+)
+def test_dependency_plan_exposes_typed_work_requirements(
+    selector: ReportSelector,
+    advisor: bool,
+    service_health: bool,
+    aggregate: bool,
+    slides: bool,
+) -> None:
     plan = build_dependency_plan(selector)
 
-    assert plan.selected_paths == EXPECTED_PATHS[selector]
+    assert plan.needs_advisor is advisor
+    assert plan.needs_service_health is service_health
+    assert plan.needs_aggregate is aggregate
+    assert plan.needs_slides is slides
+    assert not hasattr(plan, "selected_paths")
 
 
 def test_all_selector_acquires_each_raw_source_once() -> None:

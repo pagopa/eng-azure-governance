@@ -46,6 +46,25 @@ def test_accepts_scope_catalog_and_output_inputs(tmp_path: Path) -> None:
     assert not hasattr(config, "token")
 
 
+def test_request_parser_is_projection_of_runtime_parser(tmp_path: Path) -> None:
+    argv = [
+        "--report",
+        "advisor",
+        "--subscriptions",
+        "sub-b,sub-a",
+        "--catalog-path",
+        str(tmp_path / "catalog.yaml"),
+    ]
+
+    assert parse_run_request(argv) == parse_config(argv).request
+
+
+def test_runtime_config_resolves_date_from_injected_today() -> None:
+    config = parse_config([], today=lambda: date(2026, 7, 31))
+
+    assert config.as_of_date == date(2026, 7, 31)
+
+
 def test_rejects_invalid_date_and_unknown_options() -> None:
     with pytest.raises(SystemExit):
         parse_run_request(["--as-of-date", "31-07-2026"])

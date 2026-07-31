@@ -4,11 +4,6 @@ from dataclasses import dataclass
 from typing import Any
 
 from ..acquisition.model import SourceAcquisition
-from ..application.advisor import AdvisorEnrichments, normalize_advisor
-from ..application.service_health import (
-    ServiceHealthSupplementalEvidence,
-    normalize_service_health,
-)
 from ..contracts import (
     ADVISOR_V1,
     AGGREGATE_V1,
@@ -23,33 +18,13 @@ from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
 from ..domain.slides import SlideSelection, select_slides
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
+from .orchestration_errors import (
+    ApplicationError,
+    ContractValidationError,
+    PlatformCoverageError,
+)
 from .planning import build_dependency_plan
-
-
-class ApplicationError(RuntimeError):
-    """A stable application boundary failure before publication."""
-
-    def __init__(self, message: str, diagnostics=()) -> None:
-        self.diagnostics = tuple(diagnostics)
-        super().__init__(message)
-
-
-class PlatformCoverageError(ApplicationError):
-    def __init__(self, diagnostics) -> None:
-        self.diagnostics = tuple(diagnostics)
-        count = len(self.diagnostics)
-        super().__init__(
-            f"platform_mapping_unmapped_subscription: {count} unmapped subscription(s); "
-            "publication not changed",
-            self.diagnostics,
-        )
-
-
-class ContractValidationError(ApplicationError):
-    def __init__(self, diagnostics, message: str) -> None:
-        self.diagnostics = tuple(diagnostics)
-        code = self.diagnostics[0].code if self.diagnostics else "unknown"
-        super().__init__(f"{message}: {code}", self.diagnostics)
+from .raw_evidence import prepare_raw_acquisition
 
 
 class _LegacyEmptyCatalog:
@@ -86,10 +61,22 @@ class RetirementsApplication:
         )
 
         acquisitions: list[SourceAcquisition] = []
-        if "advisor" in plan.stages:
-            acquisitions.append(self._prepare_raw_acquisition("advisor", self.advisor_source.acquire(context), context))
-        if "service-health" in plan.stages:
-            acquisitions.append(self._prepare_raw_acquisition("service-health", self.service_health_source.acquire(context), context))
+        if plan.needs_advisor:
+            acquisitions.append(
+                prepare_raw_acquisition(
+                    "advisor",
+                    self.advisor_source.acquire(context),
+                    context,
+                )
+            )
+        if plan.needs_service_health:
+            acquisitions.append(
+                prepare_raw_acquisition(
+                    "service-health",
+                    self.service_health_source.acquire(context),
+                    context,
+                )
+            )
 
         self._validate_catalog_coverage(
             scope.subscription_ids,
@@ -205,52 +192,6 @@ class RetirementsApplication:
                     for item in missing
                 )
             )
-
-    @staticmethod
-    def _complete_empty_acquisition(
-        source_name: str, acquisition: SourceAcquisition, context: RunContext
-    ) -> SourceAcquisition:
-        if not acquisition.receipt.is_complete:
-            raise ApplicationError(f"incomplete {source_name} acquisition")
-        if acquisition.records:
-            raise ApplicationError(f"non-empty {source_name} path is not supported")
-        if acquisition.receipt.source_records != 0:
-            raise ApplicationError(f"non-empty {source_name} path is not supported")
-        return acquisition
-
-    @staticmethod
-    def _prepare_raw_acquisition(
-        source_name: str, acquisition: SourceAcquisition, context: RunContext
-    ) -> SourceAcquisition:
-        if not acquisition.receipt.is_complete:
-            raise ApplicationError(f"incomplete {source_name} acquisition")
-        if not acquisition.records:
-            if acquisition.receipt.source_records != 0:
-                raise ApplicationError(f"inconsistent {source_name} acquisition receipt")
-            return acquisition
-        if source_name == "advisor":
-            result = normalize_advisor(acquisition, context, AdvisorEnrichments())
-        else:
-            result = normalize_service_health(
-                acquisition, context, ServiceHealthSupplementalEvidence()
-            )
-        if not result.is_valid or result.value is None:
-            raise ContractValidationError(
-                result.diagnostics,
-                f"invalid {source_name} raw contract",
-            )
-        contract = ADVISOR_V1 if source_name == "advisor" else SERVICE_HEALTH_V1
-        contract_result = contract.validate(result.value.artifact, context)
-        if not contract_result.is_valid:
-            raise ContractValidationError(
-                contract_result.diagnostics,
-                f"invalid {source_name} raw contract",
-            )
-        return SourceAcquisition(
-            receipt=acquisition.receipt,
-            records=result.value.artifact.records,
-            companion_records=result.value.artifact.companion_records,
-        )
 
     @staticmethod
     def _empty_artifacts(

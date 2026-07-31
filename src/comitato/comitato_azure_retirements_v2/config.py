@@ -7,7 +7,7 @@ import os
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import Sequence
+from collections.abc import Callable, Sequence
 
 from .domain.execution import ReportSelector, RunRequest
 
@@ -62,13 +62,14 @@ class RuntimeConfig:
         catalog_path: Path | None = None,
         output_path: Path | None = None,
         management_groups: tuple[str, ...] = (),
+        today: Callable[[], date] = date.today,
     ) -> "RuntimeConfig":
         resolved_request = request
         if resolved_request.as_of_date is None:
             resolved_request = RunRequest(
                 selector=resolved_request.selector,
                 subscription_ids=resolved_request.subscription_ids,
-                as_of_date=date.today(),
+                as_of_date=today(),
             )
         return cls(
             request=resolved_request,
@@ -108,48 +109,58 @@ def _csv_values(value: str | None) -> tuple[str, ...]:
     return tuple(item.strip() for item in value.split(",") if item.strip())
 
 
-def parse_run_request(argv: Sequence[str] | None = None) -> RunRequest:
-    args = _parser().parse_args(argv)
-    subscriptions = list(_csv_values(args.subscriptions))
-    for value in args.subscription_values:
-        subscriptions.extend(_csv_values(value))
-    if args.management_groups and subscriptions:
-        _parser().error("--subscriptions/--subscription cannot be combined with --management-groups")
-    return RunRequest(
-        selector=ReportSelector(args.report),
-        subscription_ids=tuple(sorted(set(subscriptions))),
-        as_of_date=args.as_of_date,
-    )
-
-
-def parse_config(argv: Sequence[str] | None = None) -> RuntimeConfig:
+def _parse_namespace(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = _parser()
     args = parser.parse_args(argv)
     subscriptions = list(_csv_values(args.subscriptions))
     for value in args.subscription_values:
         subscriptions.extend(_csv_values(value))
     management_groups = _csv_values(args.management_groups)
-    if management_groups and subscriptions:
+    if args.management_groups and subscriptions:
         parser.error("--subscriptions/--subscription cannot be combined with --management-groups")
+    args.subscription_ids = tuple(sorted(set(subscriptions)))
+    args.management_group_ids = tuple(sorted(set(management_groups)))
+    return args
+
+
+def _config_from_namespace(
+    args: argparse.Namespace,
+    *,
+    today: Callable[[], date],
+) -> RuntimeConfig:
     request = RunRequest(
         selector=ReportSelector(args.report),
-        subscription_ids=tuple(sorted(set(subscriptions))),
-        as_of_date=args.as_of_date,
-    )
-    resolved = RuntimeConfig.from_request(
-        request,
-        catalog_path=Path(args.catalog_path or os.getenv("COMITATO_AZURE_RETIREMENTS_CATALOG", "eng-finops-platforms.yaml")),
-        output_path=Path(args.output_path or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", "output")),
-        management_groups=tuple(sorted(set(management_groups))),
+        subscription_ids=args.subscription_ids,
+        as_of_date=args.as_of_date or today(),
     )
     return RuntimeConfig(
-        request=resolved.request,
-        catalog_path=resolved.catalog_path,
-        output_path=resolved.output_path,
-        management_groups=resolved.management_groups,
+        request=request,
+        catalog_path=Path(
+            args.catalog_path
+            or os.getenv(
+                "COMITATO_AZURE_RETIREMENTS_CATALOG",
+                "eng-finops-platforms.yaml",
+            )
+        ),
+        output_path=Path(
+            args.output_path
+            or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", "output")
+        ),
+        management_groups=args.management_group_ids,
         http=HttpPolicy(args.timeout_seconds, args.retry_attempts),
-        api_versions=resolved.api_versions,
     )
+
+
+def parse_config(
+    argv: Sequence[str] | None = None,
+    *,
+    today: Callable[[], date] = date.today,
+) -> RuntimeConfig:
+    return _config_from_namespace(_parse_namespace(argv), today=today)
+
+
+def parse_run_request(argv: Sequence[str] | None = None) -> RunRequest:
+    return parse_config(argv).request
 
 
 __all__ = ["AzureApiVersions", "HttpPolicy", "RuntimeConfig", "parse_config", "parse_run_request"]

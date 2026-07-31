@@ -10,9 +10,8 @@ from ..publication.model import (
     PublicationCandidate,
     PublicationError,
     PublicationReceipt,
-    ValidatedStagedGeneration,
 )
-from .filesystem_staging import stage_candidate
+from .filesystem_staging import _ValidatedStagedGeneration, stage_candidate
 
 
 _COMMIT_FAULTS = {"before_switch", "durable_marker"}
@@ -32,7 +31,20 @@ class FilesystemAtomicPublicationStore:
 
     def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
         generation = self._stage(candidate)
-        return self._commit(generation)
+        try:
+            return self._commit(generation)
+        except Exception:
+            self._discard_unpublished(generation)
+            raise
+
+    def _discard_unpublished(self, generation: _ValidatedStagedGeneration) -> None:
+        generation_dir = Path(generation.generation_dir)
+        staging_root = self.destination / ".staging"
+        try:
+            generation_dir.relative_to(staging_root)
+        except ValueError:
+            return
+        shutil.rmtree(generation_dir, ignore_errors=True)
 
     def _preflight(self) -> None:
         try:
@@ -58,12 +70,12 @@ class FilesystemAtomicPublicationStore:
             )
             raise PublicationError(diagnostic) from exc
 
-    def _stage(self, candidate: PublicationCandidate) -> ValidatedStagedGeneration:
+    def _stage(self, candidate: PublicationCandidate) -> _ValidatedStagedGeneration:
         self._preflight()
         self._candidate = candidate
         return stage_candidate(candidate, self.destination)
 
-    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
+    def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
         self._preflight()
         if self.fail_before_switch:
             raise PublicationError("fault injected before atomic current switch")
@@ -152,7 +164,7 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
 
         return stage_candidate(candidate, self.destination, fault_injector=inject)
 
-    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
+    def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
         if self.fault in _COMMIT_FAULTS:
             candidate = getattr(self, "_candidate", None)
             report = getattr(getattr(candidate, "context", None), "request", None)

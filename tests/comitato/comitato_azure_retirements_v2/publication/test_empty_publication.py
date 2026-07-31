@@ -22,13 +22,15 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.commit import (
-    AtomicFilesystemPublicationStore,
-    read_current_tree,
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
+    FilesystemAtomicPublicationStore,
 )
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
     PublicationError,
+)
+from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
+    read_current_tree,
 )
 
 
@@ -70,7 +72,7 @@ def empty_candidate() -> PublicationCandidate:
 
 def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path: Path) -> None:
     candidate = empty_candidate()
-    store = AtomicFilesystemPublicationStore(tmp_path)
+    store = FilesystemAtomicPublicationStore(tmp_path)
 
     receipt = store.publish(candidate)
     tree = read_current_tree(tmp_path)
@@ -94,7 +96,7 @@ def test_failed_commit_leaves_existing_current_generation_unchanged(tmp_path: Pa
     (tmp_path / "current").write_text("generations/seed\n", encoding="utf-8")
     before = (tmp_path / "current").read_bytes(), (seeded / "sentinel.txt").read_bytes()
 
-    store = AtomicFilesystemPublicationStore(tmp_path, fail_before_switch=True)
+    store = FilesystemAtomicPublicationStore(tmp_path, fail_before_switch=True)
 
     with pytest.raises(PublicationError, match="before atomic current switch"):
         store.publish(empty_candidate())

@@ -7,10 +7,8 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
-    ApplicationError,
-    RetirementsApplication,
-)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
+from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import ApplicationError
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     ReportSelector,

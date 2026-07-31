@@ -33,7 +33,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.commit import read_current_tree
+from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import read_current_tree
 from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,

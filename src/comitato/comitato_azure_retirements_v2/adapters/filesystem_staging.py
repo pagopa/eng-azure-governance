@@ -21,15 +21,14 @@ from ..publication.model import (
     PublicationCandidate,
     PublicationError,
     PublicationManifest,
-    ValidatedStagedGeneration,
 )
 
 
 @dataclass(frozen=True, slots=True)
-class StagedGeneration:
+class _ValidatedStagedGeneration:
     generation_dir: Path
     manifest: dict[str, Any]
-    artifacts: tuple[EncodedArtifact, ...] = ()
+    artifacts: tuple[EncodedArtifact, ...]
 
 
 def _error(code: str, candidate: PublicationCandidate, *, artifact: str = "", message: str | None = None) -> PublicationError:
@@ -218,7 +217,7 @@ def stage_candidate(
     *,
     staged_byte_mutator: Any = None,
     fault_injector: Any = None,
-) -> ValidatedStagedGeneration:
+) -> _ValidatedStagedGeneration:
     path_diagnostics = validate_candidate_paths(candidate)
     if path_diagnostics:
         raise PublicationError(path_diagnostics[0])
@@ -267,7 +266,11 @@ def stage_candidate(
             generation_dir / "publication-manifest.json",
             PublicationManifest(manifest).to_bytes(),
         )
-        return ValidatedStagedGeneration(generation_dir=generation_dir, manifest=manifest, artifacts=measured)
+        return _ValidatedStagedGeneration(
+            generation_dir=generation_dir,
+            manifest=manifest,
+            artifacts=measured,
+        )
     except Exception as exc:
         shutil.rmtree(generation_dir, ignore_errors=True)
         if isinstance(exc, PublicationError):

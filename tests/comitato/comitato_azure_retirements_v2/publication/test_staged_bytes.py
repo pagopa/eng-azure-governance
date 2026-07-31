@@ -9,7 +9,6 @@ from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging impo
 )
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationError,
-    ValidatedStagedGeneration,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
@@ -96,7 +95,6 @@ def test_stage_rejects_incomplete_acquisition_and_reports_no_success_manifest(tm
 def test_stage_returns_validated_generation_and_manifest_uses_measured_facts(tmp_path: Path) -> None:
     staged = stage_candidate(empty_candidate(), tmp_path)
 
-    assert isinstance(staged, ValidatedStagedGeneration)
     assert staged.manifest["validation"] == {"error_count": 0, "status": "passed"}
     for measured in staged.artifacts:
         assert measured.bytes == len((staged.generation_dir / measured.logical_path).read_bytes())

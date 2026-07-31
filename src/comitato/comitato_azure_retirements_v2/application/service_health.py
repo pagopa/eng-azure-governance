@@ -3,7 +3,6 @@ from __future__ import annotations
 import html
 import json
 import re
-from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from hashlib import sha256
 from html.parser import HTMLParser
@@ -11,17 +10,10 @@ from typing import Any, Mapping
 
 from ..acquisition.model import SourceAcquisition
 from ..contracts.model import Artifact
-from ..contracts.raw_pair import RawArtifactPair
 from ..contracts.service_health_v1 import SERVICE_HEALTH_V1
 from ..domain.diagnostics import Diagnostic, ValidationResult
+from ..domain.evidence import ServiceHealthSupplementalEvidence
 from ..domain.execution import RunContext
-
-
-@dataclass(frozen=True, slots=True)
-class ServiceHealthSupplementalEvidence:
-    advisor_records: tuple[Mapping[str, Any], ...] = ()
-    resource_inventory: Mapping[str, Mapping[str, Any]] = ()
-    subscription_inventory: Mapping[str, Mapping[str, Any]] = ()
 
 
 class _ArticleParser(HTMLParser):
@@ -135,7 +127,7 @@ def normalize_service_health(
     acquisition: SourceAcquisition,
     context: RunContext,
     evidence: ServiceHealthSupplementalEvidence,
-) -> ValidationResult[RawArtifactPair[Mapping[str, str]]]:
+) -> ValidationResult[Artifact[Mapping[str, str]]]:
     rows: list[dict[str, str]] = []
     companions: list[dict[str, Any]] = []
     diagnostics: list[Diagnostic] = []
@@ -281,7 +273,7 @@ def normalize_service_health(
     rows.sort(key=lambda row: (row["collection_subscription_id"].casefold(), row["service_health_event_id"].casefold(), row["subscription_id"].casefold(), row["record_type"], row["normalized_resource_id"].casefold(), row["impacted_service"].casefold(), row["normalized_impacted_region"], row["resource_evidence_source"]))
     companion_by_ref = {item["raw_record_ref"]: item for item in companions}
     artifact = Artifact("service-health", 1, context.run_id, tuple(rows), tuple(companion_by_ref[row["raw_record_ref"]] for row in rows))
-    return ValidationResult.valid(RawArtifactPair(artifact))
+    return ValidationResult.valid(artifact)
 
 
 __all__ = ["ServiceHealthSupplementalEvidence", "normalize_service_health"]

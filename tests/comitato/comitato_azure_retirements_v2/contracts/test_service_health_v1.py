@@ -6,10 +6,7 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application.service_health import (
-    ServiceHealthSupplementalEvidence,
-    normalize_service_health,
-)
+from src.comitato.comitato_azure_retirements_v2.application.service_health import normalize_service_health
 from src.comitato.comitato_azure_retirements_v2.contracts.service_health_v1 import (
     SERVICE_HEALTH_V1,
     SERVICE_HEALTH_V1_HEADER,
@@ -22,6 +19,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import ServiceHealthSupplementalEvidence
 
 
 def context() -> RunContext:
@@ -72,7 +70,7 @@ def test_normalize_service_health_renders_complete_article_and_preserves_associa
 
     assert result.is_valid
     assert result.value is not None
-    artifact = result.value.artifact
+    artifact = result.value
     assert len(SERVICE_HEALTH_V1_HEADER) == 55
     row = artifact.records[0]
     assert row["record_type"] == "service_health_event_resource"
@@ -113,4 +111,4 @@ def test_normalize_service_health_preserves_explicit_recommendation_type_edge() 
 
     assert result.is_valid
     assert result.value is not None
-    assert result.value.artifact.records[0]["recommendation_type_id"] == "retirement-1"
+    assert result.value.records[0]["recommendation_type_id"] == "retirement-1"

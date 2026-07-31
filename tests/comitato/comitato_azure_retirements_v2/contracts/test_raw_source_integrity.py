@@ -6,14 +6,8 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application.advisor import (
-    AdvisorEnrichments,
-    normalize_advisor,
-)
-from src.comitato.comitato_azure_retirements_v2.application.service_health import (
-    ServiceHealthSupplementalEvidence,
-    normalize_service_health,
-)
+from src.comitato.comitato_azure_retirements_v2.application.advisor import normalize_advisor
+from src.comitato.comitato_azure_retirements_v2.application.service_health import normalize_service_health
 from src.comitato.comitato_azure_retirements_v2.contracts.advisor_v1 import ADVISOR_V1
 from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
 from src.comitato.comitato_azure_retirements_v2.contracts.service_health_v1 import (
@@ -26,6 +20,10 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunContext,
     RunRequest,
     Scope,
+)
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+    AdvisorEnrichments,
+    ServiceHealthSupplementalEvidence,
 )
 
 
@@ -128,7 +126,7 @@ def test_service_health_preserves_each_resource_without_service_cross_product() 
 
     assert result.is_valid
     assert result.value is not None
-    rows = result.value.artifact.records
+    rows = result.value.records
     assert len(rows) == 2
     assert {row["published_resource_id"] for row in rows} == {
         "/subscriptions/sub-a/r1",
@@ -145,7 +143,7 @@ def test_service_health_global_requires_explicit_global_evidence() -> None:
 
     assert result.is_valid
     assert result.value is not None
-    row = result.value.artifact.records[0]
+    row = result.value.records[0]
     assert row["record_type"] == "service_health_event_global"
     assert row["subscription_evidence_source"] == "explicit_global"
 
@@ -170,7 +168,7 @@ def test_service_health_global_projection_rejects_affected_subscription_or_resou
         ServiceHealthSupplementalEvidence(),
     )
     assert result.is_valid and result.value is not None
-    artifact = result.value.artifact
+    artifact = result.value
     row = dict(artifact.records[0])
     row["subscription_id"] = "sub-a"
     invalid = Artifact(
@@ -212,7 +210,7 @@ def test_service_health_keeps_direct_and_supplemental_resource_associations() ->
 
     assert result.is_valid
     assert result.value is not None
-    rows = result.value.artifact.records
+    rows = result.value.records
     assert {row["published_resource_id"] for row in rows} == {
         "/subscriptions/sub-a/direct",
         "/subscriptions/sub-a/supplemental",

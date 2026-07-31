@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from hashlib import sha256
 from typing import Any, Mapping
@@ -10,16 +9,9 @@ from typing import Any, Mapping
 from ..acquisition.model import SourceAcquisition
 from ..contracts.advisor_v1 import ADVISOR_V1
 from ..contracts.model import Artifact
-from ..contracts.raw_pair import RawArtifactPair
 from ..domain.diagnostics import Diagnostic, ValidationResult
+from ..domain.evidence import AdvisorEnrichments
 from ..domain.execution import RunContext
-
-
-@dataclass(frozen=True, slots=True)
-class AdvisorEnrichments:
-    metadata: Mapping[str, Mapping[str, Any]] = ()
-    resources: Mapping[str, Mapping[str, Any]] = ()
-    subscriptions: Mapping[str, Mapping[str, Any]] = ()
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:
@@ -106,7 +98,7 @@ def normalize_advisor(
     acquisition: SourceAcquisition,
     context: RunContext,
     enrichments: AdvisorEnrichments,
-) -> ValidationResult[RawArtifactPair[Mapping[str, str]]]:
+) -> ValidationResult[Artifact[Mapping[str, str]]]:
     rows: list[dict[str, str]] = []
     companions: list[dict[str, Any]] = []
     diagnostics: list[Diagnostic] = []
@@ -259,7 +251,7 @@ def normalize_advisor(
     by_ref = {item["raw_record_ref"]: item for item in companions}
     ordered_companions = tuple(by_ref[row["raw_record_ref"]] for row in ordered)
     artifact = Artifact("advisor", 1, context.run_id, ordered, ordered_companions)
-    return ValidationResult.valid(RawArtifactPair(artifact))
+    return ValidationResult.valid(artifact)
 
 
 __all__ = ["AdvisorEnrichments", "normalize_advisor"]
