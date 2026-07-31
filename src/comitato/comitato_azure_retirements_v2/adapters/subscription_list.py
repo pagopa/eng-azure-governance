@@ -21,7 +21,11 @@ def acquire_subscription_list(
 ) -> SourceAcquisition:
     requests: list[ScriptedRequest] = []
     for subscription_id in context.scope.subscription_ids:
-        pages = http.list_pages(url_for(subscription_id), params=dict(params))
+        pages = http.list_pages(
+            url_for(subscription_id),
+            params=dict(params),
+            run_id=context.run_id,
+        )
         requests.append(
             ScriptedRequest(
                 subscription_id,

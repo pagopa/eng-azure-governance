@@ -11,6 +11,7 @@ from ..publication.model import (
     PublicationError,
     PublicationReceipt,
 )
+from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 from .filesystem_staging import _ValidatedStagedGeneration, stage_candidate
 
 
@@ -20,10 +21,17 @@ _COMMIT_FAULTS = {"before_switch", "durable_marker"}
 class FilesystemAtomicPublicationStore:
     """Publish one validated, replaceable bundle for the candidate's month."""
 
-    def __init__(self, destination: Path, *, fail_before_switch: bool = False) -> None:
+    def __init__(
+        self,
+        destination: Path,
+        *,
+        fail_before_switch: bool = False,
+        observer: RunObserver | None = None,
+    ) -> None:
         self.destination = destination
         self.fail_before_switch = fail_before_switch
         self._warnings: list[str] = []
+        self._observer = observer or NullRunObserver()
 
     @property
     def warnings(self) -> tuple[str, ...]:
@@ -47,6 +55,16 @@ class FilesystemAtomicPublicationStore:
         shutil.rmtree(generation_dir, ignore_errors=True)
 
     def _preflight(self) -> None:
+        candidate = getattr(self, "_candidate", None)
+        run_id = getattr(getattr(candidate, "context", None), "run_id", "")
+        self._observer.emit(
+            RuntimeEvent(
+                "INFO",
+                "publication_preflight",
+                "Publication preflight checked",
+                run_id,
+            )
+        )
         try:
             self.destination.mkdir(parents=True, exist_ok=True)
             if not self.destination.is_dir():
@@ -67,9 +85,31 @@ class FilesystemAtomicPublicationStore:
             raise PublicationError(diagnostic) from exc
 
     def _stage(self, candidate: PublicationCandidate) -> _ValidatedStagedGeneration:
-        self._preflight()
         self._candidate = candidate
-        return stage_candidate(candidate, self.destination)
+        self._observer.emit(
+            RuntimeEvent(
+                "INFO",
+                "publication_staging_started",
+                "Publication staging started",
+                candidate.context.run_id,
+                {"artifacts": len(candidate.artifacts)},
+            )
+        )
+        self._preflight()
+        generation = stage_candidate(candidate, self.destination)
+        self._observer.emit(
+            RuntimeEvent(
+                "INFO",
+                "publication_staging_completed",
+                "Publication staging completed",
+                candidate.context.run_id,
+                {
+                    "artifacts": len(generation.artifacts),
+                    "bytes": sum(artifact.bytes for artifact in generation.artifacts),
+                },
+            )
+        )
+        return generation
 
     def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
         self._preflight()
@@ -99,6 +139,15 @@ class FilesystemAtomicPublicationStore:
         previous_bundle_moved = False
         new_bundle_moved = False
         try:
+            self._observer.emit(
+                RuntimeEvent(
+                    "INFO",
+                    "publication_switch_started",
+                    "Publication switch started",
+                    candidate.context.run_id,
+                    {"current_reference": month_reference},
+                )
+            )
             monthly_bundle.parent.mkdir(parents=True, exist_ok=True)
             if monthly_bundle.exists() and not monthly_bundle.is_dir():
                 raise OSError("monthly publication path is not a directory")
@@ -127,23 +176,56 @@ class FilesystemAtomicPublicationStore:
                 shutil.rmtree(backup_bundle)
             except OSError:
                 self._warnings.append("superseded monthly bundle cleanup failed")
-        return PublicationReceipt(
+                self._observer.emit(
+                    RuntimeEvent(
+                        "WARNING",
+                        "publication_cleanup_warning",
+                        "Superseded monthly bundle cleanup failed",
+                        candidate.context.run_id,
+                    )
+                )
+        receipt = PublicationReceipt(
             generation=month_reference,
             current_reference=month_reference,
         )
+        self._observer.emit(
+            RuntimeEvent(
+                "INFO",
+                "publication_completed",
+                "Publication completed",
+                candidate.context.run_id,
+                {"current_reference": receipt.current_reference},
+            )
+        )
+        return receipt
 
 
 class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
     """Test-only store that fails at one named pre-commit capability boundary."""
 
-    def __init__(self, destination: Path, *, fault: str) -> None:
-        super().__init__(destination)
+    def __init__(
+        self,
+        destination: Path,
+        *,
+        fault: str,
+        observer: RunObserver | None = None,
+    ) -> None:
+        super().__init__(destination, observer=observer)
         self.fault = fault
         self.candidates: list[Any] = []
 
     def _stage(self, candidate: PublicationCandidate):
-        self._preflight()
         self._candidate = candidate
+        self._observer.emit(
+            RuntimeEvent(
+                "INFO",
+                "publication_staging_started",
+                "Publication staging started",
+                candidate.context.run_id,
+                {"artifacts": len(candidate.artifacts)},
+            )
+        )
+        self._preflight()
         self.candidates.append(candidate)
 
         def inject(point: str, artifact: str) -> None:
@@ -160,7 +242,20 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
                     )
                 )
 
-        return stage_candidate(candidate, self.destination, fault_injector=inject)
+        generation = stage_candidate(candidate, self.destination, fault_injector=inject)
+        self._observer.emit(
+            RuntimeEvent(
+                "INFO",
+                "publication_staging_completed",
+                "Publication staging completed",
+                candidate.context.run_id,
+                {
+                    "artifacts": len(generation.artifacts),
+                    "bytes": sum(artifact.bytes for artifact in generation.artifacts),
+                },
+            )
+        )
+        return generation
 
     def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
         if self.fault in _COMMIT_FAULTS:
@@ -188,5 +283,13 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
             receipt = super()._commit(generation)
             if had_previous_bundle:
                 self._warnings.append("superseded monthly bundle cleanup failed")
+                self._observer.emit(
+                    RuntimeEvent(
+                        "WARNING",
+                        "publication_cleanup_warning",
+                        "Superseded monthly bundle cleanup failed",
+                        candidate.context.run_id,
+                    )
+                )
             return receipt
         return super()._commit(generation)

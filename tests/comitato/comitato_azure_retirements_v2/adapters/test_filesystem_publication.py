@@ -11,6 +11,7 @@ from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support
     read_monthly_tree,
 )
 from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationError
+from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
 )
@@ -36,6 +37,14 @@ def _private_entries(destination: Path) -> tuple[tuple[str, ...], tuple[str, ...
     return staged_generations, temporary_references
 
 
+class RecordingRunObserver:
+    def __init__(self) -> None:
+        self.events: list[RuntimeEvent] = []
+
+    def emit(self, event: RuntimeEvent) -> None:
+        self.events.append(event)
+
+
 def test_store_rejects_destination_capability_mismatch(tmp_path: Path) -> None:
     destination = tmp_path / "destination-file"
     destination.write_bytes(b"not-a-directory")
@@ -54,6 +63,31 @@ def test_publish_exposes_one_complete_monthly_bundle(tmp_path: Path) -> None:
     assert read_monthly_tree(tmp_path, date(2026, 7, 30))["publication-manifest.json"]
     assert not (tmp_path / "current").exists()
     assert not (tmp_path / "generations").exists()
+
+
+def test_publish_emits_atomic_publication_events(tmp_path: Path) -> None:
+    observer = RecordingRunObserver()
+    store = FilesystemAtomicPublicationStore(tmp_path, observer=observer)
+
+    store.publish(empty_candidate())
+
+    event_names = [event.event for event in observer.events]
+    assert "publication_preflight" in event_names
+    assert "publication_staging_started" in event_names
+    assert "publication_staging_completed" in event_names
+    assert "publication_switch_started" in event_names
+    assert "publication_completed" in event_names
+    assert {event.run_id for event in observer.events} == {empty_candidate().context.run_id}
+
+
+def test_cleanup_warning_emits_publication_event(tmp_path: Path) -> None:
+    _seed(tmp_path)
+    observer = RecordingRunObserver()
+    store = FaultInjectingPublicationStore(tmp_path, fault="cleanup", observer=observer)
+
+    store.publish(empty_candidate())
+
+    assert any(event.event == "publication_cleanup_warning" for event in observer.events)
 
 
 def test_publish_replaces_the_complete_monthly_bundle(tmp_path: Path) -> None:

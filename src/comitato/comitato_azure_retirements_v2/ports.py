@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Protocol, TypeVar
 
@@ -8,6 +10,25 @@ from .publication.model import PublicationCandidate, PublicationReceipt
 
 
 T = TypeVar("T")
+
+
+@dataclass(frozen=True, slots=True)
+class RuntimeEvent:
+    level: str
+    event: str
+    message: str
+    run_id: str
+    context: Mapping[str, object] = field(default_factory=dict)
+
+
+class RunObserver(Protocol):
+    def emit(self, event: RuntimeEvent) -> None:
+        ...
+
+
+class NullRunObserver:
+    def emit(self, event: RuntimeEvent) -> None:
+        return None
 
 
 class Validator(Protocol[T]):
@@ -36,7 +57,7 @@ class ServiceHealthSource(Protocol):
 
 
 class SubscriptionScopeSource(Protocol):
-    def resolve(self, request: RunRequest) -> Scope:
+    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope:
         ...
 
 

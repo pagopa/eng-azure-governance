@@ -14,12 +14,13 @@ class SubscriptionApiSource:
         self.http = http
         self.api_version = api_version
 
-    def resolve(self, request: RunRequest) -> Scope:
+    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope:
         if request.subscription_ids:
             return Scope(tuple(sorted(set(request.subscription_ids))), mode="explicit")
         pages = self.http.list_pages(
             f"https://management.azure.com/subscriptions",
             params={"api-version": self.api_version},
+            run_id=run_id,
         )
         subscription_ids = tuple(
             sorted(

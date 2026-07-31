@@ -11,6 +11,7 @@ from requests import Session
 from requests.exceptions import RequestException, Timeout
 
 from .azure_auth import AccessTokenProvider
+from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 
 
 RETRYABLE_STATUS_CODES = frozenset({408, 429, 500, 502, 503, 504})
@@ -46,6 +47,7 @@ class ArmHttpClient:
         session: Session | None = None,
         sleep: Callable[[float], None] = default_sleep,
         user_agent: str = "eng-azure-governance/comitato-azure-retirements-v2",
+        observer: RunObserver | None = None,
     ) -> None:
         if timeout_seconds <= 0 or retry_attempts < 0 or backoff_seconds < 0:
             raise ValueError("invalid ARM HTTP policy")
@@ -56,15 +58,28 @@ class ArmHttpClient:
         self._session = session or requests.Session()
         self._sleep = sleep
         self._user_agent = user_agent
+        self._observer = observer or NullRunObserver()
 
-    def get_json(self, url: str, params: Mapping[str, str] | None = None) -> dict[str, Any]:
-        payload = self._request("GET", url, params=params)
+    def get_json(
+        self,
+        url: str,
+        params: Mapping[str, str] | None = None,
+        *,
+        run_id: str = "",
+    ) -> dict[str, Any]:
+        payload = self._request("GET", url, params=params, run_id=run_id)
         if not isinstance(payload, dict):
             raise ArmHttpError(f"unsupported JSON response shape from {_safe_url(url)}")
         return payload
 
-    def post_json(self, url: str, payload: Mapping[str, Any]) -> dict[str, Any]:
-        response = self._request("POST", url, json_payload=payload)
+    def post_json(
+        self,
+        url: str,
+        payload: Mapping[str, Any],
+        *,
+        run_id: str = "",
+    ) -> dict[str, Any]:
+        response = self._request("POST", url, json_payload=payload, run_id=run_id)
         if not isinstance(response, dict):
             raise ArmHttpError(f"unsupported JSON response shape from {_safe_url(url)}")
         return response
@@ -75,6 +90,7 @@ class ArmHttpClient:
         *,
         params: Mapping[str, str] | None = None,
         items_key: str = "value",
+        run_id: str = "",
     ) -> tuple[ArmPageEnvelope, ...]:
         pages: list[ArmPageEnvelope] = []
         visited: set[str] = set()
@@ -85,7 +101,7 @@ class ArmHttpClient:
             if marker in visited:
                 raise RepeatedContinuationError("repeated continuation link")
             visited.add(marker)
-            payload = self.get_json(current_url, current_params)
+            payload = self.get_json(current_url, current_params, run_id=run_id)
             current_params = None
             raw_items = payload.get(items_key, [])
             if not isinstance(raw_items, list) or any(not isinstance(item, Mapping) for item in raw_items):
@@ -104,6 +120,7 @@ class ArmHttpClient:
         *,
         params: Mapping[str, str] | None = None,
         json_payload: Mapping[str, Any] | None = None,
+        run_id: str = "",
     ) -> Any:
         token = self._token_provider.get_token()
         headers = {
@@ -127,6 +144,21 @@ class ArmHttpClient:
                 raise ArmHttpError(f"ARM transport failure for {_safe_url(url)}") from exc
             status = int(getattr(response, "status_code", 0))
             if status in RETRYABLE_STATUS_CODES and attempt < self._retry_attempts:
+                self._observer.emit(
+                    RuntimeEvent(
+                        "WARNING",
+                        "http_retry",
+                        "Retrying ARM request",
+                        run_id,
+                        {
+                            "method": method,
+                            "url": _safe_url(url),
+                            "status": status,
+                            "attempt": attempt + 1,
+                            "retry_budget": self._retry_attempts,
+                        },
+                    )
+                )
                 self._sleep(self._backoff_seconds * (attempt + 1))
                 continue
             if status < 200 or status >= 300:

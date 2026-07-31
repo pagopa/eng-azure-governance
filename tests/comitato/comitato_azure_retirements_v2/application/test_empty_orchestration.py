@@ -15,6 +15,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
+from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
     PublicationReceipt,
@@ -48,12 +49,25 @@ class EventLog:
 
 
 @dataclass
+class RecordingRunObserver:
+    events: list[RuntimeEvent] = field(default_factory=list)
+
+    def emit(self, event: RuntimeEvent) -> None:
+        self.events.append(event)
+
+
+@dataclass
 class FakeScopeSource:
     log: EventLog
 
-    def resolve(self, request: RunRequest) -> Scope:
+    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope:
         self.log.events.append("scope")
         return Scope(mode="explicit", subscription_ids=(SUBSCRIPTION_ID,))
+
+
+class FailingScopeSource:
+    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope:
+        raise ApplicationError("scope resolution failed")
 
 
 @dataclass(frozen=True)
@@ -133,10 +147,12 @@ def build_application(
     publication: FakePublicationStore,
     *,
     report_catalog=DEFAULT_REPORT_CATALOG,
+    observer=None,
+    scope_source=None,
     **source_kwargs,
 ):
-    return RetirementsApplication(
-        scope_source=FakeScopeSource(log),
+    application_kwargs = dict(
+        scope_source=scope_source or FakeScopeSource(log),
         catalog_source=FakeCatalogSource(log),
         advisor_source=FakeSource("advisor", log, **source_kwargs),
         service_health_source=FakeSource("service-health", log, **source_kwargs),
@@ -145,6 +161,9 @@ def build_application(
         run_id_factory=FakeRunIdFactory(),
         report_catalog=report_catalog,
     )
+    if observer is not None:
+        application_kwargs["observer"] = observer
+    return RetirementsApplication(**application_kwargs)
 
 
 def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifacts() -> None:
@@ -252,3 +271,39 @@ def test_application_asks_catalog_for_one_plan() -> None:
     application = build_application(log, publication, report_catalog=catalog)
     application.run(RunRequest(ReportSelector.SLIDES))
     assert catalog.selectors == [ReportSelector.SLIDES]
+
+
+def test_application_emits_ordered_events_with_one_run_id() -> None:
+    observer = RecordingRunObserver()
+    application = build_application(
+        EventLog(),
+        FakePublicationStore(),
+        observer=observer,
+    )
+
+    result = application.run(RunRequest(ReportSelector.ALL))
+
+    assert result.exit_status == 0
+    assert observer.events[0].event == "run_started"
+    assert [event.event for event in observer.events[-2:]] == [
+        "publication_completed",
+        "run_completed",
+    ]
+    assert len({event.run_id for event in observer.events}) == 1
+    assert observer.events[0].run_id == result.context.run_id
+
+
+def test_application_emits_events_before_scope_failure() -> None:
+    observer = RecordingRunObserver()
+    application = build_application(
+        EventLog(),
+        FakePublicationStore(),
+        observer=observer,
+        scope_source=FailingScopeSource(),
+    )
+
+    with pytest.raises(ApplicationError, match="scope resolution failed"):
+        application.run(RunRequest(ReportSelector.ALL))
+
+    assert observer.events[0].event == "run_started"
+    assert observer.events[0].run_id

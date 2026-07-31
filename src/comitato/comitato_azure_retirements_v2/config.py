@@ -6,8 +6,8 @@ import argparse
 import os
 from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
 from collections.abc import Callable, Sequence
+from pathlib import Path
 
 from .domain.execution import ReportSelector, RunRequest
 
@@ -15,6 +15,9 @@ from .domain.execution import ReportSelector, RunRequest
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
 _DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
+
+LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
+OUTPUT_FORMATS = ("human", "json")
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +44,17 @@ class AzureApiVersions:
 
 
 @dataclass(frozen=True, slots=True)
+class RuntimeLoggingSettings:
+    output_format: str = "json"
+    verbose: bool = False
+    debug_log_enabled: bool = True
+    log_level: str = "INFO"
+    console_level: str = "INFO"
+    include_traceback: bool = True
+    log_directory: Path | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class RuntimeConfig:
     request: RunRequest
     catalog_path: Path = _DEFAULT_CATALOG_PATH
@@ -48,6 +62,7 @@ class RuntimeConfig:
     management_groups: tuple[str, ...] = ()
     http: HttpPolicy = HttpPolicy()
     api_versions: AzureApiVersions = AzureApiVersions()
+    logging: RuntimeLoggingSettings = RuntimeLoggingSettings()
 
     @property
     def selector(self) -> ReportSelector:
@@ -98,6 +113,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-path", "--output-root", dest="output_path", default=None)
     parser.add_argument("--timeout-seconds", type=float, default=60.0)
     parser.add_argument("--retry-attempts", type=int, default=3)
+    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="json")
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--log-level", type=_log_level, default="INFO")
+    parser.add_argument("--console-level", type=_log_level, default="INFO")
+    parser.add_argument("--no-debug-log", action="store_false", dest="debug_log_enabled")
+    parser.add_argument("--log-directory", type=Path, default=None)
     return parser
 
 
@@ -106,6 +127,14 @@ def _iso_date(value: str) -> date:
         return date.fromisoformat(value)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("must be an ISO date (YYYY-MM-DD)") from exc
+
+
+def _log_level(value: str) -> str:
+    normalized = value.upper()
+    if normalized not in LOG_LEVELS:
+        choices = ", ".join(sorted(LOG_LEVELS))
+        raise argparse.ArgumentTypeError(f"must be one of: {choices}")
+    return normalized
 
 
 def _csv_values(value: str | None) -> tuple[str, ...]:
@@ -153,6 +182,14 @@ def _config_from_namespace(
         ),
         management_groups=args.management_group_ids,
         http=HttpPolicy(args.timeout_seconds, args.retry_attempts),
+        logging=RuntimeLoggingSettings(
+            output_format=args.output_format,
+            verbose=args.verbose,
+            debug_log_enabled=args.debug_log_enabled,
+            log_level=args.log_level,
+            console_level=args.console_level,
+            log_directory=args.log_directory,
+        ),
     )
 
 
@@ -168,4 +205,13 @@ def parse_run_request(argv: Sequence[str] | None = None) -> RunRequest:
     return parse_config(argv).request
 
 
-__all__ = ["AzureApiVersions", "HttpPolicy", "RuntimeConfig", "parse_config", "parse_run_request"]
+__all__ = [
+    "AzureApiVersions",
+    "HttpPolicy",
+    "LOG_LEVELS",
+    "OUTPUT_FORMATS",
+    "RuntimeConfig",
+    "RuntimeLoggingSettings",
+    "parse_config",
+    "parse_run_request",
+]

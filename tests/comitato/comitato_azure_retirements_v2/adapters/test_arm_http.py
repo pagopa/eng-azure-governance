@@ -13,6 +13,7 @@ from src.comitato.comitato_azure_retirements_v2.adapters.arm_http import (
 from src.comitato.comitato_azure_retirements_v2.adapters.azure_auth import (
     AzureCliTokenProvider,
 )
+from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 
 
 @dataclass
@@ -46,6 +47,14 @@ class Token:
         return "secret-token"
 
 
+@dataclass
+class RecordingRunObserver:
+    events: list[RuntimeEvent]
+
+    def emit(self, event: RuntimeEvent) -> None:
+        self.events.append(event)
+
+
 def test_redacts_authorization_and_error_body() -> None:
     session = Session([Response(401, {"error": "secret-token"}, text="secret-token Authorization")])
 
@@ -75,6 +84,30 @@ def test_retries_throttling_with_a_bounded_policy() -> None:
 
     assert payload == {"value": [1]}
     assert len(session.calls) == 2
+
+
+def test_retry_emits_safe_event_without_query_or_credentials() -> None:
+    observer = RecordingRunObserver([])
+    session = Session([Response(429), Response(200, {"value": []})])
+    client = ArmHttpClient(
+        Token(),
+        retry_attempts=1,
+        backoff_seconds=0,
+        session=session,
+        sleep=lambda _: None,
+        observer=observer,
+    )
+
+    assert client.get_json(
+        "https://management.azure.com/subscriptions/sub-1?api-version=secret",
+        run_id="run-1",
+    ) == {"value": []}
+
+    event = observer.events[0]
+    assert event.event == "http_retry"
+    assert event.run_id == "run-1"
+    assert "api-version" not in str(event.context)
+    assert "Bearer" not in str(event.context)
 
 
 def test_reports_retry_exhaustion_without_sensitive_response_text() -> None:

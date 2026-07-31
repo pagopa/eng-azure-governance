@@ -92,3 +92,50 @@ def test_runtime_config_is_immutable_and_has_central_http_policy() -> None:
     assert config.http.retry_attempts >= 0
     with pytest.raises(AttributeError):
         config.output_path = Path("other")  # type: ignore[misc]
+
+
+def test_logging_defaults_keep_direct_module_machine_safe() -> None:
+    config = parse_config(["--subscriptions", "sub-1"])
+
+    assert config.logging.output_format == "json"
+    assert config.logging.debug_log_enabled is True
+    assert config.logging.log_level == "INFO"
+    assert config.logging.console_level == "INFO"
+    assert config.logging.include_traceback is True
+    assert config.logging.log_directory is None
+
+
+def test_logging_flags_override_defaults(tmp_path: Path) -> None:
+    config = parse_config(
+        [
+            "--subscriptions",
+            "sub-1",
+            "--output-format",
+            "human",
+            "--verbose",
+            "--log-level",
+            "DEBUG",
+            "--console-level",
+            "WARNING",
+            "--no-debug-log",
+            "--log-directory",
+            str(tmp_path),
+        ]
+    )
+
+    assert config.logging.output_format == "human"
+    assert config.logging.verbose is True
+    assert config.logging.log_level == "DEBUG"
+    assert config.logging.console_level == "WARNING"
+    assert config.logging.debug_log_enabled is False
+    assert config.logging.log_directory == tmp_path
+
+
+def test_logging_parser_accepts_human_and_rejects_invalid_levels() -> None:
+    assert parse_config(["--output-format=human"]).logging.output_format == "human"
+
+    with pytest.raises(SystemExit):
+        parse_config(["--log-level", "TRACE"])
+
+    with pytest.raises(SystemExit):
+        parse_config(["--console-level", "TRACE"])
