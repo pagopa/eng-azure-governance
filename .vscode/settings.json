@@ -2,6 +2,8 @@
   "github.copilot.enable": {
     "*": true
   },
+  "chat.useInstructionFiles": false,
+  "chat.useAgentsMdFile": true,
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "[terraform]": {
