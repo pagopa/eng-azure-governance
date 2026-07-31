@@ -3,9 +3,11 @@ from datetime import date, datetime, timezone
 import pytest
 
 from src.comitato.comitato_azure_retirements_v2.contracts import (
-    ALL_V1_CONTRACTS,
-    RAW_V1_CONTRACTS,
+    AGGREGATE_V1,
+    SLIDES_V1,
 )
+from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -22,6 +24,9 @@ EXPECTED_HEADERS = {
     "aggregate": "schema_version\trun_id\tas_of_date\taggregate_id\tcorrelation_status\tcorrelation_basis\tsource_event_keys_json\tcorrelation_candidates_json\tsource_systems_json\trecord_types_json\traw_record_refs_json\tadvisor_recommendation_ids_json\tadvisor_recommendation_type_ids_json\tservice_health_event_ids_json\tservice_health_tracking_ids_json\ttechnology_or_service\tretiring_feature\tadvisor_problem_descriptions_json\tservice_health_problem_descriptions_json\tadvisor_actions_json\tservice_health_actions_json\tretirement_date\tretirement_date_quality\tretirement_dates_json\tretirement_date_sources_json\taffected_subscription_ids_json\taffected_subscription_names_json\tis_global\tplatforms_json\tplatforms_subscriptions_json\tpublished_resource_ids_json\tnormalized_resource_ids_json\timpacted_services_json\timpacted_regions_json\tsource_links_json\tdiagnostic_flags\tprovenance_json",
     "slides": "schema_version\taggregate_schema_version\trun_id\tas_of_date\taggregate_id\tcorrelation_status\tcorrelation_basis\tsource_event_keys_json\tcorrelation_candidates_json\tsource_systems_json\trecord_types_json\traw_record_refs_json\tadvisor_recommendation_ids_json\tadvisor_recommendation_type_ids_json\tservice_health_event_ids_json\tservice_health_tracking_ids_json\ttechnology_or_service\tretiring_feature\tadvisor_problem_descriptions_json\tservice_health_problem_descriptions_json\tadvisor_actions_json\tservice_health_actions_json\tretirement_date\tretirement_date_quality\tretirement_dates_json\tretirement_date_sources_json\taffected_subscription_ids_json\taffected_subscription_names_json\tis_global\tplatforms_json\tplatforms_subscriptions_json\t published_resource_ids_json\tnormalized_resource_ids_json\timpacted_services_json\timpacted_regions_json\tsource_links_json\tdiagnostic_flags\tprovenance_json\tcomitato_priorità\tcomitato_descrizione_completa\tcomitato_retirement_date\tcomitato_piattaforme".replace("\t published", "\tpublished"),
 }
+
+ALL_V1_CONTRACTS = (ADVISOR_REPORT.contract, SERVICE_HEALTH_REPORT.contract, AGGREGATE_V1, SLIDES_V1)
+RAW_V1_CONTRACTS = (ADVISOR_REPORT.contract, SERVICE_HEALTH_REPORT.contract)
 
 
 @pytest.fixture

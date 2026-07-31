@@ -5,6 +5,7 @@ import re
 
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..domain.execution import ReportSelector, RunContext
+from ..reports.catalog import DEFAULT_REPORT_CATALOG
 from .model import EncodedArtifact
 from ..publication.model import PublicationCandidate
 
@@ -28,43 +29,6 @@ def validate_candidate_paths(candidate: PublicationCandidate) -> tuple[Diagnosti
             )
         seen.add(artifact.logical_path)
     return sort_diagnostics(diagnostics)
-
-
-_RAW_PAIRS = {
-    ReportSelector.ADVISOR: (
-        "01_azure_advisor_retirements_raw.tsv",
-        "01_azure_advisor_retirements_raw.jsonl",
-    ),
-    ReportSelector.SERVICE_HEALTH: (
-        "01_azure_service_health_advisories_raw.tsv",
-        "01_azure_service_health_advisories_raw.jsonl",
-    ),
-}
-
-_ALL_KNOWN_PATHS = frozenset(
-    path
-    for pair in _RAW_PAIRS.values()
-    for path in pair
-) | {
-    "02_azure_retirements_aggregate.tsv",
-    "03_azure_retirements_slide.tsv",
-}
-
-
-def _selected_paths(selector: ReportSelector) -> tuple[str, ...]:
-    if selector is ReportSelector.ALL:
-        return (
-            _RAW_PAIRS[ReportSelector.ADVISOR]
-            + _RAW_PAIRS[ReportSelector.SERVICE_HEALTH]
-            + ("02_azure_retirements_aggregate.tsv", "03_azure_retirements_slide.tsv")
-        )
-    if selector in _RAW_PAIRS:
-        return _RAW_PAIRS[selector]
-    if selector is ReportSelector.AGGREGATE:
-        return ("02_azure_retirements_aggregate.tsv",)
-    if selector is ReportSelector.SLIDES:
-        return ("03_azure_retirements_slide.tsv",)
-    raise ValueError(f"unsupported report selector: {selector!r}")
 
 
 def _field_values(artifact: EncodedArtifact, field: str) -> set[str]:
@@ -108,7 +72,9 @@ def validate_selected_set(
     *,
     context: RunContext | None = None,
 ) -> tuple[Diagnostic, ...]:
-    expected = _selected_paths(selector)
+    plan = DEFAULT_REPORT_CATALOG.plan(selector)
+    expected = plan.expected_paths
+    known_paths = set(DEFAULT_REPORT_CATALOG.all_paths)
     by_path: dict[str, EncodedArtifact] = {}
     diagnostics: list[Diagnostic] = []
     for artifact in artifacts:
@@ -117,16 +83,16 @@ def validate_selected_set(
         by_path[artifact.logical_path] = artifact
         if artifact.logical_path not in expected:
             diagnostics.append(_diagnostic("undeclared_artifact", selector, context, artifact.logical_path))
-            if artifact.logical_path in _ALL_KNOWN_PATHS:
+            if artifact.logical_path in known_paths:
                 diagnostics.append(_diagnostic("dependency_artifact_selected", selector, context, artifact.logical_path))
     for path in expected:
         if path not in by_path:
             diagnostics.append(_diagnostic("missing_selected_artifact", selector, context, path))
-    for pair_selector, pair in _RAW_PAIRS.items():
-        if selector in (pair_selector, ReportSelector.ALL):
-            present = {path for path in pair if path in by_path}
-            if present and len(present) != len(pair):
-                missing = next(path for path in pair if path not in present)
+    for definition in plan.published:
+        if len(definition.paths) > 1:
+            present = {path for path in definition.paths if path in by_path}
+            if present and len(present) != len(definition.paths):
+                missing = next(path for path in definition.paths if path not in present)
                 diagnostics.append(_diagnostic("missing_companion_artifact", selector, context, missing))
 
     run_ids = {artifact.run_id for artifact in artifacts if artifact.run_id}
@@ -153,7 +119,9 @@ def validate_manifest(
     measured_artifacts: tuple[EncodedArtifact, ...],
 ) -> tuple[Diagnostic, ...]:
     diagnostics: list[Diagnostic] = []
-    expected_paths = _selected_paths(candidate.context.request.selector)
+    expected_paths = DEFAULT_REPORT_CATALOG.plan(
+        candidate.context.request.selector
+    ).expected_paths
     entries = manifest.get("artifacts")
     if not isinstance(entries, list) or tuple(item.get("path") for item in entries if isinstance(item, dict)) != expected_paths:
         diagnostics.append(_diagnostic("manifest_artifact_closure_mismatch", candidate.context.request.selector, candidate.context))

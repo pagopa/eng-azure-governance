@@ -19,6 +19,9 @@ from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
     PublicationReceipt,
 )
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+    DEFAULT_REPORT_CATALOG,
+)
 
 
 SUBSCRIPTION_ID = "11111111-1111-1111-1111-111111111111"
@@ -116,7 +119,22 @@ class FakePublicationStore:
         )
 
 
-def build_application(log: EventLog, publication: FakePublicationStore, **source_kwargs):
+class RecordingCatalog:
+    def __init__(self):
+        self.selectors = []
+
+    def plan(self, selector):
+        self.selectors.append(selector)
+        return DEFAULT_REPORT_CATALOG.plan(selector)
+
+
+def build_application(
+    log: EventLog,
+    publication: FakePublicationStore,
+    *,
+    report_catalog=DEFAULT_REPORT_CATALOG,
+    **source_kwargs,
+):
     return RetirementsApplication(
         scope_source=FakeScopeSource(log),
         catalog_source=FakeCatalogSource(log),
@@ -125,6 +143,7 @@ def build_application(log: EventLog, publication: FakePublicationStore, **source
         publication_store=publication,
         clock=FakeClock(),
         run_id_factory=FakeRunIdFactory(),
+        report_catalog=report_catalog,
     )
 
 
@@ -228,3 +247,12 @@ def test_application_uses_one_publish_operation() -> None:
     assert result.publication_receipt.current_reference == (
         "generations/test-generation"
     )
+
+
+def test_application_asks_catalog_for_one_plan() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+    catalog = RecordingCatalog()
+    application = build_application(log, publication, report_catalog=catalog)
+    application.run(RunRequest(ReportSelector.SLIDES))
+    assert catalog.selectors == [ReportSelector.SLIDES]

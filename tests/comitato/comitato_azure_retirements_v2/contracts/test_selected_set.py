@@ -1,10 +1,5 @@
 from datetime import date, datetime, timezone
 
-import pytest
-
-from src.comitato.comitato_azure_retirements_v2.application.planning import (
-    build_dependency_plan,
-)
 from src.comitato.comitato_azure_retirements_v2.contracts.cross_artifact import (
     validate_selected_set,
 )
@@ -16,6 +11,9 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunContext,
     RunRequest,
     Scope,
+)
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+    DEFAULT_REPORT_CATALOG,
 )
 
 
@@ -66,39 +64,9 @@ def _artifact(path: str, *, run_id: str = "run-1", as_of_date: str = "2026-07-30
     return EncodedArtifact(path, data, 1, media_type, 1, run_id)
 
 
-@pytest.mark.parametrize(
-    ("selector", "advisor", "service_health", "aggregate", "slides"),
-    (
-        (ReportSelector.ALL, True, True, True, True),
-        (ReportSelector.ADVISOR, True, False, False, False),
-        (ReportSelector.SERVICE_HEALTH, False, True, False, False),
-        (ReportSelector.AGGREGATE, True, True, True, False),
-        (ReportSelector.SLIDES, True, True, True, True),
-    ),
-)
-def test_dependency_plan_exposes_typed_work_requirements(
-    selector: ReportSelector,
-    advisor: bool,
-    service_health: bool,
-    aggregate: bool,
-    slides: bool,
-) -> None:
-    plan = build_dependency_plan(selector)
-
-    assert plan.needs_advisor is advisor
-    assert plan.needs_service_health is service_health
-    assert plan.needs_aggregate is aggregate
-    assert plan.needs_slides is slides
-    assert not hasattr(plan, "selected_paths")
-
-
-def test_all_selector_acquires_each_raw_source_once() -> None:
-    plan = build_dependency_plan(ReportSelector.ALL)
-
-    assert tuple(stage for stage in plan.stages if stage in {"advisor", "service-health"}) == (
-        "advisor",
-        "service-health",
-    )
+def test_selected_set_uses_catalog_publication_paths():
+    plan = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
+    assert plan.expected_paths == ("03_azure_retirements_slide.tsv",)
 
 
 def test_selected_set_rejects_mixed_run_ids_and_evaluation_dates() -> None:

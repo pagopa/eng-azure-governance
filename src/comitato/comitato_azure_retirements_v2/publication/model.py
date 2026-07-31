@@ -5,14 +5,13 @@ import json
 from typing import Any
 
 from ..contracts.model import EncodedArtifact
-from ..domain.execution import DependencyPlan, RunContext
+from ..domain.execution import RunContext
 from ..domain.diagnostics import Diagnostic
 
 
 @dataclass(frozen=True, slots=True)
 class PublicationCandidate:
     context: RunContext
-    dependency_plan: DependencyPlan
     artifacts: tuple[EncodedArtifact, ...]
     acquisitions: tuple[Any, ...]
     slide_selection: Any = None

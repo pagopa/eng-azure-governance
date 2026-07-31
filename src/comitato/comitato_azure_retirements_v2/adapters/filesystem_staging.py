@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import os
-import json
 import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from ..contracts import ADVISOR_V1, AGGREGATE_V1, SERVICE_HEALTH_V1, SLIDES_V1
 from ..contracts.codecs import canonical_json
 from ..contracts.cross_artifact import (
     validate_candidate_paths,
@@ -22,6 +20,8 @@ from ..publication.model import (
     PublicationError,
     PublicationManifest,
 )
+from ..reports.catalog import DEFAULT_REPORT_CATALOG
+from ..reports.model import StagedDecodeFailure
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,34 +57,13 @@ def _fsync_file(path: Path, data: bytes, fault_injector: Any = None, logical_pat
         fault_injector("close", logical_path)
 
 
-def _artifact_report(path: str) -> str:
-    if "service_health" in path:
-        return "service-health"
-    if "advisor" in path:
-        return "advisor"
-    if path.startswith("02_"):
-        return "aggregate"
-    return "slides"
-
-
-def _contract_for(path: str):
-    return {
-        ADVISOR_V1.path: ADVISOR_V1,
-        ADVISOR_V1.companion_path: ADVISOR_V1,
-        SERVICE_HEALTH_V1.path: SERVICE_HEALTH_V1,
-        SERVICE_HEALTH_V1.companion_path: SERVICE_HEALTH_V1,
-        AGGREGATE_V1.path: AGGREGATE_V1,
-        SLIDES_V1.path: SLIDES_V1,
-    }.get(path)
-
-
 def _decode_and_validate(
     candidate: PublicationCandidate,
     artifacts: tuple[EncodedArtifact, ...],
     generation_dir: Path,
 ) -> tuple[Diagnostic, ...]:
     diagnostics: list[Diagnostic] = []
-    by_path = {artifact.logical_path: artifact for artifact in artifacts}
+    payloads = {artifact.logical_path: artifact.data for artifact in artifacts}
     original_by_path = {artifact.logical_path: artifact for artifact in candidate.artifacts}
     for artifact in artifacts:
         target = generation_dir / PurePosixPath(artifact.logical_path)
@@ -102,34 +81,19 @@ def _decode_and_validate(
         except OSError:
             diagnostics.append(_error("staged_artifact_missing", candidate, artifact=artifact.logical_path).diagnostics[0])
             continue
-        contract = _contract_for(artifact.logical_path)
-        if contract is None:
+        try:
+            definition = DEFAULT_REPORT_CATALOG.owner_of(artifact.logical_path)
+        except KeyError:
             diagnostics.append(_error("undeclared_artifact", candidate, artifact=artifact.logical_path).diagnostics[0])
             continue
         try:
-            decoded = contract.decode(data) if artifact.logical_path.endswith(".tsv") else None
-            if decoded is not None:
-                companion_records = decoded.companion_records
-                companion_path = getattr(contract, "companion_path", None)
-                if companion_path:
-                    companion = by_path.get(companion_path)
-                    if companion is not None:
-                        companion_data = (generation_dir / companion_path).read_bytes()
-                        companion_records = contract.decode_companion(companion_data)
-                decoded = Artifact(
-                    contract=decoded.contract,
-                    schema_version=decoded.schema_version,
-                    run_id=decoded.run_id or candidate.context.run_id,
-                    records=decoded.records,
-                    companion_records=companion_records,
+            diagnostics.extend(
+                definition.verify_staged_artifact(
+                    artifact.logical_path, payloads, candidate.context
                 )
-                result = contract.validate(decoded, candidate.context)
-                if not result.is_valid:
-                    diagnostics.extend(result.diagnostics)
-            elif artifact.logical_path.endswith(".jsonl"):
-                contract.decode_companion(data)
-        except (UnicodeError, ValueError, TypeError, json.JSONDecodeError):
-            diagnostics.append(_error("invalid_staged_header" if artifact.logical_path.endswith(".tsv") else "invalid_staged_jsonl", candidate, artifact=artifact.logical_path, message="staged bytes do not satisfy the owning contract").diagnostics[0])
+            )
+        except StagedDecodeFailure as exc:
+            diagnostics.append(_error("invalid_staged_header" if exc.logical_path.endswith(".tsv") else "invalid_staged_jsonl", candidate, artifact=exc.logical_path, message="staged bytes do not satisfy the owning contract").diagnostics[0])
     return tuple(diagnostics)
 
 
@@ -140,7 +104,6 @@ def _measured_artifacts(candidate: PublicationCandidate, generation_dir: Path, f
         if fault_injector:
             fault_injector("reread", artifact.logical_path)
         data = target.read_bytes()
-        contract = _contract_for(artifact.logical_path)
         if artifact.logical_path.endswith(".tsv"):
             rows = max(0, len(data.decode("utf-8").splitlines()) - 1)
         elif artifact.logical_path.endswith(".jsonl"):
@@ -166,7 +129,7 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
             "bytes": len(artifact.data),
             "media_type": artifact.media_type,
             "path": artifact.logical_path,
-            "report": _artifact_report(artifact.logical_path),
+            "report": DEFAULT_REPORT_CATALOG.owner_of(artifact.logical_path).name,
             "rows": artifact.rows,
             "schema_version": artifact.schema_version,
             "sha256": artifact.digest,

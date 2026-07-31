@@ -5,26 +5,36 @@ from typing import Any
 
 from ..acquisition.model import SourceAcquisition
 from ..contracts import (
-    ADVISOR_V1,
     AGGREGATE_V1,
-    SERVICE_HEALTH_V1,
     SLIDES_V1,
 )
 from ..contracts.model import Artifact
 from ..contracts.aggregate_v1 import build_aggregate
 from ..domain.platforms import PlatformCatalogSnapshot
-from ..domain.execution import CatalogIdentity, ReportSelector, RunContext, RunRequest
+from ..domain.execution import (
+    CatalogIdentity,
+    DependencyPlan,
+    ReportSelector,
+    RunContext,
+    RunRequest,
+)
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
 from ..domain.slides import SlideSelection, select_slides
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
+from ..reports.catalog import DEFAULT_REPORT_CATALOG, ReportCatalog, ReportPlan
+from ..reports.advisor import ADVISOR_REPORT, prepare_advisor_report
+from ..reports.model import PreparedRawReport
+from ..reports.service_health import (
+    SERVICE_HEALTH_REPORT,
+    prepare_service_health_report,
+)
+from ..domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
 from .orchestration_errors import (
     ApplicationError,
     ContractValidationError,
     PlatformCoverageError,
 )
-from .planning import build_dependency_plan
-from .raw_evidence import prepare_raw_acquisition
 
 
 class _LegacyEmptyCatalog:
@@ -45,9 +55,11 @@ class RetirementsApplication:
     publication_store: Any
     clock: Any
     run_id_factory: Any
+    report_catalog: ReportCatalog = DEFAULT_REPORT_CATALOG
 
     def run(self, request: RunRequest) -> RunResult:
-        plan = build_dependency_plan(request.selector)
+        report_plan = self.report_catalog.plan(request.selector)
+        plan = DependencyPlan(report_plan.stages)
         scope = self.scope_source.resolve(request)
         catalog = self.catalog_source.load()
         context = RunContext(
@@ -60,23 +72,22 @@ class RetirementsApplication:
             dependency_plan=plan,
         )
 
-        acquisitions: list[SourceAcquisition] = []
-        if plan.needs_advisor:
-            acquisitions.append(
-                prepare_raw_acquisition(
-                    "advisor",
-                    self.advisor_source.acquire(context),
-                    context,
-                )
+        prepared_by_selector: dict[ReportSelector, PreparedRawReport] = {}
+        if report_plan.requires(ReportSelector.ADVISOR):
+            prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(
+                self.advisor_source.acquire(context), context, AdvisorEnrichments()
             )
-        if plan.needs_service_health:
-            acquisitions.append(
-                prepare_raw_acquisition(
-                    "service-health",
-                    self.service_health_source.acquire(context),
-                    context,
-                )
+        if report_plan.requires(ReportSelector.SERVICE_HEALTH):
+            prepared_by_selector[ReportSelector.SERVICE_HEALTH] = prepare_service_health_report(
+                self.service_health_source.acquire(context),
+                context,
+                ServiceHealthSupplementalEvidence(),
             )
+        acquisitions = [
+            prepared_by_selector[selector].acquisition
+            for selector in (ReportSelector.ADVISOR, ReportSelector.SERVICE_HEALTH)
+            if selector in prepared_by_selector
+        ]
 
         self._validate_catalog_coverage(
             scope.subscription_ids,
@@ -86,10 +97,11 @@ class RetirementsApplication:
             run_id=context.run_id,
         )
 
-        artifacts, slide_selection = self._empty_artifacts(context, acquisitions, request, catalog)
+        artifacts, slide_selection = self._empty_artifacts(
+            context, acquisitions, prepared_by_selector, report_plan, catalog
+        )
         candidate = PublicationCandidate(
             context=context,
-            dependency_plan=plan,
             artifacts=tuple(artifacts),
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
@@ -197,35 +209,19 @@ class RetirementsApplication:
     def _empty_artifacts(
         context: RunContext,
         acquisitions: list[SourceAcquisition],
-        request: RunRequest,
+        prepared_by_selector: dict[ReportSelector, PreparedRawReport],
+        report_plan: ReportPlan,
         catalog: Any,
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
         slide_selection: SlideSelection | None = None
-        if request.selector in (ReportSelector.ALL, ReportSelector.ADVISOR):
-            advisor = ADVISOR_V1.empty_artifact(context)
-            if "advisor" in by_source:
-                advisor = advisor.__class__(
-                    contract=advisor.contract,
-                    schema_version=advisor.schema_version,
-                    run_id=advisor.run_id,
-                    records=by_source["advisor"].records,
-                    companion_records=by_source["advisor"].companion_records,
-                )
-            selected.extend((ADVISOR_V1.encode(advisor), ADVISOR_V1.encode_companion(advisor)))
-        if request.selector in (ReportSelector.ALL, ReportSelector.SERVICE_HEALTH):
-            health = SERVICE_HEALTH_V1.empty_artifact(context)
-            if "service-health" in by_source:
-                health = health.__class__(
-                    contract=health.contract,
-                    schema_version=health.schema_version,
-                    run_id=health.run_id,
-                    records=by_source["service-health"].records,
-                    companion_records=by_source["service-health"].companion_records,
-                )
-            selected.extend((SERVICE_HEALTH_V1.encode(health), SERVICE_HEALTH_V1.encode_companion(health)))
-        if request.selector in (ReportSelector.ALL, ReportSelector.AGGREGATE, ReportSelector.SLIDES):
+        aggregate: Artifact | None = None
+        if report_plan.publishes(ReportSelector.ADVISOR):
+            selected.extend(prepared_by_selector[ReportSelector.ADVISOR].artifacts)
+        if report_plan.publishes(ReportSelector.SERVICE_HEALTH):
+            selected.extend(prepared_by_selector[ReportSelector.SERVICE_HEALTH].artifacts)
+        if report_plan.requires(ReportSelector.AGGREGATE):
             aggregate = AGGREGATE_V1.empty_artifact(context)
             if any(acquisition.records for acquisition in acquisitions):
                 if not isinstance(catalog, PlatformCatalogSnapshot):
@@ -249,9 +245,9 @@ class RetirementsApplication:
                 checked = AGGREGATE_V1.validate(aggregate, context)
                 if not checked.is_valid:
                     raise ContractValidationError(checked.diagnostics, "invalid aggregate contract")
-            if request.selector in (ReportSelector.ALL, ReportSelector.AGGREGATE):
+            if report_plan.publishes(ReportSelector.AGGREGATE):
                 selected.append(AGGREGATE_V1.encode(aggregate))
-        if request.selector in (ReportSelector.ALL, ReportSelector.SLIDES):
+        if report_plan.publishes(ReportSelector.SLIDES):
             if aggregate is None:
                 raise ApplicationError("slides requires an aggregate artifact")
             projected = select_slides(aggregate, context)

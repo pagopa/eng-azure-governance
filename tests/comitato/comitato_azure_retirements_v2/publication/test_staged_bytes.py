@@ -72,6 +72,29 @@ def test_stage_rejects_mutated_jsonl_reference_and_changed_measured_hash(tmp_pat
     assert "raw_pair_bijection_failed" in codes or "invalid_staged_jsonl" in codes
 
 
+def test_stage_reports_exact_diagnostics_for_malformed_advisor_jsonl(tmp_path: Path) -> None:
+    candidate = empty_candidate()
+
+    with pytest.raises(PublicationError) as raised:
+        stage_candidate(
+            candidate,
+            tmp_path,
+            staged_byte_mutator=_mutate(
+                "01_azure_advisor_retirements_raw.jsonl",
+                lambda data: b"not-json\n",
+            ),
+        )
+
+    assert [
+        (item.code, item.artifact, item.stage, item.report)
+        for item in raised.value.diagnostics
+    ] == [
+        ("invalid_staged_header", "01_azure_advisor_retirements_raw.tsv", "staging", "all"),
+        ("invalid_staged_jsonl", "01_azure_advisor_retirements_raw.jsonl", "staging", "all"),
+        ("staged_bytes_changed", "01_azure_advisor_retirements_raw.jsonl", "staging", "all"),
+    ]
+
+
 def test_stage_rejects_incomplete_acquisition_and_reports_no_success_manifest(tmp_path: Path) -> None:
     candidate = empty_candidate()
     incomplete = replace(

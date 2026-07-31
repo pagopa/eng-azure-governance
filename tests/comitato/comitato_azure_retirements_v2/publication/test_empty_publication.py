@@ -9,11 +9,11 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     SourceAcquisition,
 )
 from src.comitato.comitato_azure_retirements_v2.contracts import (
-    ADVISOR_V1,
     AGGREGATE_V1,
-    SERVICE_HEALTH_V1,
     SLIDES_V1,
 )
+from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -49,13 +49,13 @@ def empty_candidate() -> PublicationCandidate:
             stages=("scope", "catalog", "advisor", "service-health", "aggregate", "slides", "publication")
         ),
     )
-    advisor = ADVISOR_V1.empty_artifact(context)
-    service_health = SERVICE_HEALTH_V1.empty_artifact(context)
+    advisor = ADVISOR_REPORT.contract.empty_artifact(context)
+    service_health = SERVICE_HEALTH_REPORT.contract.empty_artifact(context)
     artifacts = (
-        ADVISOR_V1.encode(advisor),
-        ADVISOR_V1.encode_companion(advisor),
-        SERVICE_HEALTH_V1.encode(service_health),
-        SERVICE_HEALTH_V1.encode_companion(service_health),
+        ADVISOR_REPORT.contract.encode(advisor),
+        ADVISOR_REPORT.contract.encode_companion(advisor),
+        SERVICE_HEALTH_REPORT.contract.encode(service_health),
+        SERVICE_HEALTH_REPORT.contract.encode_companion(service_health),
         AGGREGATE_V1.encode(AGGREGATE_V1.empty_artifact(context)),
         SLIDES_V1.encode(SLIDES_V1.empty_artifact(context)),
     )
@@ -67,7 +67,7 @@ def empty_candidate() -> PublicationCandidate:
             receipt=AcquisitionReceipt("service-health", "test-v1", 1, 1, 1, 0, True)
         ),
     )
-    return PublicationCandidate(context, context.dependency_plan, artifacts, acquisitions)
+    return PublicationCandidate(context, artifacts, acquisitions)
 
 
 def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path: Path) -> None:

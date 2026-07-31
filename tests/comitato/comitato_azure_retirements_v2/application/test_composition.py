@@ -16,10 +16,9 @@ def test_composition_injects_one_transport_catalog_and_publication_destination(t
 
     application = build_application(config)
 
-    assert isinstance(application.advisor_source.http, ArmHttpClient)
-    assert application.advisor_source.http is application.service_health_source.http
+    assert isinstance(getattr(application, "advisor_source").http, ArmHttpClient)
+    assert getattr(application, "advisor_source").http is getattr(application, "service_health_source").http
     assert isinstance(application.catalog_source, YamlPlatformCatalogSource)
     assert application.catalog_source.path == tmp_path / "catalog.yaml"
     assert isinstance(application.publication_store, FilesystemAtomicPublicationStore)
     assert application.publication_store.destination == tmp_path / "published"
-
