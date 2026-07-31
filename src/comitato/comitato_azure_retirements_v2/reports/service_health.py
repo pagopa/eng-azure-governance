@@ -236,9 +236,11 @@ def normalize_service_health(
             continue
         event_name = str(event.get("name") or "")
         event_type = str(props.get("eventType") or "")
+        if event_type.casefold() != "healthadvisory":
+            continue
         level = str(props.get("level") or "")
         status = str(props.get("status") or "")
-        classification_valid = event_type.casefold() == "healthadvisory" and level.casefold() in {"warning", "critical"} and status.casefold() in {"active", "resolved"}
+        classification_valid = event_type.casefold() == "healthadvisory" and level.casefold() in {"informational", "warning", "critical"} and status.casefold() in {"active", "resolved"}
         if not classification_valid:
             diagnostics.append(Diagnostic("error", "invalid_service_health_classification", "normalization", "service-health", context.run_id, record_ref=event_id))
             continue

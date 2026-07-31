@@ -103,6 +103,45 @@ def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_i
     assert result.diagnostics[0].code == "invalid_recommendation_status"
 
 
+def test_normalize_advisor_defaults_missing_live_status_to_new() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    del payload["properties"]["recommendationStatus"]
+
+    result = normalize_advisor(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        AdvisorEnrichments(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert result.value.records[0]["recommendation_status"] == "New"
+
+
+def test_normalize_advisor_reads_live_retirement_fields_from_extended_properties() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"].pop("retirementDate")
+    payload["properties"]["extendedProperties"] = {
+        "retirementDate": "2028-04-15",
+        "retirementFeatureName": "Legacy feature",
+    }
+
+    result = normalize_advisor(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        AdvisorEnrichments(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["retiring_feature"] == "Legacy feature"
+    assert row["retirement_date"] == "2028-04-15"
+    assert row["retirement_date_source"] == "properties.extendedProperties.retirementDate"
+
+
 def _integrity_context() -> RunContext:
     return RunContext(
         run_id="raw-advisor",

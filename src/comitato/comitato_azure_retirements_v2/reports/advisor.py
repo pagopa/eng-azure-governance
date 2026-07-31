@@ -207,7 +207,8 @@ def normalize_advisor(
         if not recommendation_id:
             diagnostics.append(Diagnostic("error", "missing_recommendation_id", "normalization", "advisor", context.run_id))
             continue
-        status = str(properties.get("recommendationStatus") or "")
+        status_value = properties.get("recommendationStatus")
+        status = "New" if "recommendationStatus" not in properties else str(status_value or "")
         if status.casefold() != "new":
             if not status or status.casefold() not in {"inprogress", "completed", "postponed", "dismissed"}:
                 diagnostics.append(Diagnostic("error", "invalid_recommendation_status", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
@@ -224,7 +225,15 @@ def normalize_advisor(
             linkage = "legacy_id" if published else "missing"
         normalized = _normalized_arm(published) if published else ""
         name, group, resource_type = _resource_parts(published)
+        extended_properties = _mapping(properties.get("extendedProperties") or properties.get("extended_properties"))
+        retirement_date_source = ""
         retirement_raw = properties.get("retirementDate") or properties.get("retirement_date")
+        if retirement_raw:
+            retirement_date_source = "properties.retirementDate" if properties.get("retirementDate") else "properties.retirement_date"
+        else:
+            retirement_raw = extended_properties.get("retirementDate") or extended_properties.get("retirement_date")
+            if retirement_raw:
+                retirement_date_source = "properties.extendedProperties.retirementDate" if extended_properties.get("retirementDate") else "properties.extendedProperties.retirement_date"
         retirement_date, retirement_quality = _date_value(retirement_raw)
         flags: set[str] = set()
         if not published:
@@ -258,7 +267,15 @@ def normalize_advisor(
         tags = resource_record.get("tags") if isinstance(resource_record.get("tags"), Mapping) else {}
         metadata_id = str(metadata_record.get("id") or metadata_record.get("metadataId") or "")
         service_name = str(properties.get("serviceName") or metadata_record.get("serviceName") or "")
-        retiring_feature = str(properties.get("retiringFeature") or metadata_record.get("retiringFeature") or "")
+        retiring_feature = str(
+            properties.get("retiringFeature")
+            or properties.get("retiring_feature")
+            or extended_properties.get("retirementFeatureName")
+            or extended_properties.get("retirement_feature_name")
+            or metadata_record.get("retiringFeature")
+            or metadata_record.get("retiring_feature")
+            or ""
+        )
         subscription_name = str(subscription_record.get("name") or "")
         metadata_status = "matched" if metadata_record else "missing"
         resource_status = "matched" if resource_record else "missing"
@@ -288,7 +305,7 @@ def normalize_advisor(
                 "subscription_name": subscription_name, "resource_linkage_source": linkage, "published_resource_id": published, "normalized_resource_id": normalized,
                 "resource_name": resource_name, "resource_group": resource_group, "resource_type": resource_type, "location": location, "tags_json": _canonical(tags),
                 "advisor_metadata_id": metadata_id, "service_name": service_name, "retiring_feature": retiring_feature, "retirement_date_raw": str(retirement_raw or ""),
-                "retirement_date": retirement_date, "retirement_date_source": "properties.retirementDate" if retirement_raw else "", "retirement_date_quality": retirement_quality,
+                "retirement_date": retirement_date, "retirement_date_source": retirement_date_source, "retirement_date_quality": retirement_quality,
                 "impact": str(properties.get("impact") or ""), "risk": str(properties.get("risk") or ""), "category": str(properties.get("category") or ""),
                 "sub_category": str(properties.get("subcategory") or properties.get("subCategory") or ""), "last_updated": last_updated, "label": str(properties.get("label") or ""),
                 "short_description_problem": str(short_description.get("problem") or ""), "short_description_solution": str(short_description.get("solution") or ""), "description": description,

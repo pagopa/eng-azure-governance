@@ -18,6 +18,14 @@ def test_defaults_to_all_and_uses_an_iso_as_of_date() -> None:
     assert request.as_of_date == date(2026, 7, 31)
 
 
+def test_defaults_to_repository_source_of_truth_paths() -> None:
+    config = parse_config([])
+    repository_root = Path(__file__).parents[3]
+
+    assert config.catalog_path == repository_root / "src/_source_of_truth/eng-finops-platforms.yaml"
+    assert config.output_path == repository_root / "output"
+
+
 @pytest.mark.parametrize("selector", tuple(item.value for item in ReportSelector))
 def test_accepts_every_report_selector(selector: str) -> None:
     request = parse_run_request(["--report", selector])

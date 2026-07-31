@@ -13,9 +13,10 @@ diagnostics, manifests, or artifacts.
 
 The operator supplies `--subscriptions sub-a,sub-b` or allows live scope
 resolution. `--catalog-path` selects the source-of-truth version-1 platform
-catalog; `--output-path` selects the publication directory. The catalog and
-output paths default to `eng-finops-platforms.yaml` and `output` and may be
-set with `COMITATO_AZURE_RETIREMENTS_CATALOG` and
+catalog; `--output-path` selects the publication directory. Relative defaults
+are resolved from the repository root: the catalog is
+`src/_source_of_truth/eng-finops-platforms.yaml` and the output directory is
+`output`. Both may be set with `COMITATO_AZURE_RETIREMENTS_CATALOG` and
 `COMITATO_AZURE_RETIREMENTS_OUTPUT`.
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the

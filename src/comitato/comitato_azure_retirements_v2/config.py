@@ -12,6 +12,11 @@ from collections.abc import Callable, Sequence
 from .domain.execution import ReportSelector, RunRequest
 
 
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+_DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
+_DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "output"
+
+
 @dataclass(frozen=True, slots=True)
 class HttpPolicy:
     timeout_seconds: float = 60.0
@@ -38,8 +43,8 @@ class AzureApiVersions:
 @dataclass(frozen=True, slots=True)
 class RuntimeConfig:
     request: RunRequest
-    catalog_path: Path = Path("eng-finops-platforms.yaml")
-    output_path: Path = Path("output")
+    catalog_path: Path = _DEFAULT_CATALOG_PATH
+    output_path: Path = _DEFAULT_OUTPUT_PATH
     management_groups: tuple[str, ...] = ()
     http: HttpPolicy = HttpPolicy()
     api_versions: AzureApiVersions = AzureApiVersions()
@@ -73,8 +78,8 @@ class RuntimeConfig:
             )
         return cls(
             request=resolved_request,
-            catalog_path=catalog_path or Path("eng-finops-platforms.yaml"),
-            output_path=output_path or Path("output"),
+            catalog_path=catalog_path or _DEFAULT_CATALOG_PATH,
+            output_path=output_path or _DEFAULT_OUTPUT_PATH,
             management_groups=management_groups,
         )
 
@@ -139,12 +144,12 @@ def _config_from_namespace(
             args.catalog_path
             or os.getenv(
                 "COMITATO_AZURE_RETIREMENTS_CATALOG",
-                "eng-finops-platforms.yaml",
+                str(_DEFAULT_CATALOG_PATH),
             )
         ),
         output_path=Path(
             args.output_path
-            or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", "output")
+            or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", str(_DEFAULT_OUTPUT_PATH))
         ),
         management_groups=args.management_group_ids,
         http=HttpPolicy(args.timeout_seconds, args.retry_attempts),
