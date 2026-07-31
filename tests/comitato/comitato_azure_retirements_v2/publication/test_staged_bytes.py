@@ -4,12 +4,12 @@ from pathlib import Path
 import pytest
 
 from src.comitato.comitato_azure_retirements_v2.acquisition.model import AcquisitionReceipt
-from src.comitato.comitato_azure_retirements_v2.publication.model import (
-    ValidatedStagedGeneration,
-)
-from src.comitato.comitato_azure_retirements_v2.publication.staging import (
-    PublicationError,
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
     stage_candidate,
+)
+from src.comitato.comitato_azure_retirements_v2.publication.model import (
+    PublicationError,
+    ValidatedStagedGeneration,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,

@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from ..contracts.codecs import canonical_json
 from ..contracts import ADVISOR_V1, AGGREGATE_V1, SERVICE_HEALTH_V1, SLIDES_V1
+from ..contracts.codecs import canonical_json
 from ..contracts.cross_artifact import (
     validate_candidate_paths,
     validate_manifest,
@@ -19,20 +19,10 @@ from ..contracts.model import Artifact, EncodedArtifact
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..publication.model import (
     PublicationCandidate,
+    PublicationError,
     PublicationManifest,
     ValidatedStagedGeneration,
 )
-
-
-class PublicationError(RuntimeError):
-    """A candidate cannot be safely staged or committed."""
-
-    def __init__(self, message: str | Diagnostic, diagnostics: tuple[Diagnostic, ...] = ()) -> None:
-        if isinstance(message, Diagnostic):
-            diagnostics = (message,)
-            message = message.message
-        self.diagnostics = tuple(diagnostics)
-        super().__init__(message)
 
 
 @dataclass(frozen=True, slots=True)

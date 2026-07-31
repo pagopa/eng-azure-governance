@@ -21,9 +21,8 @@ from ..domain.platforms import PlatformCatalogSnapshot
 from ..domain.execution import CatalogIdentity, ReportSelector, RunContext, RunRequest
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
-from ..publication.staging import PublicationError
 from ..domain.slides import SlideSelection, select_slides
-from ..publication.model import PublicationCandidate, RunResult
+from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from .planning import build_dependency_plan
 
 
@@ -109,13 +108,18 @@ class RetirementsApplication:
             slide_selection=slide_selection,
         )
         try:
-            generation = self.publication_store.stage(candidate)
+            receipt = self.publication_store.publish(candidate)
         except PublicationError as exc:
-            raise self._translate_publication_error(exc, context, stage="staging") from exc
-        try:
-            receipt = self.publication_store.commit(generation)
-        except PublicationError as exc:
-            raise self._translate_publication_error(exc, context, stage="commit") from exc
+            diagnostic_stage = (
+                exc.diagnostics[0].stage
+                if exc.diagnostics
+                else "publication"
+            )
+            raise self._translate_publication_error(
+                exc,
+                context,
+                stage=diagnostic_stage,
+            ) from exc
         return RunResult(
             exit_status=0,
             context=context,

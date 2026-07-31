@@ -5,6 +5,7 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import Acquisi
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
 from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector, RunRequest, Scope
 from src.comitato.comitato_azure_retirements_v2.domain.platforms import PlatformAssignment, PlatformCatalogSnapshot, SubscriptionId
+from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationCandidate, PublicationReceipt
 
 
 SUBSCRIPTION = "11111111-1111-1111-1111-111111111111"
@@ -60,14 +61,14 @@ class RunId:
 
 @dataclass
 class Publication:
-    staged: list[object] = field(default_factory=list)
+    staged: list[PublicationCandidate] = field(default_factory=list)
 
-    def stage(self, candidate):
+    def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
         self.staged.append(candidate)
-        return candidate
-
-    def commit(self, generation):
-        return generation
+        return PublicationReceipt(
+            generation="test-generation",
+            current_reference="generations/test-generation",
+        )
 
 
 def test_aggregate_selector_publishes_aggregate_from_run_local_raw_dependencies() -> None:

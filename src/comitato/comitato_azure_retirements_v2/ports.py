@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, Protocol, TypeVar
 
 from .domain.execution import RunContext, RunRequest, Scope
+from .publication.model import PublicationCandidate, PublicationReceipt
 
 
 T = TypeVar("T")
@@ -45,8 +46,5 @@ class PlatformCatalogSource(Protocol):
 
 
 class AtomicPublicationStore(Protocol):
-    def stage(self, candidate: Any) -> Any:
-        ...
-
-    def commit(self, generation: Any) -> Any:
-        ...
+    def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
+        raise NotImplementedError

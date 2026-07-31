@@ -17,6 +17,10 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
+from src.comitato.comitato_azure_retirements_v2.publication.model import (
+    PublicationCandidate,
+    PublicationReceipt,
+)
 
 
 SUBSCRIPTION_ID = "11111111-1111-1111-1111-111111111111"
@@ -104,16 +108,14 @@ class FakeSource:
 
 @dataclass
 class FakePublicationStore:
-    staged: list[object] = field(default_factory=list)
-    committed: list[object] = field(default_factory=list)
+    published: list[PublicationCandidate] = field(default_factory=list)
 
-    def stage(self, candidate):
-        self.staged.append(candidate)
-        return candidate
-
-    def commit(self, generation):
-        self.committed.append(generation)
-        return "committed"
+    def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
+        self.published.append(candidate)
+        return PublicationReceipt(
+            generation="test-generation",
+            current_reference="generations/test-generation",
+        )
 
 
 def build_application(log: EventLog, publication: FakePublicationStore, **source_kwargs):
@@ -136,7 +138,7 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
 
     assert log.events == ["scope", "catalog", "advisor", "service-health"]
     assert result.exit_status == 0
-    assert [artifact.logical_path for artifact in publication.staged[0].artifacts] == [
+    assert [artifact.logical_path for artifact in publication.published[0].artifacts] == [
         "01_azure_advisor_retirements_raw.tsv",
         "01_azure_advisor_retirements_raw.jsonl",
         "01_azure_service_health_advisories_raw.tsv",
@@ -144,7 +146,10 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
         "02_azure_retirements_aggregate.tsv",
         "03_azure_retirements_slide.tsv",
     ]
-    assert len(publication.committed) == 1
+    assert len(publication.published) == 1
+    assert result.publication_receipt.current_reference == (
+        "generations/test-generation"
+    )
 
 
 def test_incomplete_receipt_blocks_staging() -> None:
@@ -156,8 +161,7 @@ def test_incomplete_receipt_blocks_staging() -> None:
             RunRequest(ReportSelector.ALL)
         )
 
-    assert publication.staged == []
-    assert publication.committed == []
+    assert publication.published == []
 
 
 def test_non_empty_scripted_source_is_not_claimed_complete() -> None:
@@ -171,7 +175,7 @@ def test_non_empty_scripted_source_is_not_claimed_complete() -> None:
             records=({"advisor_recommendation_id": "rec-1"},),
         ).run(RunRequest(ReportSelector.ALL))
 
-    assert publication.staged == []
+    assert publication.published == []
 
 
 def test_non_empty_raw_publication_is_allowed_after_coverage() -> None:
@@ -183,7 +187,7 @@ def test_non_empty_raw_publication_is_allowed_after_coverage() -> None:
     ).run(RunRequest(ReportSelector.ADVISOR))
 
     assert result.exit_status == 0
-    assert len(publication.staged) == 1
+    assert len(publication.published) == 1
 
 
 def test_covered_advisor_selector_publishes_only_raw_pair() -> None:
@@ -195,11 +199,11 @@ def test_covered_advisor_selector_publishes_only_raw_pair() -> None:
     ).run(RunRequest(ReportSelector.ADVISOR))
 
     assert result.exit_status == 0
-    assert [artifact.logical_path for artifact in publication.staged[0].artifacts] == [
+    assert [artifact.logical_path for artifact in publication.published[0].artifacts] == [
         "01_azure_advisor_retirements_raw.tsv",
         "01_azure_advisor_retirements_raw.jsonl",
     ]
-    assert publication.committed == [publication.staged[0]]
+    assert len(publication.published) == 1
 
 
 def test_unmapped_evidence_subscription_blocks_before_staging() -> None:
@@ -211,5 +215,18 @@ def test_unmapped_evidence_subscription_blocks_before_staging() -> None:
             log, publication, records=(advisor_payload(UNMAPPED_SUBSCRIPTION_ID),)
         ).run(RunRequest(ReportSelector.ADVISOR))
 
-    assert publication.staged == []
-    assert publication.committed == []
+    assert publication.published == []
+
+
+def test_application_uses_one_publish_operation() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+
+    result = build_application(log, publication).run(
+        RunRequest(ReportSelector.ADVISOR)
+    )
+
+    assert len(publication.published) == 1
+    assert result.publication_receipt.current_reference == (
+        "generations/test-generation"
+    )

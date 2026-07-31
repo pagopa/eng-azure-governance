@@ -6,8 +6,13 @@ from pathlib import Path
 from typing import Any
 
 from ..domain.diagnostics import Diagnostic
-from ..publication.commit import PublicationReceipt
-from ..publication.staging import PublicationError, stage_candidate
+from ..publication.model import (
+    PublicationCandidate,
+    PublicationError,
+    PublicationReceipt,
+    ValidatedStagedGeneration,
+)
+from .filesystem_staging import stage_candidate
 
 
 _COMMIT_FAULTS = {"before_switch", "durable_marker"}
@@ -25,7 +30,11 @@ class FilesystemAtomicPublicationStore:
     def warnings(self) -> tuple[str, ...]:
         return tuple(self._warnings)
 
-    def preflight(self) -> None:
+    def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
+        generation = self._stage(candidate)
+        return self._commit(generation)
+
+    def _preflight(self) -> None:
         try:
             self.destination.mkdir(parents=True, exist_ok=True)
             if not self.destination.is_dir():
@@ -49,13 +58,13 @@ class FilesystemAtomicPublicationStore:
             )
             raise PublicationError(diagnostic) from exc
 
-    def stage(self, candidate: Any):
-        self.preflight()
+    def _stage(self, candidate: PublicationCandidate) -> ValidatedStagedGeneration:
+        self._preflight()
         self._candidate = candidate
         return stage_candidate(candidate, self.destination)
 
-    def commit(self, generation: Any) -> PublicationReceipt:
-        self.preflight()
+    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
+        self._preflight()
         if self.fail_before_switch:
             raise PublicationError("fault injected before atomic current switch")
         generation_dir = Path(generation.generation_dir)
@@ -122,8 +131,8 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
         self.fault = fault
         self.candidates: list[Any] = []
 
-    def stage(self, candidate: Any):
-        self.preflight()
+    def _stage(self, candidate: PublicationCandidate):
+        self._preflight()
         self._candidate = candidate
         self.candidates.append(candidate)
 
@@ -143,7 +152,7 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
 
         return stage_candidate(candidate, self.destination, fault_injector=inject)
 
-    def commit(self, generation: Any) -> PublicationReceipt:
+    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
         if self.fault in _COMMIT_FAULTS:
             candidate = getattr(self, "_candidate", None)
             report = getattr(getattr(candidate, "context", None), "request", None)
@@ -162,8 +171,8 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
             )
         if self.fault == "cleanup":
             old_reference = self._read_reference()
-            receipt = super().commit(generation)
+            receipt = super()._commit(generation)
             if old_reference:
                 self._warnings.append("superseded generation cleanup failed")
             return receipt
-        return super().commit(generation)
+        return super()._commit(generation)

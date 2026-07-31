@@ -127,9 +127,9 @@ class TemporaryAtomicPublicationStore(FilesystemAtomicPublicationStore):
         super().__init__(destination)
         self.candidates = []
 
-    def stage(self, candidate):
+    def publish(self, candidate):
         self.candidates.append(candidate)
-        return super().stage(candidate)
+        return super().publish(candidate)
 
 
 def _source_acquisition(

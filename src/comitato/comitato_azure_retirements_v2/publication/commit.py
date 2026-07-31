@@ -1,14 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 
-from .staging import PublicationError
-
-@dataclass(frozen=True, slots=True)
-class PublicationReceipt:
-    generation: str
-    current_reference: str
+from .model import PublicationError, PublicationReceipt
 
 
 def read_current_tree(destination: Path) -> dict[str, bytes]:

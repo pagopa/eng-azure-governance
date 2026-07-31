@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -23,10 +24,11 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
 )
 from src.comitato.comitato_azure_retirements_v2.publication.commit import (
     AtomicFilesystemPublicationStore,
-    PublicationError,
+    read_current_tree,
 )
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
+    PublicationError,
 )
 
 
@@ -66,18 +68,20 @@ def empty_candidate() -> PublicationCandidate:
     return PublicationCandidate(context, context.dependency_plan, artifacts, acquisitions)
 
 
-def test_stage_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path: Path) -> None:
+def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path: Path) -> None:
     candidate = empty_candidate()
     store = AtomicFilesystemPublicationStore(tmp_path)
 
-    staged = store.stage(candidate)
+    receipt = store.publish(candidate)
+    tree = read_current_tree(tmp_path)
+    manifest = json.loads(tree["publication-manifest.json"])
 
-    assert staged.generation_dir.parent == tmp_path / ".staging"
-    assert [item["path"] for item in staged.manifest["artifacts"]] == [
+    assert receipt.current_reference.startswith("generations/")
+    assert [item["path"] for item in manifest["artifacts"]] == [
         artifact.logical_path for artifact in candidate.artifacts
     ]
-    for item, artifact in zip(staged.manifest["artifacts"], candidate.artifacts, strict=True):
-        written = (staged.generation_dir / artifact.logical_path).read_bytes()
+    for item, artifact in zip(manifest["artifacts"], candidate.artifacts, strict=True):
+        written = tree[artifact.logical_path]
         assert written == artifact.data
         assert item["bytes"] == len(written)
         assert item["sha256"] == artifact.digest
@@ -91,9 +95,8 @@ def test_failed_commit_leaves_existing_current_generation_unchanged(tmp_path: Pa
     before = (tmp_path / "current").read_bytes(), (seeded / "sentinel.txt").read_bytes()
 
     store = AtomicFilesystemPublicationStore(tmp_path, fail_before_switch=True)
-    staged = store.stage(empty_candidate())
 
     with pytest.raises(PublicationError, match="before atomic current switch"):
-        store.commit(staged)
+        store.publish(empty_candidate())
 
     assert ((tmp_path / "current").read_bytes(), (seeded / "sentinel.txt").read_bytes()) == before

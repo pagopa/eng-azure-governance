@@ -6,6 +6,7 @@ from typing import Any
 
 from ..contracts.model import EncodedArtifact
 from ..domain.execution import DependencyPlan, RunContext
+from ..domain.diagnostics import Diagnostic
 
 
 @dataclass(frozen=True, slots=True)
@@ -15,6 +16,27 @@ class PublicationCandidate:
     artifacts: tuple[EncodedArtifact, ...]
     acquisitions: tuple[Any, ...]
     slide_selection: Any = None
+
+
+@dataclass(frozen=True, slots=True)
+class PublicationReceipt:
+    generation: str
+    current_reference: str
+
+
+class PublicationError(RuntimeError):
+    """A candidate cannot be safely published."""
+
+    def __init__(
+        self,
+        message: str | Diagnostic,
+        diagnostics: tuple[Diagnostic, ...] = (),
+    ) -> None:
+        if isinstance(message, Diagnostic):
+            diagnostics = (message,)
+            message = message.message
+        self.diagnostics = tuple(diagnostics)
+        super().__init__(message)
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,4 +62,4 @@ class RunResult:
     exit_status: int
     context: RunContext
     candidate: PublicationCandidate
-    publication_receipt: Any
+    publication_receipt: PublicationReceipt
