@@ -5,7 +5,7 @@ import re
 
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..domain.execution import ReportSelector, RunContext
-from ..reports.catalog import DEFAULT_REPORT_CATALOG
+from ..reports.catalog import SelectedReportClosure
 from .model import EncodedArtifact
 from ..publication.model import PublicationCandidate
 
@@ -67,14 +67,14 @@ def _diagnostic(code: str, selector: ReportSelector, context: RunContext | None,
 
 
 def validate_selected_set(
-    selector: ReportSelector,
+    closure: SelectedReportClosure,
     artifacts: tuple[EncodedArtifact, ...],
     *,
     context: RunContext | None = None,
 ) -> tuple[Diagnostic, ...]:
-    plan = DEFAULT_REPORT_CATALOG.plan(selector)
-    expected = plan.expected_paths
-    known_paths = set(DEFAULT_REPORT_CATALOG.all_paths)
+    selector = closure.selector
+    expected = closure.expected_paths
+    known_paths = set(closure.all_paths)
     by_path: dict[str, EncodedArtifact] = {}
     diagnostics: list[Diagnostic] = []
     for artifact in artifacts:
@@ -88,7 +88,7 @@ def validate_selected_set(
     for path in expected:
         if path not in by_path:
             diagnostics.append(_diagnostic("missing_selected_artifact", selector, context, path))
-    for definition in plan.published:
+    for definition in closure.published:
         if len(definition.paths) > 1:
             present = {path for path in definition.paths if path in by_path}
             if present and len(present) != len(definition.paths):
@@ -119,9 +119,7 @@ def validate_manifest(
     measured_artifacts: tuple[EncodedArtifact, ...],
 ) -> tuple[Diagnostic, ...]:
     diagnostics: list[Diagnostic] = []
-    expected_paths = DEFAULT_REPORT_CATALOG.plan(
-        candidate.context.request.selector
-    ).expected_paths
+    expected_paths = candidate.report_closure.expected_paths
     entries = manifest.get("artifacts")
     if not isinstance(entries, list) or tuple(item.get("path") for item in entries if isinstance(item, dict)) != expected_paths:
         diagnostics.append(_diagnostic("manifest_artifact_closure_mismatch", candidate.context.request.selector, candidate.context))

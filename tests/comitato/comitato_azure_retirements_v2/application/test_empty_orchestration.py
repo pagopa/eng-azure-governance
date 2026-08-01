@@ -138,10 +138,13 @@ class FakePublicationStore:
 class RecordingCatalog:
     def __init__(self):
         self.selectors = []
+        self.closures = []
 
     def plan(self, selector):
         self.selectors.append(selector)
-        return DEFAULT_REPORT_CATALOG.plan(selector)
+        closure = DEFAULT_REPORT_CATALOG.plan(selector)
+        self.closures.append(closure)
+        return closure
 
 
 @dataclass
@@ -337,6 +340,7 @@ def test_application_asks_catalog_for_one_plan() -> None:
     application = build_application(log, publication, report_catalog=catalog)
     application.run(RunRequest(ReportSelector.SLIDES))
     assert catalog.selectors == [ReportSelector.SLIDES]
+    assert publication.published[0].report_closure is catalog.closures[0]
 
 
 def test_application_emits_ordered_events_with_one_run_id() -> None:

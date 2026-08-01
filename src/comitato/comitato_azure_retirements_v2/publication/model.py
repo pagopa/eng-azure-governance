@@ -7,11 +7,13 @@ from typing import Any
 from ..contracts.model import EncodedArtifact
 from ..domain.execution import RunContext
 from ..domain.diagnostics import Diagnostic
+from ..reports.catalog import SelectedReportClosure
 
 
 @dataclass(frozen=True, slots=True)
 class PublicationCandidate:
     context: RunContext
+    report_closure: SelectedReportClosure
     artifacts: tuple[EncodedArtifact, ...]
     acquisitions: tuple[Any, ...]
     slide_selection: Any = None

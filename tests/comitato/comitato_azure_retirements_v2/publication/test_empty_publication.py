@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 from datetime import date, datetime, timezone
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from src.comitato.comitato_azure_retirements_v2.contracts import (
     SLIDES_V1,
 )
 from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
 from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
@@ -24,6 +26,9 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
 )
 from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
     FilesystemAtomicPublicationStore,
+)
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
+    stage_candidate,
 )
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
@@ -67,7 +72,22 @@ def empty_candidate(*, as_of_date: date = date(2026, 7, 30)) -> PublicationCandi
             receipt=AcquisitionReceipt("service-health", "test-v1", 1, 1, 1, 0, True)
         ),
     )
-    return PublicationCandidate(context, artifacts, acquisitions)
+    return PublicationCandidate(
+        context=context,
+        report_closure=DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL),
+        artifacts=artifacts,
+        acquisitions=acquisitions,
+    )
+
+
+def _closure_with_custom_owners(candidate: PublicationCandidate):
+    return replace(
+        candidate.report_closure,
+        path_owners=tuple(
+            (path, replace(owner, name=f"custom-{owner.name}"))
+            for path, owner in candidate.report_closure.path_owners
+        ),
+    )
 
 
 def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path: Path) -> None:
@@ -87,6 +107,24 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path:
         assert written == artifact.data
         assert item["bytes"] == len(written)
         assert item["sha256"] == artifact.digest
+
+
+def test_staging_uses_candidate_closure_for_manifest_ownership(tmp_path: Path) -> None:
+    candidate = empty_candidate()
+    candidate = replace(
+        candidate,
+        report_closure=_closure_with_custom_owners(candidate),
+    )
+
+    staged = stage_candidate(candidate, tmp_path)
+    reports = {
+        item["path"]: item["report"]
+        for item in staged.manifest["artifacts"]
+    }
+
+    assert reports["01_azure_advisor_retirements_raw.tsv"] == "custom-advisor"
+    assert reports["03_azure_retirements_slide.tsv"] == "custom-slides"
+    assert tuple(reports) == candidate.report_closure.expected_paths
 
 
 def test_failed_commit_leaves_existing_current_generation_unchanged(tmp_path: Path) -> None:

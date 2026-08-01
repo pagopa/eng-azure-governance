@@ -1,15 +1,78 @@
+from dataclasses import FrozenInstanceError
+
 import pytest
 
+from src.comitato.comitato_azure_retirements_v2.contracts import AGGREGATE_V1, SLIDES_V1
 from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector
+from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
+    ReportCatalog,
+    SelectedReportClosure,
 )
 from src.comitato.comitato_azure_retirements_v2.reports.model import (
+    ReportDefinition,
     StagedDecodeFailure,
+)
+from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
+    SERVICE_HEALTH_REPORT,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
 )
+
+
+def _renamed_catalog() -> ReportCatalog:
+    return ReportCatalog(
+        (
+            ReportDefinition(
+                ReportSelector.ADVISOR,
+                "custom-advisor",
+                "advisor",
+                (),
+                ADVISOR_REPORT.contract,
+            ),
+            ReportDefinition(
+                ReportSelector.SERVICE_HEALTH,
+                "custom-service-health",
+                "service-health",
+                (),
+                SERVICE_HEALTH_REPORT.contract,
+            ),
+            ReportDefinition(
+                ReportSelector.AGGREGATE,
+                "custom-aggregate",
+                "aggregate",
+                (ReportSelector.ADVISOR, ReportSelector.SERVICE_HEALTH),
+                AGGREGATE_V1,
+            ),
+            ReportDefinition(
+                ReportSelector.SLIDES,
+                "custom-slides",
+                "slides",
+                (ReportSelector.AGGREGATE,),
+                SLIDES_V1,
+            ),
+        )
+    )
+
+
+def test_plan_returns_one_immutable_selected_closure() -> None:
+    closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
+
+    assert isinstance(closure, SelectedReportClosure)
+    assert closure.expected_paths == ("03_azure_retirements_slide.tsv",)
+    assert closure.owner_of("03_azure_retirements_slide.tsv").name == "slides"
+    with pytest.raises(FrozenInstanceError):
+        closure.selector = ReportSelector.ALL
+
+
+def test_non_default_catalog_closure_preserves_custom_ownership() -> None:
+    closure = _renamed_catalog().plan(ReportSelector.ALL)
+
+    assert closure.expected_paths == DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths
+    assert closure.owner_of("01_azure_advisor_retirements_raw.tsv").name == "custom-advisor"
+    assert closure.owner_of("03_azure_retirements_slide.tsv").name == "custom-slides"
 
 
 @pytest.mark.parametrize(

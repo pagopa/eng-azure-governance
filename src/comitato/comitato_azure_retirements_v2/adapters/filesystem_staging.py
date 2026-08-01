@@ -20,7 +20,6 @@ from ..publication.model import (
     PublicationError,
     PublicationManifest,
 )
-from ..reports.catalog import DEFAULT_REPORT_CATALOG
 from ..reports.model import StagedDecodeFailure
 
 
@@ -82,7 +81,7 @@ def _decode_and_validate(
             diagnostics.append(_error("staged_artifact_missing", candidate, artifact=artifact.logical_path).diagnostics[0])
             continue
         try:
-            definition = DEFAULT_REPORT_CATALOG.owner_of(artifact.logical_path)
+            definition = candidate.report_closure.owner_of(artifact.logical_path)
         except KeyError:
             diagnostics.append(_error("undeclared_artifact", candidate, artifact=artifact.logical_path).diagnostics[0])
             continue
@@ -129,7 +128,7 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
             "bytes": len(artifact.data),
             "media_type": artifact.media_type,
             "path": artifact.logical_path,
-            "report": DEFAULT_REPORT_CATALOG.owner_of(artifact.logical_path).name,
+            "report": candidate.report_closure.owner_of(artifact.logical_path).name,
             "rows": artifact.rows,
             "schema_version": artifact.schema_version,
             "sha256": artifact.digest,
@@ -185,7 +184,7 @@ def stage_candidate(
     if path_diagnostics:
         raise PublicationError(path_diagnostics[0])
     selected_diagnostics = validate_selected_set(
-        candidate.context.request.selector,
+        candidate.report_closure,
         candidate.artifacts,
         context=candidate.context,
     )

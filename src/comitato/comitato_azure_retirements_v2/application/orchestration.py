@@ -26,7 +26,11 @@ from ..domain.diagnostics import Diagnostic
 from ..domain.slides import SlideSelection, select_slides
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
-from ..reports.catalog import DEFAULT_REPORT_CATALOG, ReportCatalog, ReportPlan
+from ..reports.catalog import (
+    DEFAULT_REPORT_CATALOG,
+    ReportCatalog,
+    SelectedReportClosure,
+)
 from ..reports.advisor import ADVISOR_REPORT, prepare_advisor_report
 from ..reports.model import PreparedRawReport
 from ..reports.service_health import (
@@ -93,8 +97,8 @@ class RetirementsApplication:
     advisor_enrichment_source: Any | None = None
 
     def run(self, request: RunRequest) -> RunResult:
-        report_plan = self.report_catalog.plan(request.selector)
-        plan = DependencyPlan(report_plan.stages)
+        report_closure = self.report_catalog.plan(request.selector)
+        plan = DependencyPlan(report_closure.stages)
         run_id = self.run_id_factory.new_id()
         created_at = self.clock.now()
         self._emit(
@@ -144,7 +148,7 @@ class RetirementsApplication:
         )
 
         prepared_by_selector: dict[ReportSelector, PreparedRawReport] = {}
-        if report_plan.requires(ReportSelector.ADVISOR):
+        if report_closure.requires(ReportSelector.ADVISOR):
             self._emit(
                 "INFO",
                 "acquisition_started",
@@ -168,7 +172,7 @@ class RetirementsApplication:
             prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(
                 advisor_acquisition, context, advisor_enrichments
             )
-        if report_plan.requires(ReportSelector.SERVICE_HEALTH):
+        if report_closure.requires(ReportSelector.SERVICE_HEALTH):
             self._emit(
                 "INFO",
                 "acquisition_started",
@@ -219,7 +223,7 @@ class RetirementsApplication:
             context.run_id,
         )
         artifacts, slide_selection = self._empty_artifacts(
-            context, acquisitions, prepared_by_selector, report_plan, catalog
+            context, acquisitions, prepared_by_selector, report_closure, catalog
         )
         self._emit(
             "INFO",
@@ -232,6 +236,7 @@ class RetirementsApplication:
         )
         candidate = PublicationCandidate(
             context=context,
+            report_closure=report_closure,
             artifacts=tuple(artifacts),
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
@@ -511,18 +516,18 @@ class RetirementsApplication:
         context: RunContext,
         acquisitions: list[SourceAcquisition],
         prepared_by_selector: dict[ReportSelector, PreparedRawReport],
-        report_plan: ReportPlan,
+        report_closure: SelectedReportClosure,
         catalog: Any,
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
         slide_selection: SlideSelection | None = None
         aggregate: Artifact | None = None
-        if report_plan.publishes(ReportSelector.ADVISOR):
+        if report_closure.publishes(ReportSelector.ADVISOR):
             selected.extend(prepared_by_selector[ReportSelector.ADVISOR].artifacts)
-        if report_plan.publishes(ReportSelector.SERVICE_HEALTH):
+        if report_closure.publishes(ReportSelector.SERVICE_HEALTH):
             selected.extend(prepared_by_selector[ReportSelector.SERVICE_HEALTH].artifacts)
-        if report_plan.requires(ReportSelector.AGGREGATE):
+        if report_closure.requires(ReportSelector.AGGREGATE):
             aggregate = AGGREGATE_V1.empty_artifact(context)
             if any(acquisition.records for acquisition in acquisitions):
                 if not isinstance(catalog, PlatformCatalogSnapshot):
@@ -546,9 +551,9 @@ class RetirementsApplication:
                 checked = AGGREGATE_V1.validate(aggregate, context)
                 if not checked.is_valid:
                     raise ContractValidationError(checked.diagnostics, "invalid aggregate contract")
-            if report_plan.publishes(ReportSelector.AGGREGATE):
+            if report_closure.publishes(ReportSelector.AGGREGATE):
                 selected.append(AGGREGATE_V1.encode(aggregate))
-        if report_plan.publishes(ReportSelector.SLIDES):
+        if report_closure.publishes(ReportSelector.SLIDES):
             if aggregate is None:
                 raise ApplicationError("slides requires an aggregate artifact")
             projected = select_slides(aggregate, context)

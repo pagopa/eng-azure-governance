@@ -76,7 +76,8 @@ def test_selected_set_rejects_mixed_run_ids_and_evaluation_dates() -> None:
         _artifact(EXPECTED_PATHS[ReportSelector.ALL][2], as_of_date="2026-08-01"),
     )
 
-    diagnostics = validate_selected_set(ReportSelector.ALL, artifacts, context=_context())
+    closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL)
+    diagnostics = validate_selected_set(closure, artifacts, context=_context())
 
     assert {item.code for item in diagnostics} >= {
         "mixed_run_ids",
@@ -92,7 +93,8 @@ def test_selected_set_rejects_undeclared_and_dependency_artifacts() -> None:
         _artifact("02_azure_retirements_aggregate.tsv"),
     )
 
-    diagnostics = validate_selected_set(ReportSelector.ADVISOR, artifacts, context=_context())
+    closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.ADVISOR)
+    diagnostics = validate_selected_set(closure, artifacts, context=_context())
 
     assert {item.code for item in diagnostics} >= {
         "undeclared_artifact",
@@ -101,8 +103,9 @@ def test_selected_set_rejects_undeclared_and_dependency_artifacts() -> None:
 
 
 def test_selected_set_rejects_missing_raw_companion() -> None:
+    closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.ADVISOR)
     diagnostics = validate_selected_set(
-        ReportSelector.ADVISOR,
+        closure,
         (_artifact("01_azure_advisor_retirements_raw.tsv"),),
         context=_context(),
     )

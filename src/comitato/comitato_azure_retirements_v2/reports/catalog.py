@@ -10,11 +10,12 @@ from .service_health import SERVICE_HEALTH_REPORT
 
 
 @dataclass(frozen=True, slots=True)
-class ReportPlan:
+class SelectedReportClosure:
     selector: ReportSelector
     stages: tuple[str, ...]
     required: tuple[ReportDefinition, ...]
     published: tuple[ReportDefinition, ...]
+    path_owners: tuple[tuple[str, ReportDefinition], ...]
 
     def requires(self, selector: ReportSelector) -> bool:
         return any(item.selector is selector for item in self.required)
@@ -25,6 +26,16 @@ class ReportPlan:
     @property
     def expected_paths(self) -> tuple[str, ...]:
         return tuple(path for item in self.published for path in item.paths)
+
+    @property
+    def all_paths(self) -> tuple[str, ...]:
+        return tuple(path for path, _ in self.path_owners)
+
+    def owner_of(self, path: str) -> ReportDefinition:
+        for owned_path, definition in self.path_owners:
+            if owned_path == path:
+                return definition
+        raise KeyError(f"no report owns path: {path}")
 
 
 class ReportCatalog:
@@ -51,7 +62,7 @@ class ReportCatalog:
         except KeyError as exc:
             raise KeyError(f"no report owns path: {path}") from exc
 
-    def plan(self, selector: ReportSelector) -> ReportPlan:
+    def plan(self, selector: ReportSelector) -> SelectedReportClosure:
         roots = (
             self._definitions
             if selector is ReportSelector.ALL
@@ -79,7 +90,18 @@ class ReportCatalog:
         )
         if selector is ReportSelector.ALL:
             published = tuple(roots)
-        return ReportPlan(selector, stages, tuple(required), published)
+        path_owners = tuple(
+            (path, definition)
+            for definition in self._definitions
+            for path in definition.paths
+        )
+        return SelectedReportClosure(
+            selector,
+            stages,
+            tuple(required),
+            published,
+            path_owners,
+        )
 
 
 DEFAULT_REPORT_CATALOG = ReportCatalog(
@@ -116,4 +138,12 @@ DEFAULT_REPORT_CATALOG = ReportCatalog(
 )
 
 
-__all__ = ["DEFAULT_REPORT_CATALOG", "ReportCatalog", "ReportPlan"]
+ReportPlan = SelectedReportClosure
+
+
+__all__ = [
+    "DEFAULT_REPORT_CATALOG",
+    "ReportCatalog",
+    "ReportPlan",
+    "SelectedReportClosure",
+]
