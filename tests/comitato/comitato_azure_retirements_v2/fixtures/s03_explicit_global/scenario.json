@@ -1,0 +1,30 @@
+{
+  "selector": "all",
+  "run_id": "s03-explicit-global",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 0,
+  "scope": {"mode": "explicit", "subscription_ids": []},
+  "azure": {
+    "advisor": {"pages": [{"items": [], "next_link": null}]},
+    "service_health": {
+      "pages": [{
+        "items": [{
+          "id": "/providers/Microsoft.ResourceHealth/events/s03-event",
+          "name": "S03-TRACK",
+          "properties": {
+            "trackingId": "S03-TRACK",
+            "eventType": "HealthAdvisory",
+            "level": "Warning",
+            "status": "Active",
+            "isGlobal": true,
+            "impactMitigationTime": "2027-03-31",
+            "impactedServices": [],
+            "impactedResources": []
+          }
+        }],
+        "next_link": null
+      }]
+    }
+  }
+}
