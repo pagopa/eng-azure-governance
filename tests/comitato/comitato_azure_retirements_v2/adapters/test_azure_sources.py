@@ -130,7 +130,9 @@ def test_resource_graph_source_posts_query_without_normalizing_rows() -> None:
 
     assert result[0]["id"].endswith("/vm")
     assert http.post_calls[0][1]["subscriptions"] == ["sub-a"]
-    assert "resources" in http.post_calls[0][1]["query"]
+    query = http.post_calls[0][1]["query"]
+    assert "resources | where tolower(id) in" in query
+    assert '"/resource/1"' in query
 
 
 def test_resource_graph_lookup_projects_normalized_resource_fields() -> None:

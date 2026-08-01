@@ -19,8 +19,8 @@ class AdvisorEnrichments:
 @dataclass(frozen=True, slots=True)
 class ServiceHealthSupplementalEvidence:
     advisor_records: tuple[Mapping[str, Any], ...] = ()
-    resource_inventory: Mapping[str, Mapping[str, Any]] = ()
-    subscription_inventory: Mapping[str, Mapping[str, Any]] = ()
+    resource_inventory: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
+    subscription_inventory: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
     resource_associations: Mapping[tuple[str, str], tuple[Mapping[str, Any], ...]] = field(default_factory=dict)
     subscription_name_sources: Mapping[str, str] = field(default_factory=dict)
 

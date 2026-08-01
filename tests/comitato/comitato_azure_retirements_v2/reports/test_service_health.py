@@ -308,6 +308,62 @@ def test_normalize_service_health_consumes_resource_graph_association_and_proven
     ]
 
 
+def test_normalize_service_health_does_not_infer_resource_metadata_without_inventory() -> None:
+    resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
+    result = normalize_service_health(
+        _health_acquisition(_impact_event()),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            resource_associations={
+                ("8q2_-mk8", "sub-a"): ({"resourceId": resource_id},),
+            },
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["published_resource_id"] == resource_id
+    assert row["resource_evidence_status"] == "inventory_missing"
+    assert row["resource_name"] == ""
+    assert row["resource_group"] == ""
+    assert row["resource_type"] == ""
+    assert row["resource_location"] == ""
+
+
+def test_normalize_service_health_keeps_resource_diagnostics_per_association() -> None:
+    missing_resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/missing"
+    matched_resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/matched"
+    result = normalize_service_health(
+        _health_acquisition(_impact_event()),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            advisor_records=(
+                {"tracking_id": "8Q2_-MK8", "subscription_id": "sub-a", "resource_id": missing_resource_id},
+                {"tracking_id": "8Q2_-MK8", "subscription_id": "sub-a", "resource_id": matched_resource_id},
+            ),
+            resource_inventory={
+                matched_resource_id.casefold(): {
+                    "id": matched_resource_id,
+                    "name": "matched",
+                    "resourceGroup": "rg",
+                    "type": "Microsoft.Compute/virtualMachines",
+                },
+            },
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    rows_by_resource = {row["published_resource_id"]: row for row in result.value.records}
+    assert "resource_not_published" in rows_by_resource[""]["diagnostic_flags"]
+    assert "resource_inventory_not_found" in rows_by_resource[missing_resource_id]["diagnostic_flags"]
+    assert "resource_not_published" not in rows_by_resource[matched_resource_id]["diagnostic_flags"]
+    assert "resource_inventory_not_found" not in rows_by_resource[matched_resource_id]["diagnostic_flags"]
+
+
 def test_normalize_service_health_marks_completed_resource_no_match_as_not_published() -> None:
     result = normalize_service_health(
         _health_acquisition(_impact_event()),
@@ -491,6 +547,16 @@ def test_service_health_contract_requires_empty_fields_for_not_published() -> No
     assert any(item.code == "invalid_not_published_resource_fields" for item in checked.diagnostics)
 
 
+def test_service_health_contract_rejects_not_published_with_missing_inventory() -> None:
+    row = _service_health_contract_row()
+    row["resource_inventory_match_status"] = "missing"
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == "invalid_not_published_resource_fields" for item in checked.diagnostics)
+
+
 def test_service_health_contract_requires_resource_id_for_published_status() -> None:
     row = _service_health_contract_row()
     row["resource_evidence_status"] = "published"
@@ -499,6 +565,38 @@ def test_service_health_contract_requires_resource_id_for_published_status() -> 
 
     assert not checked.is_valid
     assert any(item.code == "published_resource_missing_id" for item in checked.diagnostics)
+
+
+@pytest.mark.parametrize(
+    (
+        "resource_evidence_status",
+        "resource_inventory_match_status",
+        "has_published_resource_id",
+        "expected_code",
+    ),
+    (
+        ("inventory_missing", "missing", False, "invalid_inventory_missing_resource_evidence"),
+        ("inventory_missing", "matched", True, "invalid_inventory_missing_resource_evidence"),
+        ("published", "missing", True, "invalid_published_resource_evidence"),
+    ),
+)
+def test_service_health_contract_rejects_incoherent_resource_evidence_matrix(
+    resource_evidence_status: str,
+    resource_inventory_match_status: str,
+    has_published_resource_id: bool,
+    expected_code: str,
+) -> None:
+    row = _service_health_contract_row()
+    if has_published_resource_id:
+        row["published_resource_id"] = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
+        row["normalized_resource_id"] = "/subscriptions/sub-a/resourcegroups/rg/providers/microsoft.compute/virtualmachines/vm-1"
+    row["resource_evidence_status"] = resource_evidence_status
+    row["resource_inventory_match_status"] = resource_inventory_match_status
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == expected_code for item in checked.diagnostics)
 
 
 @pytest.mark.parametrize(

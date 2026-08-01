@@ -117,8 +117,17 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
             resource_evidence_status = row.get("resource_evidence_status", "")
             if resource_evidence_status not in {"published", "inventory_missing", "not_published"}:
                 diagnostics.append(Diagnostic("error", "invalid_resource_evidence_status", "validation", "service-health", context.run_id, record_ref=event_id))
-            elif resource_evidence_status == "published" and not row.get("published_resource_id"):
-                diagnostics.append(Diagnostic("error", "published_resource_missing_id", "validation", "service-health", context.run_id, record_ref=event_id))
+            elif resource_evidence_status == "inventory_missing":
+                if (
+                    not row.get("published_resource_id")
+                    or row.get("resource_inventory_match_status") != "missing"
+                ):
+                    diagnostics.append(Diagnostic("error", "invalid_inventory_missing_resource_evidence", "validation", "service-health", context.run_id, record_ref=event_id))
+            elif resource_evidence_status == "published":
+                if not row.get("published_resource_id"):
+                    diagnostics.append(Diagnostic("error", "published_resource_missing_id", "validation", "service-health", context.run_id, record_ref=event_id))
+                if row.get("resource_inventory_match_status") != "matched":
+                    diagnostics.append(Diagnostic("error", "invalid_published_resource_evidence", "validation", "service-health", context.run_id, record_ref=event_id))
             elif resource_evidence_status == "not_published":
                 resource_fields = (
                     "published_resource_id",
@@ -375,15 +384,16 @@ def normalize_service_health(
         last_update, update_flag = _timestamp(props.get("lastUpdateTime"))
         retirement_raw = str(props.get("impactMitigationTime") or "")
         retirement_date, retirement_quality = _date(retirement_raw)
-        flags = set(filter(None, (start_flag, mitigation_flag, update_flag)))
+        event_flags = set(filter(None, (start_flag, mitigation_flag, update_flag)))
         if description_quality == "missing":
-            flags.add("missing_description")
+            event_flags.add("missing_description")
         if description_quality == "sensitive_unavailable":
-            flags.add("sensitive_description_unavailable")
+            event_flags.add("sensitive_description_unavailable")
         if retirement_quality == "missing":
-            flags.add("missing_retirement_date")
+            event_flags.add("missing_retirement_date")
         if retirement_quality == "invalid":
-            flags.add("invalid_retirement_date")
+            event_flags.add("invalid_retirement_date")
+        event_flags = frozenset(event_flags)
         service_regions = list(_impact_service_regions(props))
         collection_subscription = _collection_subscription(raw_record, event)
         resources = _items(props.get("impactedResources"))
@@ -427,6 +437,7 @@ def normalize_service_health(
                 continue
             associations.append(("", "", "", advisor_subscription, advisor_resource, "advisor_recommendation", advisor_map))
         for service_name, service_guid, region, affected_subscription, resource_id, resource_source, advisor_record in associations:
+            row_flags = set(event_flags)
             is_global = props.get("isGlobal") is True or str(props.get("isGlobal") or "").casefold() == "true"
             is_global = is_global and resource_source != "advisor_recommendation"
             subscription_id = "" if is_global else affected_subscription or collection_subscription
@@ -434,12 +445,11 @@ def normalize_service_health(
                 diagnostics.append(Diagnostic("error", "missing_affected_subscription", "normalization", "service-health", context.run_id, record_ref=event_id))
                 continue
             normalized_resource = re.sub(r"/+", "/", resource_id.strip()).casefold().rstrip("/") if resource_id else ""
-            name, group, resource_type = _resource_parts(resource_id)
             record_type = "service_health_event_global" if is_global and not subscription_id and not resource_id else "service_health_event_resource" if resource_id else "service_health_event_service_region" if service_name or region else "service_health_event_subscription"
             if resource_source == "advisor_recommendation":
-                flags.add("subscription_association_supplemented")
+                row_flags.add("subscription_association_supplemented")
             if not resource_id:
-                flags.add("resource_not_published")
+                row_flags.add("resource_not_published")
             resource_inventory, resource_ambiguous = _inventory_lookup(evidence.resource_inventory, normalized_resource)
             subscription_inventory, subscription_ambiguous = _inventory_lookup(evidence.subscription_inventory, subscription_id)
             if resource_ambiguous:
@@ -447,9 +457,9 @@ def normalize_service_health(
             if subscription_ambiguous:
                 diagnostics.append(Diagnostic("error", "ambiguous_subscription_enrichment", "normalization", "service-health", context.run_id, record_ref=event_id))
             if resource_id and not resource_inventory:
-                flags.add("resource_inventory_not_found")
+                row_flags.add("resource_inventory_not_found")
             if subscription_id and not subscription_inventory:
-                flags.add("subscription_inventory_not_found")
+                row_flags.add("subscription_inventory_not_found")
             resource_status = "not_applicable" if not resource_id else "matched" if resource_inventory else "missing"
             subscription_status = "not_applicable" if not subscription_id else "matched" if subscription_inventory else "missing"
             resource_graph_queries = []
@@ -469,9 +479,9 @@ def normalize_service_health(
                 "last_update_time_raw": str(props.get("lastUpdateTime") or ""), "last_update_time": last_update, "retirement_date_raw": retirement_raw, "retirement_date": retirement_date,
                 "retirement_date_source": "properties.impactMitigationTime" if retirement_raw else "", "retirement_date_quality": retirement_quality, "impacted_service": service_name, "impacted_service_guid": service_guid,
                 "impacted_region": region, "normalized_impacted_region": "global" if is_global else region.casefold(), "resource_evidence_source": resource_source, "resource_evidence_status": "inventory_missing" if resource_id and not resource_inventory else "published" if resource_id else "not_published",
-                "published_resource_id": resource_id, "normalized_resource_id": normalized_resource, "resource_name": str(resource_inventory.get("name") or name), "resource_group": str(resource_inventory.get("resourceGroup") or resource_inventory.get("resource_group") or group), "resource_type": str(resource_inventory.get("type") or resource_inventory.get("resourceType") or resource_type),
+                "published_resource_id": resource_id, "normalized_resource_id": normalized_resource, "resource_name": str(resource_inventory.get("name") or ""), "resource_group": str(resource_inventory.get("resourceGroup") or resource_inventory.get("resource_group") or ""), "resource_type": str(resource_inventory.get("type") or resource_inventory.get("resourceType") or ""),
                 "resource_location": str(resource_inventory.get("location") or ""), "recommendation_type_id": str((advisor_record or {}).get("recommendation_type_id") or (advisor_record or {}).get("recommendationTypeId") or props.get("recommendationTypeId") or ""), "advisor_platform_state": str((advisor_record or {}).get("platform_state") or (advisor_record or {}).get("platformState") or ""), "current_query_match": str((advisor_record or {}).get("current_query_match") or (advisor_record or {}).get("currentQueryMatch") or ""),
-                "resource_inventory_match_status": resource_status, "subscription_inventory_match_status": subscription_status, "is_sensitive": "true" if sensitive else "false", "details_fetch_status": "unavailable_sensitive" if sensitive and not raw_article else "not_needed", "diagnostic_flags": ",".join(sorted(flags)),
+                "resource_inventory_match_status": resource_status, "subscription_inventory_match_status": subscription_status, "is_sensitive": "true" if sensitive else "false", "details_fetch_status": "unavailable_sensitive" if sensitive and not raw_article else "not_needed", "diagnostic_flags": ",".join(sorted(row_flags)),
                 "provenance_json": _canonical({"api_version": acquisition.receipt.api_version, "event_id": event_id, "association": record_type, "subscription_name_source": evidence.subscription_name_sources.get(subscription_id.casefold(), ""), "resource_evidence_source": resource_source if resource_id else "not_published", "resource_graph_queries": resource_graph_queries}), "raw_record_ref": ref,
             })
             rows.append(row)

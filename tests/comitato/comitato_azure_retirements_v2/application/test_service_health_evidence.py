@@ -13,6 +13,7 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
 from src.comitato.comitato_azure_retirements_v2.application import orchestration as orchestration_module
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
 from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import ApplicationError
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import ServiceHealthSupplementalEvidence
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -27,6 +28,13 @@ from src.comitato.comitato_azure_retirements_v2.publication.model import Publica
 
 SUBSCRIPTION_ID = "sub-a"
 RESOURCE_ID = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
+
+
+def test_empty_supplemental_evidence_uses_mapping_defaults() -> None:
+    evidence = ServiceHealthSupplementalEvidence()
+
+    assert evidence.resource_inventory == {}
+    assert evidence.subscription_inventory == {}
 
 
 def context() -> RunContext:
