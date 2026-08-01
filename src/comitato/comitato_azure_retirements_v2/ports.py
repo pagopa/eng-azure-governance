@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, Protocol, TypeVar
 
 from .domain.execution import RunContext, RunRequest, Scope
+from .domain.evidence import AdvisorEnrichments
 from .publication.model import PublicationCandidate, PublicationReceipt
 
 
@@ -48,6 +49,11 @@ class RunIdFactory(Protocol):
 
 class AdvisorSource(Protocol):
     def acquire(self, context: RunContext) -> Any:
+        ...
+
+
+class AdvisorEnrichmentSource(Protocol):
+    def enrich(self, context: RunContext, recommendations: Any) -> AdvisorEnrichments:
         ...
 
 

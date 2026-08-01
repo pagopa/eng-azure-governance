@@ -53,6 +53,19 @@ def test_store_rejects_destination_capability_mismatch(tmp_path: Path) -> None:
         FilesystemAtomicPublicationStore(destination).publish(empty_candidate())
 
 
+def test_publish_accepts_relative_destination_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    destination = Path("relative-destination")
+
+    receipt = FilesystemAtomicPublicationStore(destination).publish(empty_candidate())
+
+    assert receipt.current_reference == "2026/07"
+    assert (destination / "2026" / "07" / "publication-manifest.json").is_file()
+
+
 def test_publish_exposes_one_complete_monthly_bundle(tmp_path: Path) -> None:
     store = FilesystemAtomicPublicationStore(tmp_path)
 

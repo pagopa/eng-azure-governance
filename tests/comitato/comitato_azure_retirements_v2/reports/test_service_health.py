@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+import json
 
 import pytest
 
@@ -28,13 +29,14 @@ from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
 )
 
 
-def context() -> RunContext:
+def context(*subscription_ids: str) -> RunContext:
+    scoped_subscriptions = subscription_ids or ("sub-a",)
     return RunContext(
         run_id="run-health",
         as_of_date=date(2026, 7, 30),
         created_at=datetime(2026, 7, 30, tzinfo=timezone.utc),
         request=RunRequest(ReportSelector.SERVICE_HEALTH),
-        scope=Scope(mode="explicit", subscription_ids=("sub-a",)),
+        scope=Scope(mode="explicit", subscription_ids=scoped_subscriptions),
         catalog_identity=CatalogIdentity(1, "a" * 64),
         dependency_plan=DependencyPlan(("scope", "catalog", "service-health", "publication")),
     )
@@ -178,11 +180,201 @@ def _health_event(**properties: object) -> dict[str, object]:
     return base
 
 
-def _health_acquisition(event: dict[str, object]) -> SourceAcquisition:
+def _health_acquisition(
+    event: dict[str, object] | tuple[dict[str, object], ...],
+) -> SourceAcquisition:
+    records = (event,) if isinstance(event, dict) else event
+    count = len(records)
     return SourceAcquisition(
-        receipt=AcquisitionReceipt("service-health", "test-v1", 1, 1, 1, 1, True),
-        records=(event,),
+        receipt=AcquisitionReceipt("service-health", "test-v1", count, count, count, count, True),
+        records=records,
     )
+
+
+def _impact_event(
+    *,
+    regions: tuple[str, ...] = ("West US",),
+    subscription_id: str = "sub-a",
+    include_unrelated: bool = False,
+) -> dict[str, object]:
+    impacts: list[dict[str, object]] = [
+        {
+            "impactedService": "Service Bus",
+            "impactedServiceGuid": "2f15c16c-f172-4947-961f-7291994ba791",
+            "impactedRegions": [{"impactedRegion": region} for region in regions],
+        },
+    ]
+    if include_unrelated:
+        impacts.append(
+            {
+                "impactedService": "Compute",
+                "impactedServiceGuid": "compute-guid",
+                "impactedRegions": [{"impactedRegion": "West US"}],
+            }
+        )
+    event = {
+        "id": f"/subscriptions/{subscription_id}/providers/Microsoft.ResourceHealth/events/8Q2_-MK8",
+        "name": "8Q2_-MK8",
+        "subscriptionId": subscription_id,
+        "properties": {
+            "eventType": "HealthAdvisory",
+            "level": "Informational",
+            "status": "Active",
+            "trackingId": "8Q2_-MK8",
+            "title": "Action recommended: Migrate your Azure Service Bus SDKs by 30 September 2026\u202f",
+            "summary": "<p><em>You\u2019re receiving this notice.</em></p>",
+            "description": "<p>We\u2019ll retire the SDKs.&nbsp;</p>",
+            "recommendedActions": {},
+            "impact": impacts,
+            "impactedServices": [],
+            "impactedResources": [],
+        },
+    }
+    return event
+
+
+def test_normalize_service_health_reads_impact_and_canonicalizes_published_text() -> None:
+    result = normalize_service_health(
+        _health_acquisition(
+            _impact_event(regions=("West US", "North Europe"), include_unrelated=True)
+        ),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    rows = result.value.records
+    assert len(rows) == 3
+    assert {(row["impacted_service"], row["impacted_service_guid"], row["impacted_region"]) for row in rows} == {
+        ("Service Bus", "2f15c16c-f172-4947-961f-7291994ba791", "West US"),
+        ("Service Bus", "2f15c16c-f172-4947-961f-7291994ba791", "North Europe"),
+        ("Compute", "compute-guid", "West US"),
+    }
+    row = rows[0]
+    assert all(item["record_type"] == "service_health_event_service_region" for item in rows)
+    assert row["title"].isascii()
+    assert row["summary"] == "You're receiving this notice."
+    assert row["description_problem"] == "We'll retire the SDKs."
+    assert row["recommended_actions"] == ""
+    assert "<" not in row["title"] + row["summary"] + row["description_problem"]
+
+
+def test_normalize_service_health_consumes_resource_graph_association_and_provenance() -> None:
+    resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
+    result = normalize_service_health(
+        _health_acquisition(_impact_event()),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            resource_associations={
+                ("8q2_-mk8", "sub-a"): (
+                    {
+                        "resourceId": resource_id,
+                        "resourceType": "Microsoft.Compute/virtualMachines",
+                        "region": "West US",
+                        "resource_evidence_source": "service_health_resource_graph",
+                    },
+                ),
+            },
+            resource_inventory={
+                resource_id.casefold(): {
+                    "id": resource_id,
+                    "name": "vm-1",
+                    "resourceGroup": "rg",
+                    "type": "Microsoft.Compute/virtualMachines",
+                },
+            },
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+            subscription_name_sources={"sub-a": "platform_catalog"},
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert len(result.value.records) == 1
+    row = result.value.records[0]
+    assert row["published_resource_id"] == resource_id
+    assert row["resource_name"] == "vm-1"
+    assert row["resource_evidence_source"] == "service_health_resource_graph"
+    provenance = json.loads(row["provenance_json"])
+    assert provenance["subscription_name_source"] == "platform_catalog"
+    assert provenance["resource_evidence_source"] == "service_health_resource_graph"
+    assert provenance["resource_graph_queries"] == [
+        "subscription_inventory",
+        "service_health_impacted_resources",
+        "resource_inventory",
+    ]
+
+
+def test_normalize_service_health_marks_completed_resource_no_match_as_not_published() -> None:
+    result = normalize_service_health(
+        _health_acquisition(_impact_event()),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+            subscription_name_sources={"sub-a": "resource_graph_inventory"},
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["published_resource_id"] == ""
+    assert row["resource_name"] == ""
+    assert row["resource_group"] == ""
+    assert row["resource_type"] == ""
+    assert row["resource_evidence_status"] == "not_published"
+    assert row["resource_inventory_match_status"] == "not_applicable"
+    assert "resource_not_published" in row["diagnostic_flags"]
+
+
+def test_normalize_service_health_expands_all_65_impact_regions() -> None:
+    regions = tuple(f"region-{index:02d}" for index in range(65))
+    result = normalize_service_health(
+        _health_acquisition(_impact_event(regions=regions)),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert len(result.value.records) == 65
+    assert {row["impacted_region"] for row in result.value.records} == set(regions)
+
+
+def test_normalize_service_health_expands_65_regions_for_three_subscriptions() -> None:
+    subscription_ids = ("sub-a", "sub-b", "sub-c")
+    regions = tuple(f"region-{index:02d}" for index in range(65))
+    result = normalize_service_health(
+        _health_acquisition(
+            tuple(
+                _impact_event(regions=regions, subscription_id=subscription_id)
+                for subscription_id in subscription_ids
+            )
+        ),
+        context(*subscription_ids),
+        ServiceHealthSupplementalEvidence(
+            subscription_inventory={
+                "sub-a": {"name": "UAT-pagoPA"},
+                "sub-b": {"name": "PROD-pagoPA"},
+                "sub-c": {"name": "DEV-pagoPA"},
+            },
+        ),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert len(result.value.records) == 195
+    assert {row["subscription_name"] for row in result.value.records} == {
+        "UAT-pagoPA",
+        "PROD-pagoPA",
+        "DEV-pagoPA",
+    }
+    assert {row["impacted_region"] for row in result.value.records} == set(regions)
 
 
 def test_service_health_preserves_each_resource_without_service_cross_product() -> None:
@@ -255,6 +447,86 @@ def test_service_health_global_projection_rejects_affected_subscription_or_resou
     assert any(item.code == "global_evidence_has_subscription" for item in checked.diagnostics)
 
 
+def _validate_service_health_row(row: dict[str, str]):
+    artifact = Artifact(
+        contract=SERVICE_HEALTH_REPORT.contract.name,
+        schema_version=1,
+        run_id=row["run_id"],
+        records=(row,),
+        companion_records=({"raw_record_ref": row["raw_record_ref"]},),
+    )
+    return SERVICE_HEALTH_REPORT.contract.validate(artifact, context())
+
+
+def _service_health_contract_row() -> dict[str, str]:
+    result = normalize_service_health(
+        _health_acquisition(_impact_event()),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+            subscription_name_sources={"sub-a": "resource_graph_inventory"},
+        ),
+    )
+    assert result.is_valid and result.value is not None
+    return dict(result.value.records[0])
+
+
+def test_service_health_contract_requires_non_global_subscription_name() -> None:
+    row = _service_health_contract_row()
+    row["subscription_name"] = ""
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == "missing_subscription_name" for item in checked.diagnostics)
+
+
+def test_service_health_contract_requires_empty_fields_for_not_published() -> None:
+    row = _service_health_contract_row()
+    row["resource_name"] = "invented-name"
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == "invalid_not_published_resource_fields" for item in checked.diagnostics)
+
+
+def test_service_health_contract_requires_resource_id_for_published_status() -> None:
+    row = _service_health_contract_row()
+    row["resource_evidence_status"] = "published"
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == "published_resource_missing_id" for item in checked.diagnostics)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (("title", "Résumé"), ("summary", "<p>summary</p>"), ("description_problem", "<p>description</p>"), ("recommended_actions", "<p>act</p>")),
+)
+def test_service_health_contract_rejects_noncanonical_published_text(field: str, value: str) -> None:
+    row = _service_health_contract_row()
+    row[field] = value
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == "noncanonical_service_health_text" for item in checked.diagnostics)
+
+
+def test_service_health_contract_rejects_unknown_resource_graph_query_label() -> None:
+    row = _service_health_contract_row()
+    provenance = json.loads(row["provenance_json"])
+    provenance["resource_graph_queries"] = ["unknown_query"]
+    row["provenance_json"] = json.dumps(provenance, separators=(",", ":"), sort_keys=True)
+
+    checked = _validate_service_health_row(row)
+
+    assert not checked.is_valid
+    assert any(item.code == "invalid_resource_graph_query_label" for item in checked.diagnostics)
+
+
 def test_service_health_keeps_direct_and_supplemental_resource_associations() -> None:
     result = normalize_service_health(
         _health_acquisition(_health_event(
@@ -302,7 +574,11 @@ def test_prepare_service_health_report_rejects_incomplete_receipt() -> None:
 
 def test_prepare_service_health_report_returns_normalized_acquisition_and_encoded_pair():
     prepared = prepare_service_health_report(
-        acquisition(), context(), ServiceHealthSupplementalEvidence()
+        acquisition(),
+        context(),
+        ServiceHealthSupplementalEvidence(
+            subscription_inventory={"sub-a": {"name": "UAT-pagoPA"}},
+        ),
     )
     assert prepared.acquisition.records == prepared.artifact.records
     assert prepared.acquisition.companion_records == prepared.artifact.companion_records

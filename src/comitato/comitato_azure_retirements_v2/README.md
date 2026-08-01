@@ -1,5 +1,7 @@
 # Azure Retirements v2
 
+# Azure Retirements v2
+
 This command performs a live Azure acquisition and publishes one validated
 monthly report bundle. The default selector is `all`; use `--report`
 with `advisor`, `service-health`, `aggregate`, or `slides` to publish one
@@ -10,6 +12,24 @@ Advisor, Resource Health events, Resource Graph enrichment, and subscription
 scope resolution. Authentication uses `AZURE_BEARER_TOKEN` when supplied or
 the logged-in Azure CLI account. Tokens are never written to configuration,
 diagnostics, manifests, or artifacts.
+
+## Advisor Enrichment
+
+Advisor raw recommendations are enriched from three live sources: the
+`Microsoft.Advisor/metadata` endpoint, Resource Graph resource inventory, and
+Resource Graph subscription inventory. Resource inventory is queried by
+normalized ARM resource ID, while subscription names come only from the
+`resourcecontainers` subscription inventory. Each raw TSV row keeps one
+companion JSONL record containing the recommendation and the matched enrichment
+evidence.
+
+Missing optional values are not synthesized. `service_name` may use a
+deterministic resource-type fallback, but `subscription_name`,
+`learn_more_link`, `label`, and `potential_benefits` are never invented. Empty
+authoritative values remain empty and are recorded in row diagnostics and field
+provenance. Transport, pagination, response-shape, repeated-continuation, and
+ambiguous-join failures block publication; a failed enrichment acquisition
+leaves the existing monthly bundle unchanged.
 
 The operator supplies `--subscriptions sub-a,sub-b` or allows live scope
 resolution. `--catalog-path` selects the source-of-truth version-1 platform
@@ -62,6 +82,52 @@ pattern. This path is separate from `--output-path`: changing logging settings
 does not redirect, replace, or otherwise alter the published artifact bundle.
 
 Use the logging flags as follows:
+
+## Service Health Evidence
+
+Service Health advisories are acquired from the Resource Health events endpoint
+at `subscriptions/{subscriptionId}/providers/Microsoft.ResourceHealth/events`
+with API version `2025-05-01`. The raw event and its original text remain in
+the JSONL companion. The TSV projection parses `properties.impact` and applies
+the shared HTML-to-ASCII text normalization to published title, summary,
+description, and recommended-action fields.
+
+The supplemental Resource Graph adapter uses the scoped,
+paginated `Microsoft.ResourceGraph/resources?api-version=2024-04-01` endpoint
+for three purposes:
+
+1. Subscription names, with live inventory preferred over the governed platform
+  catalog fallback:
+
+  ```kusto
+  resourcecontainers
+  | where type =~ "microsoft.resources/subscriptions"
+  | project subscriptionId, subscriptionName=name
+  ```
+
+1. Service Health impacted-resource associations:
+
+  ```kusto
+  servicehealthresources
+  | where type =~ "microsoft.resourcehealth/events/impactedresources"
+  | project id, subscriptionId, properties
+  ```
+
+1. Verified metadata for target resource IDs already published by the Service
+  Health association query:
+
+  ```kusto
+  resources
+  | where tolower(id) in ("/subscriptions/.../providers/...")
+  | project id, name, type, location, resourceGroup, subscriptionId, tags, resourceId = tolower(id)
+  ```
+
+A completed impacted-resource query with no matching target is represented as
+`resource_evidence_status=not_published`; it does not infer an ARM resource
+from article text, service, region, or subscription data. Resource Graph
+transport, pagination, or response-shape failures block the run and leave the
+existing monthly bundle unchanged. Query labels and subscription-name source
+are retained in `provenance_json`.
 
 - `--output-format {human,json}` selects the process output contract.
 - `--verbose` includes additional non-failing runtime events in the human

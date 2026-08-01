@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+import re
 from typing import Any
 
 from ..acquisition.model import SourceAcquisition
+from ..adapters.advisor_enrichment import AdvisorEnrichmentError
 from ..contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
@@ -47,6 +50,34 @@ def _empty_catalog_for_legacy_check() -> _LegacyEmptyCatalog:
     return _LegacyEmptyCatalog()
 
 
+def _record_payload(record: Any) -> Mapping[str, Any]:
+    payload = getattr(record, "payload", record)
+    return payload if isinstance(payload, Mapping) else {}
+
+
+def _record_subscription_id(record: Any, event: Mapping[str, Any]) -> str:
+    return str(
+        event.get("subscriptionId")
+        or event.get("subscription_id")
+        or event.get("_subscriptionId")
+        or getattr(record, "subscription_id", "")
+        or ""
+    ).strip()
+
+
+def _resource_graph_tracking_id(resource_id: str) -> str:
+    segments = [segment for segment in resource_id.split("/") if segment]
+    lowered = [segment.casefold() for segment in segments]
+    if "events" not in lowered:
+        return ""
+    index = lowered.index("events")
+    return segments[index + 1] if index + 1 < len(segments) else ""
+
+
+def _normalize_resource_id(resource_id: str) -> str:
+    return re.sub(r"/+", "/", resource_id.strip()).casefold().rstrip("/")
+
+
 @dataclass(slots=True)
 class RetirementsApplication:
     scope_source: Any
@@ -56,8 +87,10 @@ class RetirementsApplication:
     publication_store: Any
     clock: Any
     run_id_factory: Any
+    resource_graph_source: Any | None = None
     report_catalog: ReportCatalog = DEFAULT_REPORT_CATALOG
     observer: RunObserver = field(default_factory=NullRunObserver)
+    advisor_enrichment_source: Any | None = None
 
     def run(self, request: RunRequest) -> RunResult:
         report_plan = self.report_catalog.plan(request.selector)
@@ -121,8 +154,19 @@ class RetirementsApplication:
             )
             advisor_acquisition = self.advisor_source.acquire(context)
             self._emit_acquisition_completed(context.run_id, advisor_acquisition)
+            advisor_enrichments = AdvisorEnrichments()
+            if self.advisor_enrichment_source is not None:
+                try:
+                    advisor_enrichments = self.advisor_enrichment_source.enrich(
+                        context,
+                        advisor_acquisition.records,
+                    )
+                except AdvisorEnrichmentError as exc:
+                    raise ApplicationError(
+                        "advisor enrichment failed; existing monthly bundle was not changed"
+                    ) from exc
             prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(
-                advisor_acquisition, context, AdvisorEnrichments()
+                advisor_acquisition, context, advisor_enrichments
             )
         if report_plan.requires(ReportSelector.SERVICE_HEALTH):
             self._emit(
@@ -134,10 +178,13 @@ class RetirementsApplication:
             )
             service_health_acquisition = self.service_health_source.acquire(context)
             self._emit_acquisition_completed(context.run_id, service_health_acquisition)
+            service_health_evidence = self._collect_service_health_evidence(
+                context, service_health_acquisition, catalog
+            )
             prepared_by_selector[ReportSelector.SERVICE_HEALTH] = prepare_service_health_report(
                 service_health_acquisition,
                 context,
-                ServiceHealthSupplementalEvidence(),
+                service_health_evidence,
             )
         acquisitions = [
             prepared_by_selector[selector].acquisition
@@ -229,6 +276,132 @@ class RetirementsApplication:
             candidate=candidate,
             publication_receipt=receipt,
         )
+
+    def _collect_service_health_evidence(
+        self,
+        context: RunContext,
+        acquisition: SourceAcquisition,
+        catalog: Any,
+    ) -> ServiceHealthSupplementalEvidence:
+        if not acquisition.records:
+            return ServiceHealthSupplementalEvidence()
+        if self.resource_graph_source is None:
+            raise ApplicationError("service-health supplemental evidence requires Resource Graph")
+
+        try:
+            subscription_inventory: dict[str, Mapping[str, Any]] = {}
+            subscription_name_sources: dict[str, str] = {}
+            for raw_row in self.resource_graph_source.lookup_subscription_inventory(context):
+                if not isinstance(raw_row, Mapping):
+                    raise ValueError("Resource Graph subscription inventory row has unsupported shape")
+                subscription_id = str(
+                    raw_row.get("subscriptionId") or raw_row.get("subscription_id") or ""
+                ).strip()
+                subscription_name = str(
+                    raw_row.get("subscriptionName") or raw_row.get("name") or ""
+                ).strip()
+                if not subscription_id or not subscription_name:
+                    continue
+                normalized_subscription_id = subscription_id.casefold()
+                inventory_row = dict(raw_row)
+                inventory_row.update({"id": subscription_id, "name": subscription_name})
+                subscription_inventory[normalized_subscription_id] = inventory_row
+                subscription_name_sources[normalized_subscription_id] = "resource_graph_inventory"
+
+            for subscription_id in context.scope.subscription_ids:
+                normalized_subscription_id = subscription_id.casefold()
+                if normalized_subscription_id in subscription_inventory:
+                    continue
+                lookup = getattr(catalog, "lookup", None)
+                assignment = lookup(subscription_id) if callable(lookup) else None
+                if not assignment or len(assignment) < 2:
+                    raise ApplicationError(
+                        f"service-health subscription name unavailable: {subscription_id}"
+                    )
+                platform, subscription_name = assignment[0], str(assignment[1]).strip()
+                if not subscription_name:
+                    raise ApplicationError(
+                        f"service-health subscription name unavailable: {subscription_id}"
+                    )
+                subscription_inventory[normalized_subscription_id] = {
+                    "id": subscription_id,
+                    "name": subscription_name,
+                    "platform": str(platform),
+                }
+                subscription_name_sources[normalized_subscription_id] = "platform_catalog"
+
+            event_keys: set[tuple[str, str]] = set()
+            for raw_record in acquisition.records:
+                event = _record_payload(raw_record)
+                properties = event.get("properties")
+                properties_map = properties if isinstance(properties, Mapping) else {}
+                tracking_id = str(properties_map.get("trackingId") or event.get("name") or "").strip()
+                subscription_id = _record_subscription_id(raw_record, event)
+                if tracking_id and subscription_id:
+                    event_keys.add((tracking_id.casefold(), subscription_id.casefold()))
+
+            associations: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
+            for raw_row in self.resource_graph_source.lookup_service_health_resources(context):
+                if not isinstance(raw_row, Mapping):
+                    raise ValueError("Resource Graph service-health row has unsupported shape")
+                properties = raw_row.get("properties")
+                if not isinstance(properties, Mapping):
+                    raise ValueError("Resource Graph service-health properties have unsupported shape")
+                tracking_id = _resource_graph_tracking_id(str(raw_row.get("id") or ""))
+                subscription_id = str(
+                    raw_row.get("subscriptionId") or raw_row.get("subscription_id") or ""
+                ).strip()
+                if not tracking_id or not subscription_id:
+                    raise ValueError("Resource Graph service-health row has incomplete identity")
+                key = (tracking_id.casefold(), subscription_id.casefold())
+                if key not in event_keys:
+                    continue
+                resource_id = str(properties.get("targetResourceId") or "").strip()
+                if not resource_id:
+                    continue
+                associations.setdefault(key, []).append(
+                    {
+                        "resourceId": resource_id,
+                        "resourceType": str(properties.get("targetResourceType") or ""),
+                        "region": str(properties.get("targetRegion") or ""),
+                        "subscriptionId": subscription_id,
+                        "resource_evidence_source": "service_health_resource_graph",
+                    }
+                )
+
+            resource_ids = tuple(
+                sorted(
+                    {
+                        str(item["resourceId"])
+                        for values in associations.values()
+                        for item in values
+                        if item.get("resourceId")
+                    },
+                    key=str.casefold,
+                )
+            )
+            resource_inventory: dict[str, Mapping[str, Any]] = {}
+            for raw_row in self.resource_graph_source.lookup_resources(context, resource_ids):
+                if not isinstance(raw_row, Mapping):
+                    raise ValueError("Resource Graph resource inventory row has unsupported shape")
+                resource_id = str(raw_row.get("id") or raw_row.get("resourceId") or "").strip()
+                if resource_id:
+                    resource_inventory[_normalize_resource_id(resource_id)] = raw_row
+
+            return ServiceHealthSupplementalEvidence(
+                resource_associations={
+                    key: tuple(values) for key, values in associations.items()
+                },
+                resource_inventory=resource_inventory,
+                subscription_inventory=subscription_inventory,
+                subscription_name_sources=subscription_name_sources,
+            )
+        except ApplicationError:
+            raise
+        except Exception as exc:
+            raise ApplicationError(
+                "service-health supplemental evidence acquisition failed"
+            ) from exc
 
     def _emit(
         self,

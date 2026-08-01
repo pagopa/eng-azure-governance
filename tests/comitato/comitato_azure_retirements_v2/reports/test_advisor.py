@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+import json
 
 import pytest
 
@@ -250,3 +251,182 @@ def test_prepare_advisor_report_returns_normalized_acquisition_and_encoded_pair(
         {item.logical_path: item.data for item in prepared.artifacts},
         context(),
     ) == ()
+
+
+def acquisition_with_real_container_insights_payload() -> SourceAcquisition:
+    return SourceAcquisition(
+        receipt=AcquisitionReceipt(
+            source="advisor",
+            api_version="2025-01-01",
+            expected_subscriptions=1,
+            completed_subscriptions=1,
+            pages=1,
+            source_records=1,
+            complete=True,
+        ),
+        records=(
+            {
+                "id": "/subscriptions/SUB-A/providers/Microsoft.Advisor/recommendations/0e2dbd-recommendation",
+                "subscriptionId": "SUB-A",
+                "properties": {
+                    "recommendationTypeId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb",
+                    "recommendationStatus": "New",
+                    "resourceMetadata": {
+                        "resourceId": "/subscriptions/SUB-A/resourceGroups/RG/providers/Microsoft.ContainerService/managedClusters/aks"
+                    },
+                    "shortDescription": {
+                        "problem": "Short description fallback",
+                        "solution": "Upgrade the workload",
+                    },
+                },
+            },
+        ),
+    )
+
+
+def enriched_container_insights() -> AdvisorEnrichments:
+    return AdvisorEnrichments(
+        metadata={
+            "b005ecf0-23e2-4279-9ca2-718d1518c9fb": {
+                "id": "metadata-aks",
+                "sourceProperties": {
+                    "serviceRetirement": {
+                        "serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"
+                    }
+                },
+                "properties": {
+                    "resourceMetadata": {"singular": "Kubernetes service"},
+                    "description": "Metadata description",
+                    "learnMoreLink": "https://learn.example/container-insights",
+                    "potentialBenefits": "Managed identity removes legacy authentication.",
+                    "label": "Container Insights authentication",
+                },
+            }
+        },
+        resources={
+            "/subscriptions/sub-a/resourcegroups/rg/providers/microsoft.containerservice/managedclusters/aks": {
+                "name": "aks",
+                "resourceGroup": "rg",
+                "type": "Microsoft.ContainerService/managedClusters",
+                "subscriptionId": "sub-a",
+                "location": "italynorth",
+                "tags": {"env": "dev"},
+            }
+        },
+        subscriptions={"sub-a": {"subscriptionId": "sub-a", "name": "DEV-P4PA"}},
+    )
+
+
+def test_normalize_advisor_uses_metadata_inventory_and_authoritative_fallbacks() -> None:
+    result = normalize_advisor(
+        acquisition_with_real_container_insights_payload(),
+        context(),
+        enriched_container_insights(),
+    )
+
+    assert result.is_valid
+    row = result.value.records[0]
+    assert row["service_name"] == "Kubernetes service"
+    assert row["subscription_name"] == "DEV-P4PA"
+    assert row["description"] == "Metadata description"
+    assert row["potential_benefits"] == "Managed identity removes legacy authentication."
+    assert row["learn_more_link"] == "https://learn.example/container-insights"
+    assert row["label"] == "Container Insights authentication"
+    assert row["metadata_match_status"] == "matched"
+    assert row["resource_inventory_match_status"] == "matched"
+    assert row["subscription_inventory_match_status"] == "matched"
+    provenance = json.loads(row["provenance_json"])
+    assert provenance["enrichment"]["metadata_key"] == "b005ecf0-23e2-4279-9ca2-718d1518c9fb"
+    assert provenance["enrichment"]["resource_key"].endswith("/managedclusters/aks")
+    assert provenance["enrichment"]["subscription_key"] == "sub-a"
+    assert provenance["field_sources"]["service_name"] == "metadata.properties.resourceMetadata.singular"
+    assert provenance["field_sources"]["learn_more_link"] == "metadata.properties.learnMoreLink"
+    assert result.value.companion_records[0]["advisor_metadata"]["id"] == "metadata-aks"
+
+
+def test_normalize_advisor_prefers_recommendation_fields_and_short_description_fallback() -> None:
+    payload = acquisition_with_real_container_insights_payload().records[0].copy()
+    payload["properties"] = {
+        **payload["properties"],
+        "serviceName": "Direct service",
+        "description": "Direct description",
+        "potentialBenefits": "Direct benefits",
+        "learnMoreLink": "https://learn.example/direct",
+        "label": "Direct label",
+        "actions": [{"order": 1, "text": "Act"}],
+    }
+    result = normalize_advisor(
+        SourceAcquisition(
+            receipt=acquisition_with_real_container_insights_payload().receipt,
+            records=(payload,),
+        ),
+        context(),
+        enriched_container_insights(),
+    )
+
+    assert result.is_valid
+    row = result.value.records[0]
+    assert row["service_name"] == "Direct service"
+    assert row["description"] == "Direct description"
+    assert row["potential_benefits"] == "Direct benefits"
+    assert row["learn_more_link"] == "https://learn.example/direct"
+    assert row["label"] == "Direct label"
+    assert row["actions_json"] == '[{"order":1,"text":"Act"}]'
+
+    payload["properties"] = {
+        key: value
+        for key, value in payload["properties"].items()
+        if key
+        not in {"serviceName", "description", "potentialBenefits", "learnMoreLink", "label", "actions"}
+    }
+    result = normalize_advisor(
+        SourceAcquisition(
+            receipt=acquisition_with_real_container_insights_payload().receipt,
+            records=(payload,),
+        ),
+        context(),
+        AdvisorEnrichments(),
+    )
+    assert result.is_valid
+    assert result.value.records[0]["description"] == "Short description fallback"
+
+
+def test_normalize_advisor_reports_missing_authoritative_optional_values_without_synthetic_text() -> None:
+    result = normalize_advisor(
+        acquisition_with_real_container_insights_payload(),
+        context(),
+        AdvisorEnrichments(
+            resources={
+                "/subscriptions/sub-a/resourcegroups/rg/providers/microsoft.containerservice/managedclusters/aks": {
+                    "type": "Microsoft.ContainerService/managedClusters"
+                }
+            },
+            subscriptions={"sub-a": {"subscriptionId": "sub-a", "name": "DEV-P4PA"}},
+        ),
+    )
+
+    assert result.is_valid
+    row = result.value.records[0]
+    flags = set(filter(None, row["diagnostic_flags"].split(",")))
+    assert row["service_name"] == "Kubernetes service"
+    assert row["learn_more_link"] == ""
+    assert row["potential_benefits"] == ""
+    assert row["label"] == ""
+    assert {"missing_learn_more_link", "missing_potential_benefits", "missing_label"} <= flags
+    assert "https://" not in row["learn_more_link"]
+
+
+def test_normalize_advisor_rejects_ambiguous_metadata_enrichment() -> None:
+    duplicate = (
+        {"id": "metadata-a", "serviceRetirement": {"serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"}},
+        {"id": "metadata-b", "serviceRetirement": {"serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"}},
+    )
+
+    result = normalize_advisor(
+        acquisition_with_real_container_insights_payload(),
+        context(),
+        AdvisorEnrichments(metadata={"b005ecf0-23e2-4279-9ca2-718d1518c9fb": duplicate}),
+    )
+
+    assert not result.is_valid
+    assert any(item.code == "ambiguous_metadata_enrichment" for item in result.diagnostics)

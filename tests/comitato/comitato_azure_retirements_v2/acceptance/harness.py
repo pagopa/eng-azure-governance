@@ -107,6 +107,24 @@ class ScriptedServiceHealthSource:
 
 
 @dataclass(frozen=True, slots=True)
+class ScriptedResourceGraphSource:
+    subscription_rows: tuple[dict[str, Any], ...] = ()
+    service_health_rows: tuple[dict[str, Any], ...] = ()
+    resource_rows: tuple[dict[str, Any], ...] = ()
+
+    def lookup_subscription_inventory(self, context: RunContext) -> tuple[dict[str, Any], ...]:
+        return self.subscription_rows
+
+    def lookup_service_health_resources(self, context: RunContext) -> tuple[dict[str, Any], ...]:
+        return self.service_health_rows
+
+    def lookup_resources(
+        self, context: RunContext, resource_ids: tuple[str, ...]
+    ) -> tuple[dict[str, Any], ...]:
+        return self.resource_rows
+
+
+@dataclass(frozen=True, slots=True)
 class FixedClock:
     created_at: datetime
 
@@ -231,6 +249,25 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
             ),
             subscription_ids=tuple(sorted(catalog_subscriptions)),
         )
+    live_subscription_rows = []
+    if not callable(getattr(catalog, "lookup", None)):
+        scoped_subscription_ids = {item.casefold() for item in scenario.scope.subscription_ids}
+        for page in scenario.service_health_pages:
+            for item in page.get("items", ()):
+                subscription_id = str(item.get("subscriptionId") or "").strip()
+                if subscription_id and subscription_id.casefold() in scoped_subscription_ids:
+                    live_subscription_rows.append(
+                        {
+                            "subscriptionId": subscription_id,
+                            "subscriptionName": "Synthetic Live Subscription",
+                        }
+                    )
+        live_subscription_rows = list(
+            {
+                row["subscriptionId"].casefold(): row
+                for row in live_subscription_rows
+            }.values()
+        )
     seeded_current = scenario.fixture_dir / "seeded" / "current"
     monthly_bundle = destination / f"{scenario.as_of_date.year:04d}" / f"{scenario.as_of_date.month:02d}"
     if seeded_current.is_dir():
@@ -252,6 +289,7 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         publication_store=publication,
         clock=FixedClock(scenario.created_at),
         run_id_factory=FixedRunIdFactory(scenario.run_id),
+        resource_graph_source=ScriptedResourceGraphSource(tuple(live_subscription_rows)),
     )
     try:
         application.run(

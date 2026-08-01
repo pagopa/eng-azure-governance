@@ -28,7 +28,7 @@ class FilesystemAtomicPublicationStore:
         fail_before_switch: bool = False,
         observer: RunObserver | None = None,
     ) -> None:
-        self.destination = destination
+        self.destination = destination.resolve()
         self.fail_before_switch = fail_before_switch
         self._warnings: list[str] = []
         self._observer = observer or NullRunObserver()

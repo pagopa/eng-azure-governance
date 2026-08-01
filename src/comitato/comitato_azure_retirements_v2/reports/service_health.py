@@ -16,6 +16,7 @@ from ..contracts.model import Artifact
 from ..domain.diagnostics import Diagnostic, ValidationResult
 from ..domain.evidence import ServiceHealthSupplementalEvidence
 from ..domain.execution import ReportSelector, RunContext
+from src.comitato.comitato_azure_retirements.libs.service_health_text import html_to_ascii_text
 from .model import PreparedRawReport, ReportDefinition
 
 
@@ -39,6 +40,11 @@ HEADER = (
 )
 
 SERVICE_HEALTH_V1_HEADER = HEADER
+_RESOURCE_GRAPH_QUERY_LABELS = {
+    "subscription_inventory",
+    "service_health_impacted_resources",
+    "resource_inventory",
+}
 
 
 class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
@@ -72,6 +78,8 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                 diagnostics.append(Diagnostic("error", "global_evidence_not_global", "validation", "service-health", context.run_id, record_ref=event_id))
             if not is_global and (not row.get("subscription_id") or not row.get("collection_subscription_id")):
                 diagnostics.append(Diagnostic("error", "missing_affected_subscription", "validation", "service-health", context.run_id, record_ref=event_id))
+            if not is_global and not row.get("subscription_name"):
+                diagnostics.append(Diagnostic("error", "missing_subscription_name", "validation", "service-health", context.run_id, record_ref=event_id))
             if row.get("retirement_date_quality") not in {"exact", "missing", "invalid"}:
                 diagnostics.append(Diagnostic("error", "invalid_retirement_date_quality", "validation", "service-health", context.run_id, record_ref=event_id))
             if row.get("retirement_date"):
@@ -89,11 +97,39 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                 normalized = re.sub(r"/+", "/", row["published_resource_id"].strip()).casefold().rstrip("/")
                 if normalized != row.get("normalized_resource_id", ""):
                     diagnostics.append(Diagnostic("error", "resource_normalization_mismatch", "validation", "service-health", context.run_id, record_ref=event_id))
+            provenance: Any = {}
             if row.get("provenance_json"):
                 try:
-                    json.loads(row["provenance_json"])
+                    provenance = json.loads(row["provenance_json"])
                 except json.JSONDecodeError:
                     diagnostics.append(Diagnostic("error", "invalid_provenance_json", "validation", "service-health", context.run_id, record_ref=event_id))
+            if isinstance(provenance, Mapping):
+                query_labels = provenance.get("resource_graph_queries", ())
+                if not isinstance(query_labels, list) or any(
+                    not isinstance(label, str) or label not in _RESOURCE_GRAPH_QUERY_LABELS
+                    for label in query_labels
+                ):
+                    diagnostics.append(Diagnostic("error", "invalid_resource_graph_query_label", "validation", "service-health", context.run_id, record_ref=event_id))
+            for field in ("title", "summary", "description_problem", "recommended_actions"):
+                value = row.get(field, "")
+                if not value.isascii() or "<" in value or ">" in value:
+                    diagnostics.append(Diagnostic("error", "noncanonical_service_health_text", "validation", "service-health", context.run_id, record_ref=event_id))
+            resource_evidence_status = row.get("resource_evidence_status", "")
+            if resource_evidence_status not in {"published", "inventory_missing", "not_published"}:
+                diagnostics.append(Diagnostic("error", "invalid_resource_evidence_status", "validation", "service-health", context.run_id, record_ref=event_id))
+            elif resource_evidence_status == "published" and not row.get("published_resource_id"):
+                diagnostics.append(Diagnostic("error", "published_resource_missing_id", "validation", "service-health", context.run_id, record_ref=event_id))
+            elif resource_evidence_status == "not_published":
+                resource_fields = (
+                    "published_resource_id",
+                    "normalized_resource_id",
+                    "resource_name",
+                    "resource_group",
+                    "resource_type",
+                    "resource_location",
+                )
+                if any(row.get(field) for field in resource_fields) or row.get("resource_inventory_match_status") != "not_applicable":
+                    diagnostics.append(Diagnostic("error", "invalid_not_published_resource_fields", "validation", "service-health", context.run_id, record_ref=event_id))
             for field, allowed in {
                 "resource_inventory_match_status": {"matched", "missing", "ambiguous", "not_applicable"},
                 "subscription_inventory_match_status": {"matched", "missing", "not_applicable"},
@@ -175,9 +211,85 @@ def _date(raw: Any) -> tuple[str, str]:
 
 
 def _plain_article(value: Any) -> str:
-    parser = _ArticleParser()
-    parser.feed(html.unescape(str(value or "")))
-    return re.sub(r"\s+", " ", "".join(parser.parts)).strip()
+    return _plain_text(value)
+
+
+def _plain_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, Mapping):
+        if not value:
+            return ""
+        value = (
+            value.get("actionText")
+            or value.get("description")
+            or value.get("name")
+            or value.get("articleContent")
+            or ""
+        )
+    if isinstance(value, (list, tuple)):
+        return html_to_ascii_text(" ".join(item for item in (_plain_text(part) for part in value) if item))
+    return html_to_ascii_text(str(value))
+
+
+def _items(value: Any) -> tuple[Any, ...]:
+    if isinstance(value, Mapping):
+        return (value,) if value else ()
+    if isinstance(value, (list, tuple)):
+        return tuple(value)
+    return ()
+
+
+def _impact_service_regions(properties: Mapping[str, Any]) -> tuple[tuple[str, str, str], ...]:
+    service_regions: list[tuple[str, str, str]] = []
+    for impact in _items(properties.get("impact")):
+        impact_map = _mapping(impact)
+        impacted_service = impact_map.get("impactedService")
+        impacted_service_map = _mapping(impacted_service)
+        if impacted_service_map:
+            service_name = str(
+                impacted_service_map.get("serviceName")
+                or impacted_service_map.get("name")
+                or ""
+            )
+            service_guid = str(
+                impacted_service_map.get("serviceGuid")
+                or impacted_service_map.get("id")
+                or impact_map.get("impactedServiceGuid")
+                or ""
+            )
+        else:
+            service_name = str(impacted_service or impact_map.get("serviceName") or "")
+            service_guid = str(impact_map.get("impactedServiceGuid") or "")
+        for region in _items(impact_map.get("impactedRegions")):
+            region_map = _mapping(region)
+            region_name = str(
+                region_map.get("impactedRegion")
+                or region_map.get("regionName")
+                or region_map.get("name")
+                or region_map.get("location")
+                or (region if isinstance(region, str) else "")
+            )
+            if service_name and region_name:
+                service_regions.append((service_name, service_guid, region_name))
+    if service_regions:
+        return tuple(dict.fromkeys(service_regions))
+    for service in _items(properties.get("impactedServices")):
+        service_map = _mapping(service)
+        service_name = str(service_map.get("serviceName") or "")
+        service_guid = str(service_map.get("serviceGuid") or "")
+        for region in _items(service_map.get("impactedRegions")):
+            region_map = _mapping(region)
+            region_name = str(
+                region_map.get("regionName")
+                or region_map.get("regionId")
+                or region_map.get("name")
+                or region_map.get("location")
+                or (region if isinstance(region, str) else "")
+            )
+            if service_name and region_name:
+                service_regions.append((service_name, service_guid, region_name))
+    return tuple(dict.fromkeys(service_regions))
 
 
 def _resource_parts(value: str) -> tuple[str, str, str]:
@@ -272,25 +384,34 @@ def normalize_service_health(
             flags.add("missing_retirement_date")
         if retirement_quality == "invalid":
             flags.add("invalid_retirement_date")
-        services = props.get("impactedServices") or ()
-        service_regions: list[tuple[str, str, str]] = []
-        for service in services:
-            service_map = _mapping(service)
-            service_name = str(service_map.get("serviceName") or "")
-            service_guid = str(service_map.get("serviceGuid") or "")
-            for region in service_map.get("impactedRegions") or ():
-                region_map = _mapping(region)
-                region_name = str(region_map.get("regionName") or region_map.get("regionId") or "")
-                service_regions.append((service_name, service_guid, region_name))
-        service_regions = list(dict.fromkeys(service_regions))
-        resources = props.get("impactedResources") or ()
+        service_regions = list(_impact_service_regions(props))
+        collection_subscription = _collection_subscription(raw_record, event)
+        resources = _items(props.get("impactedResources"))
         associations: list[tuple[str, str, str, str, str, str, Mapping[str, Any] | None]] = []
         if resources:
             for resource in resources:
                 resource_map = _mapping(resource)
                 associations.append((str(resource_map.get("serviceName") or ""), str(resource_map.get("serviceGuid") or ""), str(resource_map.get("regionName") or resource_map.get("regionId") or ""), str(resource_map.get("subscriptionId") or resource_map.get("subscription_id") or ""), str(resource_map.get("resourceId") or resource_map.get("id") or ""), "service_health_resource", None))
-        elif service_regions:
-            associations = [(*association, "", "", "none", None) for association in service_regions]
+        resource_graph_key = (tracking.casefold(), collection_subscription.casefold())
+        resource_graph_associations: list[tuple[str, str, str, str, str, str, Mapping[str, Any] | None]] = []
+        for resource in evidence.resource_associations.get(resource_graph_key, ()):
+            resource_map = _mapping(resource)
+            resource_id = str(resource_map.get("resourceId") or resource_map.get("id") or "")
+            if not resource_id:
+                continue
+            resource_graph_associations.append(
+                (
+                    str(resource_map.get("serviceName") or ""),
+                    str(resource_map.get("serviceGuid") or ""),
+                    str(resource_map.get("region") or resource_map.get("targetRegion") or ""),
+                    str(resource_map.get("subscriptionId") or collection_subscription),
+                    resource_id,
+                    "service_health_resource_graph",
+                    None,
+                )
+            )
+        if not resources:
+            associations = resource_graph_associations or [(*association, "", "", "none", None) for association in service_regions]
         if not associations:
             associations = [("", "", "", "", "", "none", None)]
         for advisor_record in evidence.advisor_records:
@@ -305,7 +426,6 @@ def normalize_service_health(
             if any(item[3] == advisor_subscription and item[4] == advisor_resource for item in associations):
                 continue
             associations.append(("", "", "", advisor_subscription, advisor_resource, "advisor_recommendation", advisor_map))
-        collection_subscription = _collection_subscription(raw_record, event)
         for service_name, service_guid, region, affected_subscription, resource_id, resource_source, advisor_record in associations:
             is_global = props.get("isGlobal") is True or str(props.get("isGlobal") or "").casefold() == "true"
             is_global = is_global and resource_source != "advisor_recommendation"
@@ -332,6 +452,11 @@ def normalize_service_health(
                 flags.add("subscription_inventory_not_found")
             resource_status = "not_applicable" if not resource_id else "matched" if resource_inventory else "missing"
             subscription_status = "not_applicable" if not subscription_id else "matched" if subscription_inventory else "missing"
+            resource_graph_queries = []
+            if evidence.subscription_inventory or evidence.subscription_name_sources:
+                resource_graph_queries.extend(("subscription_inventory", "service_health_impacted_resources"))
+            if resource_id and resource_source == "service_health_resource_graph":
+                resource_graph_queries.append("resource_inventory")
             ref = sha256(f"{context.run_id}\0{event_id}\0{subscription_id}\0{resource_id}\0{service_name}\0{region}".encode()).hexdigest()
             row: dict[str, str] = {column: "" for column in SERVICE_HEALTH_V1.header}
             row.update({
@@ -339,7 +464,7 @@ def normalize_service_health(
                 "record_type": record_type, "source_system": "azure_service_health", "service_health_event_id": event_id, "event_name": event_name, "tracking_id": tracking,
                 "collection_subscription_id": collection_subscription, "subscription_id": subscription_id, "subscription_name": str(subscription_inventory.get("name") or ""), "subscription_evidence_source": "explicit_global" if is_global and not subscription_id else "advisor_recommendation" if resource_source == "advisor_recommendation" else "resource_health_endpoint",
                 "event_type": event_type, "event_sub_type": str(props.get("eventSubType") or ""), "event_source": str(props.get("eventSource") or ""), "event_level": level, "status": status,
-                "title": str(props.get("title") or ""), "summary": str(props.get("summary") or ""), "description_problem": description, "description_quality": description_quality, "recommended_actions": str(props.get("recommendedActions") or ""),
+                "title": _plain_text(props.get("title")), "summary": _plain_text(props.get("summary")), "description_problem": description, "description_quality": description_quality, "recommended_actions": _plain_text(props.get("recommendedActions")),
                 "impact_start_time_raw": str(props.get("impactStartTime") or ""), "impact_start_time": start, "impact_mitigation_time_raw": str(props.get("impactMitigationTime") or ""), "impact_mitigation_time": mitigation,
                 "last_update_time_raw": str(props.get("lastUpdateTime") or ""), "last_update_time": last_update, "retirement_date_raw": retirement_raw, "retirement_date": retirement_date,
                 "retirement_date_source": "properties.impactMitigationTime" if retirement_raw else "", "retirement_date_quality": retirement_quality, "impacted_service": service_name, "impacted_service_guid": service_guid,
@@ -347,7 +472,7 @@ def normalize_service_health(
                 "published_resource_id": resource_id, "normalized_resource_id": normalized_resource, "resource_name": str(resource_inventory.get("name") or name), "resource_group": str(resource_inventory.get("resourceGroup") or resource_inventory.get("resource_group") or group), "resource_type": str(resource_inventory.get("type") or resource_inventory.get("resourceType") or resource_type),
                 "resource_location": str(resource_inventory.get("location") or ""), "recommendation_type_id": str((advisor_record or {}).get("recommendation_type_id") or (advisor_record or {}).get("recommendationTypeId") or props.get("recommendationTypeId") or ""), "advisor_platform_state": str((advisor_record or {}).get("platform_state") or (advisor_record or {}).get("platformState") or ""), "current_query_match": str((advisor_record or {}).get("current_query_match") or (advisor_record or {}).get("currentQueryMatch") or ""),
                 "resource_inventory_match_status": resource_status, "subscription_inventory_match_status": subscription_status, "is_sensitive": "true" if sensitive else "false", "details_fetch_status": "unavailable_sensitive" if sensitive and not raw_article else "not_needed", "diagnostic_flags": ",".join(sorted(flags)),
-                "provenance_json": _canonical({"api_version": acquisition.receipt.api_version, "event_id": event_id, "association": record_type}), "raw_record_ref": ref,
+                "provenance_json": _canonical({"api_version": acquisition.receipt.api_version, "event_id": event_id, "association": record_type, "subscription_name_source": evidence.subscription_name_sources.get(subscription_id.casefold(), ""), "resource_evidence_source": resource_source if resource_id else "not_published", "resource_graph_queries": resource_graph_queries}), "raw_record_ref": ref,
             })
             rows.append(row)
             companions.append({"schema_version": 1, "run_id": context.run_id, "raw_record_ref": ref, "service_health_event": event, "collection_subscription_id": collection_subscription, "affected_subscription_id": subscription_id, "service_health_resource_evidence": {"resourceId": resource_id} if resource_id and resource_source == "service_health_resource" else None, "advisor_evidence": advisor_record, "resource_inventory": resource_inventory or None, "subscription_inventory": subscription_inventory or None})

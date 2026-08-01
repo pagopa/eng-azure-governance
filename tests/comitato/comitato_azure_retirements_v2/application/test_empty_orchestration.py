@@ -9,12 +9,14 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
 )
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
 from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import ApplicationError
+from src.comitato.comitato_azure_retirements_v2.adapters.advisor_enrichment import AdvisorEnrichmentError
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     ReportSelector,
     RunRequest,
     Scope,
 )
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import AdvisorEnrichments
 from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
@@ -142,6 +144,19 @@ class RecordingCatalog:
         return DEFAULT_REPORT_CATALOG.plan(selector)
 
 
+@dataclass
+class FakeEnrichmentSource:
+    enrichments: AdvisorEnrichments
+
+    def enrich(self, context, recommendations) -> AdvisorEnrichments:
+        return self.enrichments
+
+
+class FailingEnrichmentSource:
+    def enrich(self, context, recommendations) -> AdvisorEnrichments:
+        raise AdvisorEnrichmentError("source acquisition failed")
+
+
 def build_application(
     log: EventLog,
     publication: FakePublicationStore,
@@ -149,6 +164,7 @@ def build_application(
     report_catalog=DEFAULT_REPORT_CATALOG,
     observer=None,
     scope_source=None,
+    advisor_enrichment_source=None,
     **source_kwargs,
 ):
     application_kwargs = dict(
@@ -163,7 +179,57 @@ def build_application(
     )
     if observer is not None:
         application_kwargs["observer"] = observer
+    if advisor_enrichment_source is not None:
+        application_kwargs["advisor_enrichment_source"] = advisor_enrichment_source
     return RetirementsApplication(**application_kwargs)
+
+
+def test_application_passes_enrichments_to_advisor_report() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+    resource_id = f"/subscriptions/{SUBSCRIPTION_ID}/resourceGroups/rg/providers/Microsoft.ContainerService/managedClusters/aks"
+    application = build_application(
+        log,
+        publication,
+        records=(
+            {
+                "id": f"/subscriptions/{SUBSCRIPTION_ID}/providers/Microsoft.Advisor/recommendations/rec-1",
+                "subscriptionId": SUBSCRIPTION_ID,
+                "properties": {
+                    "recommendationStatus": "New",
+                    "recommendationTypeId": "service-a",
+                    "resourceMetadata": {"resourceId": resource_id},
+                },
+            },
+        ),
+        advisor_enrichment_source=FakeEnrichmentSource(
+            AdvisorEnrichments(
+                resources={resource_id.casefold(): {"name": "aks"}},
+                subscriptions={SUBSCRIPTION_ID.casefold(): {"name": "DEV"}},
+            )
+        ),
+    )
+
+    result = application.run(RunRequest(ReportSelector.ADVISOR))
+
+    row = result.candidate.acquisitions[0].records[0]
+    assert row["subscription_name"] == "DEV"
+    assert publication.published
+
+
+def test_enrichment_failure_blocks_publication() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+
+    with pytest.raises(ApplicationError, match="advisor enrichment failed"):
+        build_application(
+            log,
+            publication,
+            records=(advisor_payload(),),
+            advisor_enrichment_source=FailingEnrichmentSource(),
+        ).run(RunRequest(ReportSelector.ADVISOR))
+
+    assert publication.published == []
 
 
 def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifacts() -> None:
