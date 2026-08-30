@@ -1,0 +1,30 @@
+{
+  "selector": "slides",
+  "run_id": "s02-date-boundaries",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 0,
+  "scope": {
+    "mode": "explicit",
+    "subscription_ids": ["11111111-1111-1111-1111-111111111111"]
+  },
+  "azure": {
+    "advisor": {"pages": [{"items": [], "next_link": null}]},
+    "service_health": {
+      "pages": [{
+        "items": [
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-lower", "name": "S02-LOWER", "properties": {"trackingId": "S02-LOWER", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "2026-07-30", "description": "The date 2026-01-01 in prose is not evidence."}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-upper", "name": "S02-UPPER", "properties": {"trackingId": "S02-UPPER", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "2027-07-30", "description": "The date 2027-12-31 in prose is not evidence."}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-elapsed", "name": "S02-ELAPSED", "properties": {"trackingId": "S02-ELAPSED", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "2026-07-29"}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-beyond", "name": "S02-BEYOND", "properties": {"trackingId": "S02-BEYOND", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "2027-07-31"}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-missing", "name": "S02-MISSING", "properties": {"trackingId": "S02-MISSING", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active"}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-invalid", "name": "S02-INVALID", "properties": {"trackingId": "S02-INVALID", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "not-a-date"}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-conflict-a", "name": "S02-CONFLICT", "properties": {"trackingId": "S02-CONFLICT", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "2027-01-01"}},
+          {"id": "/providers/Microsoft.ResourceHealth/events/s02-conflict-b", "name": "S02-CONFLICT", "properties": {"trackingId": "S02-CONFLICT", "eventType": "HealthAdvisory", "level": "Warning", "status": "Active", "impactMitigationTime": "2027-02-01"}
+          }
+        ],
+        "next_link": null
+      }]
+    }
+  }
+}

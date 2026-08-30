@@ -1,0 +1,20 @@
+{
+  "selector": "advisor",
+  "run_id": "s09-conflict",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 1,
+  "scope": {
+    "mode": "explicit",
+    "subscription_ids": ["11111111-1111-1111-1111-111111111111"]
+  },
+  "azure": {
+    "advisor": {
+      "pages": [
+        {"items": [{"id": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.Advisor/recommendations/rec-1", "properties": {"recommendationStatus": "New", "recommendationTypeId": "retirement-1"}}], "next_link": "page-2"},
+        {"items": [{"id": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.Advisor/recommendations/rec-1", "properties": {"recommendationStatus": "New", "recommendationTypeId": "retirement-2"}}], "next_link": null}
+      ]
+    },
+    "service_health": {"pages": [{"items": [], "next_link": null}]}
+  }
+}
