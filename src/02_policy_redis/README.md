@@ -1,3 +1,23 @@
+# Azure Policy: Redis
+
+This Terraform root defines custom Azure Policy controls for Azure Cache for Redis.
+
+## Purpose
+
+Use this directory for allowed Redis SKUs, TLS versions, and engine versions, disabling the non-SSL port, and requiring zone redundancy. The root resolves the current subscription, client configuration, and `pagopa` management group, then exposes the policy IDs in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definitions, inputs, and outputs precisely.
+
 ## Requirements
 
 | Name | Version |

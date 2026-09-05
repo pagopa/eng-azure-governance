@@ -1,3 +1,23 @@
+# Azure Policy: Container Apps
+
+This Terraform root defines custom Azure Policy definitions for Container Apps environments and jobs.
+
+## Purpose
+
+Use this directory for the Container Apps policy family. The policies require zone redundancy for managed environments and a zero minimum execution setting for matching GitHub self-hosted-runner jobs. Start with `01_enforce_multiaz.tf` or `01_min_execution.tf` and the matching files under `policy_rules/`; use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform policy root and the generated reference below enumerates its definitions, inputs, and outputs more precisely than a separate relationship diagram.
+
 ## Requirements
 
 | Name | Version |

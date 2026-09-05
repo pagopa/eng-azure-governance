@@ -14,4 +14,5 @@ Use the default canonical triage labels for local issues. See `docs/agents/triag
 
 ### Domain docs
 
-This repository uses the single-context domain documentation layout. See `docs/agents/domain.md`.
+This repository uses the four-domain multi-context layout recorded in
+`CONTEXT-MAP.md`. See `docs/agents/domain.md`.

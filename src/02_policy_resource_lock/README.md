@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Resource Locks
+
+This Terraform root defines the custom Azure Policy control that requires resource locks for governed resource types.
+
+## Purpose
+
+Use this directory for the resource-lock policy and its configurable resource-type list. The root resolves the resource-lock contributor role and the `pagopa` management group, then exposes the policy ID shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definition, inputs, and output precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

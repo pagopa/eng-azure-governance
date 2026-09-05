@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Log Analytics
+
+This Terraform root defines custom Azure Policy controls for Log Analytics workspaces.
+
+## Purpose
+
+Use this directory for the allowed workspace SKU and bound or unbound daily-quota policy definitions. The root resolves the `pagopa` management group and exposes the policy IDs shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definitions, inputs, and outputs precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

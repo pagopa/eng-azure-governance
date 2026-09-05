@@ -1,3 +1,23 @@
+# Azure Policy Assignments: Development
+
+This Terraform module assigns the development policy sets to an Azure subscription.
+
+## Purpose
+
+Use this module for the development subscription assignments covering API Management, App Service, Cosmos DB, Log Analytics, Redis, virtual machines, and virtual-machine scale sets. The generated Terraform reference below lists the module's inputs and assignments.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this module is a single subscription-assignment boundary and the generated reference below enumerates its inputs and resources precisely.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 

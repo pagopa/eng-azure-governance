@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: PostgreSQL
+
+This Terraform root defines custom Azure Policy controls for Azure Database for PostgreSQL.
+
+## Purpose
+
+Use this directory for allowed SKUs, required engine versions, flexible-server SKUs, and flexible-server georedundancy. The root resolves the `pagopa` management group and exposes the policy IDs shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definitions, inputs, and outputs precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: App Service
+
+This Terraform root defines the custom Azure Policy definitions for App Service and Linux Function App governance.
+
+## Purpose
+
+Use this directory for the App Service policy family. The root loads policy parameters and rules from `policy_rules/`, resolves the `pagopa` management group, and exposes the policy IDs shown in the generated Terraform reference below. Start with the `01_app_service_*.tf` and `01_function_app_*.tf` files when changing allowed platform versions, kinds, or SKUs; use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform policy root and the generated reference below enumerates its definitions, inputs, and outputs more precisely than a separate relationship diagram.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Cosmos DB
+
+This Terraform root defines the custom Azure Policy definitions for Cosmos DB governance.
+
+## Purpose
+
+Use this directory for the Cosmos DB policy family. The root loads policy parameters and rules from `policy_rules/`, resolves the `pagopa` management group, and exposes the policy IDs shown in the generated Terraform reference below. The controls cover capacity mode, TLS, failover, scaling, backup, network restrictions, and zone redundancy; start with the matching `01_*.tf` and policy-rule files when changing one of those controls.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform policy root and the generated reference below enumerates its definitions, inputs, and outputs more precisely than a separate relationship diagram.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

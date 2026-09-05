@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Application Gateway
+
+This Terraform root defines the custom Azure Policy definitions for Application Gateway governance.
+
+## Purpose
+
+Use this directory for the Application Gateway policy family. The root loads policy parameters and rules from `policy_rules/`, resolves the `pagopa` management group, and exposes the policy IDs shown in the generated Terraform reference below. Start with `01_allowed_ciphersuites.tf`, `01_allowed_sku.tf`, and `01_required_zones.tf` when changing TLS, SKU, or availability-zone controls; use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform policy root and the generated reference below enumerates its definitions, inputs, and outputs more precisely than a separate relationship diagram.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

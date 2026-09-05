@@ -1,3 +1,23 @@
+# Azure Policy: Audit Logs
+
+This Terraform root defines custom Azure Policy definitions that add diagnostic settings for audit logs.
+
+## Purpose
+
+Use this directory for the audit-log policy family. The root covers the Azure resource types listed in the generated reference and directs diagnostic settings to Log Analytics workspaces or Storage Accounts through the checked-in policy rules. Start with the relevant `01_*.tf` resource file and its matching `policy_rules/*.json` files; use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform policy root and the generated reference below enumerates its definitions, inputs, and outputs more precisely than a separate relationship diagram.
+
 ## Requirements
 
 | Name | Version |

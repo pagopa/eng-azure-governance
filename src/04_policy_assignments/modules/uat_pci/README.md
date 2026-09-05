@@ -1,4 +1,22 @@
-# dev_pci
+# Azure Policy Assignments: UAT PCI DSS
+
+This Terraform module assigns the UAT PCI DSS policy controls to an Azure subscription.
+
+## Purpose
+
+Use this module for PCI DSS audit-log, metrics-log, and PCI DSS v4 policy assignments, including the supporting monitoring and Log Analytics role assignments. The generated Terraform reference below lists the module's inputs and assignments.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this module is a single subscription-assignment boundary and the generated Terraform reference below enumerates its inputs and resources precisely.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements

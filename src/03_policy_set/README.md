@@ -1,3 +1,31 @@
+# Azure Policy Sets
+
+This Terraform root composes the repository's policy families into Azure Policy initiatives.
+
+## Purpose
+
+Use this directory for the policy-set stage after policy definitions are available. The `01_*.tf` files define environment- and concern-specific `azurerm_policy_set_definition` resources, read policy IDs through `terraform_remote_state`, resolve the `pagopa` management group, and expose the initiative IDs listed in the generated Terraform reference below. Start with the policy-set file for the environment or concern being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+The composition flow is from the numbered policy-family roots through Terraform remote state to policy-set definitions scoped to the `pagopa` management group:
+
+```mermaid
+flowchart LR
+    accTitle: Policy set composition
+    accDescr: Policy set Terraform reads service policy IDs from remote state and publishes initiatives for the pagopa management group.
+    policy_roots["Service policy roots"] --> remote_state["Terraform remote state"]
+    remote_state --> policy_sets["Azure policy set definitions"]
+    policy_sets --> governance_scope["pagopa management group"]
+```
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+```
+
 ## Requirements
 
 | Name | Version |

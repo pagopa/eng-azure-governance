@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Metrics and Logs
+
+This Terraform root defines the custom Azure Policy control that adds diagnostic settings for the governed metrics and log resource types.
+
+## Purpose
+
+Use this directory to maintain the diagnostic-settings policy and its configurable resource-type list. The root resolves the required monitoring role definitions and the `pagopa` management group, then exposes the policy ID shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definition, inputs, and output precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

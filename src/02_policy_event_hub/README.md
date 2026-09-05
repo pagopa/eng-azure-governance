@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Event Hubs
+
+This Terraform root defines custom Azure Policy controls for Event Hubs.
+
+## Purpose
+
+Use this directory for the Event Hubs policy family: allowed TLS, required network restrictions, and required zone redundancy. The root resolves the `pagopa` management group and exposes the policy IDs shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definitions, inputs, and outputs precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
