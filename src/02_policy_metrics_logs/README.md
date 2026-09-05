@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Metrics and Logs
+
+This Terraform root defines the custom Azure Policy control that adds diagnostic settings for the governed metrics and log resource types.
+
+## Purpose
+
+Use this directory to maintain the diagnostic-settings policy and its configurable resource-type list. The root resolves the required monitoring role definitions and the `pagopa` management group, then exposes the policy ID shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definition, inputs, and output precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
@@ -32,9 +50,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 | <a name="input_metrics_logs_types"></a> [metrics\_logs\_types](#input\_metrics\_logs\_types) | Diagnostic Settings for metrics logs resource types | `list(string)` | <pre>[<br/>  "Microsoft.KeyVault/vaults",<br/>  "Microsoft.Network/virtualNetworkGateways",<br/>  "Microsoft.ContainerService/managedClusters",<br/>  "Microsoft.Network/publicIPAddresses",<br/>  "Microsoft.Network/networkInterfaces",<br/>  "Microsoft.EventHub/Namespace",<br/>  "Microsoft.Network/networkInterfaces",<br/>  "Microsoft.Network/virtualNetworks",<br/>  "Microsoft.Network/azureFirewalls",<br/>  "Microsoft.ContainerInstance/containerGroups",<br/>  "Microsoft.Compute/virtualMachineScaleSets",<br/>  "Microsoft.Network/loadBalancers"<br/>]</pre> | no |
-| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
 
 ## Outputs
 

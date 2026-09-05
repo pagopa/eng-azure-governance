@@ -1,10 +1,26 @@
-# custom_roles
+# Custom Azure Roles
 
-This folder allows you to create a new role at the subscription level (you won't find it in azure ad > custom roles).
+This Terraform root defines the custom Azure RBAC roles used by PagoPA governance.
 
-## PagoPA IaC Reader
+## Purpose
+
+Use this directory for subscription-level custom role definitions. The checked-in `01_*.tf` files contain the role resources, while `99_variables.tf` supplies the subscription input and `99_data_source.tf` resolves the `pagopa` management group. Start with the role file that owns the required permission change, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+### PagoPA IaC Reader
 
 This custom role allows the sp or users it is associated with to be able to launch terraform plans
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform role root and the generated reference below enumerates its roles, inputs, and outputs more precisely than a separate relationship diagram.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

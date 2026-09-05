@@ -1,34 +1,16 @@
 {
-  "github.copilot.enable": {
-    "*": true
-  },
-  "chat.useInstructionFiles": false,
-  "chat.useAgentsMdFile": true,
-  "editor.formatOnSave": true,
-  "editor.tabSize": 2,
-  "[terraform]": {
-    "editor.defaultFormatter": "hashicorp.terraform",
-    "editor.tabSize": 2
-  },
-  "[python]": {
-    "editor.tabSize": 4
-  },
-  "[json]": {
-    "editor.tabSize": 2
-  },
-  "[yaml]": {
-    "editor.tabSize": 2
-  },
-  "files.associations": {
-    "*.prompt.md": "markdown",
-    "*.tfvars": "terraform"
-  },
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "python.defaultInterpreterPath": "${workspaceFolder}/src/comitato/comitato_azure_retirements/.venv/bin/python",
   "python.testing.pytestArgs": [
     "tests"
   ],
   "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true
+  "python.testing.pytestEnabled": true,
+  "chat.permissions.default": "default",
+  "chat.tools.global.autoApprove": false,
+  "chat.tools.terminal.autoReplyToPrompts": false,
+  "chat.tools.terminal.enableAutoApprove": false,
+  "github.copilot.chat.codeGeneration.useInstructionFiles": false,
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": false
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system"
 }

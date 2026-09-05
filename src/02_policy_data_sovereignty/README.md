@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Data Sovereignty
+
+This Terraform root defines custom Azure Policy definitions for allowed Azure locations.
+
+## Purpose
+
+Use this directory for the data-sovereignty policy family. One policy checks resource locations and one checks resource-group locations; both load their parameters and rules from `policy_rules/`, resolve the `pagopa` management group, and expose policy IDs through the Terraform outputs. Start with the matching `01_allowed_locations*.tf` and policy-rule files when changing the allowed-location contract.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single Terraform policy root and the generated reference below enumerates its definitions, inputs, and outputs more precisely than a separate relationship diagram.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
@@ -31,8 +49,8 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 | <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
+| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 
 ## Outputs
 
