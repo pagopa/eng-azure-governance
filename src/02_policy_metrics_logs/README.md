@@ -50,9 +50,9 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
 | <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 | <a name="input_metrics_logs_types"></a> [metrics\_logs\_types](#input\_metrics\_logs\_types) | Diagnostic Settings for metrics logs resource types | `list(string)` | <pre>[<br/>  "Microsoft.KeyVault/vaults",<br/>  "Microsoft.Network/virtualNetworkGateways",<br/>  "Microsoft.ContainerService/managedClusters",<br/>  "Microsoft.Network/publicIPAddresses",<br/>  "Microsoft.Network/networkInterfaces",<br/>  "Microsoft.EventHub/Namespace",<br/>  "Microsoft.Network/networkInterfaces",<br/>  "Microsoft.Network/virtualNetworks",<br/>  "Microsoft.Network/azureFirewalls",<br/>  "Microsoft.ContainerInstance/containerGroups",<br/>  "Microsoft.Compute/virtualMachineScaleSets",<br/>  "Microsoft.Network/loadBalancers"<br/>]</pre> | no |
-| <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
 
 ## Outputs
 
