@@ -31,11 +31,16 @@ class ReportDefinition:
     stage: str
     dependencies: tuple[ReportSelector, ...]
     contract: TsvContract[Any]
+    sidecar_contracts: tuple[Any, ...] = ()
 
     @property
     def paths(self) -> tuple[str, ...]:
         companion = self.contract.companion_path
-        return (self.contract.path,) + ((companion,) if companion else ())
+        return (
+            (self.contract.path,)
+            + ((companion,) if companion else ())
+            + tuple(item.path for item in self.sidecar_contracts)
+        )
 
     def verify_staged_artifact(
         self,
@@ -44,6 +49,9 @@ class ReportDefinition:
         context,
     ) -> tuple:
         try:
+            for sidecar in self.sidecar_contracts:
+                if logical_path == sidecar.path:
+                    return sidecar.verify_staged_artifact(logical_path, payloads, context)
             if logical_path == self.contract.path:
                 decoded = self.contract.decode(payloads[logical_path])
                 companion_records = decoded.companion_records

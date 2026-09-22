@@ -36,10 +36,20 @@ def _json_value(row: Mapping[str, str], column: str, default: Any) -> Any:
     return value
 
 
+def _readable_item(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for field in ("text", "action", "actionText", "caption", "label", "description", "title", "name"):
+            text = str(value.get(field, "")).strip()
+            if text:
+                return text
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return str(value).strip()
+
+
 def _readable(values: Any, separator: str = "; ") -> str:
     if not isinstance(values, (list, tuple)):
         return "" if values is None else str(values).strip()
-    unique = sorted({str(value).strip() for value in values if str(value).strip()}, key=lambda item: (item.casefold(), item))
+    unique = sorted({_readable_item(value) for value in values if _readable_item(value)}, key=lambda item: (item.casefold(), item))
     return separator.join(unique)
 
 

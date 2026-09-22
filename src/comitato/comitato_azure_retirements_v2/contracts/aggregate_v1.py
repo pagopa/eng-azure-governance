@@ -56,6 +56,16 @@ def _json(value: Any) -> str:
     return canonical_json(value)
 
 
+def _action_text(value: Any) -> str:
+    if isinstance(value, Mapping):
+        for field in ("text", "action", "actionText", "caption", "label", "description", "title", "name"):
+            text = str(value.get(field, "")).strip()
+            if text:
+                return text
+        return canonical_json(value)
+    return str(value).strip()
+
+
 def _strings(rows: Iterable[Mapping[str, Any]], field: str) -> tuple[str, ...]:
     values = {str(row.get(field, "")).strip() for row in rows}
     return tuple(sorted(value for value in values if value))
@@ -66,16 +76,16 @@ def _json_array(rows: Iterable[Mapping[str, Any]], field: str) -> str:
     for row in rows:
         raw = row.get(field, "")
         if isinstance(raw, (list, tuple)):
-            values.update(str(item).strip() for item in raw if str(item).strip())
+            values.update(_action_text(item) for item in raw if _action_text(item))
         elif raw:
             try:
                 parsed = json.loads(str(raw))
             except json.JSONDecodeError:
                 parsed = [raw]
             if isinstance(parsed, list):
-                values.update(str(item).strip() for item in parsed if str(item).strip())
-            elif str(parsed).strip():
-                values.add(str(parsed).strip())
+                values.update(_action_text(item) for item in parsed if _action_text(item))
+            elif _action_text(parsed):
+                values.add(_action_text(parsed))
     return _json(sorted(values))
 
 

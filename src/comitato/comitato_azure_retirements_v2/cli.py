@@ -24,7 +24,13 @@ from .contracts.codecs import canonical_json
 from .publication.model import PublicationCandidate, RunResult
 from .ports import RunObserver
 from .reports.advisor import prepare_advisor_report
-from .reports.catalog import EditorialCatalog, EditorialItem, build_editorial_work_list
+from .reports.catalog import (
+    DEFAULT_EDITORIAL_YAML,
+    EditorialCatalog,
+    EditorialItem,
+    EDITORIAL_YAML_PATH,
+    build_editorial_work_list,
+)
 from .reports.service_health import prepare_service_health_report
 from .runtime_logging import RuntimeReporter
 
@@ -87,6 +93,15 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
         closure = application.report_catalog.plan(selector)
         catalog = _catalog_from_saved_inputs(saved_inputs)
         editorial_catalog = _editorial_catalog_from_saved_inputs(saved_inputs)
+        editorial_yaml = DEFAULT_EDITORIAL_YAML
+        if isinstance(saved_inputs.get("editorial_catalog"), Mapping):
+            editorial_yaml = str(saved_inputs["editorial_catalog"].get("yaml", ""))
+            if not editorial_yaml:
+                raise ValueError("replay bundle is missing saved editorial YAML")
+        if closure.publishes(ReportSelector.SLIDES):
+            sidecar_path = bundle / EDITORIAL_YAML_PATH
+            if not sidecar_path.is_file() or sidecar_path.read_bytes() != editorial_yaml.encode("utf-8"):
+                raise ValueError("replay bundle editorial sidecar does not match saved inputs")
         acquisitions = _acquisitions_from_saved_inputs(saved_inputs, closure)
         prepared_by_selector = {}
         if closure.requires(ReportSelector.ADVISOR):
@@ -116,6 +131,7 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             closure,
             catalog,
             editorial_catalog,
+            editorial_yaml=editorial_yaml,
         )
         editorial_work_list = ()
         if editorial_catalog is not None:

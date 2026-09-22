@@ -31,8 +31,8 @@ leaves the existing monthly bundle unchanged.
 
 The operator supplies `--subscriptions sub-a,sub-b` or allows live scope
 resolution. `--catalog-path` selects the source-of-truth version-1 platform
-catalog; `--editorial-catalog-path` selects the read-only external editorial
-catalog; `--output-path` selects the export root. Relative defaults are
+catalog; `--editorial-catalog-path` selects the initial editorial YAML seed;
+`--output-path` selects the export root. Relative defaults are
 resolved from the repository root: the catalog is
 `src/_source_of_truth/eng-finops-platforms.yaml`, the editorial catalog is
 `src/_source_of_truth/azure-retirements-editorial.yaml`, and the export root is
@@ -48,10 +48,17 @@ left by an earlier selector or run. Runs for other months keep their existing
 bundles.
 
 Replacing an existing month retains the superseded bundle under
-`exports/.history/YYYY/MM/<generation>`. The editable
-`azure-retirements-editorial.yaml` input is captured with each generation and
-is kept adjacent to the published `03_azure_retirements_slide.tsv` workflow;
-source support and committee-owned editorial values remain separate.
+`exports/.history/YYYY/MM/<generation>`. For a live run, the adjacent
+`azure-retirements-editorial.yaml` from the current month is the effective
+input; if it does not exist, the latest prior monthly sidecar is used, then the
+configured seed is used. The sidecar is captured with each generation and is
+kept adjacent to the published `03_azure_retirements_slide.tsv` workflow.
+Source support is generated under each item's `source_support` mapping,
+including source references, source identities, normalized source fields,
+fingerprints, and review reasons. Existing title, description, action, date,
+association, and other editorial fields are preserved. New or unmatched
+observations become stable draft items with source associations for the next
+run.
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.
@@ -72,6 +79,11 @@ Partial dates retain their raw precision and are not projected as exact days.
 Missing, incomplete, elapsed, invalid, partial, and conflicting evidence stays
 visible as a draft; only observations beyond the configured window are
 excluded. Priority and committee fields remain external editorial decisions.
+The committee date is derived separately from source retirement evidence, and
+the `stato_data` value records the date-evidence category. Cells longer than
+the Excel limit of 32,767 characters are emitted as an explicit `OVERFLOW:`
+marker in the slide TSV; the complete value remains in the aggregate or source
+provenance instead of being silently truncated.
 
 To rerun downstream publication without Azure, pass a previously published
 generation with `--replay-bundle PATH`. Replay validates the integrity of the
@@ -79,7 +91,9 @@ saved raw acquisitions, enrichment evidence, platform mapping, editorial YAML,
 reference date, settings, and program revision, then recomputes normalization,
 aggregation, and projection. It does not use final TSV bytes as inputs and
 does not invoke Azure, authentication, or Resource Graph. A bundle with only
-final artifacts, incomplete evidence, or altered saved inputs is rejected.
+final artifacts, incomplete evidence, altered saved inputs, or a missing or
+different physical editorial sidecar is rejected. Replay publishes the saved
+sidecar bytes alongside the recomputed TSV artifacts.
 
 ## Operator Output And Logging
 
@@ -122,7 +136,12 @@ recommended-action fields.
 
 The supplied PDF and any `9PN5-64G` investigation are reconciliation or
 evidence obligations only. They do not add API records, prove complete Azure
-coverage, or justify a target row count.
+coverage, or justify a target row count. MO-01 must record the authoritative
+Azure scope, filtering, paging, access, and collection evidence for `9PN5-64G`.
+MO-02 must classify every July presentation reference without treating its row
+count as a target. MO-03 is the human inspection of the final 19-column TSV
+and adjacent YAML, including Unicode, multiline text, actions, resources,
+editorial ownership, drafts, and sidecar retention.
 
 The supplemental Resource Graph adapter uses the scoped,
 paginated `Microsoft.ResourceGraph/resources?api-version=2024-04-01` endpoint

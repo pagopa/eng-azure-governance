@@ -10,7 +10,10 @@ from src.comitato.comitato_azure_retirements_v2 import cli
 from src.comitato.comitato_azure_retirements_v2.config import RuntimeConfig
 from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector, RunRequest
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+    DEFAULT_REPORT_CATALOG,
+    EDITORIAL_YAML_PATH,
+)
 
 
 @dataclass
@@ -40,6 +43,137 @@ class FakeReporter:
 
     def close(self) -> None:
         self.closed = True
+
+
+def _replay_slide_fixture(title: str) -> tuple[dict[str, Any], str]:
+    subscription_id = "11111111-1111-1111-1111-111111111111"
+    editorial_yaml = f"""schema_version: 1
+items:
+  - id: item-1
+    associations:
+      advisor:
+        recommendation_type_ids: [retirement-1]
+    title: {title}
+    description: Move the workload.
+    suggested_action: Migrate the workload.
+"""
+    saved_inputs = {
+        "schema_version": 1,
+        "platform_catalog": {
+            "schema_version": 1,
+            "sha256": "a" * 64,
+            "assignments": [{
+                "subscription_id": subscription_id,
+                "platform": "Platform A",
+                "subscription_name": "Subscription A",
+            }],
+        },
+        "source_acquisitions": {
+            "advisor": {
+                "receipt": {
+                    "source": "advisor",
+                    "api_version": "test-v1",
+                    "expected_subscriptions": 1,
+                    "completed_subscriptions": 1,
+                    "pages": 1,
+                    "source_records": 1,
+                    "complete": True,
+                    "continuation_tokens": [],
+                    "failed_subscriptions": [],
+                },
+                "records": [{
+                    "subscription_id": subscription_id,
+                    "identity": "advisor-1",
+                    "payload": {
+                        "id": f"/subscriptions/{subscription_id}/providers/Microsoft.Advisor/recommendations/rec-1",
+                        "subscriptionId": subscription_id,
+                        "properties": {
+                            "recommendationStatus": "New",
+                            "recommendationTypeId": "retirement-1",
+                            "detailedDescription": "Move the workload.",
+                        },
+                    },
+                    "source": "advisor",
+                    "page_number": 1,
+                    "continuation_token": None,
+                }],
+                "companion_records": [],
+                "accounting": [],
+                "collection_context": {},
+                "response_context": [],
+            },
+            "service-health": {
+                "receipt": {
+                    "source": "service-health",
+                    "api_version": "test-v1",
+                    "expected_subscriptions": 1,
+                    "completed_subscriptions": 1,
+                    "pages": 1,
+                    "source_records": 0,
+                    "complete": True,
+                    "continuation_tokens": [],
+                    "failed_subscriptions": [],
+                },
+                "records": [],
+                "companion_records": [],
+                "accounting": [],
+                "collection_context": {},
+                "response_context": [],
+            },
+        },
+        "advisor_enrichments": {"metadata": {}, "resources": {}, "subscriptions": {}},
+        "service_health_evidence": {
+            "advisor_records": [],
+            "resource_inventory": {},
+            "subscription_inventory": {},
+            "resource_associations": [],
+            "subscription_name_sources": {},
+        },
+        "editorial_catalog": {
+            "schema_version": 1,
+            "sha256": sha256(editorial_yaml.encode("utf-8")).hexdigest(),
+            "items": [{
+                "item_id": "item-1",
+                "associations": [["advisor", ["retirement-1"]]],
+                "title": title,
+                "description": "Move the workload.",
+                "suggested_action": "Migrate the workload.",
+                "retirement_date": "",
+            }],
+            "yaml": editorial_yaml,
+        },
+    }
+    manifest = {
+        "as_of_date": "2026-09-22",
+        "catalog": {"schema_version": 1, "sha256": "a" * 64},
+        "created_at": "2026-09-22T10:00:00Z",
+        "dependency_closure": ["scope", "catalog", "advisor", "service-health", "aggregate", "slides", "publication"],
+        "editorial_catalog": {
+            "schema_version": 1,
+            "sha256": sha256(editorial_yaml.encode("utf-8")).hexdigest(),
+        },
+        "run_id": "replay-run",
+        "scope": {"mode": "explicit", "subscription_ids": [subscription_id]},
+        "selector": "slides",
+        "settings": {"committee_window_months": 6},
+        "saved_inputs": saved_inputs,
+        "artifacts": [],
+    }
+    manifest["saved_inputs_sha256"] = sha256(
+        json.dumps(saved_inputs, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return manifest, editorial_yaml
+
+
+def _replay_application(store: Any) -> Any:
+    return type(
+        "Application",
+        (),
+        {
+            "report_catalog": DEFAULT_REPORT_CATALOG,
+            "publication_store": store,
+        },
+    )()
 
 
 def test_main_writes_one_success_result_to_stdout(monkeypatch, capsys) -> None:
@@ -364,3 +498,73 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
     assert result.exit_status == 0
     assert store.candidate.artifacts[0].data.startswith(b"schema_version\trun_id\t")
     assert store.candidate.saved_inputs == manifest["saved_inputs"]
+
+
+def test_replay_slides_consumes_physical_sidecar_and_changed_yaml_changes_tsv(tmp_path) -> None:
+    class Store:
+        def __init__(self):
+            self.candidate = None
+
+        def publish(self, candidate):
+            self.candidate = candidate
+            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    manifest, editorial_yaml = _replay_slide_fixture("Old title")
+    (bundle / EDITORIAL_YAML_PATH).write_text(editorial_yaml, encoding="utf-8")
+    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    store = Store()
+    config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=bundle,
+    )
+    result = cli._run_replay(config, _replay_application(store))
+
+    slide = next(item for item in store.candidate.artifacts if item.logical_path == "03_azure_retirements_slide.tsv")
+    sidecar = next(item for item in store.candidate.artifacts if item.logical_path == EDITORIAL_YAML_PATH)
+    assert result.exit_status == 0
+    assert b"Old title" in slide.data
+    assert sidecar.data == editorial_yaml.encode("utf-8")
+
+    changed_bundle = tmp_path / "changed-bundle"
+    changed_bundle.mkdir()
+    changed_manifest, changed_yaml = _replay_slide_fixture("New title")
+    (changed_bundle / EDITORIAL_YAML_PATH).write_text(changed_yaml, encoding="utf-8")
+    (changed_bundle / "publication-manifest.json").write_text(
+        json.dumps(changed_manifest),
+        encoding="utf-8",
+    )
+    changed_store = Store()
+    changed_config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=changed_bundle,
+    )
+    cli._run_replay(changed_config, _replay_application(changed_store))
+    changed_slide = next(
+        item
+        for item in changed_store.candidate.artifacts
+        if item.logical_path == "03_azure_retirements_slide.tsv"
+    )
+    assert b"New title" in changed_slide.data
+    assert b"Old title" not in changed_slide.data
+
+
+def test_replay_rejects_physical_sidecar_that_differs_from_saved_yaml(tmp_path) -> None:
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    manifest, editorial_yaml = _replay_slide_fixture("Saved title")
+    (bundle / EDITORIAL_YAML_PATH).write_text(
+        editorial_yaml.replace("Saved title", "Different title"),
+        encoding="utf-8",
+    )
+    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=bundle,
+    )
+
+    with pytest.raises(ValueError, match="replay bundle"):
+        cli._run_replay(config, _replay_application(object()))

@@ -13,6 +13,10 @@ from src.comitato.comitato_azure_retirements_v2.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+    EDITORIAL_YAML_PATH,
+)
+from src.comitato.comitato_azure_retirements_v2.contracts.model import EncodedArtifact
 from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
 from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
@@ -39,7 +43,11 @@ from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support
 )
 
 
-def empty_candidate(*, as_of_date: date = date(2026, 7, 30)) -> PublicationCandidate:
+def empty_candidate(
+    *,
+    as_of_date: date = date(2026, 7, 30),
+    editorial_yaml: str = "schema_version: 1\nitems: []\n",
+) -> PublicationCandidate:
     context = RunContext(
         run_id="s06-empty",
         as_of_date=as_of_date,
@@ -63,6 +71,14 @@ def empty_candidate(*, as_of_date: date = date(2026, 7, 30)) -> PublicationCandi
         SERVICE_HEALTH_REPORT.contract.encode_companion(service_health),
         AGGREGATE_V1.encode(AGGREGATE_V1.empty_artifact(context)),
         SLIDES_V1.encode(SLIDES_V1.empty_artifact(context)),
+        EncodedArtifact(
+            logical_path=EDITORIAL_YAML_PATH,
+            data=editorial_yaml.encode("utf-8"),
+            rows=0,
+            media_type="application/yaml",
+            schema_version=1,
+            run_id=context.run_id,
+        ),
     )
     acquisitions = (
         SourceAcquisition(
@@ -107,6 +123,24 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path:
         assert written == artifact.data
         assert item["bytes"] == len(written)
         assert item["sha256"] == artifact.digest
+
+
+def test_publish_keeps_saved_editorial_yaml_identical_to_sidecar(tmp_path: Path) -> None:
+    editorial_yaml = "schema_version: 1\nitems:\n  - id: owned-by-input\n"
+    candidate = replace(
+        empty_candidate(editorial_yaml=editorial_yaml),
+        saved_inputs={
+            "schema_version": 1,
+            "editorial_catalog": {"yaml": editorial_yaml},
+        },
+    )
+
+    FilesystemAtomicPublicationStore(tmp_path).publish(candidate)
+
+    tree = read_monthly_tree(tmp_path, candidate.context.as_of_date)
+    manifest = json.loads(tree["publication-manifest.json"])
+    assert tree[EDITORIAL_YAML_PATH] == editorial_yaml.encode("utf-8")
+    assert manifest["saved_inputs"]["editorial_catalog"]["yaml"] == editorial_yaml
 
 
 def test_staging_uses_candidate_closure_for_manifest_ownership(tmp_path: Path) -> None:

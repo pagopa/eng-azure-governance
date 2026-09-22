@@ -2,6 +2,7 @@ from dataclasses import FrozenInstanceError
 from textwrap import dedent
 
 import pytest
+import yaml
 
 from src.comitato.comitato_azure_retirements_v2.contracts import AGGREGATE_V1, SLIDES_V1
 from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector
@@ -11,9 +12,11 @@ from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     EditorialCatalog,
     EditorialCatalogSource,
     EditorialItem,
+    EditorialWorkItem,
     ReportCatalog,
     SelectedReportClosure,
     build_editorial_work_list,
+    render_editorial_yaml,
 )
 from src.comitato.comitato_azure_retirements_v2.domain.retirements import build_source_events
 from src.comitato.comitato_azure_retirements_v2.reports.model import (
@@ -67,8 +70,12 @@ def test_plan_returns_one_immutable_selected_closure() -> None:
     closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
 
     assert isinstance(closure, SelectedReportClosure)
-    assert closure.expected_paths == ("03_azure_retirements_slide.tsv",)
+    assert closure.expected_paths == (
+        "03_azure_retirements_slide.tsv",
+        "azure-retirements-editorial.yaml",
+    )
     assert closure.owner_of("03_azure_retirements_slide.tsv").name == "slides"
+    assert closure.owner_of("azure-retirements-editorial.yaml").name == "slides"
     with pytest.raises(FrozenInstanceError):
         closure.selector = ReportSelector.ALL
 
@@ -126,6 +133,7 @@ def test_every_declared_path_has_exactly_one_owner():
         "service-health",
         "service-health",
         "aggregate",
+        "slides",
         "slides",
     )
 
@@ -289,3 +297,46 @@ def test_editorial_work_list_creates_a_stable_draft_for_unassociated_source_even
     assert work_items[0].description == "Move the workload before the deadline."
     assert work_items[0].suggested_action == "Migrate the workload"
     assert work_items[0].review_reason == "missing_editorial_mapping"
+
+
+def test_render_editorial_yaml_publishes_draft_source_support():
+    rendered = render_editorial_yaml(
+        "schema_version: 1\nitems: []\n",
+        EditorialCatalog(1, "a" * 64, ()),
+        (
+            EditorialWorkItem(
+                item_id="draft-001",
+                source_ids=("advisor-raw",),
+                title="Retire the feature",
+                description="Move the workload before the deadline.",
+                suggested_action="Migrate the workload",
+                review_reason="missing_editorial_mapping",
+                source_fingerprint="b" * 64,
+                source_content=(
+                    ("description", "Move the workload before the deadline."),
+                ),
+            ),
+        ),
+    )
+
+    payload = yaml.safe_load(rendered)
+
+    assert payload["items"] == [
+        {
+            "id": "draft-001",
+            "title": "Retire the feature",
+            "description": "Move the workload before the deadline.",
+            "suggested_action": "Migrate the workload",
+            "source_support": {
+                "source_ids": ["advisor-raw"],
+                "review_reason": "missing_editorial_mapping",
+                "source_fingerprint": "b" * 64,
+                "content": [
+                    {
+                        "field": "description",
+                        "value": "Move the workload before the deadline.",
+                    }
+                ],
+            },
+        }
+    ]

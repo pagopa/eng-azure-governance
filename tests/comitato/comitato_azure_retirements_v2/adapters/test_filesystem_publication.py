@@ -15,6 +15,9 @@ from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
 )
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+    EDITORIAL_YAML_PATH,
+)
 
 
 def _seed(destination: Path) -> bytes:
@@ -134,6 +137,36 @@ def test_publish_replaces_the_complete_monthly_bundle(tmp_path: Path) -> None:
     assert (august / "publication-manifest.json").is_file()
 
 
+def test_next_month_keeps_the_latest_effective_editorial_yaml(tmp_path: Path) -> None:
+    store = FilesystemAtomicPublicationStore(tmp_path)
+    editorial_yaml = "schema_version: 1\nitems:\n  - id: carried-forward\n"
+
+    store.publish(empty_candidate(editorial_yaml=editorial_yaml))
+    store.publish(empty_candidate(as_of_date=date(2026, 8, 1)))
+
+    assert read_monthly_tree(tmp_path, date(2026, 7, 30))[EDITORIAL_YAML_PATH] == editorial_yaml.encode("utf-8")
+    assert read_monthly_tree(tmp_path, date(2026, 8, 1))[EDITORIAL_YAML_PATH] == editorial_yaml.encode("utf-8")
+
+
+def test_same_month_replacement_preserves_the_effective_editorial_yaml(
+    tmp_path: Path,
+) -> None:
+    store = FilesystemAtomicPublicationStore(tmp_path)
+    edited_yaml = "schema_version: 1\nitems:\n  - id: edited-item\n"
+
+    store.publish(empty_candidate(editorial_yaml=edited_yaml))
+    store.publish(empty_candidate(editorial_yaml="schema_version: 1\nitems: []\n"))
+
+    current = read_monthly_tree(tmp_path, date(2026, 7, 30))
+    assert current[EDITORIAL_YAML_PATH] == edited_yaml.encode("utf-8")
+    history = tmp_path / ".history" / "2026" / "07"
+    assert any(
+        (snapshot / EDITORIAL_YAML_PATH).read_bytes() == edited_yaml.encode("utf-8")
+        for snapshot in history.iterdir()
+        if (snapshot / EDITORIAL_YAML_PATH).is_file()
+    )
+
+
 def test_store_exposes_only_publish_as_the_transaction_operation(
     tmp_path: Path,
 ) -> None:
@@ -164,6 +197,21 @@ def test_precommit_fault_restores_complete_publication_state(
     assert _private_entries(tmp_path) == private_before
     assert not (tmp_path / "current").exists()
     assert not (tmp_path / "generations").exists()
+
+
+def test_failed_replacement_keeps_prior_sidecar_and_manifest_usable(tmp_path: Path) -> None:
+    editorial_yaml = "schema_version: 1\nitems:\n  - id: prior-valid\n"
+    FilesystemAtomicPublicationStore(tmp_path).publish(
+        empty_candidate(editorial_yaml=editorial_yaml)
+    )
+    store = FaultInjectingPublicationStore(tmp_path, fault="before_switch")
+
+    with pytest.raises(PublicationError):
+        store.publish(empty_candidate(as_of_date=date(2026, 7, 31)))
+
+    current = read_monthly_tree(tmp_path, date(2026, 7, 30))
+    assert current[EDITORIAL_YAML_PATH] == editorial_yaml.encode("utf-8")
+    assert current["publication-manifest.json"]
 
 
 def test_success_replaces_one_monthly_bundle_with_complete_artifacts(tmp_path: Path) -> None:

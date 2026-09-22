@@ -220,6 +220,25 @@ def test_projection_applies_editorial_values_and_renders_source_singletons() -> 
     assert json.loads(slide["risorse_json"])
 
 
+def test_projection_renders_structured_actions_as_readable_source_text() -> None:
+    row = aggregate_row("aggregate-actions", "2027-01-01")
+    row["advisor_actions_json"] = json.dumps([
+        {
+            "caption": "Migrate the workload",
+            "label": "Open migration guidance",
+            "learnMoreLink": "https://example.invalid/action",
+        }
+    ])
+
+    result = project_slides(aggregate_artifact(row), context())
+
+    assert result.is_valid
+    assert result.value is not None
+    action = result.value.records[0]["azione_originale"]
+    assert action == "Advisor: Migrate the workload"
+    assert "{'caption'" not in action
+
+
 def test_populated_committee_refinements_are_valid_but_priority_stays_external() -> None:
     aggregate = aggregate_artifact(aggregate_row("aggregate-1", "2027-01-01"))
     selected = project_slides(aggregate, context()).value

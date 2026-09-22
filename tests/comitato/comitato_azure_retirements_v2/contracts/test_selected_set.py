@@ -66,7 +66,10 @@ def _artifact(path: str, *, run_id: str = "run-1", as_of_date: str = "2026-07-30
 
 def test_selected_set_uses_catalog_publication_paths():
     plan = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
-    assert plan.expected_paths == ("03_azure_retirements_slide.tsv",)
+    assert plan.expected_paths == (
+        "03_azure_retirements_slide.tsv",
+        "azure-retirements-editorial.yaml",
+    )
 
 
 def test_selected_set_rejects_mixed_run_ids_and_evaluation_dates() -> None:

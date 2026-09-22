@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -15,6 +15,38 @@ from ..domain.retirements import aggregate_id_for
 from .advisor import ADVISOR_REPORT
 from .model import ReportDefinition
 from .service_health import SERVICE_HEALTH_REPORT
+
+
+EDITORIAL_YAML_PATH = "azure-retirements-editorial.yaml"
+DEFAULT_EDITORIAL_YAML = "schema_version: 1\nitems: []\n"
+
+
+@dataclass(frozen=True, slots=True)
+class EditorialYamlContract:
+    name: str = "editorial-yaml"
+    path: str = EDITORIAL_YAML_PATH
+    companion_path: str | None = None
+    schema_version: int = 1
+
+    def verify_staged_artifact(
+        self,
+        logical_path: str,
+        payloads: Mapping[str, bytes],
+        context: Any,
+    ) -> tuple[()]:
+        if logical_path != self.path:
+            raise ValueError(f"path is not owned by {self.name}: {logical_path}")
+        try:
+            payload = yaml.safe_load(payloads[logical_path].decode("utf-8"))
+        except (KeyError, UnicodeError, yaml.YAMLError) as exc:
+            raise ValueError("editorial YAML is invalid") from exc
+        if (
+            not isinstance(payload, Mapping)
+            or payload.get("schema_version") != self.schema_version
+            or not isinstance(payload.get("items"), list)
+        ):
+            raise ValueError("editorial YAML shape is not schema version 1")
+        return ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +182,7 @@ class EditorialWorkItem:
     review_reason: str
     source_fingerprint: str
     source_content: tuple[tuple[str, str], ...] = ()
+    source_associations: tuple[tuple[str, str], ...] = ()
 
 
 def build_editorial_work_list(catalog: EditorialCatalog, source_events: object) -> tuple[EditorialWorkItem, ...]:
@@ -159,30 +192,32 @@ def build_editorial_work_list(catalog: EditorialCatalog, source_events: object) 
     if isinstance(rows, Mapping):
         rows = (rows,)
     grouped: dict[str, list[Mapping[str, Any]]] = {}
-    drafts: dict[str, tuple[str, str]] = {}
+    observed_associations: dict[str, set[tuple[str, str]]] = {}
+    drafts: set[str] = set()
     for event in rows or ():
         key = getattr(event, "key", None)
-        source = getattr(key, "source", "")
-        identity = getattr(key, "identity", "")
+        source = str(getattr(key, "source", "")).strip().casefold()
+        identity = str(getattr(key, "identity", "")).strip().casefold()
         item = catalog.item_for_source(source, identity)
         event_rows = list(getattr(event, "records", ()) or (getattr(event, "row", {}),))
+        item_id = item.item_id if item is not None else aggregate_id_for((key,)).value
+        observed_associations.setdefault(item_id, set())
+        if source and identity:
+            observed_associations[item_id].add((source, identity))
+        for row in event_rows:
+            for row_identity in _source_identities(source, row):
+                observed_associations[item_id].add((source, row_identity))
         if item is None:
-            draft_id = aggregate_id_for((key,)).value
-            grouped.setdefault(draft_id, []).extend(event_rows)
-            drafts[draft_id] = (str(source), str(identity))
+            drafts.add(item_id)
+            grouped.setdefault(item_id, []).extend(event_rows)
             continue
-        grouped.setdefault(item.item_id, []).extend(event_rows)
+        grouped.setdefault(item_id, []).extend(event_rows)
     result: list[EditorialWorkItem] = []
     for item in catalog.items:
         item_rows = grouped.get(item.item_id, [])
         fingerprint_payload = [_editorial_content(row) for row in item_rows]
         fingerprint = sha256(json.dumps(fingerprint_payload, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        source_content = tuple(sorted({
-            (field, str(row.get(field, "")))
-            for row in item_rows
-            for field in ("problem", "description", "actions_json", "retirement_date", "retiring_feature", "impacted_service", "impacted_region", "learn_more_link", "source_link")
-            if str(row.get(field, "")).strip()
-        }))
+        source_content = _source_content(item_rows)
         if not item_rows:
             review_reason = "unassociated_catalog_item"
         elif not item.title or not item.description or not item.suggested_action:
@@ -199,16 +234,12 @@ def build_editorial_work_list(catalog: EditorialCatalog, source_events: object) 
                 review_reason=review_reason,
                 source_fingerprint=fingerprint,
                 source_content=source_content,
+                source_associations=tuple(sorted(observed_associations.get(item.item_id, set()))),
             )
         )
     for item_id in sorted(drafts):
         item_rows = grouped[item_id]
-        source_content = tuple(sorted({
-            (field, str(row.get(field, "")))
-            for row in item_rows
-            for field in ("problem", "short_description_problem", "description", "actions_json", "recommended_actions", "retirement_date", "retiring_feature", "impacted_service", "impacted_region", "learn_more_link", "source_link")
-            if str(row.get(field, "")).strip()
-        }))
+        source_content = _source_content(item_rows)
         result.append(
             EditorialWorkItem(
                 item_id=item_id,
@@ -219,9 +250,110 @@ def build_editorial_work_list(catalog: EditorialCatalog, source_events: object) 
                 review_reason="missing_editorial_mapping",
                 source_fingerprint=sha256(json.dumps([_editorial_content(row) for row in item_rows], sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
                 source_content=source_content,
+                source_associations=tuple(sorted(observed_associations.get(item_id, set()))),
             )
         )
     return tuple(sorted(result, key=lambda item: item.item_id))
+
+
+def render_editorial_yaml(
+    source_yaml: str,
+    catalog: EditorialCatalog,
+    work_list: tuple[EditorialWorkItem, ...],
+) -> str:
+    """Merge derived source support into the editable YAML without erasing it."""
+
+    del catalog
+    try:
+        payload = yaml.safe_load(source_yaml or DEFAULT_EDITORIAL_YAML)
+    except yaml.YAMLError as exc:
+        raise ValueError("editorial catalog YAML is invalid") from exc
+    if not isinstance(payload, Mapping) or payload.get("schema_version") != 1:
+        raise ValueError("editorial catalog shape is not schema version 1")
+    raw_items = payload.get("items")
+    if not isinstance(raw_items, list):
+        raise ValueError("editorial catalog items must be a list")
+
+    by_id = {
+        str(item.get("id", "")).strip(): dict(item)
+        for item in raw_items
+        if isinstance(item, Mapping) and str(item.get("id", "")).strip()
+    }
+    ordered_ids = [item_id for item_id in by_id]
+    for work_item in work_list:
+        current = by_id.get(work_item.item_id, {"id": work_item.item_id})
+        if work_item.item_id not in by_id:
+            for field, value in (
+                ("title", work_item.title),
+                ("description", work_item.description),
+                ("suggested_action", work_item.suggested_action),
+            ):
+                if value:
+                    current[field] = value
+            if work_item.source_associations:
+                current["associations"] = _render_source_associations(
+                    work_item.source_associations
+                )
+            by_id[work_item.item_id] = current
+            ordered_ids.append(work_item.item_id)
+        source_support = {
+            "source_ids": list(work_item.source_ids),
+            "review_reason": work_item.review_reason,
+            "source_fingerprint": work_item.source_fingerprint,
+            "content": [
+                {"field": field, "value": value}
+                for field, value in work_item.source_content
+            ],
+        }
+        if work_item.source_associations:
+            source_support["source_associations"] = [
+                {"source": source, "identity": identity}
+                for source, identity in work_item.source_associations
+            ]
+        current["source_support"] = source_support
+
+    output = dict(payload)
+    output["items"] = [by_id[item_id] for item_id in ordered_ids]
+    return yaml.safe_dump(
+        output,
+        allow_unicode=True,
+        sort_keys=False,
+        default_flow_style=False,
+    )
+
+
+def _source_content(rows: list[Mapping[str, Any]]) -> tuple[tuple[str, str], ...]:
+    ignored = {"schema_version", "run_id", "as_of_date", "scope_mode", "record_type", "raw_record_ref"}
+    content: set[tuple[str, str]] = set()
+    for row in rows:
+        for field, value in row.items():
+            field_name = str(field)
+            if field_name in ignored or value is None:
+                continue
+            if isinstance(value, (Mapping, list, tuple)):
+                text = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            else:
+                text = str(value)
+            if text.strip():
+                content.add((field_name, text))
+    return tuple(sorted(content))
+
+
+def _render_source_associations(
+    associations: tuple[tuple[str, str], ...],
+) -> dict[str, dict[str, list[str]]]:
+    grouped: dict[str, dict[str, list[str]]] = {}
+    for source, identity in associations:
+        if source == "advisor":
+            field = "recommendation_type_ids"
+            rendered_source = source
+        elif source == "service-health":
+            field = "tracking_ids"
+            rendered_source = "service_health"
+        else:
+            continue
+        grouped.setdefault(rendered_source, {}).setdefault(field, []).append(identity)
+    return grouped
 
 
 def _editorial_content(row: Mapping[str, Any]) -> dict[str, Any]:
@@ -286,7 +418,7 @@ def _source_identities(source: str, row: Mapping[str, Any]) -> set[str]:
 
 
 class EditorialCatalogSource:
-    """Read-only loader for the externally maintained editorial catalog."""
+    """Load the editable editorial catalog from a file or captured YAML text."""
 
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -296,6 +428,13 @@ class EditorialCatalogSource:
             raw = self.path.read_bytes()
         except OSError as exc:
             raise ValueError("editorial catalog is unreadable") from exc
+        return self._load_bytes(raw)
+
+    def load_text(self, value: str) -> EditorialCatalog:
+        return self._load_bytes(value.encode("utf-8"))
+
+    @staticmethod
+    def _load_bytes(raw: bytes) -> EditorialCatalog:
         try:
             payload = yaml.safe_load(raw.decode("utf-8"))
         except (UnicodeError, yaml.YAMLError) as exc:
@@ -402,7 +541,12 @@ class SelectedReportClosure:
 
 
 class ReportCatalog:
-    def __init__(self, definitions: tuple[ReportDefinition, ...]) -> None:
+    def __init__(
+        self,
+        definitions: tuple[ReportDefinition, ...],
+        *,
+        sidecar_contracts: tuple[Any, ...] = (EditorialYamlContract(),),
+    ) -> None:
         selectors = tuple(item.selector for item in definitions)
         if len(selectors) != len(set(selectors)):
             raise ValueError("report selectors must be unique")
@@ -414,16 +558,27 @@ class ReportCatalog:
         self._by_path = {
             path: item for item in definitions for path in item.paths
         }
+        self._sidecar_contracts = sidecar_contracts
+
+    def _closure_definition(self, definition: ReportDefinition) -> ReportDefinition:
+        if definition.selector is ReportSelector.SLIDES:
+            return replace(definition, sidecar_contracts=self._sidecar_contracts)
+        return definition
 
     @property
     def all_paths(self) -> tuple[str, ...]:
-        return tuple(path for item in self._definitions for path in item.paths)
+        return tuple(
+            path
+            for item in self._definitions
+            for path in self._closure_definition(item).paths
+        )
 
     def owner_of(self, path: str) -> ReportDefinition:
-        try:
-            return self._by_path[path]
-        except KeyError as exc:
-            raise KeyError(f"no report owns path: {path}") from exc
+        for definition in self._definitions:
+            closure_definition = self._closure_definition(definition)
+            if path in closure_definition.paths:
+                return closure_definition
+        raise KeyError(f"no report owns path: {path}")
 
     def plan(self, selector: ReportSelector) -> SelectedReportClosure:
         roots = (
@@ -449,14 +604,16 @@ class ReportCatalog:
             item.stage for item in required
         ) + ("publication",)
         published = tuple(
-            item for item in roots if item.selector is not ReportSelector.ALL
+            self._closure_definition(item)
+            for item in roots
+            if item.selector is not ReportSelector.ALL
         )
         if selector is ReportSelector.ALL:
-            published = tuple(roots)
+            published = tuple(self._closure_definition(item) for item in roots)
         path_owners = tuple(
-            (path, definition)
+            (path, self._closure_definition(definition))
             for definition in self._definitions
-            for path in definition.paths
+            for path in self._closure_definition(definition).paths
         )
         return SelectedReportClosure(
             selector,
@@ -514,4 +671,5 @@ __all__ = [
     "ReportPlan",
     "SelectedReportClosure",
     "build_editorial_work_list",
+    "render_editorial_yaml",
 ]
