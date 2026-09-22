@@ -17,7 +17,6 @@ from ..contracts.model import Artifact
 from ..domain.diagnostics import Diagnostic, ValidationResult
 from ..domain.evidence import ServiceHealthSupplementalEvidence
 from ..domain.execution import ReportSelector, RunContext
-from src.comitato.comitato_azure_retirements.libs.service_health_text import html_to_ascii_text
 from .model import PreparedRawReport, ReportDefinition
 
 
@@ -113,7 +112,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                     diagnostics.append(Diagnostic("error", "invalid_resource_graph_query_label", "validation", "service-health", context.run_id, record_ref=event_id))
             for field in ("title", "summary", "description_problem", "recommended_actions"):
                 value = row.get(field, "")
-                if not value.isascii() or "<" in value or ">" in value:
+                if _plain_text(value) != value or "<" in value or ">" in value:
                     diagnostics.append(Diagnostic("error", "noncanonical_service_health_text", "validation", "service-health", context.run_id, record_ref=event_id))
             resource_evidence_status = row.get("resource_evidence_status", "")
             if resource_evidence_status not in {"published", "inventory_missing", "not_published"}:
@@ -238,8 +237,13 @@ def _plain_text(value: Any) -> str:
             or ""
         )
     if isinstance(value, (list, tuple)):
-        return html_to_ascii_text(" ".join(item for item in (_plain_text(part) for part in value) if item))
-    return html_to_ascii_text(str(value))
+        return " ".join(item for item in (_plain_text(part) for part in value) if item)
+    text = str(value)
+    if "<" in text and ">" in text:
+        parser = _ArticleParser()
+        parser.feed(text)
+        text = "".join(parser.parts)
+    return " ".join(text.split())
 
 
 def _items(value: Any) -> tuple[Any, ...]:
@@ -432,7 +436,7 @@ def normalize_service_health(
         retirement_advisory = str(props.get("eventSubType") or "").casefold() in {
             "retirement",
             "serviceupgradeandretirement",
-        } or status.casefold() == "active"
+        }
         retirement_raw = (
             str(props.get("impactMitigationTime") or "")
             if retirement_advisory and status.casefold() == "active"
@@ -645,6 +649,8 @@ def prepare_service_health_report(
                 )
                 for item in artifact.accounting
             ),
+            collection_context=acquisition.collection_context,
+            response_context=acquisition.response_context,
         )
     return PreparedRawReport(
         acquisition=normalized,

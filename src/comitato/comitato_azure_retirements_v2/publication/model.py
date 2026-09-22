@@ -19,6 +19,7 @@ class PublicationCandidate:
     slide_selection: Any = None
     editorial_work_list: tuple[Any, ...] = ()
     manifest_metadata: Mapping[str, Any] | None = None
+    saved_inputs: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)

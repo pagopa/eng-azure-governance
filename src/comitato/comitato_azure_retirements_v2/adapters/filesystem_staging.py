@@ -4,6 +4,8 @@ import os
 import shutil
 import tempfile
 from dataclasses import asdict, dataclass, is_dataclass
+from collections.abc import Mapping
+from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -189,12 +191,44 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
         "mode": "live",
         "program_revision": __version__,
     })
+    manifest.setdefault("saved_inputs", candidate.saved_inputs or {
+        "schema_version": 1,
+        "source_acquisitions": [_saved_acquisition(acquisition) for acquisition in candidate.acquisitions],
+        "publication_settings": dict(manifest.get("settings", {})),
+    })
+    manifest["saved_inputs_sha256"] = sha256(
+        canonical_json(manifest["saved_inputs"]).encode("utf-8")
+    ).hexdigest()
     if context.editorial_catalog_identity is not None:
         manifest["editorial_catalog"] = {
             "schema_version": context.editorial_catalog_identity.schema_version,
             "sha256": context.editorial_catalog_identity.sha256,
         }
     return manifest
+
+
+def _json_safe(value: Any) -> Any:
+    if is_dataclass(value):
+        return _json_safe(asdict(value))
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
+
+
+def _saved_acquisition(acquisition: Any) -> dict[str, Any]:
+    receipt = getattr(acquisition, "receipt", None)
+    return {
+        "receipt": _json_safe(receipt),
+        "records": _json_safe(getattr(acquisition, "records", ())),
+        "companion_records": _json_safe(getattr(acquisition, "companion_records", ())),
+        "accounting": _json_safe(getattr(acquisition, "accounting", ())),
+        "collection_context": _json_safe(getattr(acquisition, "collection_context", {})),
+        "response_context": _json_safe(getattr(acquisition, "response_context", ())),
+    }
 
 
 def stage_candidate(

@@ -1,7 +1,5 @@
 # Azure Retirements v2
 
-# Azure Retirements v2
-
 This command performs a live Azure acquisition and publishes one validated
 monthly report bundle. The default selector is `all`; use `--report`
 with `advisor`, `service-health`, `aggregate`, or `slides` to publish one
@@ -50,7 +48,10 @@ left by an earlier selector or run. Runs for other months keep their existing
 bundles.
 
 Replacing an existing month retains the superseded bundle under
-`exports/.history/YYYY/MM/<generation>`.
+`exports/.history/YYYY/MM/<generation>`. The editable
+`azure-retirements-editorial.yaml` input is captured with each generation and
+is kept adjacent to the published `03_azure_retirements_slide.tsv` workflow;
+source support and committee-owned editorial values remain separate.
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.
@@ -61,14 +62,24 @@ status and emit sorted JSONL diagnostics on stderr without changing the
 existing monthly bundle.
 
 The complete aggregate retains source membership independently of the
-committee view. Partial dates retain their raw precision and are not projected
-as exact days. Missing or incomplete editorial text is marked as draft in the
-derived provenance and appears in the staged `editorial_work_list` manifest
-entry; priority remains an external committee decision.
+committee view. The slide artifact has exactly these 19 columns, in order:
+`id_elemento`, `titolo_breve`, `descrizione_breve`, `comitato_priorità`,
+`comitato_descrizione`, `comitato_retirement_date`, `comitato_piattaforme`,
+`retirement_date`, `stato_data`, `tipo_cambiamento`, `stato_editoriale`,
+`descrizione_originale_completa`, `azione_originale`, `fonti`, `link_fonti`,
+`ambito_impatto`, `id_advisor`, `id_service_health`, `risorse_json`.
+Partial dates retain their raw precision and are not projected as exact days.
+Missing, incomplete, elapsed, invalid, partial, and conflicting evidence stays
+visible as a draft; only observations beyond the configured window are
+excluded. Priority and committee fields remain external editorial decisions.
 
 To rerun downstream publication without Azure, pass a previously published
-generation with `--replay-bundle PATH`. Replay reads the manifest and selected
-artifacts from that directory and never invokes live scope or source ports.
+generation with `--replay-bundle PATH`. Replay validates the integrity of the
+saved raw acquisitions, enrichment evidence, platform mapping, editorial YAML,
+reference date, settings, and program revision, then recomputes normalization,
+aggregation, and projection. It does not use final TSV bytes as inputs and
+does not invoke Azure, authentication, or Resource Graph. A bundle with only
+final artifacts, incomplete evidence, or altered saved inputs is rejected.
 
 ## Operator Output And Logging
 
@@ -105,9 +116,13 @@ Use the logging flags as follows:
 Service Health advisories are acquired from the Resource Health events endpoint
 at `subscriptions/{subscriptionId}/providers/Microsoft.ResourceHealth/events`
 with API version `2025-05-01`. The raw event and its original text remain in
-the JSONL companion. The TSV projection parses `properties.impact` and applies
-the shared HTML-to-ASCII text normalization to published title, summary,
-description, and recommended-action fields.
+The JSONL companion. The TSV projection parses `properties.impact`, preserves
+Unicode, and renders readable HTML-derived title, summary, description, and
+recommended-action fields.
+
+The supplied PDF and any `9PN5-64G` investigation are reconciliation or
+evidence obligations only. They do not add API records, prove complete Azure
+coverage, or justify a target row count.
 
 The supplemental Resource Graph adapter uses the scoped,
 paginated `Microsoft.ResourceGraph/resources?api-version=2024-04-01` endpoint

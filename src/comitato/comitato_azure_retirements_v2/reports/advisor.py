@@ -420,6 +420,11 @@ def normalize_advisor(
         )
         description = _text(direct_description)
         if not description:
+            detailed_description, description_source = _recommendation_value(
+                recommendation, properties, "detailedDescription"
+            )
+            description = _text(detailed_description)
+        if not description:
             metadata_description, description_source = _metadata_value(
                 metadata_record, "description"
             )
@@ -640,6 +645,8 @@ def prepare_advisor_report(
                 )
                 for item in artifact.accounting
             ),
+            collection_context=acquisition.collection_context,
+            response_context=acquisition.response_context,
         )
     return PreparedRawReport(
         acquisition=normalized,

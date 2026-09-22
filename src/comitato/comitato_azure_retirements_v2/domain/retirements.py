@@ -100,16 +100,16 @@ class AggregateMembership:
 
 
 def aggregate_id_for(keys: tuple[SourceEventKey, ...]) -> AggregateId:
-    """Hash sorted complete keys using an unambiguous length-delimited encoding."""
+    """Hash one stable source anchor using an unambiguous length-delimited encoding."""
 
     normalized = tuple(sorted({key if isinstance(key, SourceEventKey) else SourceEventKey(*key) for key in keys}))
     if not normalized:
         raise ValueError("aggregate identity requires at least one source-event key")
+    anchor = next((key for key in normalized if key.source == "advisor"), normalized[0])
     encoded = bytearray()
-    for key in normalized:
-        value = key.value.encode("utf-8")
-        encoded.extend(len(value).to_bytes(8, "big"))
-        encoded.extend(value)
+    value = anchor.value.encode("utf-8")
+    encoded.extend(len(value).to_bytes(8, "big"))
+    encoded.extend(value)
     return AggregateId(f"azure-retirement:v1:{sha256(bytes(encoded)).hexdigest()}")
 
 

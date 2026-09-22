@@ -38,11 +38,12 @@ def select_slides(aggregate: Artifact, context) -> ValidationResult[SlideSelecti
     excluded: dict[str, list[str]] = {}
     for row in aggregate.records:
         eligibility = classify_retirement_date(row, window)
-        if eligibility is SlideEligibility.ELIGIBLE:
-            selected.append(SlideRecord.from_aggregate(row, aggregate.schema_version))
-        else:
+        if eligibility is SlideEligibility.BEYOND_COMMITTEE_WINDOW:
             excluded.setdefault(eligibility.value, []).append(row["aggregate_id"])
-    selected.sort(key=lambda row: (row["retirement_date"], row["aggregate_id"]))
+            continue
+        status = "upcoming" if eligibility is SlideEligibility.ELIGIBLE else eligibility.value.removesuffix("_retirement_date")
+        selected.append(SlideRecord.from_aggregate(row, status=status))
+    selected.sort(key=lambda row: (row["retirement_date"] or "9999-99-99", row["id_elemento"]))
     result = Artifact(
         contract=SLIDES_V1.name,
         schema_version=SLIDES_V1.schema_version,

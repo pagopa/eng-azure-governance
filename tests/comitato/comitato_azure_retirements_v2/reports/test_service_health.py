@@ -93,6 +93,49 @@ def test_normalize_service_health_renders_complete_article_and_preserves_associa
     assert tuple(encoded.data.splitlines()[0].decode().split("\t")) == SERVICE_HEALTH_REPORT.contract.header
 
 
+def test_normalize_service_health_preserves_unicode_article_text_and_action_object() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["article"] = {
+        "articleContent": "<p>Gestisci l'azione per la città.</p><p>Seconda riga –.</p>"
+    }
+    payload["properties"]["recommendedActions"] = {
+        "actionText": "Aggiorna l'istanza à"
+    }
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert "città" in row["description_problem"]
+    assert "–" in row["description_problem"]
+    assert row["recommended_actions"] == "Aggiorna l'istanza à"
+
+
+def test_normalize_service_health_does_not_promote_mitigation_time_without_retirement_semantics() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"].pop("eventSubType")
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["impact_mitigation_time"] == "2027-03-31T00:00:00Z"
+    assert row["retirement_date"] == ""
+    assert row["retirement_date_source"] == ""
+
+
 def test_normalize_service_health_rejects_unknown_classification() -> None:
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
@@ -275,8 +318,8 @@ def test_normalize_service_health_reads_impact_and_canonicalizes_published_text(
     row = rows[0]
     assert all(item["record_type"] == "service_health_event_service_region" for item in rows)
     assert row["title"].isascii()
-    assert row["summary"] == "You're receiving this notice."
-    assert row["description_problem"] == "We'll retire the SDKs."
+    assert row["summary"] == "You’re receiving this notice."
+    assert row["description_problem"] == "We’ll retire the SDKs."
     assert row["recommended_actions"] == ""
     assert "<" not in row["title"] + row["summary"] + row["description_problem"]
 
@@ -620,7 +663,7 @@ def test_service_health_contract_rejects_incoherent_resource_evidence_matrix(
 
 @pytest.mark.parametrize(
     ("field", "value"),
-    (("title", "Résumé"), ("summary", "<p>summary</p>"), ("description_problem", "<p>description</p>"), ("recommended_actions", "<p>act</p>")),
+    (("title", "<p>title</p>"), ("summary", "<p>summary</p>"), ("description_problem", "<p>description</p>"), ("recommended_actions", "<p>act</p>")),
 )
 def test_service_health_contract_rejects_noncanonical_published_text(field: str, value: str) -> None:
     row = _service_health_contract_row()

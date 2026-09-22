@@ -265,3 +265,27 @@ def test_editorial_work_list_fingerprint_ignores_run_metadata_and_resource_fanou
 
     assert first.source_fingerprint == metadata.source_fingerprint
     assert first.source_fingerprint != content.source_fingerprint
+
+
+def test_editorial_work_list_creates_a_stable_draft_for_unassociated_source_event():
+    catalog = EditorialCatalog(1, "a" * 64, ())
+    events, _ = build_source_events(
+        (
+            {
+                "advisor_recommendation_id": "advisor-instance",
+                "description": "Move the workload before the deadline.",
+                "actions_json": '[{"text":"Migrate the workload"}]',
+                "raw_record_ref": "advisor-raw",
+            },
+        ),
+        (),
+    )
+
+    work_items = build_editorial_work_list(catalog, events)
+
+    assert len(work_items) == 1
+    assert work_items[0].item_id.startswith("azure-retirement:v1:")
+    assert work_items[0].source_ids == ("advisor-raw",)
+    assert work_items[0].description == "Move the workload before the deadline."
+    assert work_items[0].suggested_action == "Migrate the workload"
+    assert work_items[0].review_reason == "missing_editorial_mapping"

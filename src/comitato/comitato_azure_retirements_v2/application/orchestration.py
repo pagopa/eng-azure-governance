@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
 import re
 from typing import Any
 
@@ -85,6 +85,83 @@ def _normalize_resource_id(resource_id: str) -> str:
     return re.sub(r"/+", "/", resource_id.strip()).casefold().rstrip("/")
 
 
+def _json_safe(value: Any) -> Any:
+    if is_dataclass(value):
+        return _json_safe(asdict(value))
+    if isinstance(value, Mapping):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
+
+
+def _saved_acquisition(acquisition: SourceAcquisition) -> dict[str, Any]:
+    return {
+        "receipt": _json_safe(acquisition.receipt),
+        "records": _json_safe(acquisition.records),
+        "companion_records": _json_safe(acquisition.companion_records),
+        "accounting": _json_safe(acquisition.accounting),
+        "collection_context": _json_safe(acquisition.collection_context),
+        "response_context": _json_safe(acquisition.response_context),
+    }
+
+
+def _source_yaml(source: Any) -> str:
+    source_path = getattr(source, "path", None)
+    if source_path is None:
+        return ""
+    try:
+        return source_path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def _saved_catalog(catalog: Any, source: Any = None) -> dict[str, Any]:
+    assignments = []
+    for assignment in getattr(catalog, "assignments", ()):
+        assignments.append({
+            "subscription_id": str(getattr(getattr(assignment, "subscription_id", None), "value", "")),
+            "platform": str(getattr(assignment, "platform", "")),
+            "subscription_name": str(getattr(assignment, "subscription_name", "")),
+        })
+    return {
+        "schema_version": int(getattr(catalog, "schema_version", 1)),
+        "sha256": str(getattr(catalog, "sha256", "")),
+        "assignments": assignments,
+        "yaml": _source_yaml(source),
+    }
+
+
+def _saved_editorial_catalog(catalog: Any, source: Any = None) -> Any:
+    if catalog is None:
+        return None
+    return {
+        "schema_version": int(catalog.schema_version),
+        "sha256": str(catalog.sha256),
+        "items": [_json_safe(item) for item in catalog.items],
+        "yaml": _source_yaml(source),
+    }
+
+
+def _saved_service_health_evidence(evidence: ServiceHealthSupplementalEvidence) -> dict[str, Any]:
+    return {
+        "advisor_records": _json_safe(evidence.advisor_records),
+        "resource_inventory": _json_safe(evidence.resource_inventory),
+        "subscription_inventory": _json_safe(evidence.subscription_inventory),
+        "resource_associations": [
+            {
+                "tracking_id": key[0],
+                "subscription_id": key[1],
+                "resources": _json_safe(values),
+            }
+            for key, values in sorted(evidence.resource_associations.items())
+        ],
+        "subscription_name_sources": _json_safe(evidence.subscription_name_sources),
+    }
+
+
 @dataclass(slots=True)
 class RetirementsApplication:
     scope_source: Any
@@ -156,6 +233,15 @@ class RetirementsApplication:
         )
 
         prepared_by_selector: dict[ReportSelector, PreparedRawReport] = {}
+        saved_inputs: dict[str, Any] = {
+            "schema_version": 1,
+            "source_acquisitions": {},
+            "platform_catalog": _saved_catalog(catalog, self.catalog_source),
+            "editorial_catalog": _saved_editorial_catalog(editorial_catalog, self.editorial_catalog_source),
+            "publication_settings": {
+                "committee_window_months": request.committee_window_months,
+            },
+        }
         if report_closure.requires(ReportSelector.ADVISOR):
             self._emit(
                 "INFO",
@@ -165,6 +251,7 @@ class RetirementsApplication:
                 source="advisor",
             )
             advisor_acquisition = self.advisor_source.acquire(context)
+            saved_inputs["source_acquisitions"]["advisor"] = _saved_acquisition(advisor_acquisition)
             self._emit_acquisition_completed(context.run_id, advisor_acquisition)
             advisor_enrichments = AdvisorEnrichments()
             if self.advisor_enrichment_source is not None:
@@ -177,6 +264,7 @@ class RetirementsApplication:
                     raise ApplicationError(
                         "advisor enrichment failed; existing monthly bundle was not changed"
                     ) from exc
+            saved_inputs["advisor_enrichments"] = _json_safe(advisor_enrichments)
             prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(
                 advisor_acquisition, context, advisor_enrichments
             )
@@ -189,10 +277,12 @@ class RetirementsApplication:
                 source="service-health",
             )
             service_health_acquisition = self.service_health_source.acquire(context)
+            saved_inputs["source_acquisitions"]["service-health"] = _saved_acquisition(service_health_acquisition)
             self._emit_acquisition_completed(context.run_id, service_health_acquisition)
             service_health_evidence = self._collect_service_health_evidence(
                 context, service_health_acquisition, catalog
             )
+            saved_inputs["service_health_evidence"] = _saved_service_health_evidence(service_health_evidence)
             prepared_by_selector[ReportSelector.SERVICE_HEALTH] = prepare_service_health_report(
                 service_health_acquisition,
                 context,
@@ -256,6 +346,7 @@ class RetirementsApplication:
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
             editorial_work_list=editorial_work_list,
+            saved_inputs=saved_inputs,
         )
         try:
             self._emit(

@@ -20,6 +20,7 @@ def acquire_subscription_list(
     annotate: Callable[[dict[str, Any], str], dict[str, Any]],
 ) -> SourceAcquisition:
     requests: list[ScriptedRequest] = []
+    response_context: list[dict[str, Any]] = []
     for subscription_id in context.scope.subscription_ids:
         pages = http.list_pages(
             url_for(subscription_id),
@@ -42,6 +43,16 @@ def acquire_subscription_list(
                 ),
             )
         )
+        response_context.extend(
+            {
+                "subscription_id": subscription_id,
+                "page_number": page_number,
+                "url": page.url,
+                "continuation_url": page.continuation_url or "",
+                "item_count": len(page.items),
+            }
+            for page_number, page in enumerate(pages, start=1)
+        )
     collected = collect_complete_pages(
         requests,
         lambda item: str(item.get("id", "")),
@@ -56,8 +67,23 @@ def acquire_subscription_list(
             source_records=collected.receipt.source_records,
             complete=collected.receipt.complete,
             continuation_tokens=collected.receipt.continuation_tokens,
+            completeness_reason=(
+                "complete_empty"
+                if collected.receipt.complete and collected.receipt.source_records == 0
+                else "complete"
+                if collected.receipt.complete
+                else "incomplete_subscriptions"
+            ),
         ),
         records=collected.records,
+        collection_context={
+            "source": source,
+            "api_version": api_version,
+            "response_name": response_name,
+            "subscription_ids": tuple(context.scope.subscription_ids),
+            "query": dict(params),
+        },
+        response_context=tuple(response_context),
     )
 
 

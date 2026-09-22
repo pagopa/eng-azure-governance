@@ -90,6 +90,36 @@ def test_normalize_advisor_preserves_the_complete_recommendation_evidence_pair()
     assert tuple(encoded.data.splitlines()[0].decode().split("\t")) == ADVISOR_REPORT.contract.header
 
 
+def test_normalize_advisor_prefers_detailed_description_over_short_problem() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["detailedDescription"] = "Complete Advisor explanation with conditions."
+
+    result = normalize_advisor(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        AdvisorEnrichments(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert result.value.records[0]["description"] == "Complete Advisor explanation with conditions."
+
+
+def test_prepare_advisor_report_preserves_acquisition_context_after_normalization() -> None:
+    source = SourceAcquisition(
+        receipt=acquisition().receipt,
+        records=acquisition().records,
+        collection_context={"query": "advisor-recommendations"},
+        response_context=({"status": 200, "page": 1},),
+    )
+
+    prepared = prepare_advisor_report(source, context(), AdvisorEnrichments())
+
+    assert prepared.acquisition.collection_context == {"query": "advisor-recommendations"}
+    assert prepared.acquisition.response_context == ({"status": 200, "page": 1},)
+
+
 def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_it() -> None:
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])

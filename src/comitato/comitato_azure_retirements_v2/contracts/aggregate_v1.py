@@ -177,6 +177,22 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
     if not projection.is_valid or projection.value is None:
         raise ValueError("aggregate platform projection failed: " + ",".join(item.code for item in projection.diagnostics))
     retirement_date, date_quality, retirement_dates, date_sources = _date_projection(rows)
+    resource_evidence = tuple(sorted(
+        {
+            (
+                str(row.get("subscription_id", "")).strip(),
+                str(row.get("resource_name", "")).strip(),
+                str(row.get("resource_group", "")).strip(),
+                str(row.get("published_resource_id", "") or row.get("normalized_resource_id", "")).strip(),
+                str(row.get("resource_evidence_status", "")).strip(),
+            )
+            for row in rows
+            if any(str(row.get(field, "")).strip() for field in (
+                "resource_name", "resource_group", "published_resource_id", "normalized_resource_id", "resource_evidence_status",
+            ))
+        },
+        key=lambda value: tuple(item.casefold() for item in value),
+    ))
     flags = set(_unique_values(rows, ("diagnostic_flags",)))
     flags = {flag for value in flags for flag in value.split(",") if flag}
     if len(_unique_values(rows, ("service_name", "impacted_service"))) > 1:
@@ -202,6 +218,7 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
                 "title": item.title,
                 "description": item.description,
                 "suggested_action": item.suggested_action,
+                "retirement_date": getattr(item, "retirement_date", ""),
                 "review_state": "ready" if item.title and item.description and item.suggested_action else "draft",
             }
     record = {
@@ -213,14 +230,14 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
         "service_health_event_ids_json": _json(_strings(health_rows, "service_health_event_id")), "service_health_tracking_ids_json": _json(_strings(health_rows, "tracking_id")),
         "technology_or_service": _display_projection(rows, ("service_name", "impacted_service")), "retiring_feature": _display_projection(rows, ("retiring_feature",)),
         "advisor_problem_descriptions_json": _json(list(_unique_values(advisor_rows, ("short_description_problem", "description")))), "service_health_problem_descriptions_json": _json(list(_unique_values(health_rows, ("description_problem",)))),
-        "advisor_actions_json": _json_array(advisor_rows, "actions_json"), "service_health_actions_json": _json(list(_unique_values(health_rows, ("recommended_actions",)))),
+        "advisor_actions_json": _json_array(advisor_rows, "actions_json"), "service_health_actions_json": _json_array(health_rows, "recommended_actions"),
         "retirement_date": retirement_date, "retirement_date_quality": date_quality, "retirement_dates_json": _json(retirement_dates), "retirement_date_sources_json": _json(date_sources),
         "affected_subscription_ids_json": _json(subscription_ids), "affected_subscription_names_json": _json(subscription_names), "is_global": "true" if explicit_global else "false",
         "platforms_json": _json(projection.value.platforms), "platforms_subscriptions_json": _json(projection.value.platforms_subscriptions),
         "published_resource_ids_json": _json(list(_unique_values(rows, ("published_resource_id",)))), "normalized_resource_ids_json": _json(list(_unique_values(rows, ("normalized_resource_id",)))),
         "impacted_services_json": _json(list(_unique_values(rows, ("impacted_service", "service_name")))), "impacted_regions_json": _json(list(_unique_values(rows, ("impacted_region",)))),
         "source_links_json": _json(list(_unique_values(rows, ("learn_more_link", "source_link")))), "diagnostic_flags": ",".join(sorted(flags)),
-        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "editorial": editorial}),
+        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "editorial": editorial, "resource_evidence": resource_evidence}),
     }
     return AggregateRecord.from_mapping(record)
 

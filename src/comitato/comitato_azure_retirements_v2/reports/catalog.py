@@ -11,6 +11,7 @@ import yaml
 from ..contracts import AGGREGATE_V1, SLIDES_V1
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..domain.execution import ReportSelector
+from ..domain.retirements import aggregate_id_for
 from .advisor import ADVISOR_REPORT
 from .model import ReportDefinition
 from .service_health import SERVICE_HEALTH_REPORT
@@ -23,6 +24,7 @@ class EditorialItem:
     title: str = ""
     description: str = ""
     suggested_action: str = ""
+    retirement_date: str = ""
 
     def source_identities(self, source: str) -> tuple[str, ...]:
         normalized = source.strip().casefold()
@@ -157,14 +159,19 @@ def build_editorial_work_list(catalog: EditorialCatalog, source_events: object) 
     if isinstance(rows, Mapping):
         rows = (rows,)
     grouped: dict[str, list[Mapping[str, Any]]] = {}
+    drafts: dict[str, tuple[str, str]] = {}
     for event in rows or ():
         key = getattr(event, "key", None)
         source = getattr(key, "source", "")
         identity = getattr(key, "identity", "")
         item = catalog.item_for_source(source, identity)
+        event_rows = list(getattr(event, "records", ()) or (getattr(event, "row", {}),))
         if item is None:
+            draft_id = aggregate_id_for((key,)).value
+            grouped.setdefault(draft_id, []).extend(event_rows)
+            drafts[draft_id] = (str(source), str(identity))
             continue
-        grouped.setdefault(item.item_id, []).extend(getattr(event, "records", ()) or (getattr(event, "row", {}),))
+        grouped.setdefault(item.item_id, []).extend(event_rows)
     result: list[EditorialWorkItem] = []
     for item in catalog.items:
         item_rows = grouped.get(item.item_id, [])
@@ -194,7 +201,27 @@ def build_editorial_work_list(catalog: EditorialCatalog, source_events: object) 
                 source_content=source_content,
             )
         )
-    return tuple(result)
+    for item_id in sorted(drafts):
+        item_rows = grouped[item_id]
+        source_content = tuple(sorted({
+            (field, str(row.get(field, "")))
+            for row in item_rows
+            for field in ("problem", "short_description_problem", "description", "actions_json", "recommended_actions", "retirement_date", "retiring_feature", "impacted_service", "impacted_region", "learn_more_link", "source_link")
+            if str(row.get(field, "")).strip()
+        }))
+        result.append(
+            EditorialWorkItem(
+                item_id=item_id,
+                source_ids=tuple(sorted({str(row.get("raw_record_ref", "")) for row in item_rows if row.get("raw_record_ref")})),
+                title=_first_value(item_rows[0], ("title", "service_name", "impacted_service", "retiring_feature", "recommendation_type_id", "tracking_id")),
+                description=_first_value(item_rows[0], ("description", "description_problem", "short_description_problem", "summary")),
+                suggested_action=_source_action(item_rows),
+                review_reason="missing_editorial_mapping",
+                source_fingerprint=sha256(json.dumps([_editorial_content(row) for row in item_rows], sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+                source_content=source_content,
+            )
+        )
+    return tuple(sorted(result, key=lambda item: item.item_id))
 
 
 def _editorial_content(row: Mapping[str, Any]) -> dict[str, Any]:
@@ -221,6 +248,27 @@ def _first_value(row: Mapping[str, Any], fields: tuple[str, ...]) -> str:
         if value:
             return value
     return ""
+
+
+def _source_action(rows: list[Mapping[str, Any]]) -> str:
+    actions: list[str] = []
+    for row in rows:
+        raw = row.get("recommended_actions") or row.get("actions_json") or row.get("action")
+        if isinstance(raw, str) and raw.strip():
+            try:
+                raw = json.loads(raw)
+            except json.JSONDecodeError:
+                actions.append(raw.strip())
+                continue
+        values = raw if isinstance(raw, list) else [raw]
+        for value in values:
+            if isinstance(value, Mapping):
+                text = _first_value(value, ("text", "action", "description", "title", "name"))
+            else:
+                text = "" if value is None else str(value).strip()
+            if text and text not in actions:
+                actions.append(text)
+    return " ".join(actions)
 
 
 def _source_identities(source: str, row: Mapping[str, Any]) -> set[str]:
@@ -278,6 +326,7 @@ class EditorialCatalogSource:
                     title=_optional_text(raw_item.get("title")),
                     description=_optional_text(raw_item.get("description")),
                     suggested_action=_optional_text(raw_item.get("suggested_action")),
+                    retirement_date=_optional_text(raw_item.get("retirement_date")),
                 )
             )
         return EditorialCatalog(1, sha256(raw).hexdigest(), tuple(sorted(items, key=lambda item: item.item_id)))

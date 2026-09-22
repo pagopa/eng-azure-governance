@@ -19,6 +19,13 @@ def test_aggregate_id_is_run_independent() -> None:
     assert aggregate_id_for((SourceEventKey("advisor", "recommendation-1"),)).value.islower()
 
 
+def test_aggregate_id_survives_confirmed_cross_source_membership() -> None:
+    advisor = SourceEventKey("advisor", "recommendation-1")
+    service_health = SourceEventKey("service-health", "tracking-1")
+
+    assert aggregate_id_for((advisor,)) == aggregate_id_for((advisor, service_health))
+
+
 def test_source_events_group_only_by_explicit_source_identity() -> None:
     advisor = (
         {"advisor_recommendation_id": "rec-1", "recommendation_type_id": " Type-A ", "raw_record_ref": "a-1"},

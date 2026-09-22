@@ -1,4 +1,5 @@
 import json
+from hashlib import sha256
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
@@ -8,6 +9,7 @@ import pytest
 from src.comitato.comitato_azure_retirements_v2 import cli
 from src.comitato.comitato_azure_retirements_v2.config import RuntimeConfig
 from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector, RunRequest
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
 
 
@@ -150,7 +152,7 @@ def test_human_non_tty_failure_keeps_stderr_jsonl(monkeypatch, capsys) -> None:
     assert reporter.closed is True
 
 
-def test_replay_reads_bundle_without_live_sources(tmp_path) -> None:
+def test_replay_rejects_bundle_without_replay_inputs(tmp_path) -> None:
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     expected_paths = DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths
@@ -164,11 +166,15 @@ def test_replay_reads_bundle_without_live_sources(tmp_path) -> None:
         "scope": {"mode": "explicit", "subscription_ids": ["sub-1"]},
         "selector": "all",
         "settings": {"committee_window_months": 6},
+        "saved_inputs": {"schema_version": 1, "source_acquisitions": []},
         "artifacts": [],
     }
     for path in expected_paths:
         (bundle / path).write_bytes(b"header\nvalue\n")
         manifest["artifacts"].append({"media_type": "text/plain", "path": path, "schema_version": 1})
+    manifest["saved_inputs_sha256"] = sha256(
+        json.dumps(manifest["saved_inputs"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
     (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 
     class NoLiveSource:
@@ -200,17 +206,11 @@ def test_replay_reads_bundle_without_live_sources(tmp_path) -> None:
         replay_bundle_path=bundle,
     )
 
-    result = cli._run_replay(config, application)
-
-    assert result.exit_status == 0
-    assert store.candidate.context.request.selector is ReportSelector.ALL
-    assert store.candidate.context.request.committee_window_months == 6
-    assert store.candidate.context.editorial_catalog_identity.sha256 == "b" * 64
-    assert tuple(artifact.logical_path for artifact in store.candidate.artifacts) == expected_paths
-    assert store.candidate.manifest_metadata["run_id"] == "replay-run"
+    with pytest.raises(ValueError, match="replay bundle"):
+        cli._run_replay(config, application)
 
 
-def test_replay_preserves_inputs_and_distinguishes_changed_settings_and_revision(tmp_path) -> None:
+def test_replay_rejects_bundle_without_saved_catalog_and_acquisitions(tmp_path) -> None:
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     expected_paths = DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths
@@ -225,6 +225,7 @@ def test_replay_preserves_inputs_and_distinguishes_changed_settings_and_revision
         "selector": "all",
         "settings": {"committee_window_months": 6},
         "derivation": {"program_revision": "rev-a", "mode": "live"},
+        "saved_inputs": {"schema_version": 1, "source_acquisitions": []},
         "artifacts": [],
     }
     for path in expected_paths:
@@ -247,9 +248,119 @@ def test_replay_preserves_inputs_and_distinguishes_changed_settings_and_revision
         replay_bundle_path=bundle,
     )
 
+    with pytest.raises(ValueError, match="replay bundle"):
+        cli._run_replay(config, application)
+
+
+def test_replay_rejects_artifact_only_bundle(tmp_path) -> None:
+    bundle = tmp_path / "artifact-only"
+    bundle.mkdir()
+    manifest = {
+        "as_of_date": "2026-09-22",
+        "catalog": {"schema_version": 1, "sha256": "a" * 64},
+        "created_at": "2026-09-22T10:00:00Z",
+        "dependency_closure": ["advisor", "service-health", "aggregate", "slides"],
+        "run_id": "artifact-only",
+        "scope": {"mode": "explicit", "subscription_ids": ["sub-1"]},
+        "selector": "all",
+        "artifacts": [],
+    }
+    for path in DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths:
+        (bundle / path).write_bytes(b"header\nvalue\n")
+        manifest["artifacts"].append({"media_type": "text/plain", "path": path, "schema_version": 1})
+    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    application = type("Application", (), {"report_catalog": DEFAULT_REPORT_CATALOG})()
+    config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.ALL, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=bundle,
+    )
+
+    with pytest.raises(ValueError, match="replay bundle"):
+        cli._run_replay(config, application)
+
+
+def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(tmp_path) -> None:
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    subscription_id = "11111111-1111-1111-1111-111111111111"
+    manifest = {
+        "as_of_date": "2026-09-22",
+        "catalog": {"schema_version": 1, "sha256": "a" * 64},
+        "created_at": "2026-09-22T10:00:00Z",
+        "dependency_closure": ["scope", "catalog", "advisor", "publication"],
+        "run_id": "replay-run",
+        "scope": {"mode": "explicit", "subscription_ids": [subscription_id]},
+        "selector": "advisor",
+        "settings": {"committee_window_months": 6},
+        "saved_inputs": {
+            "schema_version": 1,
+            "platform_catalog": {
+                "schema_version": 1,
+                "sha256": "a" * 64,
+                "assignments": [{
+                    "subscription_id": subscription_id,
+                    "platform": "Platform A",
+                    "subscription_name": "Subscription A",
+                }],
+            },
+            "source_acquisitions": {
+                "advisor": {
+                    "receipt": {
+                        "source": "advisor",
+                        "api_version": "test-v1",
+                        "expected_subscriptions": 1,
+                        "completed_subscriptions": 1,
+                        "pages": 1,
+                        "source_records": 0,
+                        "complete": True,
+                        "continuation_tokens": [],
+                        "failed_subscriptions": [],
+                        "completeness_reason": "complete_empty",
+                    },
+                    "records": [],
+                    "companion_records": [],
+                    "accounting": [],
+                    "collection_context": {},
+                    "response_context": [],
+                },
+            },
+            "advisor_enrichments": {"metadata": {}, "resources": {}, "subscriptions": {}},
+            "editorial_catalog": None,
+        },
+        "artifacts": [],
+    }
+    manifest["saved_inputs_sha256"] = sha256(
+        json.dumps(manifest["saved_inputs"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+
+    class Store:
+        def __init__(self):
+            self.candidate = None
+
+        def publish(self, candidate):
+            self.candidate = candidate
+            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+
+    store = Store()
+    application = type(
+        "Application",
+        (),
+        {
+            "report_catalog": DEFAULT_REPORT_CATALOG,
+            "publication_store": store,
+            "_validate_catalog_coverage": RetirementsApplication._validate_catalog_coverage,
+            "_empty_artifacts": RetirementsApplication._empty_artifacts,
+        },
+    )()
+    config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.ADVISOR, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=bundle,
+    )
+
     result = cli._run_replay(config, application)
 
-    assert result.candidate.context.request.committee_window_months == 6
-    assert result.candidate.manifest_metadata["derivation"]["program_revision"] == "rev-a"
-    assert result.candidate.context.catalog_identity.sha256 == "a" * 64
-    assert result.candidate.context.editorial_catalog_identity.sha256 == "b" * 64
+    assert result.exit_status == 0
+    assert store.candidate.artifacts[0].data.startswith(b"schema_version\trun_id\t")
+    assert store.candidate.saved_inputs == manifest["saved_inputs"]

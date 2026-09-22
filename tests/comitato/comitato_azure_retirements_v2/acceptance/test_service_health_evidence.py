@@ -12,6 +12,10 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
+from src.comitato.comitato_azure_retirements_v2.acquisition.evidence import (
+    ObservationAccounting,
+    SourceRecord,
+)
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
     RetirementsApplication,
 )
@@ -183,7 +187,7 @@ def test_service_health_acceptance_preserves_region_cardinality_and_evidence(tmp
     }
     assert all(row["resource_evidence_status"] == "not_published" for row in service_health_rows)
     assert all(row["resource_inventory_match_status"] == "not_applicable" for row in service_health_rows)
-    assert all(row["description_problem"].isascii() for row in service_health_rows)
+    assert {row["description_problem"] for row in service_health_rows} == {"We’ll retire the SDKs."}
     assert all("<" not in row["title"] and ">" not in row["title"] for row in service_health_rows)
     assert {row["impacted_region"] for row in service_health_rows} == set(REGIONS)
 
@@ -201,3 +205,77 @@ def test_service_health_acceptance_preserves_region_cardinality_and_evidence(tmp
     assert resource_graph.subscription_inventory_calls == 1
     assert resource_graph.service_health_resource_calls == 1
     assert resource_graph.resource_inventory_calls == [()]
+
+
+def test_acquisition_preserves_collection_context_and_observation_accounting() -> None:
+    record = SourceRecord(
+        subscription_id=SUBSCRIPTIONS[0],
+        identity="event-1",
+        payload={"id": "event-1", "properties": {"status": "Active"}},
+        source="service-health",
+        page_number=2,
+        continuation_token="page-2",
+    )
+    acquisition = SourceAcquisition(
+        receipt=AcquisitionReceipt(
+            source="service-health",
+            api_version="2025-05-01",
+            expected_subscriptions=3,
+            completed_subscriptions=2,
+            pages=2,
+            source_records=1,
+            complete=False,
+            failed_subscriptions=(SUBSCRIPTIONS[2],),
+        ),
+        records=(record,),
+        companion_records=({"event-1": "enrichment-used"},),
+        accounting=(
+            ObservationAccounting(
+                source="service-health",
+                subscription_id=SUBSCRIPTIONS[0],
+                source_identity="event-1",
+                destination="used",
+                reason="health_advisory",
+                raw_record_ref="event-1",
+            ),
+            ObservationAccounting(
+                source="service-health",
+                subscription_id=SUBSCRIPTIONS[1],
+                source_identity="event-2",
+                destination="excluded",
+                reason="event_type:incident",
+                raw_record_ref="event-2",
+            ),
+            ObservationAccounting(
+                source="service-health",
+                subscription_id=SUBSCRIPTIONS[2],
+                source_identity="event-3",
+                destination="error",
+                reason="request_failed",
+                raw_record_ref="event-3",
+            ),
+        ),
+        collection_context={
+            "subscription_ids": SUBSCRIPTIONS,
+            "query": {"api-version": "2025-05-01"},
+            "collected_at": "2026-09-22T10:00:00Z",
+        },
+        response_context=(
+            {
+                "subscription_id": SUBSCRIPTIONS[0],
+                "page_number": 2,
+                "continuation_token": "page-2",
+                "complete": False,
+            },
+        ),
+    )
+
+    assert acquisition.collection_context["subscription_ids"] == SUBSCRIPTIONS
+    assert acquisition.collection_context["query"]["api-version"] == "2025-05-01"
+    assert acquisition.response_context[0]["continuation_token"] == "page-2"
+    assert [item.destination for item in acquisition.accounting] == [
+        "used",
+        "excluded",
+        "error",
+    ]
+    assert acquisition.companion_records[0]["event-1"] == "enrichment-used"

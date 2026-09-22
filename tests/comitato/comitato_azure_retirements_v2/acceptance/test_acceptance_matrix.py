@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -38,3 +39,21 @@ def test_acceptance_matrix_has_exactly_s1_to_s12_with_proof_metadata() -> None:
         else:
             assert (fixture / "expected" / "exit-status.txt").is_file()
             assert (fixture / "seeded" / "current").is_dir()
+
+
+def test_current_advisor_references_are_conserved_in_aggregate() -> None:
+    export = Path(__file__).parents[4] / "src/comitato/comitato_azure_retirements_v2/exports/2026/09"
+    with (export / "01_azure_advisor_retirements_raw.tsv").open(encoding="utf-8", newline="") as handle:
+        raw_ids = {
+            row["advisor_recommendation_id"]
+            for row in csv.DictReader(handle, delimiter="\t")
+        }
+    with (export / "02_azure_retirements_aggregate.tsv").open(encoding="utf-8", newline="") as handle:
+        aggregate_ids = {
+            advisor_id
+            for row in csv.DictReader(handle, delimiter="\t")
+            for advisor_id in json.loads(row["advisor_recommendation_ids_json"])
+        }
+
+    assert len(raw_ids) == 348
+    assert aggregate_ids == raw_ids

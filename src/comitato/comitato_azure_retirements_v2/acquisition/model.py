@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Mapping
 
 from .evidence import ObservationAccounting
 
@@ -17,6 +17,7 @@ class AcquisitionReceipt:
     complete: bool
     continuation_tokens: tuple[str, ...] = ()
     failed_subscriptions: tuple[str, ...] = ()
+    completeness_reason: str = ""
 
     @property
     def is_complete(self) -> bool:
@@ -33,3 +34,5 @@ class SourceAcquisition:
     records: tuple[Any, ...] = ()
     companion_records: tuple[Any, ...] = ()
     accounting: tuple[ObservationAccounting, ...] = ()
+    collection_context: Mapping[str, Any] = field(default_factory=dict)
+    response_context: tuple[Mapping[str, Any], ...] = ()
