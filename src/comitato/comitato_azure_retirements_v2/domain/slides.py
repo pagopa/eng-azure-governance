@@ -33,7 +33,7 @@ def select_slides(aggregate: Artifact, context) -> ValidationResult[SlideSelecti
             )
         )
 
-    window = CommitteeWindow(context.as_of_date)
+    window = CommitteeWindow(context.as_of_date, context.request.committee_window_months)
     selected = []
     excluded: dict[str, list[str]] = {}
     for row in aggregate.records:

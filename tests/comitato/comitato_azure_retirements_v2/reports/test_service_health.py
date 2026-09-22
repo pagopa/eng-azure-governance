@@ -129,6 +129,25 @@ def test_normalize_service_health_skips_unrelated_resource_health_events() -> No
     assert result.value.records == ()
 
 
+def test_normalize_service_health_retains_resolved_advisory_without_calling_mitigation_time_retirement() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["status"] = "Resolved"
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert len(result.value.records) == 1
+    assert result.value.records[0]["status"] == "Resolved"
+    assert result.value.records[0]["retirement_date"] == ""
+    assert result.value.records[0]["retirement_date_quality"] == "unknown"
+
+
 def test_normalize_service_health_accepts_informational_retirement_advisory() -> None:
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])

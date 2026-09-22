@@ -18,6 +18,7 @@ from ..adapters.resource_graph_api import ResourceGraphApiSource
 from ..adapters.subscription_api import SubscriptionApiSource
 from ..config import RuntimeConfig
 from ..ports import Clock, NullRunObserver, RunIdFactory, RunObserver
+from ..reports.catalog import EditorialCatalogSource
 from .orchestration import RetirementsApplication
 
 
@@ -60,6 +61,9 @@ def build_application(
     return RetirementsApplication(
         scope_source=overrides.get("scope_source", SubscriptionApiSource(http)),
         catalog_source=overrides.get("catalog_source", YamlPlatformCatalogSource(config.catalog_path)),
+        editorial_catalog_source=overrides.get(
+            "editorial_catalog_source", EditorialCatalogSource(config.editorial_catalog_path)
+        ),
         advisor_source=overrides.get("advisor_source", AdvisorApiSource(http, api_version=config.api_versions.advisor)),
         advisor_enrichment_source=overrides.get(
             "advisor_enrichment_source",

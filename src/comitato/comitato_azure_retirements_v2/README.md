@@ -33,17 +33,24 @@ leaves the existing monthly bundle unchanged.
 
 The operator supplies `--subscriptions sub-a,sub-b` or allows live scope
 resolution. `--catalog-path` selects the source-of-truth version-1 platform
+catalog; `--editorial-catalog-path` selects the read-only external editorial
 catalog; `--output-path` selects the export root. Relative defaults are
 resolved from the repository root: the catalog is
-`src/_source_of_truth/eng-finops-platforms.yaml` and the export root is
-`src/comitato/comitato_azure_retirements_v2/exports`. Both may be set with
-`COMITATO_AZURE_RETIREMENTS_CATALOG` and `COMITATO_AZURE_RETIREMENTS_OUTPUT`.
+`src/_source_of_truth/eng-finops-platforms.yaml`, the editorial catalog is
+`src/_source_of_truth/azure-retirements-editorial.yaml`, and the export root is
+`src/comitato/comitato_azure_retirements_v2/exports`. Both catalogs and the
+output root may be set with `COMITATO_AZURE_RETIREMENTS_CATALOG`,
+`COMITATO_AZURE_RETIREMENTS_EDITORIAL_CATALOG`, and
+`COMITATO_AZURE_RETIREMENTS_OUTPUT`.
 
 Each successful run writes its complete bundle under
 `exports/YYYY/MM`, where the partition comes from `--as-of-date`. A later run
 for the same month replaces that entire monthly directory, including files
 left by an earlier selector or run. Runs for other months keep their existing
 bundles.
+
+Replacing an existing month retains the superseded bundle under
+`exports/.history/YYYY/MM/<generation>`.
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.
@@ -52,6 +59,16 @@ run-local. A private same-filesystem bundle is staged, reread, hashed, and
 validated before it replaces the target month. Failed runs return a non-zero
 status and emit sorted JSONL diagnostics on stderr without changing the
 existing monthly bundle.
+
+The complete aggregate retains source membership independently of the
+committee view. Partial dates retain their raw precision and are not projected
+as exact days. Missing or incomplete editorial text is marked as draft in the
+derived provenance and appears in the staged `editorial_work_list` manifest
+entry; priority remains an external committee decision.
+
+To rerun downstream publication without Azure, pass a previously published
+generation with `--replay-bundle PATH`. Replay reads the manifest and selected
+artifacts from that directory and never invokes live scope or source ports.
 
 ## Operator Output And Logging
 

@@ -15,7 +15,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.slides import project_slides
+from src.comitato.comitato_azure_retirements_v2.domain.slides import project_slides, select_slides
 
 
 def context() -> RunContext:
@@ -30,7 +30,13 @@ def context() -> RunContext:
     )
 
 
-def aggregate_row(aggregate_id: str, retirement_date: str) -> dict[str, str]:
+def aggregate_row(
+    aggregate_id: str,
+    retirement_date: str,
+    *,
+    quality: str = "exact",
+    claims: object | None = None,
+) -> dict[str, str]:
     row = {column: "" for column in AGGREGATE_HEADER}
     for column in AGGREGATE_HEADER:
         if column.endswith("_json"):
@@ -47,8 +53,10 @@ def aggregate_row(aggregate_id: str, retirement_date: str) -> dict[str, str]:
             "record_types_json": '["retirement"]',
             "raw_record_refs_json": json.dumps([f"raw-{aggregate_id}"]),
             "retirement_date": retirement_date,
-            "retirement_date_quality": "exact",
-            "retirement_dates_json": json.dumps([{"date": retirement_date, "quality": "exact"}]),
+            "retirement_date_quality": quality,
+            "retirement_dates_json": json.dumps(
+                claims if claims is not None else [{"date": retirement_date, "quality": "exact"}]
+            ),
             "retirement_date_sources_json": '["structured"]',
             "is_global": "false",
             "platforms_json": '["Platform A"]',
@@ -121,3 +129,62 @@ def test_project_slides_returns_header_only_for_zero_row_selection() -> None:
     assert result.value is not None
     assert result.value.records == ()
     assert SLIDES_V1.encode(result.value).data == ("\t".join(HEADER) + "\n").encode()
+
+
+def test_selection_preserves_every_temporal_category_outside_the_slide_view() -> None:
+    aggregate = aggregate_artifact(
+        aggregate_row("eligible", "2027-01-01"),
+        aggregate_row("elapsed", "2026-07-29"),
+        aggregate_row("beyond", "2027-07-31"),
+        aggregate_row("missing", "", quality="missing", claims=[]),
+        aggregate_row("invalid", "not-a-date", quality="invalid", claims=[]),
+        aggregate_row("partial", "", quality="partial", claims=[{"raw_value": "2027", "quality": "partial"}]),
+        aggregate_row(
+            "conflict",
+            "",
+            quality="conflict",
+            claims=[{"date": "2027-01-01"}, {"date": "2027-02-01"}],
+        ),
+    )
+
+    result = select_slides(aggregate, context())
+
+    assert result.is_valid
+    assert result.value is not None
+    assert len(aggregate.records) == 7
+    assert [row["aggregate_id"] for row in result.value.artifact.records] == ["eligible"]
+    assert set(result.value.excluded_by_reason) == {
+        "elapsed_retirement_date",
+        "beyond_committee_window",
+        "missing_retirement_date",
+        "invalid_retirement_date",
+        "partial_retirement_date",
+        "conflicting_retirement_date",
+    }
+
+
+def test_populated_committee_refinements_are_valid_but_priority_stays_external() -> None:
+    aggregate = aggregate_artifact(aggregate_row("aggregate-1", "2027-01-01"))
+    selected = project_slides(aggregate, context()).value
+    assert selected is not None
+    values = dict(selected.records[0].values)
+    values["comitato_descrizione_completa"] = "Reviewed description"
+    values["comitato_retirement_date"] = "2027-01-01"
+    values["comitato_piattaforme"] = "Platform A"
+
+    populated = selected.__class__(
+        contract=selected.contract,
+        schema_version=selected.schema_version,
+        run_id=selected.run_id,
+        records=(selected.records[0].__class__(tuple(values.items())),),
+    )
+    assert SLIDES_V1.validate(populated, context()).is_valid
+
+    values["comitato_priorità"] = "P1"
+    rejected = populated.__class__(
+        contract=populated.contract,
+        schema_version=populated.schema_version,
+        run_id=populated.run_id,
+        records=(populated.records[0].__class__(tuple(values.items())),),
+    )
+    assert not SLIDES_V1.validate(rejected, context()).is_valid

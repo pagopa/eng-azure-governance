@@ -14,6 +14,7 @@ from .domain.execution import ReportSelector, RunRequest
 
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
+_DEFAULT_EDITORIAL_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "azure-retirements-editorial.yaml"
 _DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
 
 LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
@@ -58,6 +59,8 @@ class RuntimeLoggingSettings:
 class RuntimeConfig:
     request: RunRequest
     catalog_path: Path = _DEFAULT_CATALOG_PATH
+    editorial_catalog_path: Path = _DEFAULT_EDITORIAL_CATALOG_PATH
+    replay_bundle_path: Path | None = None
     output_path: Path = _DEFAULT_OUTPUT_PATH
     management_groups: tuple[str, ...] = ()
     http: HttpPolicy = HttpPolicy()
@@ -80,6 +83,8 @@ class RuntimeConfig:
         request: RunRequest,
         *,
         catalog_path: Path | None = None,
+        editorial_catalog_path: Path | None = None,
+        replay_bundle_path: Path | None = None,
         output_path: Path | None = None,
         management_groups: tuple[str, ...] = (),
         today: Callable[[], date] = date.today,
@@ -90,10 +95,13 @@ class RuntimeConfig:
                 selector=resolved_request.selector,
                 subscription_ids=resolved_request.subscription_ids,
                 as_of_date=today(),
+                committee_window_months=resolved_request.committee_window_months,
             )
         return cls(
             request=resolved_request,
             catalog_path=catalog_path or _DEFAULT_CATALOG_PATH,
+            editorial_catalog_path=editorial_catalog_path or _DEFAULT_EDITORIAL_CATALOG_PATH,
+            replay_bundle_path=replay_bundle_path,
             output_path=output_path or _DEFAULT_OUTPUT_PATH,
             management_groups=management_groups,
         )
@@ -106,10 +114,13 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--report", choices=tuple(item.value for item in ReportSelector), default="all")
     parser.add_argument("--as-of-date", type=_iso_date, default=None)
+    parser.add_argument("--committee-window-months", type=int, default=12)
     parser.add_argument("--subscriptions", default=None, help="Comma-separated subscription IDs")
     parser.add_argument("--subscription", action="append", default=[], dest="subscription_values")
     parser.add_argument("--management-groups", default=None, help="Comma-separated management group IDs")
     parser.add_argument("--catalog-path", "--catalog", dest="catalog_path", default=None)
+    parser.add_argument("--editorial-catalog-path", "--editorial-catalog", dest="editorial_catalog_path", default=None)
+    parser.add_argument("--replay-bundle", type=Path, default=None)
     parser.add_argument("--output-path", "--output-root", dest="output_path", default=None)
     parser.add_argument("--timeout-seconds", type=float, default=60.0)
     parser.add_argument("--retry-attempts", type=int, default=3)
@@ -166,6 +177,7 @@ def _config_from_namespace(
         selector=ReportSelector(args.report),
         subscription_ids=args.subscription_ids,
         as_of_date=args.as_of_date or today(),
+        committee_window_months=args.committee_window_months,
     )
     return RuntimeConfig(
         request=request,
@@ -176,6 +188,14 @@ def _config_from_namespace(
                 str(_DEFAULT_CATALOG_PATH),
             )
         ),
+        editorial_catalog_path=Path(
+            args.editorial_catalog_path
+            or os.getenv(
+                "COMITATO_AZURE_RETIREMENTS_EDITORIAL_CATALOG",
+                str(_DEFAULT_EDITORIAL_CATALOG_PATH),
+            )
+        ),
+        replay_bundle_path=args.replay_bundle,
         output_path=Path(
             args.output_path
             or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", str(_DEFAULT_OUTPUT_PATH))

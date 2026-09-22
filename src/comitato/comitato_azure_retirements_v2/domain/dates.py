@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 import json
+import re
 
 
 def add_calendar_months(value: date, months: int) -> date:
@@ -44,6 +45,7 @@ class SlideEligibility(str, Enum):
     BEYOND_COMMITTEE_WINDOW = "beyond_committee_window"
     MISSING_RETIREMENT_DATE = "missing_retirement_date"
     INVALID_RETIREMENT_DATE = "invalid_retirement_date"
+    PARTIAL_RETIREMENT_DATE = "partial_retirement_date"
     CONFLICTING_RETIREMENT_DATE = "conflicting_retirement_date"
 
 
@@ -61,6 +63,8 @@ def parse_retirement_date(raw_value: object, *, source_path: str = "", source_sy
     raw = "" if raw_value is None else str(raw_value).strip()
     if not raw:
         return RetirementDateClaim(raw, None, "missing", source_path, source_system, raw_record_ref)
+    if re.fullmatch(r"\d{4}(?:-\d{2})?", raw):
+        return RetirementDateClaim(raw, None, "partial", source_path, source_system, raw_record_ref)
     try:
         parsed = date.fromisoformat(raw[:10])
     except ValueError:
@@ -100,6 +104,8 @@ def classify_retirement_date(aggregate, window: CommitteeWindow) -> SlideEligibi
         return SlideEligibility.MISSING_RETIREMENT_DATE
     if quality == "conflict":
         return SlideEligibility.CONFLICTING_RETIREMENT_DATE
+    if quality == "partial":
+        return SlideEligibility.PARTIAL_RETIREMENT_DATE
     if quality != "exact":
         return SlideEligibility.INVALID_RETIREMENT_DATE
 

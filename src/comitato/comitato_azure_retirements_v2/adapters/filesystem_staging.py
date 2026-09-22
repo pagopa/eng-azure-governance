@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from .. import __version__
 from ..contracts.codecs import canonical_json
 from ..contracts.cross_artifact import (
     validate_candidate_paths,
@@ -142,13 +143,19 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
             "name": acquisition.receipt.source,
             "pages": acquisition.receipt.pages,
             "source_records": acquisition.receipt.source_records,
+            "normalized_records": len(acquisition.records),
+            "accounting": [
+                asdict(item) if is_dataclass(item) else dict(item)
+                for item in getattr(acquisition, "accounting", ())
+            ],
         }
         for acquisition in sorted(candidate.acquisitions, key=lambda item: item.receipt.source)
     ]
     expected = sum(item.receipt.expected_subscriptions for item in candidate.acquisitions)
     completed = sum(item.receipt.completed_subscriptions for item in candidate.acquisitions)
     context = candidate.context
-    return {
+    manifest = dict(candidate.manifest_metadata or {})
+    manifest.update({
         "acquisition": {
             "completed_subscriptions": completed,
             "expected_subscriptions": expected,
@@ -170,7 +177,24 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
         },
         "selector": context.request.selector.value,
         "validation": {"error_count": 0, "status": "passed"},
-    }
+        "editorial_work_list": [
+            asdict(item) if is_dataclass(item) else dict(item)
+            for item in candidate.editorial_work_list
+        ],
+    })
+    manifest.setdefault("settings", {
+        "committee_window_months": context.request.committee_window_months,
+    })
+    manifest.setdefault("derivation", {
+        "mode": "live",
+        "program_revision": __version__,
+    })
+    if context.editorial_catalog_identity is not None:
+        manifest["editorial_catalog"] = {
+            "schema_version": context.editorial_catalog_identity.schema_version,
+            "sha256": context.editorial_catalog_identity.sha256,
+        }
+    return manifest
 
 
 def stage_candidate(

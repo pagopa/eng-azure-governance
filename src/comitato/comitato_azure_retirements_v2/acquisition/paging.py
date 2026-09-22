@@ -31,12 +31,8 @@ def collect_complete_pages(
     records: dict[tuple[str, str], SourceRecord] = {}
     pages_seen = 0
     for request in requests:
-        if not request.complete:
-            raise AcquisitionIntegrityError(
-                f"incomplete acquisition for subscription: {request.subscription_id}"
-            )
         seen_tokens: set[str] = set()
-        for page in request.pages:
+        for page_number, page in enumerate(request.pages, start=1):
             if page.subscription_id != request.subscription_id:
                 raise AcquisitionIntegrityError(
                     "page subscription does not match scripted request"
@@ -54,7 +50,14 @@ def collect_complete_pages(
                 if not identity:
                     raise AcquisitionIntegrityError("source record identity is empty")
                 key = (request.subscription_id, identity)
-                candidate = SourceRecord(request.subscription_id, identity, payload)
+                candidate = SourceRecord(
+                    request.subscription_id,
+                    identity,
+                    payload,
+                    source="scripted",
+                    page_number=page_number,
+                    continuation_token=token,
+                )
                 existing = records.get(key)
                 if existing is None:
                     records[key] = candidate
@@ -78,15 +81,18 @@ def collect_complete_pages(
         source="scripted",
         api_version="scripted-v1",
         expected_subscriptions=len(requests),
-        completed_subscriptions=len(requests),
+        completed_subscriptions=sum(request.complete for request in requests),
         pages=pages_seen,
         source_records=len(ordered),
-        complete=True,
+        complete=all(request.complete for request in requests),
         continuation_tokens=tuple(
             page.continuation_token
             for request in requests
             for page in request.pages
             if page.continuation_token is not None
+        ),
+        failed_subscriptions=tuple(
+            request.subscription_id for request in requests if not request.complete
         ),
     )
     return SourceAcquisition(receipt=receipt, records=ordered)

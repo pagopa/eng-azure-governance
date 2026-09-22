@@ -83,3 +83,23 @@ def test_collect_complete_pages_rejects_conflicting_payloads_for_one_identity() 
 
     with pytest.raises(AcquisitionIntegrityError, match="conflicting payload"):
         collect_complete_pages((request,), lambda item: item["id"])
+
+
+def test_collect_complete_pages_preserves_partial_observations_with_incomplete_receipt() -> None:
+    request = ScriptedRequest(
+        subscription_id="sub-a",
+        complete=False,
+        pages=(
+            SourcePage(
+                subscription_id="sub-a",
+                items=({"id": "observed-before-failure", "value": 1},),
+            ),
+        ),
+    )
+
+    acquisition = collect_complete_pages((request,), lambda item: item["id"])
+
+    assert acquisition.receipt.is_complete is False
+    assert [record.identity for record in acquisition.records] == [
+        "observed-before-failure"
+    ]

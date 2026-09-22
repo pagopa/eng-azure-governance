@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
-from typing import Any
+from typing import Any, Mapping
 
 from ..contracts.model import EncodedArtifact
 from ..domain.execution import RunContext
@@ -17,6 +17,8 @@ class PublicationCandidate:
     artifacts: tuple[EncodedArtifact, ...]
     acquisitions: tuple[Any, ...]
     slide_selection: Any = None
+    editorial_work_list: tuple[Any, ...] = ()
+    manifest_metadata: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)

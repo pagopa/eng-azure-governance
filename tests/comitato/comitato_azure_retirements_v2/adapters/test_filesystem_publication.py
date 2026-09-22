@@ -117,6 +117,14 @@ def test_publish_replaces_the_complete_monthly_bundle(tmp_path: Path) -> None:
     assert second_july_receipt.current_reference == "2026/07"
     assert not (july / "stale-artifact.tsv").exists()
     assert (july / "publication-manifest.json").is_file()
+    history = tmp_path / ".history" / "2026" / "07"
+    snapshots = tuple(history.iterdir())
+    assert len(snapshots) >= 2
+    assert any(
+        (snapshot / "stale-artifact.tsv").read_bytes() == b"stale"
+        for snapshot in snapshots
+        if (snapshot / "stale-artifact.tsv").is_file()
+    )
     assert not (tmp_path / "current").exists()
     assert not (tmp_path / "generations").exists()
 

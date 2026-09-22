@@ -18,6 +18,11 @@ class RunRequest:
     selector: ReportSelector
     subscription_ids: tuple[str, ...] = ()
     as_of_date: date | None = None
+    committee_window_months: int = 12
+
+    def __post_init__(self) -> None:
+        if self.committee_window_months < 0:
+            raise ValueError("committee window months cannot be negative")
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +83,7 @@ class RunContext:
     scope: Scope
     catalog_identity: CatalogIdentity
     dependency_plan: DependencyPlan
+    editorial_catalog_identity: CatalogIdentity | None = None
 
     def __post_init__(self) -> None:
         if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:

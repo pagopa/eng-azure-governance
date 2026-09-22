@@ -112,7 +112,10 @@ def test_advisor_source_preserves_recommendation_evidence_and_receipt() -> None:
     assert acquisition.receipt.expected_subscriptions == 1
     assert acquisition.receipt.is_complete
     assert acquisition.records[0].payload["id"] == "/advisor/1"
-    assert http.list_calls[0][1]["params"]["$filter"]
+    assert http.list_calls[0][1]["params"]["$filter"] == (
+        "Category eq 'HighAvailability' and "
+        "SubCategory eq 'ServiceUpgradeAndRetirement'"
+    )
 
 
 def test_service_health_source_uses_resource_health_endpoint() -> None:

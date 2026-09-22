@@ -39,13 +39,29 @@ def _cell(value: Any) -> str:
     return str(value).replace("\t", " ").replace("\r", " ").replace("\n", " ")
 
 
+def _encode_cell(value: str, *, quote_empty: bool) -> str:
+    if not value:
+        return '""' if quote_empty else ""
+    output = io.StringIO(newline="")
+    csv.writer(output, delimiter="\t", lineterminator="\n").writerow((value,))
+    return output.getvalue().removesuffix("\n")
+
+
 def encode_tsv(header: tuple[str, ...], rows: Iterable[Any]) -> bytes:
     output = io.StringIO(newline="")
     writer = csv.writer(output, delimiter="\t", lineterminator="\n")
     writer.writerow(header)
     for row in rows:
         mapping = _row_mapping(row)
-        writer.writerow([_cell(mapping.get(column, "")) for column in header])
+        values = [_cell(mapping.get(column, "")) for column in header]
+        last_value = max((index for index, value in enumerate(values) if value), default=-1)
+        output.write(
+            "\t".join(
+                _encode_cell(value, quote_empty=index > last_value)
+                for index, value in enumerate(values)
+            )
+            + "\n"
+        )
     return output.getvalue().encode("utf-8")
 
 

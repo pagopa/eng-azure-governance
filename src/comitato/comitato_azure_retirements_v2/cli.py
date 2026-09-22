@@ -5,11 +5,15 @@ from __future__ import annotations
 import json
 import sys
 from collections.abc import Mapping
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Sequence
 
 from .config import RuntimeConfig, parse_config
 from .domain.diagnostics import Diagnostic, sort_diagnostics
+from .domain.execution import CatalogIdentity, DependencyPlan, ReportSelector, RunContext, RunRequest, Scope
+from .contracts.model import EncodedArtifact
+from .publication.model import PublicationCandidate, RunResult
 from .ports import RunObserver
 from .runtime_logging import RuntimeReporter
 
@@ -20,7 +24,73 @@ _RUNTIME_LOG_ROOT = Path(__file__).resolve().parents[3] / "tmp" / "comitato" / "
 def run_config(config: RuntimeConfig, reporter: RunObserver | None = None) -> Any:
     from .application.composition import build_application
 
-    return build_application(config, observer=reporter).run(config.request)
+    application = build_application(config, observer=reporter)
+    if config.replay_bundle_path is not None:
+        return _run_replay(config, application)
+    return application.run(config.request)
+
+
+def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
+    bundle = config.replay_bundle_path
+    if bundle is None:
+        raise ValueError("replay bundle is required")
+    try:
+        manifest = json.loads((bundle / "publication-manifest.json").read_text(encoding="utf-8"))
+        as_of_date = date.fromisoformat(str(manifest["as_of_date"]))
+        created_at = datetime.fromisoformat(str(manifest["created_at"]).replace("Z", "+00:00"))
+        catalog_payload = manifest["catalog"]
+        selector = ReportSelector(str(manifest["selector"]))
+        committee_window_months = int(manifest.get("settings", {}).get("committee_window_months", 12))
+        request = RunRequest(
+            selector=selector,
+            subscription_ids=tuple(manifest["scope"]["subscription_ids"]),
+            as_of_date=as_of_date,
+            committee_window_months=committee_window_months,
+        )
+        context = RunContext(
+            run_id=str(manifest["run_id"]),
+            as_of_date=as_of_date,
+            created_at=created_at,
+            request=request,
+            scope=Scope(tuple(manifest["scope"]["subscription_ids"]), str(manifest["scope"]["mode"])),
+            catalog_identity=CatalogIdentity(int(catalog_payload["schema_version"]), str(catalog_payload["sha256"])),
+            dependency_plan=DependencyPlan(tuple(manifest["dependency_closure"])),
+            editorial_catalog_identity=(
+                CatalogIdentity(
+                    int(manifest["editorial_catalog"]["schema_version"]),
+                    str(manifest["editorial_catalog"]["sha256"]),
+                )
+                if "editorial_catalog" in manifest
+                else None
+            ),
+        )
+        closure = application.report_catalog.plan(selector)
+        artifacts: list[EncodedArtifact] = []
+        entries = {str(item["path"]): item for item in manifest["artifacts"]}
+        for path in closure.expected_paths:
+            data = (bundle / path).read_bytes()
+            entry = entries[path]
+            artifacts.append(
+                EncodedArtifact(
+                    logical_path=path,
+                    data=data,
+                    rows=max(0, len(data.decode("utf-8").splitlines()) - 1) if path.endswith(".tsv") else len(data.decode("utf-8").splitlines()),
+                    media_type=str(entry["media_type"]),
+                    schema_version=int(entry["schema_version"]),
+                    run_id=context.run_id,
+                )
+            )
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        raise ValueError("replay bundle is invalid or incomplete") from exc
+    candidate = PublicationCandidate(
+        context=context,
+        report_closure=closure,
+        artifacts=tuple(artifacts),
+        acquisitions=(),
+        manifest_metadata=manifest,
+    )
+    receipt = application.publication_store.publish(candidate)
+    return RunResult(0, context, candidate, receipt)
 
 
 def build_runtime_reporter(

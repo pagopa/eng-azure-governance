@@ -7,6 +7,7 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import Acquisi
 from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
     stage_candidate,
 )
+from src.comitato.comitato_azure_retirements_v2.contracts.codecs import decode_tsv, encode_tsv
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationError,
 )
@@ -21,6 +22,18 @@ def _mutate(path: str, mutation):
         target.write_bytes(mutation(target.read_bytes()))
 
     return apply
+
+
+def test_tsv_quotes_terminal_empty_cells_without_changing_decoded_values() -> None:
+    encoded = encode_tsv(
+        ("value", "optional", "editorial"),
+        ({"value": "row", "optional": "", "editorial": ""},),
+    )
+
+    assert not encoded.splitlines()[1].endswith(b"\t")
+    assert decode_tsv(encoded, ("value", "optional", "editorial")) == (
+        {"value": "row", "optional": "", "editorial": ""},
+    )
 
 
 def test_stage_rereads_and_validates_mutated_tsv_header(tmp_path: Path) -> None:
@@ -116,9 +129,22 @@ def test_stage_rejects_incomplete_acquisition_and_reports_no_success_manifest(tm
 
 
 def test_stage_returns_validated_generation_and_manifest_uses_measured_facts(tmp_path: Path) -> None:
-    staged = stage_candidate(empty_candidate(), tmp_path)
+    candidate = empty_candidate()
+    candidate = replace(
+        candidate,
+        context=replace(
+            candidate.context,
+            request=replace(candidate.context.request, committee_window_months=6),
+        ),
+    )
+    staged = stage_candidate(candidate, tmp_path)
 
     assert staged.manifest["validation"] == {"error_count": 0, "status": "passed"}
+    assert staged.manifest["settings"] == {"committee_window_months": 6}
+    assert staged.manifest["derivation"] == {
+        "mode": "live",
+        "program_revision": "0.1.0",
+    }
     for measured in staged.artifacts:
         assert measured.bytes == len((staged.generation_dir / measured.logical_path).read_bytes())
         manifest_item = next(item for item in staged.manifest["artifacts"] if item["path"] == measured.logical_path)

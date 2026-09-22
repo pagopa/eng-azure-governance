@@ -68,6 +68,7 @@ def test_committee_window_clamps_upper_bound_for_leap_day() -> None:
     ("quality", "retirement_date", "claims", "expected"),
     [
         ("missing", "", [], SlideEligibility.MISSING_RETIREMENT_DATE),
+        ("partial", "", [{"raw_value": "2027", "quality": "partial"}], SlideEligibility.PARTIAL_RETIREMENT_DATE),
         ("invalid", "not-a-date", [], SlideEligibility.INVALID_RETIREMENT_DATE),
         (
             "conflict",

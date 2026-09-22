@@ -42,8 +42,14 @@ class TsvContract(Generic[T]):
             raise ValueError(f"{self.name} has no JSONL companion")
         return EncodedArtifact(
             logical_path=self.companion_path,
-            data=encode_jsonl(artifact.companion_records),
-            rows=len(artifact.companion_records),
+            data=encode_jsonl(
+                (*artifact.companion_records,)
+                + tuple(
+                    {"kind": "observation_accounting", **dict(item)}
+                    for item in artifact.accounting
+                )
+            ),
+            rows=len(artifact.companion_records) + len(artifact.accounting),
             media_type="application/x-ndjson",
             schema_version=self.schema_version,
             run_id=artifact.run_id,

@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 from dataclasses import replace
 
@@ -70,8 +71,8 @@ def test_s03_explicit_global_raw_evidence_has_no_subscription_fallback(tmp_path)
     result = run_scenario(scenario, tmp_path)
     assert result.exit_status == 0
     raw = result.current_tree["01_azure_service_health_advisories_raw.tsv"].decode()
-    header, row = raw.splitlines()
-    values = dict(zip(header.split("\t"), row.split("\t"), strict=True))
+    header, row = csv.reader(raw.splitlines(), delimiter="\t")
+    values = dict(zip(header, row, strict=True))
     assert values["record_type"] == "service_health_event_global"
     assert values["subscription_id"] == ""
     assert values["subscription_evidence_source"] == "explicit_global"

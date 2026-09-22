@@ -18,6 +18,7 @@ class Artifact(Generic[T]):
     run_id: str
     records: tuple[T, ...] = ()
     companion_records: tuple[Any, ...] = ()
+    accounting: tuple[Mapping[str, Any], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)

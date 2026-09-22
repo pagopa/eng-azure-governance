@@ -13,6 +13,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import EditorialCatalog, EditorialItem
 from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
@@ -86,3 +87,39 @@ def test_build_aggregate_preserves_membership_and_catalog_projection() -> None:
 def test_empty_aggregate_encodes_exact_header() -> None:
     encoded = AGGREGATE_V1.encode(AGGREGATE_V1.empty_artifact(context()))
     assert encoded.data == ("\t".join(AGGREGATE_V1.header) + "\n").encode()
+
+
+def test_build_aggregate_merges_only_explicit_editorial_associations() -> None:
+    advisor = {
+        "advisor_recommendation_id": "rec-1",
+        "recommendation_type_id": "retirement-1",
+        "subscription_id": SUBSCRIPTION,
+        "raw_record_ref": "advisor-ref",
+    }
+    health = {
+        "service_health_event_id": "event-1",
+        "tracking_id": "track-1",
+        "subscription_id": SUBSCRIPTION,
+        "raw_record_ref": "health-ref",
+    }
+    editorial = EditorialCatalog(
+        1,
+        "b" * 64,
+        (
+            EditorialItem(
+                "item-1",
+                (("advisor", ("retirement-1",)), ("service-health", ("track-1",))),
+            ),
+        ),
+    )
+
+    records = build_aggregate(
+        (advisor,),
+        (health,),
+        context=context(),
+        catalog=catalog(),
+        editorial_catalog=editorial,
+    )
+
+    assert len(records) == 1
+    assert records[0]["correlation_status"] == "explicitly_correlated"

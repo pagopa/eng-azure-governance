@@ -61,7 +61,7 @@ class SlidesV1Contract(TsvContract[SlideRecord]):
         diagnostics: list[Diagnostic] = []
         previous: tuple[str, str] | None = None
         seen: set[str] = set()
-        window = CommitteeWindow(context.as_of_date)
+        window = CommitteeWindow(context.as_of_date, context.request.committee_window_months)
         for row in artifact.records:
             if tuple(row) != HEADER:
                 diagnostics.append(Diagnostic("error", "invalid_slide_columns", "validation", "slides", context.run_id))
@@ -86,8 +86,8 @@ class SlidesV1Contract(TsvContract[SlideRecord]):
                         json.loads(row[column])
                     except json.JSONDecodeError:
                         diagnostics.append(Diagnostic("error", f"invalid_{column}", "validation", "slides", context.run_id, record_ref=aggregate_id))
-            if any(row[column] for column in HEADER[-4:]):
-                diagnostics.append(Diagnostic("error", "non_empty_committee_refinement", "validation", "slides", context.run_id, record_ref=aggregate_id))
+            if row["comitato_priorità"]:
+                diagnostics.append(Diagnostic("error", "external_priority_required", "validation", "slides", context.run_id, record_ref=aggregate_id))
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
         return base

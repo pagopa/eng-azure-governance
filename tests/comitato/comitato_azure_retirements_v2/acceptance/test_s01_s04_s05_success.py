@@ -24,7 +24,7 @@ def test_positive_publication_scenarios_match_complete_golden_trees(name: str, t
     if name == "s01_explicitly_correlated":
         assert aggregate_rows[1].split("\t")[4] == "explicitly_correlated"
         slide_row = result.current_tree["03_azure_retirements_slide.tsv"].decode().splitlines()[1]
-        assert slide_row.endswith("\t\t\t\t")
+        assert not slide_row.endswith("\t")
     elif name == "s04_ambiguous_correlation":
         assert len(aggregate_rows) == 4
         assert all(row.split("\t")[4] == "ambiguous_unmerged" for row in aggregate_rows[1:])

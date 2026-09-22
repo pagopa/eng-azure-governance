@@ -9,6 +9,7 @@ from hashlib import sha256
 from html.parser import HTMLParser
 from typing import Any
 
+from ..acquisition.evidence import ObservationAccounting
 from ..acquisition.model import SourceAcquisition
 from ..application.orchestration_errors import ApplicationError, ContractValidationError
 from ..contracts._base import TsvContract
@@ -65,7 +66,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                 diagnostics.append(Diagnostic("error", "duplicate_raw_record_ref", "validation", "service-health", context.run_id, record_ref=ref))
             refs.add(ref)
             row_refs.append(ref)
-            if row.get("run_id") != context.run_id or row.get("schema_version") != "1" or row.get("record_type") not in {"service_health_event_global", "service_health_event_resource", "service_health_event_service_region", "service_health_event_subscription"} or row.get("source_system") != "azure_service_health" or row.get("status", "").casefold() != "active" or not row.get("tracking_id"):
+            if row.get("run_id") != context.run_id or row.get("schema_version") != "1" or row.get("record_type") not in {"service_health_event_global", "service_health_event_resource", "service_health_event_service_region", "service_health_event_subscription"} or row.get("source_system") != "azure_service_health" or row.get("status", "").casefold() not in {"active", "resolved"} or not row.get("tracking_id"):
                 diagnostics.append(Diagnostic("error", "invalid_service_health_row", "validation", "service-health", context.run_id, record_ref=event_id))
             is_global = row.get("record_type") == "service_health_event_global"
             if is_global and row.get("subscription_evidence_source") != "explicit_global":
@@ -80,7 +81,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                 diagnostics.append(Diagnostic("error", "missing_affected_subscription", "validation", "service-health", context.run_id, record_ref=event_id))
             if not is_global and not row.get("subscription_name"):
                 diagnostics.append(Diagnostic("error", "missing_subscription_name", "validation", "service-health", context.run_id, record_ref=event_id))
-            if row.get("retirement_date_quality") not in {"exact", "missing", "invalid"}:
+            if row.get("retirement_date_quality") not in {"exact", "missing", "invalid", "unknown"}:
                 diagnostics.append(Diagnostic("error", "invalid_retirement_date_quality", "validation", "service-health", context.run_id, record_ref=event_id))
             if row.get("retirement_date"):
                 try:
@@ -347,28 +348,74 @@ def normalize_service_health(
 ) -> ValidationResult[Artifact[Mapping[str, str]]]:
     rows: list[dict[str, str]] = []
     companions: list[dict[str, Any]] = []
+    accounting: list[dict[str, Any]] = []
     diagnostics: list[Diagnostic] = []
-    for raw_record in acquisition.records:
+    for index, raw_record in enumerate(acquisition.records, start=1):
         event = _payload(raw_record)
         props = _mapping(event.get("properties"))
+        source_identity = str(
+            getattr(raw_record, "identity", "")
+            or event.get("id")
+            or f"record-{index}"
+        )
+        source_subscription = str(
+            getattr(raw_record, "subscription_id", "")
+            or event.get("subscriptionId")
+            or event.get("subscription_id")
+            or ""
+        )
         event_id = str(event.get("id") or "")
         if not event_id:
+            accounting.append(
+                {
+                    "source": "service-health",
+                    "subscription_id": source_subscription,
+                    "source_identity": source_identity,
+                    "destination": "invalid",
+                    "reason": "missing_service_health_event_id",
+                }
+            )
             diagnostics.append(Diagnostic("error", "missing_service_health_event_id", "normalization", "service-health", context.run_id))
             continue
         event_name = str(event.get("name") or "")
         event_type = str(props.get("eventType") or "")
         if event_type.casefold() != "healthadvisory":
+            accounting.append(
+                {
+                    "source": "service-health",
+                    "subscription_id": source_subscription,
+                    "source_identity": source_identity,
+                    "destination": "excluded",
+                    "reason": f"event_type:{event_type.casefold() or 'missing'}",
+                }
+            )
             continue
         level = str(props.get("level") or "")
         status = str(props.get("status") or "")
         classification_valid = event_type.casefold() == "healthadvisory" and level.casefold() in {"informational", "warning", "critical"} and status.casefold() in {"active", "resolved"}
         if not classification_valid:
+            accounting.append(
+                {
+                    "source": "service-health",
+                    "subscription_id": source_subscription,
+                    "source_identity": source_identity,
+                    "destination": "invalid",
+                    "reason": "invalid_service_health_classification",
+                }
+            )
             diagnostics.append(Diagnostic("error", "invalid_service_health_classification", "normalization", "service-health", context.run_id, record_ref=event_id))
-            continue
-        if status.casefold() != "active":
             continue
         tracking = str(props.get("trackingId") or event_name)
         if not tracking:
+            accounting.append(
+                {
+                    "source": "service-health",
+                    "subscription_id": source_subscription,
+                    "source_identity": source_identity,
+                    "destination": "invalid",
+                    "reason": "missing_tracking_id",
+                }
+            )
             diagnostics.append(Diagnostic("error", "missing_tracking_id", "normalization", "service-health", context.run_id, record_ref=event_id))
             continue
         if props.get("trackingId") and event_name and str(props.get("trackingId")).casefold() != event_name.casefold():
@@ -382,8 +429,18 @@ def normalize_service_health(
         start, start_flag = _timestamp(props.get("impactStartTime"))
         mitigation, mitigation_flag = _timestamp(props.get("impactMitigationTime"))
         last_update, update_flag = _timestamp(props.get("lastUpdateTime"))
-        retirement_raw = str(props.get("impactMitigationTime") or "")
+        retirement_advisory = str(props.get("eventSubType") or "").casefold() in {
+            "retirement",
+            "serviceupgradeandretirement",
+        } or status.casefold() == "active"
+        retirement_raw = (
+            str(props.get("impactMitigationTime") or "")
+            if retirement_advisory and status.casefold() == "active"
+            else ""
+        )
         retirement_date, retirement_quality = _date(retirement_raw)
+        if not retirement_raw:
+            retirement_quality = "unknown"
         event_flags = set(filter(None, (start_flag, mitigation_flag, update_flag)))
         if description_quality == "missing":
             event_flags.add("missing_description")
@@ -436,6 +493,7 @@ def normalize_service_health(
             if any(item[3] == advisor_subscription and item[4] == advisor_resource for item in associations):
                 continue
             associations.append(("", "", "", advisor_subscription, advisor_resource, "advisor_recommendation", advisor_map))
+        source_row_start = len(rows)
         for service_name, service_guid, region, affected_subscription, resource_id, resource_source, advisor_record in associations:
             row_flags = set(event_flags)
             is_global = props.get("isGlobal") is True or str(props.get("isGlobal") or "").casefold() == "true"
@@ -486,11 +544,43 @@ def normalize_service_health(
             })
             rows.append(row)
             companions.append({"schema_version": 1, "run_id": context.run_id, "raw_record_ref": ref, "service_health_event": event, "collection_subscription_id": collection_subscription, "affected_subscription_id": subscription_id, "service_health_resource_evidence": {"resourceId": resource_id} if resource_id and resource_source == "service_health_resource" else None, "advisor_evidence": advisor_record, "resource_inventory": resource_inventory or None, "subscription_inventory": subscription_inventory or None})
+        accounting.append(
+            {
+                "source": "service-health",
+                "subscription_id": source_subscription,
+                "source_identity": source_identity,
+                "destination": "normalized" if len(rows) > source_row_start else "invalid",
+                "reason": "health_advisory",
+                "fanout_count": len(rows) - source_row_start,
+            }
+        )
     if diagnostics:
         return ValidationResult.invalid(tuple(diagnostics))
+    for item in accounting:
+        if "raw_payload" not in item:
+            item["raw_payload"] = next(
+                (
+                    _payload(record)
+                    for record in acquisition.records
+                    if str(
+                        getattr(record, "identity", "")
+                        or _payload(record).get("id")
+                        or ""
+                    )
+                    == item["source_identity"]
+                ),
+                {},
+            )
     rows.sort(key=lambda row: (row["collection_subscription_id"].casefold(), row["service_health_event_id"].casefold(), row["subscription_id"].casefold(), row["record_type"], row["normalized_resource_id"].casefold(), row["impacted_service"].casefold(), row["normalized_impacted_region"], row["resource_evidence_source"]))
     companion_by_ref = {item["raw_record_ref"]: item for item in companions}
-    artifact = Artifact("service-health", 1, context.run_id, tuple(rows), tuple(companion_by_ref[row["raw_record_ref"]] for row in rows))
+    artifact = Artifact(
+        "service-health",
+        1,
+        context.run_id,
+        tuple(rows),
+        tuple(companion_by_ref[row["raw_record_ref"]] for row in rows),
+        tuple(accounting),
+    )
     return ValidationResult.valid(artifact)
 
 
@@ -509,7 +599,24 @@ def prepare_service_health_report(
     supplemental: ServiceHealthSupplementalEvidence = ServiceHealthSupplementalEvidence(),
 ) -> PreparedRawReport:
     if not acquisition.receipt.is_complete:
-        raise ApplicationError("incomplete service-health acquisition")
+        failed = acquisition.receipt.failed_subscriptions[0] if acquisition.receipt.failed_subscriptions else ""
+        if not failed:
+            failed = context.scope.subscription_ids[0] if context.scope.subscription_ids else ""
+        if not failed and acquisition.records:
+            failed = str(getattr(acquisition.records[0], "subscription_id", ""))
+        raise ApplicationError(
+            "incomplete service-health acquisition",
+            (
+                Diagnostic(
+                    "error",
+                    "incomplete_acquisition",
+                    "acquisition",
+                    "service-health",
+                    context.run_id,
+                    message=f"incomplete acquisition for subscription: {failed}",
+                ),
+            ),
+        )
     if not acquisition.records:
         if acquisition.receipt.source_records != 0:
             raise ApplicationError("inconsistent service-health acquisition receipt")
@@ -523,7 +630,22 @@ def prepare_service_health_report(
         checked = SERVICE_HEALTH_V1.validate(artifact, context)
         if not checked.is_valid:
             raise ContractValidationError(checked.diagnostics, "invalid service-health raw contract")
-        normalized = SourceAcquisition(receipt=acquisition.receipt, records=artifact.records, companion_records=artifact.companion_records)
+        normalized = SourceAcquisition(
+            receipt=acquisition.receipt,
+            records=artifact.records,
+            companion_records=artifact.companion_records,
+            accounting=tuple(
+                ObservationAccounting(
+                    source=item["source"],
+                    subscription_id=item["subscription_id"],
+                    source_identity=item["source_identity"],
+                    destination=item["destination"],
+                    reason=item.get("reason", ""),
+                    raw_record_ref=item.get("raw_record_ref", ""),
+                )
+                for item in artifact.accounting
+            ),
+        )
     return PreparedRawReport(
         acquisition=normalized,
         artifact=artifact,

@@ -51,15 +51,30 @@ class ReportDefinition:
                 if companion_path:
                     companion_data = payloads.get(companion_path)
                     if companion_data is not None:
-                        companion_records = self.contract.decode_companion(
-                            companion_data
+                        decoded_companions = self.contract.decode_companion(companion_data)
+                        companion_records = tuple(
+                            item
+                            for item in decoded_companions
+                            if not isinstance(item, Mapping)
+                            or item.get("kind") != "observation_accounting"
                         )
+                        accounting = tuple(
+                            item
+                            for item in decoded_companions
+                            if isinstance(item, Mapping)
+                            and item.get("kind") == "observation_accounting"
+                        )
+                    else:
+                        accounting = decoded.accounting
+                else:
+                    accounting = decoded.accounting
                 decoded = Artifact(
                     contract=decoded.contract,
                     schema_version=decoded.schema_version,
                     run_id=decoded.run_id or context.run_id,
                     records=decoded.records,
                     companion_records=companion_records,
+                    accounting=accounting,
                 )
                 result = self.contract.validate(decoded, context)
                 return result.diagnostics if not result.is_valid else ()

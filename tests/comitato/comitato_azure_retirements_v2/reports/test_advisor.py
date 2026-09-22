@@ -104,6 +104,32 @@ def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_i
     assert result.diagnostics[0].code == "invalid_recommendation_status"
 
 
+def test_normalize_advisor_accounts_excluded_and_invalid_observations_before_filtering() -> None:
+    completed = acquisition().records[0].copy()
+    completed["id"] = completed["id"].replace("rec-1", "rec-completed")
+    completed["properties"] = dict(completed["properties"])
+    completed["properties"]["recommendationStatus"] = "Completed"
+
+    result = normalize_advisor(
+        SourceAcquisition(
+            receipt=AcquisitionReceipt("advisor", "test-v1", 1, 1, 1, 3, True),
+            records=(acquisition().records[0], completed),
+        ),
+        context(),
+        AdvisorEnrichments(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert [row["advisor_recommendation_id"] for row in result.value.records] == [
+        "/subscriptions/sub-a/providers/Microsoft.Advisor/recommendations/rec-1"
+    ]
+    assert {item["destination"] for item in result.value.accounting} == {
+        "normalized",
+        "excluded",
+    }
+
+
 def test_normalize_advisor_defaults_missing_live_status_to_new() -> None:
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])

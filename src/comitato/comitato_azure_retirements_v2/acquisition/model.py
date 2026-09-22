@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from .evidence import ObservationAccounting
+
 
 @dataclass(frozen=True, slots=True)
 class AcquisitionReceipt:
@@ -30,3 +32,4 @@ class SourceAcquisition:
     receipt: AcquisitionReceipt
     records: tuple[Any, ...] = ()
     companion_records: tuple[Any, ...] = ()
+    accounting: tuple[ObservationAccounting, ...] = ()

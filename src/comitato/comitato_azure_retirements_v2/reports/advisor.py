@@ -8,6 +8,7 @@ from datetime import timezone
 from hashlib import sha256
 from typing import Any
 
+from ..acquisition.evidence import ObservationAccounting
 from ..acquisition.model import SourceAcquisition
 from ..application.orchestration_errors import ApplicationError, ContractValidationError
 from ..contracts._base import TsvContract
@@ -275,24 +276,72 @@ def normalize_advisor(
 ) -> ValidationResult[Artifact[Mapping[str, str]]]:
     rows: list[dict[str, str]] = []
     companions: list[dict[str, Any]] = []
+    accounting: list[dict[str, Any]] = []
     diagnostics: list[Diagnostic] = []
-    for raw_record in acquisition.records:
+    for index, raw_record in enumerate(acquisition.records, start=1):
         recommendation = _record_payload(raw_record)
         properties = _mapping(recommendation.get("properties"))
+        source_identity = str(
+            getattr(raw_record, "identity", "")
+            or recommendation.get("id")
+            or f"record-{index}"
+        )
+        source_subscription = str(
+            getattr(raw_record, "subscription_id", "")
+            or recommendation.get("subscriptionId")
+            or ""
+        )
         recommendation_id = str(
             recommendation.get("id") or recommendation.get("advisorRecommendationId") or ""
         )
         if not recommendation_id:
+            accounting.append(
+                {
+                    "source": "advisor",
+                    "subscription_id": source_subscription,
+                    "source_identity": source_identity,
+                    "destination": "invalid",
+                    "reason": "missing_recommendation_id",
+                }
+            )
             diagnostics.append(Diagnostic("error", "missing_recommendation_id", "normalization", "advisor", context.run_id))
             continue
         status_value = properties.get("recommendationStatus")
         status = "New" if "recommendationStatus" not in properties else str(status_value or "")
         if status.casefold() != "new":
             if not status or status.casefold() not in {"inprogress", "completed", "postponed", "dismissed"}:
+                accounting.append(
+                    {
+                        "source": "advisor",
+                        "subscription_id": source_subscription,
+                        "source_identity": source_identity,
+                        "destination": "invalid",
+                        "reason": "invalid_recommendation_status",
+                    }
+                )
                 diagnostics.append(Diagnostic("error", "invalid_recommendation_status", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
+            else:
+                accounting.append(
+                    {
+                        "source": "advisor",
+                        "subscription_id": source_subscription,
+                        "source_identity": source_identity,
+                        "destination": "excluded",
+                        "reason": f"recommendation_status:{status.casefold()}",
+                    }
+                )
             continue
         subscription_id = _subscription_id(recommendation, recommendation_id)
         if not subscription_id:
+            accounting.append(
+                {
+                    "source": "advisor",
+                    "subscription_id": source_subscription,
+                    "source_identity": source_identity,
+                    "destination": "invalid",
+                    "reason": "missing_subscription_id",
+                }
+            )
             diagnostics.append(Diagnostic("error", "missing_subscription_id", "normalization", "advisor", context.run_id, record_ref=recommendation_id))
             continue
         metadata = _mapping(properties.get("resourceMetadata"))
@@ -489,12 +538,44 @@ def normalize_advisor(
         )
         rows.append(row)
         companions.append({"schema_version": 1, "run_id": context.run_id, "raw_record_ref": ref, "advisor_recommendation_id": recommendation_id, "recommendation": recommendation, "advisor_metadata": metadata_record or None, "resource_inventory": resource_record or None, "subscription_inventory": subscription_record or None})
+        accounting.append(
+            {
+                "source": "advisor",
+                "subscription_id": subscription_id,
+                "source_identity": source_identity,
+                "destination": "normalized",
+                "reason": "recommendation_status:new",
+                "raw_record_ref": ref,
+            }
+        )
     if diagnostics:
         return ValidationResult.invalid(tuple(diagnostics))
+    for item in accounting:
+        if "raw_payload" not in item:
+            item["raw_payload"] = next(
+                (
+                    _record_payload(record)
+                    for record in acquisition.records
+                    if str(
+                        getattr(record, "identity", "")
+                        or _record_payload(record).get("id")
+                        or ""
+                    )
+                    == item["source_identity"]
+                ),
+                {},
+            )
     ordered = tuple(sorted(rows, key=lambda row: (row["subscription_id"].casefold(), row["advisor_recommendation_id"].casefold(), row["normalized_resource_id"].casefold(), row["recommendation_type_id"].casefold())))
     by_ref = {item["raw_record_ref"]: item for item in companions}
     ordered_companions = tuple(by_ref[row["raw_record_ref"]] for row in ordered)
-    artifact = Artifact("advisor", 1, context.run_id, ordered, ordered_companions)
+    artifact = Artifact(
+        "advisor",
+        1,
+        context.run_id,
+        ordered,
+        ordered_companions,
+        tuple(accounting),
+    )
     return ValidationResult.valid(artifact)
 
 
@@ -513,7 +594,24 @@ def prepare_advisor_report(
     enrichments: AdvisorEnrichments = AdvisorEnrichments(),
 ) -> PreparedRawReport:
     if not acquisition.receipt.is_complete:
-        raise ApplicationError("incomplete advisor acquisition")
+        failed = acquisition.receipt.failed_subscriptions[0] if acquisition.receipt.failed_subscriptions else ""
+        if not failed:
+            failed = context.scope.subscription_ids[0] if context.scope.subscription_ids else ""
+        if not failed and acquisition.records:
+            failed = str(getattr(acquisition.records[0], "subscription_id", ""))
+        raise ApplicationError(
+            "incomplete advisor acquisition",
+            (
+                Diagnostic(
+                    "error",
+                    "incomplete_acquisition",
+                    "acquisition",
+                    "advisor",
+                    context.run_id,
+                    message=f"incomplete acquisition for subscription: {failed}",
+                ),
+            ),
+        )
     if not acquisition.records:
         if acquisition.receipt.source_records != 0:
             raise ApplicationError("inconsistent advisor acquisition receipt")
@@ -531,6 +629,17 @@ def prepare_advisor_report(
             receipt=acquisition.receipt,
             records=artifact.records,
             companion_records=artifact.companion_records,
+            accounting=tuple(
+                ObservationAccounting(
+                    source=item["source"],
+                    subscription_id=item["subscription_id"],
+                    source_identity=item["source_identity"],
+                    destination=item["destination"],
+                    reason=item.get("reason", ""),
+                    raw_record_ref=item.get("raw_record_ref", ""),
+                )
+                for item in artifact.accounting
+            ),
         )
     return PreparedRawReport(
         acquisition=normalized,

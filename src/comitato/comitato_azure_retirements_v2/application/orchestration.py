@@ -24,10 +24,13 @@ from ..domain.execution import (
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
 from ..domain.slides import SlideSelection, select_slides
+from ..domain.retirements import build_source_events
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 from ..reports.catalog import (
     DEFAULT_REPORT_CATALOG,
+    EditorialCatalog,
+    build_editorial_work_list,
     ReportCatalog,
     SelectedReportClosure,
 )
@@ -95,6 +98,7 @@ class RetirementsApplication:
     report_catalog: ReportCatalog = DEFAULT_REPORT_CATALOG
     observer: RunObserver = field(default_factory=NullRunObserver)
     advisor_enrichment_source: Any | None = None
+    editorial_catalog_source: Any | None = None
 
     def run(self, request: RunRequest) -> RunResult:
         report_closure = self.report_catalog.plan(request.selector)
@@ -137,6 +141,7 @@ class RetirementsApplication:
             run_id,
             schema_version=getattr(catalog, "schema_version", ""),
         )
+        editorial_catalog = self.editorial_catalog_source.load() if self.editorial_catalog_source is not None else None
         context = RunContext(
             run_id=run_id,
             as_of_date=self._as_of_date(request),
@@ -145,6 +150,9 @@ class RetirementsApplication:
             scope=scope,
             catalog_identity=self._catalog_identity(catalog),
             dependency_plan=plan,
+            editorial_catalog_identity=(
+                self._catalog_identity(editorial_catalog) if editorial_catalog is not None else None
+            ),
         )
 
         prepared_by_selector: dict[ReportSelector, PreparedRawReport] = {}
@@ -223,8 +231,15 @@ class RetirementsApplication:
             context.run_id,
         )
         artifacts, slide_selection = self._empty_artifacts(
-            context, acquisitions, prepared_by_selector, report_closure, catalog
+            context, acquisitions, prepared_by_selector, report_closure, catalog, editorial_catalog
         )
+        editorial_work_list = ()
+        if editorial_catalog is not None:
+            source_events, _ = build_source_events(
+                next((item.records for item in acquisitions if item.receipt.source == "advisor"), ()),
+                next((item.records for item in acquisitions if item.receipt.source == "service-health"), ()),
+            )
+            editorial_work_list = build_editorial_work_list(editorial_catalog, source_events)
         self._emit(
             "INFO",
             "artifacts_prepared",
@@ -240,6 +255,7 @@ class RetirementsApplication:
             artifacts=tuple(artifacts),
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
+            editorial_work_list=editorial_work_list,
         )
         try:
             self._emit(
@@ -518,6 +534,7 @@ class RetirementsApplication:
         prepared_by_selector: dict[ReportSelector, PreparedRawReport],
         report_closure: SelectedReportClosure,
         catalog: Any,
+        editorial_catalog: EditorialCatalog | None = None,
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
@@ -541,6 +558,7 @@ class RetirementsApplication:
                     records_for("service-health"),
                     context=context,
                     catalog=catalog,
+                    editorial_catalog=editorial_catalog,
                 )
                 aggregate = Artifact(
                     contract=aggregate.contract,

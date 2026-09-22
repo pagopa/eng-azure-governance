@@ -66,6 +66,8 @@ class CorrelationResult:
 def correlate_source_events(
     events: tuple[SourceEvent, ...] | list[SourceEvent],
     edges: tuple[CorrelationEdge, ...] | list[CorrelationEdge],
+    *,
+    infer_edges: bool = True,
 ) -> CorrelationResult:
     """Merge only complete one-to-one explicit components.
 
@@ -77,7 +79,7 @@ def correlate_source_events(
     if len(by_key) != len(events):
         raise ValueError("source-event keys must be unique")
     candidate_edges = list(edges)
-    for advisor in events:
+    for advisor in events if infer_edges else ():
         if advisor.source != "advisor":
             continue
         advisor_values = {
