@@ -112,7 +112,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                     diagnostics.append(Diagnostic("error", "invalid_resource_graph_query_label", "validation", "service-health", context.run_id, record_ref=event_id))
             for field in ("title", "summary", "description_problem", "recommended_actions"):
                 value = row.get(field, "")
-                if _plain_text(value) != value or "<" in value or ">" in value:
+                if _plain_text(value) != value:
                     diagnostics.append(Diagnostic("error", "noncanonical_service_health_text", "validation", "service-health", context.run_id, record_ref=event_id))
             resource_evidence_status = row.get("resource_evidence_status", "")
             if resource_evidence_status not in {"published", "inventory_missing", "not_published"}:

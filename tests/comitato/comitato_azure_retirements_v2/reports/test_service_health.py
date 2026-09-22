@@ -675,6 +675,15 @@ def test_service_health_contract_rejects_noncanonical_published_text(field: str,
     assert any(item.code == "noncanonical_service_health_text" for item in checked.diagnostics)
 
 
+def test_service_health_contract_accepts_literal_angle_bracket_in_published_text() -> None:
+    row = _service_health_contract_row()
+    row["description_problem"] = "Service Health > Health advisories"
+
+    checked = _validate_service_health_row(row)
+
+    assert checked.is_valid
+
+
 def test_service_health_contract_rejects_unknown_resource_graph_query_label() -> None:
     row = _service_health_contract_row()
     provenance = json.loads(row["provenance_json"])
