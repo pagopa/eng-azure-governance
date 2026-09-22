@@ -1,4 +1,32 @@
-# policy_assignments
+# Azure Policy Assignments
+
+This Terraform root assigns Azure Policy controls to governance scopes.
+
+## Purpose
+
+Use this directory for the final governance stage. The root reads policy-set IDs through `terraform_remote_state`, applies direct management-group assignments and exemptions, and delegates environment-specific subscription assignments to the existing `modules/dev`, `modules/prod`, and `modules/uat` roots. Start with the root `01_*.tf` files or the environment module that owns the assignment being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+
+The assignment flow is from policy-set state through this root and its environment modules to subscription and management-group scopes:
+
+```mermaid
+flowchart LR
+    accTitle: Policy assignment flow
+    accDescr: The assignment root reads policy-set IDs, delegates environment modules, and applies controls to Azure scopes.
+    policy_set_state["Policy-set remote state"] --> assignment_root["Policy assignments root"]
+    assignment_root --> environment_modules["dev, prod, and uat modules"]
+    environment_modules --> subscription_scopes["Azure subscription scopes"]
+    assignment_root --> management_group_scope["pagopa management group"]
+```
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->

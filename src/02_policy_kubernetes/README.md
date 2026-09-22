@@ -1,4 +1,22 @@
-# policy
+# Azure Policy: Kubernetes
+
+This Terraform root defines custom Azure Policy controls for Azure Kubernetes Service.
+
+## Purpose
+
+Use this directory for Kubernetes policy controls covering allowed cluster versions and SKUs, Defender profile, image SHA-256 references, and the required policy add-on. The root resolves the `pagopa` management group and exposes the policy IDs shown in the generated Terraform reference below.
+
+## Validation
+
+From this directory, run non-remote Terraform validation:
+
+```bash
+terraform fmt -check .
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+```
+
+No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definitions, inputs, and outputs precisely.
 
 <!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
@@ -34,8 +52,8 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 | <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | The Azure subscription ID to use | `string` | n/a | yes |
+| <a name="input_metadata_category_name"></a> [metadata\_category\_name](#input\_metadata\_category\_name) | metadata category name | `string` | `"Custom PagoPA"` | no |
 
 ## Outputs
 

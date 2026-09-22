@@ -26,3 +26,12 @@ This folder contains optional custom agents for focused tasks.
 5. Use `WorkflowSupplyChain` on workflow changes.
 6. Use `PRWriter` to create or update PR title/body from template and diff.
 7. Use `SecurityReviewer` as final security gate.
+
+## Validation
+
+Keep the catalog entries aligned with the agent files in this directory and
+run the parent `.github` customization validator in strict root mode.
+
+No diagram is provided because this README is a flat routing catalog; the
+resolution order and selection guide above describe its relationships more
+precisely than a separate diagram.

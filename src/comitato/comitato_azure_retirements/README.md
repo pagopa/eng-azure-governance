@@ -1,8 +1,33 @@
 # Comitato Azure Retirements Export
 
+This toolkit exports Azure retirement evidence for committee review.
+
+## Contents
+
+- [Purpose](#purpose)
+- [Non-Purpose](#non-purpose)
+- [Dependency Decision Note](#dependency-decision-note)
+- [Python Version](#python-version)
+- [Required Runtime Access](#required-runtime-access)
+- [Modes](#modes)
+- [Scope Inputs](#scope-inputs)
+- [CLI](#cli)
+- [Runtime Output](#runtime-output)
+- [Runtime Configuration](#runtime-configuration)
+- [Environment Variables](#environment-variables)
+- [Output Path](#output-path)
+- [Service Health Raw Contract](#service-health-raw-contract)
+- [Workbook Role](#workbook-role)
+- [Known Limitation](#known-limitation)
+- [Validation Workflow](#validation-workflow)
+
 ## Purpose
 
 This toolkit exports Azure retirements evidence for committee review.
+
+The [Azure Retirement Intelligence context](../../../docs/domain/azure-retirements/CONTEXT.md) defines the domain vocabulary and its [rules](../../../docs/domain/azure-retirements/RULES.md). The repository [architecture](../../../docs/architecture.md) records this component's boundaries and flows.
+
+No diagram is provided because the repository-wide runtime and workflow relationships are maintained in [docs/architecture.md](../../../docs/architecture.md).
 
 Persisted outputs currently include:
 

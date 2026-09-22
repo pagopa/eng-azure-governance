@@ -1,7 +1,16 @@
-# Issue tracker: GitHub Issues
+# Issue tracker: Local Markdown
 
-Issues and specs (you may know a spec as a PRD) for this repo are tracked in
-GitHub Issues for `pagopa/cloud-strategy.github`.
+Issues and specs live locally as markdown files. No remote issue tracker
+operations are used.
 
-When a skill says to publish or fetch an issue, use the issue number or URL
-provided by the user and preserve the repository's canonical triage labels.
+## Conventions
+
+- One feature per directory: `tmp/.issues/<feature-slug>/`
+- The spec is `tmp/.issues/<feature-slug>/spec.md`
+- Issues are `tmp/.issues/<feature-slug>/issues/<NN>-<slug>.md`
+- Triage state uses a `Status:` line near the top of each issue
+- Comments append under a `## Comments` heading
+
+Publish and fetch work under `tmp/.issues/`. Wayfinder uses
+`tmp/.wayfinder/<analysis-slug>/`, with `map.md` and numbered child tickets
+under `issues/`.

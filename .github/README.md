@@ -35,3 +35,16 @@ See `.github/agents/README.md` for details.
 ## Notes
 - `repo-profiles.yml` is currently advisory (human-readable profile catalog).
 - Use `templates/copilot-quickstart.md` for a short onboarding flow.
+
+## Validation
+
+Run the repository-owned Copilot customization validator in strict root mode
+after changing this directory:
+
+```bash
+.github/scripts/validate-copilot-customizations.sh --scope root --mode strict
+```
+
+No diagram is provided because this README is a directory navigation and
+maintenance surface; the referenced catalogs and validator define its
+relationships more precisely than a duplicate diagram.

@@ -40,9 +40,9 @@ repos:
 
       # Python safety rails
       - id: check-ast # Ensure Python files are syntactically valid.
-        files: ^(scripts|src|tests|tools)/.*\.py$
+        files: ^(scripts|src|tests|tools|\.github/(actions|tools))/.*\.py$
       - id: debug-statements # Block accidental breakpoint() and debugger imports.
-        files: ^(scripts|src|tests|tools)/.*\.py$
+        files: ^(scripts|src|tests|tools|\.github/(actions|tools))/.*\.py$
 
       # Security
       - id: detect-aws-credentials # Prevent committing AWS credentials by mistake.
@@ -64,32 +64,38 @@ repos:
       - id: shellcheck # Lint shell scripts for portability issues and common bugs.
         args:
           - --severity=warning
+        files: ^(scripts|src|tools|\.github/(actions|tools))/.*\.sh$|^validate-repo-locally\.sh$
         exclude: '^\.github/skills/'
 
   # Python linting and formatting
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: 3b3f7c3f57fe9925356faf5fe6230835138be230 # ruff-pre-commit v0.15.11; source https://github.com/astral-sh/ruff-pre-commit/releases/tag/v0.15.11
     hooks:
-      - id: ruff-check # Auto-sort Python imports with Ruff, replacing isort.
+      - id: ruff-check # Fix Python imports with Ruff, replacing isort.
         name: ruff-check-imports
         args:
           - --fix
           - --select
-          - I
-        files: ^(scripts|src|tests|tools)/.*\.py$
+          - F401,I
+        files: ^(scripts|src|tests|tools|\.github/(actions|tools))/.*\.py$
       - id: ruff-format # Format Python code with Ruff instead of Black.
-        files: ^(scripts|src|tests|tools)/.*\.py$
+        files: ^(scripts|src|tests|tools|\.github/(actions|tools))/.*\.py$
       - id: ruff-check # Lint Python code for correctness, style, and simplifications.
-        files: ^(scripts|src|tests|tools)/.*\.py$
+        args:
+          - --ignore
+          - E402
+        files: ^(scripts|src|tests|tools|\.github/(actions|tools))/.*\.py$
 
   # Terraform
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: d61ded22bf9aa0f757303ebcbb0d6d71c4b54015 # pre-commit-terraform v1.105.0; source https://github.com/antonbabenko/pre-commit-terraform/releases/tag/v1.105.0
     hooks:
       - id: terraform_fmt # Enforce canonical Terraform formatting.
-      - id: terraform_docs # Keep Terraform module documentation aligned with code.
+      - id: terraform_docs # Generate and update Terraform documentation in README.md.
         args:
-          - markdown --sort-by required
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+          - --args=--sort-by=required
       - id: terraform_validate # Validate Terraform configuration without remote backends.
         verbose: true
         args:
