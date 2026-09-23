@@ -6,7 +6,6 @@ import json
 import re
 from typing import Any
 
-from ..domain.dates import CommitteeWindow, SlideEligibility, classify_retirement_date
 from ..domain.diagnostics import Diagnostic, ValidationResult
 from ._base import TsvContract
 
@@ -191,20 +190,14 @@ class SlideRecord(Mapping[str, str]):
         links = _readable(_json_value(aggregate, "source_links_json", []))
         record_types = _json_value(aggregate, "record_types_json", [])
         change_type = _readable(record_types) or "unknown"
-        review_state = str(editorial.get("review_state") or "draft")
-        if review_state == "ready":
-            editorial_state = "reviewed"
-        elif review_state == "draft":
-            editorial_state = "draft: missing_editorial_mapping" if not editorial else "draft: missing_editorial_text"
-        else:
-            editorial_state = review_state
+        editorial_state = "source-derived; human review not recorded"
         values = {
             "id_elemento": item_id,
             "titolo_breve": title,
             "descrizione_breve": description,
             "comitato_priorità": "",
-            "comitato_descrizione": str(editorial.get("description", "")),
-            "comitato_retirement_date": str(editorial.get("retirement_date", "")),
+            "comitato_descrizione": "",
+            "comitato_retirement_date": "",
             "comitato_piattaforme": _readable(_json_value(aggregate, "platforms_json", [])),
             "retirement_date": str(aggregate["retirement_date"]),
             "stato_data": status,
@@ -238,7 +231,6 @@ class SlidesV1Contract(TsvContract[SlideRecord]):
         diagnostics: list[Diagnostic] = []
         previous: tuple[str, str] | None = None
         seen: set[str] = set()
-        window = CommitteeWindow(context.as_of_date, context.request.committee_window_months)
         for row in artifact.records:
             if tuple(row) != HEADER:
                 diagnostics.append(Diagnostic("error", "invalid_slide_columns", "validation", "slides", context.run_id))
@@ -257,6 +249,8 @@ class SlidesV1Contract(TsvContract[SlideRecord]):
                 diagnostics.append(Diagnostic("error", "invalid_slide_date_status", "validation", "slides", context.run_id, record_ref=aggregate_id))
             if row["comitato_priorità"]:
                 diagnostics.append(Diagnostic("error", "external_priority_required", "validation", "slides", context.run_id, record_ref=aggregate_id))
+            if row["comitato_descrizione"] or row["comitato_retirement_date"]:
+                diagnostics.append(Diagnostic("error", "editorial_committee_fields_must_be_empty", "validation", "slides", context.run_id, record_ref=aggregate_id))
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
         return base

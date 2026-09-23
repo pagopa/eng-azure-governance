@@ -235,7 +235,7 @@ def test_enrichment_failure_blocks_publication() -> None:
     assert publication.published == []
 
 
-def test_complete_empty_all_acquires_each_source_once_and_publishes_seven_artifacts() -> None:
+def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifacts() -> None:
     log = EventLog()
     publication = FakePublicationStore()
 
@@ -250,7 +250,6 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_seven_artifa
         "01_azure_service_health_advisories_raw.jsonl",
         "02_azure_retirements_aggregate.tsv",
         "03_azure_retirements_slide.tsv",
-        "azure-retirements-editorial.yaml",
     ]
     assert len(publication.published) == 1
     assert result.publication_receipt.current_reference == "2026/07"

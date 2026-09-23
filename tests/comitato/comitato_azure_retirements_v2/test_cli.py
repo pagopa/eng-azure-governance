@@ -500,7 +500,7 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
     assert store.candidate.saved_inputs == manifest["saved_inputs"]
 
 
-def test_replay_slides_consumes_physical_sidecar_and_changed_yaml_changes_tsv(tmp_path) -> None:
+def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None:
     class Store:
         def __init__(self):
             self.candidate = None
@@ -523,10 +523,9 @@ def test_replay_slides_consumes_physical_sidecar_and_changed_yaml_changes_tsv(tm
     result = cli._run_replay(config, _replay_application(store))
 
     slide = next(item for item in store.candidate.artifacts if item.logical_path == "03_azure_retirements_slide.tsv")
-    sidecar = next(item for item in store.candidate.artifacts if item.logical_path == EDITORIAL_YAML_PATH)
     assert result.exit_status == 0
-    assert b"Old title" in slide.data
-    assert sidecar.data == editorial_yaml.encode("utf-8")
+    assert b"Old title" not in slide.data
+    assert all(item.logical_path != EDITORIAL_YAML_PATH for item in store.candidate.artifacts)
 
     changed_bundle = tmp_path / "changed-bundle"
     changed_bundle.mkdir()
@@ -547,11 +546,27 @@ def test_replay_slides_consumes_physical_sidecar_and_changed_yaml_changes_tsv(tm
         for item in changed_store.candidate.artifacts
         if item.logical_path == "03_azure_retirements_slide.tsv"
     )
-    assert b"New title" in changed_slide.data
+    assert changed_slide.data == slide.data
     assert b"Old title" not in changed_slide.data
+    assert all(item.logical_path != EDITORIAL_YAML_PATH for item in changed_store.candidate.artifacts)
 
 
-def test_replay_rejects_physical_sidecar_that_differs_from_saved_yaml(tmp_path) -> None:
+def test_schema_one_legacy_bundle_without_saved_inputs_is_a_documented_limitation(tmp_path) -> None:
+    bundle = tmp_path / "legacy"
+    bundle.mkdir()
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps({"manifest_schema_version": 1}), encoding="utf-8"
+    )
+    config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=bundle,
+    )
+
+    with pytest.raises(ValueError, match="legacy schema-1 replay is unsupported"):
+        cli._run_replay(config, _replay_application(object()))
+
+
+def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(tmp_path) -> None:
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     manifest, editorial_yaml = _replay_slide_fixture("Saved title")
@@ -566,5 +581,14 @@ def test_replay_rejects_physical_sidecar_that_differs_from_saved_yaml(tmp_path) 
         replay_bundle_path=bundle,
     )
 
-    with pytest.raises(ValueError, match="replay bundle"):
-        cli._run_replay(config, _replay_application(object()))
+    class Store:
+        candidate = None
+
+        def publish(self, candidate):
+            self.candidate = candidate
+            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+
+    store = Store()
+    result = cli._run_replay(config, _replay_application(store))
+    assert result.exit_status == 0
+    assert all(item.logical_path != EDITORIAL_YAML_PATH for item in store.candidate.artifacts)

@@ -5,15 +5,57 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass
+import json
+from urllib.parse import urlsplit
 
 from .retirements import SourceEvent, SourceEventKey
 
 
-_BASES = frozenset({"recommendation_type_id", "advisor_recommendation_id"})
+_BASES = frozenset({"tracking_id", "ash_url"})
 
 
 def _key(value: SourceEventKey | tuple[str, str]) -> SourceEventKey:
     return value if isinstance(value, SourceEventKey) else SourceEventKey(*value)
+
+
+def _values(value: object) -> tuple[str, ...]:
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except json.JSONDecodeError:
+            return (value.strip().casefold(),) if value.strip() else ()
+    if isinstance(value, (list, tuple, set)):
+        return tuple(str(item).strip().casefold() for item in value if str(item).strip())
+    return ()
+
+
+def _advisor_identifiers(event: SourceEvent) -> dict[str, set[str]]:
+    result = {"tracking_id": set(), "ash_url": set()}
+    for row in event.records:
+        provenance = row.get("provenance_json", {})
+        if isinstance(provenance, str):
+            try:
+                provenance = json.loads(provenance)
+            except json.JSONDecodeError:
+                provenance = {}
+        if not isinstance(provenance, Mapping):
+            provenance = {}
+        for value in _values(row.get("trackingIds", row.get("source_health_tracking_ids", provenance.get("service_health_tracking_ids", ())))):
+            result["tracking_id"].add(value)
+        urls = _values(row.get("ashUrls", row.get("source_health_ash_urls", provenance.get("service_health_ash_urls", ()))))
+        for value in urls:
+            parts = [part for part in urlsplit(value).path.split("/") if part]
+            if len(parts) >= 2 and parts[-2].casefold() == "h":
+                result["ash_url"].add(parts[-1].casefold())
+    return result
+
+
+def _health_tracking_ids(event: SourceEvent) -> set[str]:
+    return {
+        value
+        for row in event.records
+        for value in _values(row.get("tracking_id", row.get("service_health_tracking_id", "")))
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,24 +124,12 @@ def correlate_source_events(
     for advisor in events if infer_edges else ():
         if advisor.source != "advisor":
             continue
-        advisor_values = {
-            "recommendation_type_id": {
-                str(row.get("recommendation_type_id") or row.get("advisor_recommendation_type_id") or "").strip().casefold()
-                for row in advisor.records
-            },
-            "advisor_recommendation_id": {
-                str(row.get("advisor_recommendation_id") or "").strip().casefold()
-                for row in advisor.records
-            },
-        }
+        advisor_values = _advisor_identifiers(advisor)
         for health_event in events:
             if health_event.source != "service-health":
                 continue
-            for basis in ("recommendation_type_id", "advisor_recommendation_id"):
-                health_values = {
-                    str(row.get(basis) or (row.get("recommendation_type_id") if basis == "recommendation_type_id" else "") or "").strip().casefold()
-                    for row in health_event.records
-                }
+            health_values = _health_tracking_ids(health_event)
+            for basis in ("tracking_id", "ash_url"):
                 if any(value and value in advisor_values[basis] for value in health_values):
                     candidate_edges.append(CorrelationEdge(advisor.key, health_event.key, basis))
                     break

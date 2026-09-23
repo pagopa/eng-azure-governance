@@ -68,7 +68,6 @@ def test_selected_set_uses_catalog_publication_paths():
     plan = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
     assert plan.expected_paths == (
         "03_azure_retirements_slide.tsv",
-        "azure-retirements-editorial.yaml",
     )
 
 

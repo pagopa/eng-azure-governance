@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import html
 import json
 import re
 from datetime import date, datetime, timezone
@@ -80,7 +79,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
                 diagnostics.append(Diagnostic("error", "missing_affected_subscription", "validation", "service-health", context.run_id, record_ref=event_id))
             if not is_global and not row.get("subscription_name"):
                 diagnostics.append(Diagnostic("error", "missing_subscription_name", "validation", "service-health", context.run_id, record_ref=event_id))
-            if row.get("retirement_date_quality") not in {"exact", "missing", "invalid", "unknown"}:
+            if row.get("retirement_date_quality") not in {"exact", "missing", "invalid", "unknown", "partial", "conflict"}:
                 diagnostics.append(Diagnostic("error", "invalid_retirement_date_quality", "validation", "service-health", context.run_id, record_ref=event_id))
             if row.get("retirement_date"):
                 try:
@@ -142,7 +141,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
             for field, allowed in {
                 "resource_inventory_match_status": {"matched", "missing", "ambiguous", "not_applicable"},
                 "subscription_inventory_match_status": {"matched", "missing", "not_applicable"},
-                "description_quality": {"full_article", "description_fallback", "sensitive_unavailable", "missing"},
+                "description_quality": {"full_article", "description_fallback", "summary_fallback", "sensitive_unavailable", "missing"},
             }.items():
                 if row.get(field) not in allowed:
                     diagnostics.append(Diagnostic("error", f"invalid_{field}", "validation", "service-health", context.run_id, record_ref=event_id))
@@ -213,6 +212,8 @@ def _date(raw: Any) -> tuple[str, str]:
     value = "" if raw is None else str(raw)
     if not value:
         return "", "missing"
+    if re.fullmatch(r"\d{4}(?:-\d{2})?", value):
+        return "", "partial"
     try:
         return date.fromisoformat(value[:10]).isoformat(), "exact"
     except (TypeError, ValueError):
@@ -221,6 +222,69 @@ def _date(raw: Any) -> tuple[str, str]:
 
 def _plain_article(value: Any) -> str:
     return _plain_text(value)
+
+
+def _recommended_action_section(value: Any) -> str:
+    if not isinstance(value, str) or not value:
+        return ""
+    section = re.search(
+        r"(?is)<h[1-6]\b[^>]*>\s*recommended actions?\s*:?[\s]*</h[1-6]>(.*?)"
+        r"(?=<h[1-6]\b|$)",
+        value,
+    )
+    return _plain_text(section.group(1)) if section else ""
+
+
+def _text_retirement_claim(
+    properties: Mapping[str, Any], article: Mapping[str, Any]
+) -> tuple[str, str]:
+    sources = (
+        ("properties.title", properties.get("title")),
+        ("properties.description", properties.get("description")),
+        ("properties.article.articleContent", article.get("articleContent")),
+    )
+    claims: list[tuple[str, str]] = []
+    date_pattern = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+    month = r"January|February|March|April|May|June|July|August|September|October|November|December"
+    written_date_pattern = re.compile(
+        rf"\b(?:\d{{1,2}}\s+(?:{month})\s+\d{{4}}|(?:{month})\s+\d{{1,2}},?\s+\d{{4}})\b",
+        re.IGNORECASE,
+    )
+    partial_date_pattern = re.compile(rf"\b(?:{month})\s+\d{{4}}\b", re.IGNORECASE)
+    retirement_pattern = re.compile(r"\bretir(?:e|ed|ement|ing|es|al)\b", re.IGNORECASE)
+    for source, raw_text in sources:
+        text = _plain_text(raw_text)
+        for sentence in re.split(r"(?<=[.!?])\s+", text):
+            if not retirement_pattern.search(sentence):
+                continue
+            sentence_claims = [
+                (match.group(), source) for match in date_pattern.finditer(sentence)
+            ]
+            for match in written_date_pattern.finditer(sentence):
+                raw_date = match.group().replace(",", "")
+                formats = ("%d %B %Y", "%B %d %Y")
+                for date_format in formats:
+                    try:
+                        parsed = datetime.strptime(raw_date, date_format).date()
+                    except ValueError:
+                        continue
+                    sentence_claims.append((parsed.isoformat(), source))
+                    break
+            if not sentence_claims:
+                partial_match = partial_date_pattern.search(sentence)
+                if partial_match:
+                    parsed = datetime.strptime(partial_match.group(), "%B %Y")
+                    sentence_claims.append((parsed.strftime("%Y-%m"), source))
+            claims.extend(sentence_claims)
+    dates = {value for value, _ in claims}
+    if len(dates) > 1:
+        source_paths = ",".join(sorted({source for _, source in claims}))
+        return "conflict:" + ",".join(sorted(dates)), "conflicting:" + source_paths
+    if not claims:
+        return "", ""
+    value = claims[0][0]
+    source_paths = ",".join(sorted({source for _, source in claims}))
+    return value, source_paths
 
 
 def _plain_text(value: Any) -> str:
@@ -426,23 +490,52 @@ def normalize_service_health(
             diagnostics.append(Diagnostic("error", "tracking_id_mismatch", "normalization", "service-health", context.run_id, record_ref=event_id))
             continue
         article = _mapping(props.get("article"))
-        raw_article = article.get("articleContent") or props.get("description")
+        raw_article = article.get("articleContent") or props.get("description") or props.get("summary")
         description = _plain_article(raw_article)
         sensitive = props.get("isSensitive") is True or str(props.get("isSensitive") or "").casefold() == "true"
-        description_quality = "sensitive_unavailable" if sensitive and not raw_article else "full_article" if article.get("articleContent") else "description_fallback" if props.get("description") else "missing"
+        description_quality = (
+            "sensitive_unavailable" if sensitive and not raw_article
+            else "full_article" if article.get("articleContent")
+            else "description_fallback" if props.get("description")
+            else "summary_fallback" if props.get("summary")
+            else "missing"
+        )
+        description_source = (
+            "properties.article.articleContent" if article.get("articleContent")
+            else "properties.description" if props.get("description")
+            else "properties.summary" if props.get("summary")
+            else ""
+        )
+        native_actions = _plain_text(props.get("recommendedActions"))
+        article_actions = _recommended_action_section(article.get("articleContent"))
+        recommended_actions = native_actions or article_actions
+        recommended_actions_source = (
+            "properties.recommendedActions" if native_actions
+            else "properties.article.articleContent.Recommended action" if article_actions
+            else ""
+        )
         start, start_flag = _timestamp(props.get("impactStartTime"))
         mitigation, mitigation_flag = _timestamp(props.get("impactMitigationTime"))
         last_update, update_flag = _timestamp(props.get("lastUpdateTime"))
-        retirement_advisory = str(props.get("eventSubType") or "").casefold() in {
-            "retirement",
-            "serviceupgradeandretirement",
-        }
-        retirement_raw = (
-            str(props.get("impactMitigationTime") or "")
-            if retirement_advisory and status.casefold() == "active"
+        retirement_raw = str(props.get("retirementDate") or props.get("retirement_date") or "")
+        retirement_date_source = (
+            "properties.retirementDate" if props.get("retirementDate")
+            else "properties.retirement_date" if props.get("retirement_date")
             else ""
         )
+        text_retirement_raw, text_retirement_source = _text_retirement_claim(props, article)
+        if text_retirement_raw:
+            if retirement_raw and retirement_raw[:10] != text_retirement_raw:
+                retirement_raw = f"conflict:{retirement_raw},{text_retirement_raw}"
+                sources = {retirement_date_source, text_retirement_source} - {""}
+                retirement_date_source = "conflicting:" + ",".join(sorted(sources))
+            elif not retirement_raw:
+                retirement_raw = text_retirement_raw
+                retirement_date_source = text_retirement_source
         retirement_date, retirement_quality = _date(retirement_raw)
+        if retirement_raw.startswith("conflict:"):
+            retirement_date = ""
+            retirement_quality = "conflict"
         if not retirement_raw:
             retirement_quality = "unknown"
         event_flags = set(filter(None, (start_flag, mitigation_flag, update_flag)))
@@ -454,6 +547,8 @@ def normalize_service_health(
             event_flags.add("missing_retirement_date")
         if retirement_quality == "invalid":
             event_flags.add("invalid_retirement_date")
+        if retirement_quality == "conflict":
+            event_flags.add("conflicting_retirement_date")
         event_flags = frozenset(event_flags)
         service_regions = list(_impact_service_regions(props))
         collection_subscription = _collection_subscription(raw_record, event)
@@ -536,15 +631,15 @@ def normalize_service_health(
                 "record_type": record_type, "source_system": "azure_service_health", "service_health_event_id": event_id, "event_name": event_name, "tracking_id": tracking,
                 "collection_subscription_id": collection_subscription, "subscription_id": subscription_id, "subscription_name": str(subscription_inventory.get("name") or ""), "subscription_evidence_source": "explicit_global" if is_global and not subscription_id else "advisor_recommendation" if resource_source == "advisor_recommendation" else "resource_health_endpoint",
                 "event_type": event_type, "event_sub_type": str(props.get("eventSubType") or ""), "event_source": str(props.get("eventSource") or ""), "event_level": level, "status": status,
-                "title": _plain_text(props.get("title")), "summary": _plain_text(props.get("summary")), "description_problem": description, "description_quality": description_quality, "recommended_actions": _plain_text(props.get("recommendedActions")),
+                "title": _plain_text(props.get("title")), "summary": _plain_text(props.get("summary")), "description_problem": description, "description_quality": description_quality, "recommended_actions": recommended_actions,
                 "impact_start_time_raw": str(props.get("impactStartTime") or ""), "impact_start_time": start, "impact_mitigation_time_raw": str(props.get("impactMitigationTime") or ""), "impact_mitigation_time": mitigation,
                 "last_update_time_raw": str(props.get("lastUpdateTime") or ""), "last_update_time": last_update, "retirement_date_raw": retirement_raw, "retirement_date": retirement_date,
-                "retirement_date_source": "properties.impactMitigationTime" if retirement_raw else "", "retirement_date_quality": retirement_quality, "impacted_service": service_name, "impacted_service_guid": service_guid,
+                "retirement_date_source": retirement_date_source, "retirement_date_quality": retirement_quality, "impacted_service": service_name, "impacted_service_guid": service_guid,
                 "impacted_region": region, "normalized_impacted_region": "global" if is_global else region.casefold(), "resource_evidence_source": resource_source, "resource_evidence_status": "inventory_missing" if resource_id and not resource_inventory else "published" if resource_id else "not_published",
                 "published_resource_id": resource_id, "normalized_resource_id": normalized_resource, "resource_name": str(resource_inventory.get("name") or ""), "resource_group": str(resource_inventory.get("resourceGroup") or resource_inventory.get("resource_group") or ""), "resource_type": str(resource_inventory.get("type") or resource_inventory.get("resourceType") or ""),
                 "resource_location": str(resource_inventory.get("location") or ""), "recommendation_type_id": str((advisor_record or {}).get("recommendation_type_id") or (advisor_record or {}).get("recommendationTypeId") or props.get("recommendationTypeId") or ""), "advisor_platform_state": str((advisor_record or {}).get("platform_state") or (advisor_record or {}).get("platformState") or ""), "current_query_match": str((advisor_record or {}).get("current_query_match") or (advisor_record or {}).get("currentQueryMatch") or ""),
                 "resource_inventory_match_status": resource_status, "subscription_inventory_match_status": subscription_status, "is_sensitive": "true" if sensitive else "false", "details_fetch_status": "unavailable_sensitive" if sensitive and not raw_article else "not_needed", "diagnostic_flags": ",".join(sorted(row_flags)),
-                "provenance_json": _canonical({"api_version": acquisition.receipt.api_version, "event_id": event_id, "association": record_type, "subscription_name_source": evidence.subscription_name_sources.get(subscription_id.casefold(), ""), "resource_evidence_source": resource_source if resource_id else "not_published", "resource_graph_queries": resource_graph_queries}), "raw_record_ref": ref,
+                "provenance_json": _canonical({"api_version": acquisition.receipt.api_version, "event_id": event_id, "association": record_type, "subscription_name_source": evidence.subscription_name_sources.get(subscription_id.casefold(), ""), "resource_evidence_source": resource_source if resource_id else "not_published", "resource_graph_queries": resource_graph_queries, "field_sources": {"description_problem": description_source, "recommended_actions": recommended_actions_source, "retirement_date": retirement_date_source}}), "raw_record_ref": ref,
             })
             rows.append(row)
             companions.append({"schema_version": 1, "run_id": context.run_id, "raw_record_ref": ref, "service_health_event": event, "collection_subscription_id": collection_subscription, "affected_subscription_id": subscription_id, "service_health_resource_evidence": {"resourceId": resource_id} if resource_id and resource_source == "service_health_resource" else None, "advisor_evidence": advisor_record, "resource_inventory": resource_inventory or None, "subscription_inventory": subscription_inventory or None})
@@ -652,10 +747,29 @@ def prepare_service_health_report(
             collection_context=acquisition.collection_context,
             response_context=acquisition.response_context,
         )
+    exported_records = []
+    for row in artifact.records:
+        value = dict(row)
+        try:
+            provenance = json.loads(value.get("provenance_json", "{}"))
+        except json.JSONDecodeError:
+            provenance = {}
+        if isinstance(provenance, dict):
+            provenance.pop("field_sources", None)
+            value["provenance_json"] = _canonical(provenance)
+        exported_records.append(value)
+    export_artifact = Artifact(
+        contract=artifact.contract,
+        schema_version=artifact.schema_version,
+        run_id=artifact.run_id,
+        records=tuple(exported_records),
+        companion_records=artifact.companion_records,
+        accounting=artifact.accounting,
+    )
     return PreparedRawReport(
         acquisition=normalized,
         artifact=artifact,
-        artifacts=(SERVICE_HEALTH_V1.encode(artifact), SERVICE_HEALTH_V1.encode_companion(artifact)),
+        artifacts=(SERVICE_HEALTH_V1.encode(export_artifact), SERVICE_HEALTH_V1.encode_companion(artifact)),
     )
 
 

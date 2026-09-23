@@ -11,6 +11,7 @@ from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors
     ApplicationError,
 )
 from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
+from src.comitato.comitato_azure_retirements_v2.contracts.codecs import decode_tsv
 from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
     ServiceHealthSupplementalEvidence,
 )
@@ -72,7 +73,7 @@ def acquisition() -> SourceAcquisition:
     )
 
 
-def test_normalize_service_health_renders_complete_article_and_preserves_association() -> None:
+def test_normalize_service_health_does_not_treat_mitigation_time_as_retirement_date() -> None:
     result = normalize_service_health(
         acquisition(), context(), ServiceHealthSupplementalEvidence()
     )
@@ -84,7 +85,8 @@ def test_normalize_service_health_renders_complete_article_and_preserves_associa
     row = artifact.records[0]
     assert row["record_type"] == "service_health_event_resource"
     assert row["description_problem"] == "Read details (https://example.test)."
-    assert row["retirement_date"] == "2027-03-31"
+    assert row["retirement_date"] == ""
+    assert row["retirement_date_source"] == ""
     assert row["published_resource_id"].endswith("/a")
     assert row["subscription_id"] == "sub-a"
     assert row["raw_record_ref"] == artifact.companion_records[0]["raw_record_ref"]
@@ -115,6 +117,140 @@ def test_normalize_service_health_preserves_unicode_article_text_and_action_obje
     assert "città" in row["description_problem"]
     assert "–" in row["description_problem"]
     assert row["recommended_actions"] == "Aggiorna l'istanza à"
+
+
+def test_normalize_service_health_uses_summary_when_original_description_is_absent() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"].pop("article")
+    payload["properties"].pop("description", None)
+    payload["properties"]["summary"] = "Original Health summary."
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["description_problem"] == "Original Health summary."
+    assert row["description_quality"] == "summary_fallback"
+
+
+def test_normalize_service_health_uses_explicit_retirement_claim_in_original_text() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["article"] = {
+        "articleContent": "<p>Retire the feature by 2026-09-30.</p>"
+    }
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["retirement_date"] == "2026-09-30"
+    assert row["retirement_date_source"] == "properties.article.articleContent"
+    provenance = json.loads(row["provenance_json"])
+    assert provenance["field_sources"]["retirement_date"] == (
+        "properties.article.articleContent"
+    )
+
+
+def test_normalize_service_health_parses_unambiguous_written_retirement_date() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["article"] = {
+        "articleContent": "<p>Retirement takes effect on 30 September 2026.</p>"
+    }
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    assert result.value.records[0]["retirement_date"] == "2026-09-30"
+
+
+def test_normalize_service_health_retains_conflicting_retirement_claims() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["title"] = "Retirement ends 30 September 2026."
+    payload["properties"]["description"] = "Retirement takes effect on 2026-10-01."
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["retirement_date"] == ""
+    assert row["retirement_date_raw"] == "conflict:2026-09-30,2026-10-01"
+    assert row["retirement_date_quality"] == "conflict"
+
+
+def test_normalize_service_health_marks_month_only_retirement_claim_as_partial() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["article"] = {
+        "articleContent": "<p>Retirement is planned for September 2026.</p>"
+    }
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["retirement_date"] == ""
+    assert row["retirement_date_raw"] == "2026-09"
+    assert row["retirement_date_quality"] == "partial"
+
+
+def test_normalize_service_health_extracts_actions_from_recommended_action_section() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"]["article"] = {
+        "articleContent": (
+            "<p>Background context.</p><h2>Recommended action</h2>"
+            "<p>Move off legacy SDKs using the "
+            '<a href="https://learn.example/retire">migration guide</a>.</p>'
+            "<h2>More information</h2><p>Additional details.</p>"
+        )
+    }
+    payload["properties"]["recommendedActions"] = ""
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["recommended_actions"] == (
+        "Move off legacy SDKs using the migration guide (https://learn.example/retire)."
+    )
+    provenance = json.loads(row["provenance_json"])
+    assert provenance["field_sources"]["recommended_actions"] == (
+        "properties.article.articleContent.Recommended action"
+    )
 
 
 def test_normalize_service_health_does_not_promote_mitigation_time_without_retirement_semantics() -> None:
@@ -757,3 +893,9 @@ def test_prepare_service_health_report_returns_normalized_acquisition_and_encode
         {item.logical_path: item.data for item in prepared.artifacts},
         context(),
     ) == ()
+    exported = decode_tsv(
+        prepared.artifacts[0].data,
+        SERVICE_HEALTH_REPORT.contract.header,
+    )
+    assert "field_sources" not in json.loads(exported[0]["provenance_json"])
+    assert "field_sources" in json.loads(prepared.acquisition.records[0]["provenance_json"])

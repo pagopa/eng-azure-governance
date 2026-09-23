@@ -31,14 +31,11 @@ leaves the existing monthly bundle unchanged.
 
 The operator supplies `--subscriptions sub-a,sub-b` or allows live scope
 resolution. `--catalog-path` selects the source-of-truth version-1 platform
-catalog; `--editorial-catalog-path` selects the initial editorial YAML seed;
-`--output-path` selects the export root. Relative defaults are
+catalog; `--output-path` selects the export root. Relative defaults are
 resolved from the repository root: the catalog is
-`src/_source_of_truth/eng-finops-platforms.yaml`, the editorial catalog is
-`src/_source_of_truth/azure-retirements-editorial.yaml`, and the export root is
-`src/comitato/comitato_azure_retirements_v2/exports`. Both catalogs and the
-output root may be set with `COMITATO_AZURE_RETIREMENTS_CATALOG`,
-`COMITATO_AZURE_RETIREMENTS_EDITORIAL_CATALOG`, and
+`src/_source_of_truth/eng-finops-platforms.yaml`, and the export root is
+`src/comitato/comitato_azure_retirements_v2/exports`. The catalog and output
+root may be set with `COMITATO_AZURE_RETIREMENTS_CATALOG` and
 `COMITATO_AZURE_RETIREMENTS_OUTPUT`.
 
 Each successful run writes its complete bundle under
@@ -48,17 +45,13 @@ left by an earlier selector or run. Runs for other months keep their existing
 bundles.
 
 Replacing an existing month retains the superseded bundle under
-`exports/.history/YYYY/MM/<generation>`. For a live run, the adjacent
-`azure-retirements-editorial.yaml` from the current month is the effective
-input; if it does not exist, the latest prior monthly sidecar is used, then the
-configured seed is used. The sidecar is captured with each generation and is
-kept adjacent to the published `03_azure_retirements_slide.tsv` workflow.
-Source support is generated under each item's `source_support` mapping,
-including source references, source identities, normalized source fields,
-fingerprints, and review reasons. Existing title, description, action, date,
-association, and other editorial fields are preserved. New or unmatched
-observations become stable draft items with source associations for the next
-run.
+`exports/.history/YYYY/MM/<generation>`. New publication and replay use the
+hashed `saved_inputs` in `publication-manifest.json`; they do not generate or
+restore an editorial YAML sidecar. `stato_editoriale` reports
+`source-derived; human review not recorded`, and committee description and
+retirement-date fields remain empty until a separate review workflow exists.
+Schema-1 historical bundles without `saved_inputs` cannot be replayed because
+they do not preserve the acquisition inputs needed for deterministic replay.
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.

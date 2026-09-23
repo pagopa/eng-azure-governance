@@ -17,7 +17,12 @@ def test_s04_ambiguous_typed_candidates_remain_three_separate_aggregates() -> No
         dependency_plan=DependencyPlan(("aggregate",)),
     )
     catalog = PlatformCatalogSnapshot(schema_version=1, sha256="a" * 64, assignments=())
-    advisor = {"advisor_recommendation_id": "advisor-1", "recommendation_type_id": "retirement-1", "raw_record_ref": "advisor-ref"}
+    advisor = {
+        "advisor_recommendation_id": "advisor-1",
+        "recommendation_type_id": "retirement-1",
+        "provenance_json": json.dumps({"service_health_tracking_ids": ["health-track-1", "health-track-2"]}),
+        "raw_record_ref": "advisor-ref",
+    }
     service_health = (
         {"service_health_event_id": "health-1", "tracking_id": "health-track-1", "recommendation_type_id": "retirement-1", "raw_record_ref": "health-ref-1", "subscription_evidence_source": "explicit_global"},
         {"service_health_event_id": "health-2", "tracking_id": "health-track-2", "recommendation_type_id": "retirement-1", "raw_record_ref": "health-ref-2", "subscription_evidence_source": "explicit_global"},

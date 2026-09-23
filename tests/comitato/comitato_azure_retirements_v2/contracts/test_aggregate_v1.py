@@ -89,7 +89,67 @@ def test_empty_aggregate_encodes_exact_header() -> None:
     assert encoded.data == ("\t".join(AGGREGATE_V1.header) + "\n").encode()
 
 
-def test_build_aggregate_merges_only_explicit_editorial_associations() -> None:
+def test_build_aggregate_preserves_conflicting_retirement_evidence() -> None:
+    records = build_aggregate(
+        (),
+        (
+            {
+                "service_health_event_id": "event-1",
+                "source_system": "azure_service_health",
+                "tracking_id": "track-1",
+                "subscription_id": SUBSCRIPTION,
+                "retirement_date": "",
+                "retirement_date_raw": "conflict:2026-09-30,2026-10-01",
+                "retirement_date_source": "conflicting:properties.description,properties.title",
+                "retirement_date_quality": "conflict",
+                "raw_record_ref": "health-ref",
+            },
+        ),
+        context=context(),
+        catalog=catalog(),
+    )
+
+    assert records[0]["retirement_date_quality"] == "conflict"
+    claims = json.loads(records[0]["retirement_dates_json"])
+    assert claims == [
+        {
+            "date": "",
+            "raw_value": "conflict:2026-09-30,2026-10-01",
+            "quality": "conflict",
+            "raw_record_refs": ["health-ref"],
+            "source_path": "conflicting:properties.description,properties.title",
+            "source_system": "azure_service_health",
+        }
+    ]
+
+
+def test_build_aggregate_preserves_partial_retirement_evidence() -> None:
+    records = build_aggregate(
+        (),
+        (
+            {
+                "service_health_event_id": "event-1",
+                "source_system": "azure_service_health",
+                "tracking_id": "track-1",
+                "subscription_id": SUBSCRIPTION,
+                "retirement_date": "",
+                "retirement_date_raw": "2026-09",
+                "retirement_date_source": "properties.article.articleContent",
+                "retirement_date_quality": "partial",
+                "raw_record_ref": "health-ref",
+            },
+        ),
+        context=context(),
+        catalog=catalog(),
+    )
+
+    assert records[0]["retirement_date_quality"] == "partial"
+    claims = json.loads(records[0]["retirement_dates_json"])
+    assert claims[0]["raw_value"] == "2026-09"
+    assert claims[0]["quality"] == "partial"
+
+
+def test_build_aggregate_does_not_merge_on_editorial_association_alone() -> None:
     advisor = {
         "advisor_recommendation_id": "rec-1",
         "recommendation_type_id": "retirement-1",
@@ -121,5 +181,5 @@ def test_build_aggregate_merges_only_explicit_editorial_associations() -> None:
         editorial_catalog=editorial,
     )
 
-    assert len(records) == 1
-    assert records[0]["correlation_status"] == "explicitly_correlated"
+    assert len(records) == 2
+    assert {record["correlation_status"] for record in records} == {"single_source"}

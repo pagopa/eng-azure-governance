@@ -37,14 +37,14 @@ def test_source_events_group_only_by_explicit_source_identity() -> None:
     events, memberships = build_source_events(advisor, health)
 
     assert [event.key for event in events] == [
+        SourceEventKey("advisor", "rec-1"),
+        SourceEventKey("advisor", "rec-2"),
         SourceEventKey("advisor", "rec-3"),
-        SourceEventKey("advisor", "type-a"),
         SourceEventKey("service-health", "track-1"),
     ]
-    assert memberships == (
-        AggregateMembership(SourceEventKey("advisor", "rec-3"), ("a-3",)),
-        AggregateMembership(SourceEventKey("advisor", "type-a"), ("a-1", "a-2")),
-        AggregateMembership(SourceEventKey("service-health", "track-1"), ("h-1",)),
+    assert memberships == tuple(
+        AggregateMembership(event.key, (ref,))
+        for event, ref in zip(events, ("a-1", "a-2", "a-3", "h-1"), strict=True)
     )
 
 

@@ -384,7 +384,7 @@ def test_normalize_advisor_uses_metadata_inventory_and_authoritative_fallbacks()
     row = result.value.records[0]
     assert row["service_name"] == "Kubernetes service"
     assert row["subscription_name"] == "DEV-P4PA"
-    assert row["description"] == "Metadata description"
+    assert row["description"] == "Short description fallback"
     assert row["potential_benefits"] == "Managed identity removes legacy authentication."
     assert row["learn_more_link"] == "https://learn.example/container-insights"
     assert row["label"] == "Container Insights authentication"
@@ -396,8 +396,30 @@ def test_normalize_advisor_uses_metadata_inventory_and_authoritative_fallbacks()
     assert provenance["enrichment"]["resource_key"].endswith("/managedclusters/aks")
     assert provenance["enrichment"]["subscription_key"] == "sub-a"
     assert provenance["field_sources"]["service_name"] == "metadata.properties.resourceMetadata.singular"
+    assert provenance["field_sources"]["description"] == "advisor.shortDescription.problem"
     assert provenance["field_sources"]["learn_more_link"] == "metadata.properties.learnMoreLink"
     assert result.value.companion_records[0]["advisor_metadata"]["id"] == "metadata-aks"
+
+
+def test_normalize_advisor_prefers_metadata_detailed_description_to_short_problem() -> None:
+    metadata = enriched_container_insights().metadata
+    metadata["b005ecf0-23e2-4279-9ca2-718d1518c9fb"]["properties"]["detailedDescription"] = (
+        "The native metadata explanation."
+    )
+
+    result = normalize_advisor(
+        acquisition_with_real_container_insights_payload(),
+        context(),
+        AdvisorEnrichments(metadata=metadata),
+    )
+
+    assert result.is_valid
+    assert result.value is not None
+    row = result.value.records[0]
+    assert row["description"] == "The native metadata explanation."
+    assert json.loads(row["provenance_json"])["field_sources"]["description"] == (
+        "metadata.properties.detailedDescription"
+    )
 
 
 def test_normalize_advisor_prefers_recommendation_fields_and_short_description_fallback() -> None:

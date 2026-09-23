@@ -2,17 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from datetime import date
 import json
 from typing import Any, Iterator
 
 from ..domain.correlation import correlate_source_events
-from ..domain.correlation import CorrelationEdge
 from ..domain.dates import parse_retirement_date
 from ..domain.diagnostics import Diagnostic, ValidationResult
 from ..domain.platforms import PlatformCatalogSnapshot, SubscriptionId, project_platforms
 from ..domain.retirements import (
-    AggregateId,
     SourceEventKey,
     aggregate_id_for,
     build_source_events,
@@ -139,6 +136,16 @@ def _date_projection(rows: tuple[Mapping[str, Any], ...]) -> tuple[str, str, tup
         )
         quality = str(row.get("retirement_date_quality", "")) or claim.quality
         quality_values.add(quality)
+        if quality == "conflict":
+            claims.append({
+                "date": "",
+                "raw_value": str(row.get("retirement_date_raw", "")),
+                "quality": "conflict",
+                "raw_record_refs": [claim.raw_record_ref] if claim.raw_record_ref else [],
+                "source_path": claim.source_path,
+                "source_system": claim.source_system,
+            })
+            continue
         if claim.value is not None:
             claims.append({
                 "date": claim.value.isoformat(),
@@ -147,10 +154,10 @@ def _date_projection(rows: tuple[Mapping[str, Any], ...]) -> tuple[str, str, tup
                 "source_path": claim.source_path,
                 "source_system": claim.source_system,
             })
-        elif claim.quality == "partial":
+        elif quality == "partial" or claim.quality == "partial":
             claims.append({
                 "date": "",
-                "raw_value": claim.raw_value,
+                "raw_value": str(row.get("retirement_date_raw", "")) or claim.raw_value,
                 "quality": "partial",
                 "raw_record_refs": [claim.raw_record_ref] if claim.raw_record_ref else [],
                 "source_path": claim.source_path,
@@ -164,12 +171,15 @@ def _date_projection(rows: tuple[Mapping[str, Any], ...]) -> tuple[str, str, tup
     dates = tuple(by_date[key] for key in sorted(by_date))
     date_values = tuple(item["date"] for item in dates if item["date"])
     partial_values = tuple(item.get("raw_value", "") for item in dates if item.get("quality") == "partial")
+    conflict_values = tuple(item.get("raw_value", "") for item in dates if item.get("quality") == "conflict")
+    if "conflict" in quality_values or conflict_values:
+        return "", "conflict", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
+    if partial_values:
+        return "", "partial", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
     if len(date_values) == 1:
         return date_values[0], "exact", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
     if len(date_values) > 1:
         return "", "conflict", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
-    if partial_values:
-        return "", "partial", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
     return "", "invalid" if "invalid" in quality_values else "missing", dates, ()
 
 
@@ -231,6 +241,16 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
                 "retirement_date": getattr(item, "retirement_date", ""),
                 "review_state": "ready" if item.title and item.description and item.suggested_action else "draft",
             }
+    source_field_provenance = {}
+    for row in rows:
+        try:
+            source_provenance = json.loads(str(row.get("provenance_json", "{}")))
+        except json.JSONDecodeError:
+            source_provenance = {}
+        field_sources = source_provenance.get("field_sources", {}) if isinstance(source_provenance, Mapping) else {}
+        raw_ref = str(row.get("raw_record_ref", "")).strip()
+        if raw_ref and isinstance(field_sources, Mapping) and field_sources:
+            source_field_provenance[raw_ref] = dict(field_sources)
     record = {
         "schema_version": "1", "run_id": context.run_id, "as_of_date": context.as_of_date.isoformat(), "aggregate_id": aggregate_id.value,
         "correlation_status": "single_source", "correlation_basis": "",
@@ -247,7 +267,7 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
         "published_resource_ids_json": _json(list(_unique_values(rows, ("published_resource_id",)))), "normalized_resource_ids_json": _json(list(_unique_values(rows, ("normalized_resource_id",)))),
         "impacted_services_json": _json(list(_unique_values(rows, ("impacted_service", "service_name")))), "impacted_regions_json": _json(list(_unique_values(rows, ("impacted_region",)))),
         "source_links_json": _json(list(_unique_values(rows, ("learn_more_link", "source_link")))), "diagnostic_flags": ",".join(sorted(flags)),
-        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "editorial": editorial, "resource_evidence": resource_evidence}),
+        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "editorial": editorial, "resource_evidence": resource_evidence, "source_field_provenance": source_field_provenance}),
     }
     return AggregateRecord.from_mapping(record)
 
@@ -261,39 +281,7 @@ def build_aggregate(
     editorial_catalog: object | None = None,
 ) -> tuple[AggregateRecord, ...]:
     events, _ = build_source_events(advisor_records, service_health_records)
-    edges: list[CorrelationEdge] = []
-    if editorial_catalog is not None:
-        for item in getattr(editorial_catalog, "items", ()):
-            advisor_events = [
-                event for event in events
-                if event.source == "advisor"
-                and any(
-                    identity in item.source_identities("advisor")
-                    for row in event.records
-                    for identity in (
-                        str(row.get("recommendation_type_id") or "").strip().casefold(),
-                        str(row.get("advisor_recommendation_id") or "").strip().casefold(),
-                    )
-                )
-            ]
-            health_events = [
-                event for event in events
-                if event.source == "service-health"
-                and any(
-                    identity in item.source_identities("service-health")
-                    for row in event.records
-                    for identity in (
-                        str(row.get("tracking_id") or "").strip().casefold(),
-                        str(row.get("service_health_event_id") or "").strip().casefold(),
-                    )
-                )
-            ]
-            for advisor_event in advisor_events:
-                for health_event in health_events:
-                    basis = "recommendation_type_id" if item.source_identities("advisor") else "advisor_recommendation_id"
-                    edges.append(CorrelationEdge(advisor_event.key, health_event.key, basis))
-    correlation = correlate_source_events(events, edges, infer_edges=editorial_catalog is None)
-    by_first_key = {group[0].key: group for group in correlation.groups}
+    correlation = correlate_source_events(events, (), infer_edges=True)
     records: list[AggregateRecord] = []
     for group in correlation.groups:
         row = _row_for_group(group, context, catalog, editorial_catalog)

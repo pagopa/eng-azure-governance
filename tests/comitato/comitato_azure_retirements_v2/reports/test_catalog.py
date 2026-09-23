@@ -72,10 +72,10 @@ def test_plan_returns_one_immutable_selected_closure() -> None:
     assert isinstance(closure, SelectedReportClosure)
     assert closure.expected_paths == (
         "03_azure_retirements_slide.tsv",
-        "azure-retirements-editorial.yaml",
     )
     assert closure.owner_of("03_azure_retirements_slide.tsv").name == "slides"
-    assert closure.owner_of("azure-retirements-editorial.yaml").name == "slides"
+    with pytest.raises(KeyError):
+        closure.owner_of("azure-retirements-editorial.yaml")
     with pytest.raises(FrozenInstanceError):
         closure.selector = ReportSelector.ALL
 
@@ -133,7 +133,6 @@ def test_every_declared_path_has_exactly_one_owner():
         "service-health",
         "service-health",
         "aggregate",
-        "slides",
         "slides",
     )
 
@@ -230,7 +229,7 @@ def test_editorial_catalog_diagnoses_unassociated_and_ambiguous_source_events():
     diagnostics = catalog.association_diagnostics(events, run_id="run-1")
 
     assert [(item.code, item.record_ref) for item in diagnostics] == [
-        ("ambiguous_editorial_mapping", "advisor:retirement-type"),
+            ("ambiguous_editorial_mapping", "advisor:advisor-instance"),
         ("unassociated_editorial_source", "service-health:health-unassociated"),
     ]
     assert all(item.run_id == "run-1" for item in diagnostics)

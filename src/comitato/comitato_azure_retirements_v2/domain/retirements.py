@@ -116,10 +116,31 @@ def aggregate_id_for(keys: tuple[SourceEventKey, ...]) -> AggregateId:
 def _rows(value: object) -> tuple[Mapping[str, Any], ...]:
     artifact = getattr(value, "artifact", None)
     if artifact is not None:
-        return _rows(artifact)
+        value = artifact
     records = getattr(value, "records", None)
     if records is not None:
-        return _rows(records)
+        rows = _rows(records)
+        companions = getattr(value, "companion_records", ())
+        companion_by_ref = {
+            _text(item.get("raw_record_ref")): item
+            for item in companions
+            if isinstance(item, Mapping) and _text(item.get("raw_record_ref"))
+        }
+        if not companion_by_ref:
+            return rows
+        enriched = []
+        for row in rows:
+            companion = companion_by_ref.get(_text(row.get("raw_record_ref")), {})
+            metadata = companion.get("advisor_metadata", {}) if isinstance(companion, Mapping) else {}
+            properties = metadata.get("sourceProperties", {}) if isinstance(metadata, Mapping) else {}
+            retirement = properties.get("serviceRetirement", {}) if isinstance(properties, Mapping) else {}
+            service_health = retirement.get("serviceHealth", {}) if isinstance(retirement, Mapping) else {}
+            copied = dict(row)
+            if isinstance(service_health, Mapping):
+                copied["source_health_tracking_ids"] = service_health.get("trackingIds", ())
+                copied["source_health_ash_urls"] = service_health.get("ashUrls", ())
+            enriched.append(copied)
+        return tuple(enriched)
     if isinstance(value, Mapping):
         return (value,)
     if isinstance(value, Iterable) and not isinstance(value, (str, bytes)):
@@ -129,9 +150,9 @@ def _rows(value: object) -> tuple[Mapping[str, Any], ...]:
 
 def _identity(source: str, row: Mapping[str, Any]) -> SourceEventKey:
     if source == "advisor":
-        identity = _text(row.get("recommendation_type_id") or row.get("advisor_recommendation_type_id"))
+        identity = _text(row.get("advisor_recommendation_id"))
         if not identity:
-            identity = _text(row.get("advisor_recommendation_id"))
+            identity = _text(row.get("recommendation_type_id") or row.get("advisor_recommendation_type_id"))
     else:
         identity = _text(row.get("tracking_id") or row.get("service_health_tracking_id"))
         if not identity:

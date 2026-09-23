@@ -13,24 +13,15 @@ from typing import Any, Sequence
 from .acquisition.evidence import ObservationAccounting, SourceRecord
 from .acquisition.model import AcquisitionReceipt, SourceAcquisition
 from .config import RuntimeConfig, parse_config
-from .domain.diagnostics import Diagnostic, sort_diagnostics
+from .domain.diagnostics import Diagnostic
 from .domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
 from .domain.execution import CatalogIdentity, DependencyPlan, ReportSelector, RunContext, RunRequest, Scope
 from .domain.platforms import PlatformAssignment, PlatformCatalogSnapshot, SubscriptionId
-from .domain.retirements import build_source_events
 from .application.orchestration import RetirementsApplication
-from .contracts.model import EncodedArtifact
 from .contracts.codecs import canonical_json
 from .publication.model import PublicationCandidate, RunResult
 from .ports import RunObserver
 from .reports.advisor import prepare_advisor_report
-from .reports.catalog import (
-    DEFAULT_EDITORIAL_YAML,
-    EditorialCatalog,
-    EditorialItem,
-    EDITORIAL_YAML_PATH,
-    build_editorial_work_list,
-)
 from .reports.service_health import prepare_service_health_report
 from .runtime_logging import RuntimeReporter
 
@@ -54,6 +45,8 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
     try:
         manifest = json.loads((bundle / "publication-manifest.json").read_text(encoding="utf-8"))
         if not isinstance(manifest.get("saved_inputs"), Mapping):
+            if manifest.get("manifest_schema_version") == 1:
+                raise ValueError("legacy schema-1 replay is unsupported because saved input evidence is absent")
             raise ValueError("replay bundle requires saved inputs")
         saved_inputs = manifest["saved_inputs"]
         expected_saved_inputs_hash = str(manifest.get("saved_inputs_sha256", ""))
@@ -81,27 +74,9 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             scope=Scope(tuple(manifest["scope"]["subscription_ids"]), str(manifest["scope"]["mode"])),
             catalog_identity=CatalogIdentity(int(catalog_payload["schema_version"]), str(catalog_payload["sha256"])),
             dependency_plan=DependencyPlan(tuple(manifest["dependency_closure"])),
-            editorial_catalog_identity=(
-                CatalogIdentity(
-                    int(manifest["editorial_catalog"]["schema_version"]),
-                    str(manifest["editorial_catalog"]["sha256"]),
-                )
-                if "editorial_catalog" in manifest
-                else None
-            ),
         )
         closure = application.report_catalog.plan(selector)
         catalog = _catalog_from_saved_inputs(saved_inputs)
-        editorial_catalog = _editorial_catalog_from_saved_inputs(saved_inputs)
-        editorial_yaml = DEFAULT_EDITORIAL_YAML
-        if isinstance(saved_inputs.get("editorial_catalog"), Mapping):
-            editorial_yaml = str(saved_inputs["editorial_catalog"].get("yaml", ""))
-            if not editorial_yaml:
-                raise ValueError("replay bundle is missing saved editorial YAML")
-        if closure.publishes(ReportSelector.SLIDES):
-            sidecar_path = bundle / EDITORIAL_YAML_PATH
-            if not sidecar_path.is_file() or sidecar_path.read_bytes() != editorial_yaml.encode("utf-8"):
-                raise ValueError("replay bundle editorial sidecar does not match saved inputs")
         acquisitions = _acquisitions_from_saved_inputs(saved_inputs, closure)
         prepared_by_selector = {}
         if closure.requires(ReportSelector.ADVISOR):
@@ -130,25 +105,15 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             prepared_by_selector,
             closure,
             catalog,
-            editorial_catalog,
-            editorial_yaml=editorial_yaml,
         )
-        editorial_work_list = ()
-        if editorial_catalog is not None:
-            source_events, _ = build_source_events(
-                acquisitions.get("advisor", SourceAcquisition(AcquisitionReceipt("advisor", "", 0, 0, 0, 0, True))).records,
-                acquisitions.get("service-health", SourceAcquisition(AcquisitionReceipt("service-health", "", 0, 0, 0, 0, True))).records,
-            )
-            editorial_work_list = build_editorial_work_list(editorial_catalog, source_events)
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
-        raise ValueError("replay bundle is invalid or incomplete") from exc
+        raise ValueError(f"replay bundle is invalid or incomplete: {exc}") from exc
     candidate = PublicationCandidate(
         context=context,
         report_closure=closure,
         artifacts=tuple(artifacts),
         acquisitions=tuple(selected_acquisitions),
         slide_selection=slide_selection,
-        editorial_work_list=editorial_work_list,
         manifest_metadata=manifest,
         saved_inputs=saved_inputs,
     )
@@ -170,30 +135,6 @@ def _catalog_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> PlatformCatal
         if isinstance(item, Mapping)
     )
     return PlatformCatalogSnapshot(int(payload["schema_version"]), str(payload["sha256"]), assignments)
-
-
-def _editorial_catalog_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> EditorialCatalog | None:
-    payload = saved_inputs.get("editorial_catalog")
-    if payload is None:
-        return None
-    if not isinstance(payload, Mapping) or not isinstance(payload.get("items"), list):
-        raise ValueError("replay bundle has an invalid saved editorial catalog")
-    items = tuple(
-        EditorialItem(
-            item_id=str(item["item_id"]),
-            associations=tuple(
-                (str(source), tuple(str(identity) for identity in identities))
-                for source, identities in item.get("associations", ())
-            ),
-            title=str(item.get("title", "")),
-            description=str(item.get("description", "")),
-            suggested_action=str(item.get("suggested_action", "")),
-            retirement_date=str(item.get("retirement_date", "")),
-        )
-        for item in payload["items"]
-        if isinstance(item, Mapping)
-    )
-    return EditorialCatalog(int(payload["schema_version"]), str(payload["sha256"]), items)
 
 
 def _acquisitions_from_saved_inputs(

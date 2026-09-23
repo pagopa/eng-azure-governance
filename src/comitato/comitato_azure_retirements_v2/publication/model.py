@@ -17,7 +17,6 @@ class PublicationCandidate:
     artifacts: tuple[EncodedArtifact, ...]
     acquisitions: tuple[Any, ...]
     slide_selection: Any = None
-    editorial_work_list: tuple[Any, ...] = ()
     manifest_metadata: Mapping[str, Any] | None = None
     saved_inputs: Mapping[str, Any] | None = None
 

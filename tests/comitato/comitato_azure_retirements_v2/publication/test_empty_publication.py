@@ -16,7 +16,6 @@ from src.comitato.comitato_azure_retirements_v2.contracts import (
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     EDITORIAL_YAML_PATH,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.model import EncodedArtifact
 from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
 from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
@@ -71,14 +70,6 @@ def empty_candidate(
         SERVICE_HEALTH_REPORT.contract.encode_companion(service_health),
         AGGREGATE_V1.encode(AGGREGATE_V1.empty_artifact(context)),
         SLIDES_V1.encode(SLIDES_V1.empty_artifact(context)),
-        EncodedArtifact(
-            logical_path=EDITORIAL_YAML_PATH,
-            data=editorial_yaml.encode("utf-8"),
-            rows=0,
-            media_type="application/yaml",
-            schema_version=1,
-            run_id=context.run_id,
-        ),
     )
     acquisitions = (
         SourceAcquisition(
@@ -125,7 +116,7 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path:
         assert item["sha256"] == artifact.digest
 
 
-def test_publish_keeps_saved_editorial_yaml_identical_to_sidecar(tmp_path: Path) -> None:
+def test_publish_omits_editorial_sidecar_and_saved_inputs(tmp_path: Path) -> None:
     editorial_yaml = "schema_version: 1\nitems:\n  - id: owned-by-input\n"
     candidate = replace(
         empty_candidate(editorial_yaml=editorial_yaml),
@@ -139,8 +130,10 @@ def test_publish_keeps_saved_editorial_yaml_identical_to_sidecar(tmp_path: Path)
 
     tree = read_monthly_tree(tmp_path, candidate.context.as_of_date)
     manifest = json.loads(tree["publication-manifest.json"])
-    assert tree[EDITORIAL_YAML_PATH] == editorial_yaml.encode("utf-8")
-    assert manifest["saved_inputs"]["editorial_catalog"]["yaml"] == editorial_yaml
+    assert EDITORIAL_YAML_PATH not in tree
+    assert "editorial_catalog" not in manifest["saved_inputs"]
+    assert "editorial_catalog" not in manifest
+    assert "editorial_work_list" not in manifest
 
 
 def test_staging_uses_candidate_closure_for_manifest_ownership(tmp_path: Path) -> None:

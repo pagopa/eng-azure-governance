@@ -545,7 +545,7 @@ class ReportCatalog:
         self,
         definitions: tuple[ReportDefinition, ...],
         *,
-        sidecar_contracts: tuple[Any, ...] = (EditorialYamlContract(),),
+        sidecar_contracts: tuple[Any, ...] = (),
     ) -> None:
         selectors = tuple(item.selector for item in definitions)
         if len(selectors) != len(set(selectors)):

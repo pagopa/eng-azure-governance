@@ -16,7 +16,7 @@ from ..contracts.cross_artifact import (
     validate_manifest,
     validate_selected_set,
 )
-from ..contracts.model import Artifact, EncodedArtifact
+from ..contracts.model import EncodedArtifact
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..publication.model import (
     PublicationCandidate,
@@ -179,10 +179,6 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
         },
         "selector": context.request.selector.value,
         "validation": {"error_count": 0, "status": "passed"},
-        "editorial_work_list": [
-            asdict(item) if is_dataclass(item) else dict(item)
-            for item in candidate.editorial_work_list
-        ],
     })
     manifest.setdefault("settings", {
         "committee_window_months": context.request.committee_window_months,
@@ -196,14 +192,14 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
         "source_acquisitions": [_saved_acquisition(acquisition) for acquisition in candidate.acquisitions],
         "publication_settings": dict(manifest.get("settings", {})),
     })
+    if isinstance(manifest["saved_inputs"], Mapping):
+        manifest["saved_inputs"] = dict(manifest["saved_inputs"])
+        manifest["saved_inputs"].pop("editorial_catalog", None)
+    manifest.pop("editorial_catalog", None)
+    manifest.pop("editorial_work_list", None)
     manifest["saved_inputs_sha256"] = sha256(
         canonical_json(manifest["saved_inputs"]).encode("utf-8")
     ).hexdigest()
-    if context.editorial_catalog_identity is not None:
-        manifest["editorial_catalog"] = {
-            "schema_version": context.editorial_catalog_identity.schema_version,
-            "sha256": context.editorial_catalog_identity.sha256,
-        }
     return manifest
 
 

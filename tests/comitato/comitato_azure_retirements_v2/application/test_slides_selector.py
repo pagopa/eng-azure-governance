@@ -27,5 +27,4 @@ def test_slides_selector_publishes_only_slide_target_while_using_run_local_aggre
 
     assert [artifact.logical_path for artifact in publication.staged[0].artifacts] == [
         "03_azure_retirements_slide.tsv",
-        "azure-retirements-editorial.yaml",
     ]

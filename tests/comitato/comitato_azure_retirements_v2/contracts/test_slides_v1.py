@@ -49,7 +49,6 @@ def aggregate_row(
             "aggregate_id": aggregate_id,
             "source_event_keys_json": json.dumps([f"advisor:{aggregate_id}"]),
             "correlation_candidates_json": "[]",
-            "source_systems_json": '["azure"]',
             "record_types_json": '["retirement"]',
             "raw_record_refs_json": json.dumps([f"raw-{aggregate_id}"]),
             "retirement_date": retirement_date,
@@ -59,7 +58,6 @@ def aggregate_row(
             ),
             "retirement_date_sources_json": '["structured"]',
             "source_systems_json": '["azure-advisor"]',
-            "record_types_json": '["retirement"]',
             "technology_or_service": "Compute",
             "retiring_feature": "Feature A",
             "is_global": "false",
@@ -113,7 +111,7 @@ def test_project_slides_emits_committee_projection_and_leaves_external_fields_em
     assert slide["retirement_date"] == "2027-01-01"
     assert slide["stato_data"] == "upcoming"
     assert slide["tipo_cambiamento"] == "retirement"
-    assert slide["stato_editoriale"] == "draft: missing_editorial_mapping"
+    assert slide["stato_editoriale"] == "source-derived; human review not recorded"
     assert slide["fonti"] == "Azure Advisor"
     assert slide["link_fonti"] == "https://example.invalid/retirement"
     assert slide["id_advisor"] == ""
@@ -210,9 +208,11 @@ def test_projection_applies_editorial_values_and_renders_source_singletons() -> 
     slide = result.value.records[0]
     assert slide["titolo_breve"] == "Retire SDK"
     assert slide["descrizione_breve"] == "Use the supported SDK."
-    assert slide["comitato_descrizione"] == "Use the supported SDK."
-    assert slide["comitato_retirement_date"] == "2027-02-01"
-    assert slide["stato_editoriale"] == "reviewed"
+    assert slide["comitato_descrizione"] == ""
+    assert slide["comitato_retirement_date"] == ""
+    assert slide["comitato_descrizione"] == ""
+    assert slide["comitato_retirement_date"] == ""
+    assert slide["stato_editoriale"] == "source-derived; human review not recorded"
     assert slide["azione_originale"] == "Advisor: Update SDK\n\nService Health: Migrate"
     assert slide["fonti"] == "Azure Advisor; Azure Service Health"
     assert slide["id_advisor"] == "advisor-1"
@@ -239,14 +239,13 @@ def test_projection_renders_structured_actions_as_readable_source_text() -> None
     assert "{'caption'" not in action
 
 
-def test_populated_committee_refinements_are_valid_but_priority_stays_external() -> None:
+def test_committee_description_and_date_stay_empty_and_are_rejected_when_injected() -> None:
     aggregate = aggregate_artifact(aggregate_row("aggregate-1", "2027-01-01"))
     selected = project_slides(aggregate, context()).value
     assert selected is not None
     values = dict(selected.records[0].values)
     values["comitato_descrizione"] = "Reviewed description"
     values["comitato_retirement_date"] = "2027-01-01"
-    values["comitato_piattaforme"] = "Platform A"
 
     populated = selected.__class__(
         contract=selected.contract,
@@ -254,8 +253,10 @@ def test_populated_committee_refinements_are_valid_but_priority_stays_external()
         run_id=selected.run_id,
         records=(selected.records[0].__class__(tuple(values.items())),),
     )
-    assert SLIDES_V1.validate(populated, context()).is_valid
+    assert not SLIDES_V1.validate(populated, context()).is_valid
 
+    assert selected.records[0]["comitato_descrizione"] == ""
+    assert selected.records[0]["comitato_retirement_date"] == ""
     values["comitato_priorità"] = "P1"
     rejected = populated.__class__(
         contract=populated.contract,

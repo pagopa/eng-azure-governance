@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass, field, is_dataclass, replace
+from dataclasses import asdict, dataclass, field, is_dataclass
 import re
 from typing import Any
 
@@ -11,7 +11,7 @@ from ..contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from ..contracts.model import Artifact, EncodedArtifact
+from ..contracts.model import Artifact
 from ..contracts.aggregate_v1 import build_aggregate
 from ..domain.platforms import PlatformCatalogSnapshot
 from ..domain.execution import (
@@ -24,23 +24,12 @@ from ..domain.execution import (
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
 from ..domain.slides import SlideSelection, select_slides
-from ..domain.retirements import build_source_events
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
-from ..reports.catalog import (
-    DEFAULT_REPORT_CATALOG,
-    DEFAULT_EDITORIAL_YAML,
-    EditorialCatalog,
-    EDITORIAL_YAML_PATH,
-    build_editorial_work_list,
-    render_editorial_yaml,
-    ReportCatalog,
-    SelectedReportClosure,
-)
-from ..reports.advisor import ADVISOR_REPORT, prepare_advisor_report
+from ..reports.catalog import DEFAULT_REPORT_CATALOG, ReportCatalog, SelectedReportClosure
+from ..reports.advisor import prepare_advisor_report
 from ..reports.model import PreparedRawReport
 from ..reports.service_health import (
-    SERVICE_HEALTH_REPORT,
     prepare_service_health_report,
 )
 from ..domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
@@ -137,37 +126,6 @@ def _saved_catalog(catalog: Any, source: Any = None) -> dict[str, Any]:
     }
 
 
-def _saved_editorial_catalog(
-    catalog: Any,
-    source: Any = None,
-    yaml_text: str | None = None,
-) -> Any:
-    if catalog is None:
-        return None
-    return {
-        "schema_version": int(catalog.schema_version),
-        "sha256": str(catalog.sha256),
-        "items": [_json_safe(item) for item in catalog.items],
-        "yaml": yaml_text if yaml_text is not None else _source_yaml(source),
-    }
-
-
-def _effective_editorial_yaml(publication_store: Any, source: Any, as_of_date: Any) -> str:
-    reader = getattr(publication_store, "effective_editorial_yaml", None)
-    if callable(reader):
-        value = reader(as_of_date)
-        if value is not None:
-            return value.decode("utf-8") if isinstance(value, bytes) else str(value)
-    return _source_yaml(source) or DEFAULT_EDITORIAL_YAML
-
-
-def _load_editorial_catalog(source: Any, yaml_text: str) -> EditorialCatalog:
-    loader = getattr(source, "load_text", None)
-    if callable(loader):
-        return loader(yaml_text)
-    return source.load()
-
-
 def _saved_service_health_evidence(evidence: ServiceHealthSupplementalEvidence) -> dict[str, Any]:
     return {
         "advisor_records": _json_safe(evidence.advisor_records),
@@ -198,7 +156,6 @@ class RetirementsApplication:
     report_catalog: ReportCatalog = DEFAULT_REPORT_CATALOG
     observer: RunObserver = field(default_factory=NullRunObserver)
     advisor_enrichment_source: Any | None = None
-    editorial_catalog_source: Any | None = None
 
     def run(self, request: RunRequest) -> RunResult:
         report_closure = self.report_catalog.plan(request.selector)
@@ -241,18 +198,6 @@ class RetirementsApplication:
             run_id,
             schema_version=getattr(catalog, "schema_version", ""),
         )
-        editorial_yaml = DEFAULT_EDITORIAL_YAML
-        editorial_catalog = None
-        if self.editorial_catalog_source is not None:
-            editorial_yaml = _effective_editorial_yaml(
-                self.publication_store,
-                self.editorial_catalog_source,
-                self._as_of_date(request),
-            )
-            editorial_catalog = _load_editorial_catalog(
-                self.editorial_catalog_source,
-                editorial_yaml,
-            )
         context = RunContext(
             run_id=run_id,
             as_of_date=self._as_of_date(request),
@@ -261,9 +206,6 @@ class RetirementsApplication:
             scope=scope,
             catalog_identity=self._catalog_identity(catalog),
             dependency_plan=plan,
-            editorial_catalog_identity=(
-                self._catalog_identity(editorial_catalog) if editorial_catalog is not None else None
-            ),
         )
 
         prepared_by_selector: dict[ReportSelector, PreparedRawReport] = {}
@@ -271,11 +213,6 @@ class RetirementsApplication:
             "schema_version": 1,
             "source_acquisitions": {},
             "platform_catalog": _saved_catalog(catalog, self.catalog_source),
-            "editorial_catalog": _saved_editorial_catalog(
-                editorial_catalog,
-                self.editorial_catalog_source,
-                editorial_yaml,
-            ),
             "publication_settings": {
                 "committee_window_months": request.committee_window_months,
             },
@@ -352,33 +289,6 @@ class RetirementsApplication:
             context.run_id,
         )
 
-        editorial_work_list = ()
-        if editorial_catalog is not None:
-            source_events, _ = build_source_events(
-                next((item.records for item in acquisitions if item.receipt.source == "advisor"), ()),
-                next((item.records for item in acquisitions if item.receipt.source == "service-health"), ()),
-            )
-            editorial_work_list = build_editorial_work_list(editorial_catalog, source_events)
-            if report_closure.publishes(ReportSelector.SLIDES):
-                editorial_yaml = render_editorial_yaml(
-                    editorial_yaml,
-                    editorial_catalog,
-                    editorial_work_list,
-                )
-                editorial_catalog = _load_editorial_catalog(
-                    self.editorial_catalog_source,
-                    editorial_yaml,
-                )
-                context = replace(
-                    context,
-                    editorial_catalog_identity=self._catalog_identity(editorial_catalog),
-                )
-            saved_inputs["editorial_catalog"] = _saved_editorial_catalog(
-                editorial_catalog,
-                self.editorial_catalog_source,
-                editorial_yaml,
-            )
-
         self._emit(
             "INFO",
             "artifact_preparation_started",
@@ -391,8 +301,6 @@ class RetirementsApplication:
             prepared_by_selector,
             report_closure,
             catalog,
-            editorial_catalog,
-            editorial_yaml=editorial_yaml,
         )
         self._emit(
             "INFO",
@@ -409,7 +317,6 @@ class RetirementsApplication:
             artifacts=tuple(artifacts),
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
-            editorial_work_list=editorial_work_list,
             saved_inputs=saved_inputs,
         )
         try:
@@ -689,8 +596,6 @@ class RetirementsApplication:
         prepared_by_selector: dict[ReportSelector, PreparedRawReport],
         report_closure: SelectedReportClosure,
         catalog: Any,
-        editorial_catalog: EditorialCatalog | None = None,
-        editorial_yaml: str = "",
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
@@ -707,14 +612,13 @@ class RetirementsApplication:
                     raise ApplicationError("aggregate requires a validated platform catalog snapshot")
                 def records_for(source: str):
                     acquisition = by_source.get(source)
-                    return acquisition.records if acquisition is not None else ()
+                    return acquisition if acquisition is not None else ()
 
                 aggregate_records = build_aggregate(
                     records_for("advisor"),
                     records_for("service-health"),
                     context=context,
                     catalog=catalog,
-                    editorial_catalog=editorial_catalog,
                 )
                 aggregate = Artifact(
                     contract=aggregate.contract,
@@ -735,14 +639,4 @@ class RetirementsApplication:
                 raise ContractValidationError(projected.diagnostics, "invalid slide contract")
             slide_selection = projected.value
             selected.append(SLIDES_V1.encode(slide_selection.artifact))
-            selected.append(
-                EncodedArtifact(
-                    logical_path=EDITORIAL_YAML_PATH,
-                    data=(editorial_yaml or DEFAULT_EDITORIAL_YAML).encode("utf-8"),
-                    rows=0,
-                    media_type="application/yaml",
-                    schema_version=1,
-                    run_id=context.run_id,
-                )
-            )
         return selected, slide_selection

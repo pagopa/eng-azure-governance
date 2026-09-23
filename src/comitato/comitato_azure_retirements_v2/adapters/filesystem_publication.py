@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import os
 import shutil
-from dataclasses import replace
-from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +12,6 @@ from ..publication.model import (
     PublicationReceipt,
 )
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
-from ..reports.catalog import EDITORIAL_YAML_PATH
 from .filesystem_staging import _ValidatedStagedGeneration, stage_candidate
 
 
@@ -41,8 +38,6 @@ class FilesystemAtomicPublicationStore:
         return tuple(self._warnings)
 
     def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
-        if candidate.saved_inputs is None:
-            candidate = self._preserve_effective_editorial_yaml(candidate)
         generation = self._stage(candidate)
         try:
             return self._commit(generation)
@@ -58,53 +53,6 @@ class FilesystemAtomicPublicationStore:
         except ValueError:
             return
         shutil.rmtree(generation_dir, ignore_errors=True)
-
-    def _preserve_effective_editorial_yaml(
-        self,
-        candidate: PublicationCandidate,
-    ) -> PublicationCandidate:
-        previous_yaml = self._read_effective_editorial_yaml(candidate)
-        if previous_yaml is None:
-            return candidate
-        artifacts = tuple(
-            replace(artifact, data=previous_yaml)
-            if artifact.logical_path == EDITORIAL_YAML_PATH
-            else artifact
-            for artifact in candidate.artifacts
-        )
-        return replace(candidate, artifacts=artifacts)
-
-    def _read_effective_editorial_yaml(
-        self,
-        candidate: PublicationCandidate,
-    ) -> bytes | None:
-        value = self.effective_editorial_yaml(candidate.context.as_of_date)
-        return value.encode("utf-8") if value is not None else None
-
-    def effective_editorial_yaml(self, as_of_date: date) -> str | None:
-        if not self.destination.is_dir():
-            return None
-        month_reference = f"{as_of_date.year:04d}/{as_of_date.month:02d}"
-        current = self.destination / month_reference / EDITORIAL_YAML_PATH
-        if current.is_file():
-            return current.read_text(encoding="utf-8")
-
-        previous_bundles: list[tuple[tuple[int, int], Path]] = []
-        for year in self.destination.iterdir() if self.destination.exists() else ():
-            if not year.is_dir() or len(year.name) != 4 or not year.name.isdigit():
-                continue
-            for month in year.iterdir():
-                if not month.is_dir() or len(month.name) != 2 or not month.name.isdigit():
-                    continue
-                reference = (int(year.name), int(month.name))
-                if f"{year.name}/{month.name}" == month_reference:
-                    continue
-                editorial_yaml = month / EDITORIAL_YAML_PATH
-                if editorial_yaml.is_file():
-                    previous_bundles.append((reference, editorial_yaml))
-        if not previous_bundles:
-            return None
-        return max(previous_bundles, key=lambda item: item[0])[1].read_text(encoding="utf-8")
 
     def _preflight(self) -> None:
         candidate = getattr(self, "_candidate", None)

@@ -426,7 +426,7 @@ def normalize_advisor(
             description = _text(detailed_description)
         if not description:
             metadata_description, description_source = _metadata_value(
-                metadata_record, "description"
+                metadata_record, "detailedDescription"
             )
             description = _text(metadata_description)
         if not description:
