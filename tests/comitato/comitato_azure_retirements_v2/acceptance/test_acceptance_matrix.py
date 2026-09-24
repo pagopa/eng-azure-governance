@@ -55,5 +55,5 @@ def test_current_advisor_references_are_conserved_in_aggregate() -> None:
             for advisor_id in json.loads(row["advisor_recommendation_ids_json"])
         }
 
-    assert len(raw_ids) == 348
+    assert len(raw_ids) == 351
     assert aggregate_ids == raw_ids
