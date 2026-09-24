@@ -1,0 +1,15 @@
+{
+  "selector": "all",
+  "run_id": "s05-pagination-duplicate",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 0,
+  "scope": {"mode": "explicit", "subscription_ids": ["11111111-1111-1111-1111-111111111111"]},
+  "azure": {
+    "advisor": {"pages": [
+      {"items": [{"id": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.Advisor/recommendations/s05-rec", "properties": {"recommendationStatus": "New", "recommendationTypeId": "s05-retirement", "resourceMetadata": {"resourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/s05"}, "retirementDate": "2027-02-01", "serviceName": "Storage", "retiringFeature": "S05 feature"}}], "next_link": "page-2"},
+      {"items": [{"id": "/subscriptions/11111111-1111-1111-1111-111111111111/providers/Microsoft.Advisor/recommendations/s05-rec", "properties": {"recommendationStatus": "New", "recommendationTypeId": "s05-retirement", "resourceMetadata": {"resourceId": "/subscriptions/11111111-1111-1111-1111-111111111111/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/s05"}, "retirementDate": "2027-02-01", "serviceName": "Storage", "retiringFeature": "S05 feature"}}], "next_link": null}
+    ]},
+    "service_health": {"pages": [{"items": [], "next_link": null}]}
+  }
+}

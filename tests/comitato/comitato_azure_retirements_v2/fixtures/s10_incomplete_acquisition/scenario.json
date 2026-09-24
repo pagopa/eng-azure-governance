@@ -1,0 +1,18 @@
+{
+  "selector": "advisor",
+  "run_id": "s10-incomplete",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 1,
+  "scope": {
+    "mode": "explicit",
+    "subscription_ids": ["22222222-2222-2222-2222-222222222222"]
+  },
+  "azure": {
+    "advisor": {
+      "complete": false,
+      "pages": [{"items": [], "next_link": "retry-exhausted"}]
+    },
+    "service_health": {"pages": [{"items": [], "next_link": null}]}
+  }
+}
