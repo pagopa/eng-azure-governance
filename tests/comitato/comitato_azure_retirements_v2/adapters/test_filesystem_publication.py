@@ -120,14 +120,7 @@ def test_publish_replaces_the_complete_monthly_bundle(tmp_path: Path) -> None:
     assert second_july_receipt.current_reference == "2026/07"
     assert not (july / "stale-artifact.tsv").exists()
     assert (july / "publication-manifest.json").is_file()
-    history = tmp_path / ".history" / "2026" / "07"
-    snapshots = tuple(history.iterdir())
-    assert len(snapshots) >= 2
-    assert any(
-        (snapshot / "stale-artifact.tsv").read_bytes() == b"stale"
-        for snapshot in snapshots
-        if (snapshot / "stale-artifact.tsv").is_file()
-    )
+    assert not (tmp_path / ".history").exists()
     assert not (tmp_path / "current").exists()
     assert not (tmp_path / "generations").exists()
 
@@ -159,8 +152,7 @@ def test_same_month_replacement_does_not_restore_an_editorial_sidecar(
 
     current = read_monthly_tree(tmp_path, date(2026, 7, 30))
     assert EDITORIAL_YAML_PATH not in current
-    history = tmp_path / ".history" / "2026" / "07"
-    assert all(not (snapshot / EDITORIAL_YAML_PATH).exists() for snapshot in history.iterdir())
+    assert not (tmp_path / ".history").exists()
 
 
 def test_store_exposes_only_publish_as_the_transaction_operation(

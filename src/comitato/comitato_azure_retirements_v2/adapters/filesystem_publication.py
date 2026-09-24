@@ -136,7 +136,6 @@ class FilesystemAtomicPublicationStore:
         month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
         monthly_bundle = self.destination / month_reference
         backup_bundle = self.destination / ".staging" / f"{generation_dir.name}-previous"
-        history_bundle = self.destination / ".history" / month_reference / generation_dir.name
         previous_bundle_moved = False
         new_bundle_moved = False
         try:
@@ -174,15 +173,14 @@ class FilesystemAtomicPublicationStore:
 
         if previous_bundle_moved:
             try:
-                history_bundle.parent.mkdir(parents=True, exist_ok=True)
-                os.replace(backup_bundle, history_bundle)
+                shutil.rmtree(backup_bundle)
             except OSError:
-                self._warnings.append("superseded monthly bundle history preservation failed")
+                self._warnings.append("superseded monthly bundle cleanup failed")
                 self._observer.emit(
                     RuntimeEvent(
                         "WARNING",
                         "publication_cleanup_warning",
-                        "Superseded monthly bundle history preservation failed",
+                        "Superseded monthly bundle cleanup failed",
                         candidate.context.run_id,
                     )
                 )

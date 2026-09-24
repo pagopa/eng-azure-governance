@@ -44,10 +44,11 @@ for the same month replaces that entire monthly directory, including files
 left by an earlier selector or run. Runs for other months keep their existing
 bundles.
 
-Replacing an existing month retains the superseded bundle under
-`exports/.history/YYYY/MM/<generation>`. New publication and replay use the
-hashed `saved_inputs` in `publication-manifest.json`; they do not generate or
-restore an editorial YAML sidecar. `stato_editoriale` reports
+Replacing an existing month deletes the superseded bundle after the new bundle
+becomes current. Save a copy elsewhere before replacing a bundle that may need
+to be replayed later. New publication and replay use the hashed `saved_inputs`
+in `publication-manifest.json`; they do not generate or restore an editorial
+YAML sidecar. `stato_editoriale` reports
 `source-derived; human review not recorded`, and committee description and
 retirement-date fields remain empty until a separate review workflow exists.
 Schema-1 historical bundles without `saved_inputs` cannot be replayed because
