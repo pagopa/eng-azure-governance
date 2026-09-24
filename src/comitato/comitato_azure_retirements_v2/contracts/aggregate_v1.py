@@ -25,7 +25,8 @@ HEADER = (
     "advisor_recommendation_ids_json", "advisor_recommendation_type_ids_json",
     "service_health_event_ids_json", "service_health_tracking_ids_json",
     "technology_or_service", "retiring_feature", "advisor_problem_descriptions_json",
-    "service_health_problem_descriptions_json", "advisor_actions_json",
+    "service_health_problem_descriptions_json", "problem_titles_json",
+    "advisor_impacts_json", "date_events_json", "advisor_actions_json",
     "service_health_actions_json", "retirement_date", "retirement_date_quality",
     "retirement_dates_json", "retirement_date_sources_json",
     "affected_subscription_ids_json", "affected_subscription_names_json", "is_global",
@@ -183,7 +184,59 @@ def _date_projection(rows: tuple[Mapping[str, Any], ...]) -> tuple[str, str, tup
     return "", "invalid" if "invalid" in quality_values else "missing", dates, ()
 
 
-def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_catalog: object | None = None) -> AggregateRecord:
+
+def _date_events(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, str], ...]:
+    events: list[dict[str, str]] = []
+    advisor_dates = [str(row.get("last_updated", "")).strip()[:10] for row in rows if row.get("last_updated")]
+    latest_advisor_update = max(advisor_dates, default="")
+    for row in rows:
+        source = str(row.get("source_system", "")).strip().casefold()
+        is_advisor = source == "azure_advisor" or bool(row.get("advisor_recommendation_id"))
+        is_health = source == "azure_service_health" or bool(row.get("service_health_event_id"))
+        if is_advisor:
+            candidates = (("retirement_date", "retirement"),)
+            if latest_advisor_update and str(row.get("last_updated", "")).strip()[:10] == latest_advisor_update:
+                candidates += (("last_updated", "last_updated"),)
+        elif is_health:
+            candidates = (
+                ("impact_start_time", "notice_start"),
+                ("impact_mitigation_time", "notice_end"),
+                ("retirement_date", "retirement"),
+            )
+        else:
+            candidates = ()
+        for field, kind in candidates:
+            value = str(row.get(field, "")).strip()[:10]
+            if value:
+                events.append({"date": value, "kind": kind, "source": "advisor" if is_advisor else "service-health"})
+    return tuple(
+        {"date": date, "kind": kind, "source": source}
+        for date, kind, source in sorted({(item["date"], item["kind"], item["source"]) for item in events})
+    )
+
+
+def _source_links(rows: Iterable[Mapping[str, Any]]) -> tuple[str, ...]:
+    links: set[str] = set()
+    for row in rows:
+        values: list[Any] = [row.get("learn_more_link", ""), row.get("source_link", ""), row.get("recommended_action_learn_more", "")]
+        for field in ("source_health_ash_urls", "ash_urls"):
+            value = row.get(field, ())
+            if isinstance(value, str):
+                try:
+                    value = json.loads(value)
+                except json.JSONDecodeError:
+                    value = (value,)
+            values.extend(value if isinstance(value, (list, tuple)) else ())
+        tracking_id = str(row.get("tracking_id", row.get("service_health_tracking_id", ""))).strip()
+        if tracking_id:
+            values.append(f"https://app.azure.com/h/{tracking_id}")
+        for value in values:
+            link = str(value or "").strip().rstrip("/")
+            if link:
+                links.add(link)
+    return tuple(sorted(links))
+
+def _row_for_group(group, context, catalog: PlatformCatalogSnapshot) -> AggregateRecord:
     keys = tuple(event.key for event in group)
     rows = tuple(row for event in group for row in event.records)
     aggregate_id = aggregate_id_for(keys)
@@ -219,28 +272,6 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
         flags.add("conflicting_technology_or_service")
     if len(_unique_values(rows, ("retiring_feature",))) > 1:
         flags.add("conflicting_retiring_feature")
-    editorial = None
-    if editorial_catalog is not None:
-        matched = {
-            item
-            for event in group
-            for item in getattr(editorial_catalog, "items_for_event", lambda value: ()) (event)
-        }
-        matched = {item for item in matched if item is not None}
-        if not matched:
-            flags.add("unassociated_editorial_source")
-        elif len(matched) > 1:
-            flags.add("ambiguous_editorial_mapping")
-        if len(matched) == 1:
-            item = next(iter(matched))
-            editorial = {
-                "item_id": item.item_id,
-                "title": item.title,
-                "description": item.description,
-                "suggested_action": item.suggested_action,
-                "retirement_date": getattr(item, "retirement_date", ""),
-                "review_state": "ready" if item.title and item.description and item.suggested_action else "draft",
-            }
     source_field_provenance = {}
     for row in rows:
         try:
@@ -260,14 +291,17 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot, editorial_c
         "service_health_event_ids_json": _json(_strings(health_rows, "service_health_event_id")), "service_health_tracking_ids_json": _json(_strings(health_rows, "tracking_id")),
         "technology_or_service": _display_projection(rows, ("service_name", "impacted_service")), "retiring_feature": _display_projection(rows, ("retiring_feature",)),
         "advisor_problem_descriptions_json": _json(list(_unique_values(advisor_rows, ("short_description_problem", "description")))), "service_health_problem_descriptions_json": _json(list(_unique_values(health_rows, ("description_problem",)))),
+        "problem_titles_json": _json(list(_unique_values(advisor_rows, ("short_description_problem",))) + list(_unique_values(health_rows, ("title",)))),
+        "advisor_impacts_json": _json(list(_unique_values(advisor_rows, ("impact",)))),
+        "date_events_json": _json(_date_events(rows)),
         "advisor_actions_json": _json_array(advisor_rows, "actions_json"), "service_health_actions_json": _json_array(health_rows, "recommended_actions"),
         "retirement_date": retirement_date, "retirement_date_quality": date_quality, "retirement_dates_json": _json(retirement_dates), "retirement_date_sources_json": _json(date_sources),
         "affected_subscription_ids_json": _json(subscription_ids), "affected_subscription_names_json": _json(subscription_names), "is_global": "true" if explicit_global else "false",
         "platforms_json": _json(projection.value.platforms), "platforms_subscriptions_json": _json(projection.value.platforms_subscriptions),
         "published_resource_ids_json": _json(list(_unique_values(rows, ("published_resource_id",)))), "normalized_resource_ids_json": _json(list(_unique_values(rows, ("normalized_resource_id",)))),
         "impacted_services_json": _json(list(_unique_values(rows, ("impacted_service", "service_name")))), "impacted_regions_json": _json(list(_unique_values(rows, ("impacted_region",)))),
-        "source_links_json": _json(list(_unique_values(rows, ("learn_more_link", "source_link")))), "diagnostic_flags": ",".join(sorted(flags)),
-        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "editorial": editorial, "resource_evidence": resource_evidence, "source_field_provenance": source_field_provenance}),
+        "source_links_json": _json(_source_links(rows)), "diagnostic_flags": ",".join(sorted(flags)),
+        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "resource_evidence": resource_evidence, "source_field_provenance": source_field_provenance}),
     }
     return AggregateRecord.from_mapping(record)
 
@@ -278,13 +312,12 @@ def build_aggregate(
     *,
     context,
     catalog: PlatformCatalogSnapshot,
-    editorial_catalog: object | None = None,
 ) -> tuple[AggregateRecord, ...]:
     events, _ = build_source_events(advisor_records, service_health_records)
     correlation = correlate_source_events(events, (), infer_edges=True)
     records: list[AggregateRecord] = []
     for group in correlation.groups:
-        row = _row_for_group(group, context, catalog, editorial_catalog)
+        row = _row_for_group(group, context, catalog)
         decision = correlation.decision_by_event[group[0].key]
         values = dict(row.values)
         values["correlation_status"] = decision.status

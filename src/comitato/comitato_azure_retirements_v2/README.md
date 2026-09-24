@@ -36,7 +36,9 @@ resolved from the repository root: the catalog is
 `src/_source_of_truth/eng-finops-platforms.yaml`, and the export root is
 `src/comitato/comitato_azure_retirements_v2/exports`. The catalog and output
 root may be set with `COMITATO_AZURE_RETIREMENTS_CATALOG` and
-`COMITATO_AZURE_RETIREMENTS_OUTPUT`.
+`COMITATO_AZURE_RETIREMENTS_OUTPUT`. `--committee-yaml` selects the committee
+sidecar path; the composition default is
+`src/comitato/comitato_azure_retirements_v2/comitato_editoriale.yaml`.
 
 Each successful run writes its complete bundle under
 `exports/YYYY/MM`, where the partition comes from `--as-of-date`. A later run
@@ -47,12 +49,14 @@ bundles.
 Replacing an existing month deletes the superseded bundle after the new bundle
 becomes current. Save a copy elsewhere before replacing a bundle that may need
 to be replayed later. New publication and replay use the hashed `saved_inputs`
-in `publication-manifest.json`; they do not generate or restore an editorial
-YAML sidecar. `stato_editoriale` reports
-`source-derived; human review not recorded`, and committee description and
-retirement-date fields remain empty until a separate review workflow exists.
-Schema-1 historical bundles without `saved_inputs` cannot be replayed because
-they do not preserve the acquisition inputs needed for deterministic replay.
+in `publication-manifest.json`. A live slide run merges committee values from
+`comitato_editoriale.yaml` into the slide before encoding and writes the YAML
+only after publication succeeds. A changed original description clears only
+`comitato_descrizione`; `comitato_retirement_date` is retained, and entries not
+present in the run are dropped. Pass `--committee-yaml PATH` to select another
+file. Schema-1 historical bundles without `saved_inputs` cannot be replayed
+because they do not preserve the acquisition inputs needed for deterministic
+replay.
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.
@@ -63,31 +67,29 @@ status and emit sorted JSONL diagnostics on stderr without changing the
 existing monthly bundle.
 
 The complete aggregate retains source membership independently of the
-committee view. The slide artifact has exactly these 19 columns, in order:
+committee view. The slide artifact has exactly these 18 columns, in order:
 `id_elemento`, `titolo_breve`, `descrizione_breve`, `comitato_priorità`,
-`comitato_descrizione`, `comitato_retirement_date`, `comitato_piattaforme`,
-`retirement_date`, `stato_data`, `tipo_cambiamento`, `stato_editoriale`,
+`impatto_microsoft`, `comitato_descrizione`, `comitato_retirement_date`,
+`comitato_piattaforme`, `retirement_date`, `stato_data`,
 `descrizione_originale_completa`, `azione_originale`, `fonti`, `link_fonti`,
 `ambito_impatto`, `id_advisor`, `id_service_health`, `risorse_json`.
-Partial dates retain their raw precision and are not projected as exact days.
-Missing, incomplete, elapsed, invalid, partial, and conflicting evidence stays
-visible as a draft; only observations beyond the configured window are
-excluded. Priority and committee fields remain external editorial decisions.
-The committee date is derived separately from source retirement evidence, and
-the `stato_data` value records the date-evidence category. Cells longer than
-the Excel limit of 32,767 characters are emitted as an explicit `OVERFLOW:`
-marker in the slide TSV; the complete value remains in the aggregate or source
-provenance instead of being silently truncated.
+Rows group by Advisor recommendation type id, then Service Health tracking id,
+then aggregate id. Stable slide ids use the `azure-retirement:v2:` prefix.
+`descrizione_breve` uses the first problem title, with retiring feature and
+service as fallbacks. `impatto_microsoft` maps the highest Advisor impact to
+`Alto`, `Medio`, or `Basso`; Service Health-only rows leave it empty. Retirement
+dates and notice dates are listed with their source meaning. Rows beyond the
+committee window are excluded; the remaining date states are `Data non
+disponibile`, `Date discordanti`, `Scaduta`, and `In scadenza`.
 
-To rerun downstream publication without Azure, pass a previously published
-generation with `--replay-bundle PATH`. Replay validates the integrity of the
-saved raw acquisitions, enrichment evidence, platform mapping, editorial YAML,
-reference date, settings, and program revision, then recomputes normalization,
-aggregation, and projection. It does not use final TSV bytes as inputs and
-does not invoke Azure, authentication, or Resource Graph. A bundle with only
-final artifacts, incomplete evidence, altered saved inputs, or a missing or
-different physical editorial sidecar is rejected. Replay publishes the saved
-sidecar bytes alongside the recomputed TSV artifacts.
+Replay does not read or write `comitato_editoriale.yaml`, so replayed slide
+committee cells are empty. The live YAML is independent from the published
+monthly bundle. Priority remains an external decision. `ambito_impatto` records
+platform, subscription, resource, environment, service, and region counts;
+`risorse_json` is compact and groups resource names by platform, subscription,
+and resource group. Cells longer than the Excel limit of 32,767 characters are
+not truncated by this projection contract.
+
 
 ## Operator Output And Logging
 

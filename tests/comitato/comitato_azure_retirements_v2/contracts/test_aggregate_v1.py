@@ -1,4 +1,5 @@
 import json
+from types import SimpleNamespace
 from datetime import date, datetime, timezone
 
 from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
@@ -13,7 +14,6 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import EditorialCatalog, EditorialItem
 from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
@@ -149,37 +149,77 @@ def test_build_aggregate_preserves_partial_retirement_evidence() -> None:
     assert claims[0]["quality"] == "partial"
 
 
-def test_build_aggregate_does_not_merge_on_editorial_association_alone() -> None:
-    advisor = {
-        "advisor_recommendation_id": "rec-1",
+
+
+def test_aggregate_projects_titles_impacts_dates_and_normalized_source_links() -> None:
+    advisor_records = ({
+        "advisor_recommendation_id": "advisor-1",
         "recommendation_type_id": "retirement-1",
-        "subscription_id": SUBSCRIPTION,
+        "short_description_problem": "Advisor retirement problem",
+        "impact": "High",
+        "retirement_date": "2027-01-01",
+        "last_updated": "2026-09-20T12:00:00Z",
+        "learn_more_link": "https://learn.example/advisor/",
+        "source_health_ash_urls": ["https://app.azure.com/h/notice-1/"],
         "raw_record_ref": "advisor-ref",
-    }
-    health = {
-        "service_health_event_id": "event-1",
-        "tracking_id": "track-1",
-        "subscription_id": SUBSCRIPTION,
+    },)
+    health_records = ({
+        "service_health_event_id": "health-1",
+        "tracking_id": "notice-1",
+        "title": "Service Health retirement notice",
+        "retirement_date": "2027-02-01",
+        "impact_start_time": "2026-08-01T00:00:00Z",
+        "impact_mitigation_time": "2026-10-01T00:00:00Z",
+        "source_link": "https://learn.example/health/",
         "raw_record_ref": "health-ref",
-    }
-    editorial = EditorialCatalog(
-        1,
-        "b" * 64,
-        (
-            EditorialItem(
-                "item-1",
-                (("advisor", ("retirement-1",)), ("service-health", ("track-1",))),
-            ),
+    },)
+
+    advisor_acquisition = SimpleNamespace(
+        records=advisor_records,
+        companion_records=(
+            {
+                "raw_record_ref": "advisor-ref",
+                "advisor_metadata": {
+                    "sourceProperties": {
+                        "serviceRetirement": {
+                            "serviceHealth": {"ashUrls": ["https://app.azure.com/h/notice-1/"]},
+                        },
+                    },
+                },
+                "recommendation": {
+                    "properties": {
+                        "extendedProperties": {
+                            "recommendedActionLearnMore": "https://learn.example/action/",
+                        },
+                    },
+                },
+            },
         ),
     )
-
     records = build_aggregate(
-        (advisor,),
-        (health,),
+        advisor_acquisition,
+        health_records,
         context=context(),
         catalog=catalog(),
-        editorial_catalog=editorial,
     )
 
-    assert len(records) == 2
-    assert {record["correlation_status"] for record in records} == {"single_source"}
+    assert len(records) == 1
+    row = records[0]
+    assert json.loads(row["problem_titles_json"]) == [
+        "Advisor retirement problem",
+        "Service Health retirement notice",
+    ]
+    assert json.loads(row["advisor_impacts_json"]) == ["High"]
+    assert json.loads(row["date_events_json"]) == [
+        {"date": "2026-08-01", "kind": "notice_start", "source": "service-health"},
+        {"date": "2026-09-20", "kind": "last_updated", "source": "advisor"},
+        {"date": "2026-10-01", "kind": "notice_end", "source": "service-health"},
+        {"date": "2027-01-01", "kind": "retirement", "source": "advisor"},
+        {"date": "2027-02-01", "kind": "retirement", "source": "service-health"},
+    ]
+    assert json.loads(row["source_links_json"]) == [
+        "https://app.azure.com/h/notice-1",
+        "https://learn.example/action",
+        "https://learn.example/advisor",
+        "https://learn.example/health",
+    ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
 from dataclasses import asdict, dataclass, field, is_dataclass
 import re
 from typing import Any
@@ -24,6 +25,7 @@ from ..domain.execution import (
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
 from ..domain.slides import SlideSelection, select_slides
+from ..domain import committee
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 from ..reports.catalog import DEFAULT_REPORT_CATALOG, ReportCatalog, SelectedReportClosure
@@ -156,6 +158,7 @@ class RetirementsApplication:
     report_catalog: ReportCatalog = DEFAULT_REPORT_CATALOG
     observer: RunObserver = field(default_factory=NullRunObserver)
     advisor_enrichment_source: Any | None = None
+    committee_yaml_path: Path | None = None
 
     def run(self, request: RunRequest) -> RunResult:
         report_closure = self.report_catalog.plan(request.selector)
@@ -301,6 +304,7 @@ class RetirementsApplication:
             prepared_by_selector,
             report_closure,
             catalog,
+            self.committee_yaml_path,
         )
         self._emit(
             "INFO",
@@ -338,6 +342,8 @@ class RetirementsApplication:
                 context,
                 stage=diagnostic_stage,
             ) from exc
+        if self.committee_yaml_path is not None and slide_selection is not None and slide_selection.committee_document is not None:
+            committee.write(self.committee_yaml_path, slide_selection.committee_document)
         self._emit(
             "INFO",
             "publication_completed",
@@ -596,6 +602,7 @@ class RetirementsApplication:
         prepared_by_selector: dict[ReportSelector, PreparedRawReport],
         report_closure: SelectedReportClosure,
         catalog: Any,
+        committee_yaml_path: Path | None = None,
     ):
         by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
         selected = []
@@ -638,5 +645,21 @@ class RetirementsApplication:
             if not projected.is_valid or projected.value is None:
                 raise ContractValidationError(projected.diagnostics, "invalid slide contract")
             slide_selection = projected.value
+            if committee_yaml_path is not None:
+                previous = committee.load(committee_yaml_path)
+                merged_rows, committee_document = committee.merge(previous, slide_selection.artifact.records)
+                slide_selection = SlideSelection(
+                    artifact=Artifact(
+                        contract=slide_selection.artifact.contract,
+                        schema_version=slide_selection.artifact.schema_version,
+                        run_id=slide_selection.artifact.run_id,
+                        records=merged_rows,
+                    ),
+                    excluded_by_reason=slide_selection.excluded_by_reason,
+                    committee_document=committee_document,
+                )
+                checked = SLIDES_V1.validate(slide_selection.artifact, context)
+                if not checked.is_valid:
+                    raise ContractValidationError(checked.diagnostics, "invalid slide contract")
             selected.append(SLIDES_V1.encode(slide_selection.artifact))
         return selected, slide_selection

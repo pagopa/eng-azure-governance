@@ -77,6 +77,7 @@ def build_application(
         clock=overrides.get("clock", SystemClock()),
         run_id_factory=overrides.get("run_id_factory", UuidRunIdFactory()),
         observer=runtime_observer,
+        committee_yaml_path=config.committee_yaml_path,
     )
 
 

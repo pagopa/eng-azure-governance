@@ -12,7 +12,6 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSe
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
-    EDITORIAL_YAML_PATH,
 )
 
 
@@ -512,7 +511,7 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     manifest, editorial_yaml = _replay_slide_fixture("Old title")
-    (bundle / EDITORIAL_YAML_PATH).write_text(editorial_yaml, encoding="utf-8")
+    (bundle / "comitato_editoriale.yaml").write_text(editorial_yaml, encoding="utf-8")
     (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 
     store = Store()
@@ -525,12 +524,12 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     slide = next(item for item in store.candidate.artifacts if item.logical_path == "03_azure_retirements_slide.tsv")
     assert result.exit_status == 0
     assert b"Old title" not in slide.data
-    assert all(item.logical_path != EDITORIAL_YAML_PATH for item in store.candidate.artifacts)
+    assert all(item.logical_path != "comitato_editoriale.yaml" for item in store.candidate.artifacts)
 
     changed_bundle = tmp_path / "changed-bundle"
     changed_bundle.mkdir()
     changed_manifest, changed_yaml = _replay_slide_fixture("New title")
-    (changed_bundle / EDITORIAL_YAML_PATH).write_text(changed_yaml, encoding="utf-8")
+    (changed_bundle / "comitato_editoriale.yaml").write_text(changed_yaml, encoding="utf-8")
     (changed_bundle / "publication-manifest.json").write_text(
         json.dumps(changed_manifest),
         encoding="utf-8",
@@ -548,7 +547,7 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     )
     assert changed_slide.data == slide.data
     assert b"Old title" not in changed_slide.data
-    assert all(item.logical_path != EDITORIAL_YAML_PATH for item in changed_store.candidate.artifacts)
+    assert all(item.logical_path != "comitato_editoriale.yaml" for item in changed_store.candidate.artifacts)
 
 
 def test_schema_one_legacy_bundle_without_saved_inputs_is_a_documented_limitation(tmp_path) -> None:
@@ -570,7 +569,7 @@ def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(tmp_
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     manifest, editorial_yaml = _replay_slide_fixture("Saved title")
-    (bundle / EDITORIAL_YAML_PATH).write_text(
+    (bundle / "comitato_editoriale.yaml").write_text(
         editorial_yaml.replace("Saved title", "Different title"),
         encoding="utf-8",
     )
@@ -591,4 +590,4 @@ def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(tmp_
     store = Store()
     result = cli._run_replay(config, _replay_application(store))
     assert result.exit_status == 0
-    assert all(item.logical_path != EDITORIAL_YAML_PATH for item in store.candidate.artifacts)
+    assert all(item.logical_path != "comitato_editoriale.yaml" for item in store.candidate.artifacts)

@@ -13,9 +13,6 @@ from src.comitato.comitato_azure_retirements_v2.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
-    EDITORIAL_YAML_PATH,
-)
 from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
 from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
@@ -130,7 +127,7 @@ def test_publish_omits_editorial_sidecar_and_saved_inputs(tmp_path: Path) -> Non
 
     tree = read_monthly_tree(tmp_path, candidate.context.as_of_date)
     manifest = json.loads(tree["publication-manifest.json"])
-    assert EDITORIAL_YAML_PATH not in tree
+    assert "comitato_editoriale.yaml" not in tree
     assert "editorial_catalog" not in manifest["saved_inputs"]
     assert "editorial_catalog" not in manifest
     assert "editorial_work_list" not in manifest

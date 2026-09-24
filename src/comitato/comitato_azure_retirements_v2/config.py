@@ -15,6 +15,7 @@ from .domain.execution import ReportSelector, RunRequest
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
 _DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
+_DEFAULT_COMMITTEE_YAML_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "comitato_editoriale.yaml"
 
 LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
 OUTPUT_FORMATS = ("human", "json")
@@ -60,6 +61,7 @@ class RuntimeConfig:
     catalog_path: Path = _DEFAULT_CATALOG_PATH
     replay_bundle_path: Path | None = None
     output_path: Path = _DEFAULT_OUTPUT_PATH
+    committee_yaml_path: Path = _DEFAULT_COMMITTEE_YAML_PATH
     management_groups: tuple[str, ...] = ()
     http: HttpPolicy = HttpPolicy()
     api_versions: AzureApiVersions = AzureApiVersions()
@@ -83,6 +85,7 @@ class RuntimeConfig:
         catalog_path: Path | None = None,
         replay_bundle_path: Path | None = None,
         output_path: Path | None = None,
+        committee_yaml_path: Path | None = None,
         management_groups: tuple[str, ...] = (),
         today: Callable[[], date] = date.today,
     ) -> "RuntimeConfig":
@@ -99,6 +102,7 @@ class RuntimeConfig:
             catalog_path=catalog_path or _DEFAULT_CATALOG_PATH,
             replay_bundle_path=replay_bundle_path,
             output_path=output_path or _DEFAULT_OUTPUT_PATH,
+            committee_yaml_path=committee_yaml_path or _DEFAULT_COMMITTEE_YAML_PATH,
             management_groups=management_groups,
         )
 
@@ -117,6 +121,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--catalog-path", "--catalog", dest="catalog_path", default=None)
     parser.add_argument("--replay-bundle", type=Path, default=None)
     parser.add_argument("--output-path", "--output-root", dest="output_path", default=None)
+    parser.add_argument("--committee-yaml", type=Path, default=None)
     parser.add_argument("--timeout-seconds", type=float, default=60.0)
     parser.add_argument("--retry-attempts", type=int, default=3)
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="json")
@@ -188,6 +193,7 @@ def _config_from_namespace(
             args.output_path
             or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", str(_DEFAULT_OUTPUT_PATH))
         ),
+        committee_yaml_path=args.committee_yaml or _DEFAULT_COMMITTEE_YAML_PATH,
         management_groups=args.management_group_ids,
         http=HttpPolicy(args.timeout_seconds, args.retry_attempts),
         logging=RuntimeLoggingSettings(

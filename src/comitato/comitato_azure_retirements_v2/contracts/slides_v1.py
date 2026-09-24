@@ -12,159 +12,161 @@ from ._base import TsvContract
 
 HEADER = (
     "id_elemento", "titolo_breve", "descrizione_breve", "comitato_priorità",
-    "comitato_descrizione", "comitato_retirement_date", "comitato_piattaforme",
-    "retirement_date", "stato_data", "tipo_cambiamento", "stato_editoriale",
+    "impatto_microsoft", "comitato_descrizione", "comitato_retirement_date",
+    "comitato_piattaforme", "retirement_date", "stato_data",
     "descrizione_originale_completa", "azione_originale", "fonti", "link_fonti",
     "ambito_impatto", "id_advisor", "id_service_health", "risorse_json",
 )
 
-_EXCEL_CELL_LIMIT = 32767
+_DATE_MEANINGS = {
+    ("advisor", "retirement"): "Data di ritiro (Azure Advisor)",
+    ("advisor", "last_updated"): "Ultimo aggiornamento (Azure Advisor)",
+    ("service-health", "retirement"): "Data di ritiro (Azure Service Health)",
+    ("service-health", "last_updated"): "Ultimo aggiornamento (Azure Service Health)",
+    ("service-health", "notice_start"): "Avviso pubblicato il",
+    ("service-health", "notice_end"): "Avviso attivo fino al",
+}
 _SOURCE_NAMES = {
     "advisor": "Azure Advisor",
     "azure-advisor": "Azure Advisor",
+    "azure_advisor": "Azure Advisor",
     "service-health": "Azure Service Health",
     "azure-service-health": "Azure Service Health",
+    "azure_service_health": "Azure Service Health",
 }
 
 
-def _json_value(row: Mapping[str, str], column: str, default: Any) -> Any:
+def _json(row: Mapping[str, str], name: str, default: Any) -> Any:
     try:
-        value = json.loads(row[column])
-    except (KeyError, TypeError, json.JSONDecodeError):
+        return json.loads(row.get(name, ""))
+    except (TypeError, json.JSONDecodeError):
         return default
-    return value
 
 
-def _readable_item(value: Any) -> str:
-    if isinstance(value, Mapping):
-        for field in ("text", "action", "actionText", "caption", "label", "description", "title", "name"):
-            text = str(value.get(field, "")).strip()
-            if text:
-                return text
-        return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    return str(value).strip()
+def _items(rows: tuple[Mapping[str, str], ...], column: str) -> list[Any]:
+    values = []
+    for row in rows:
+        value = _json(row, column, [])
+        if isinstance(value, list):
+            values.extend(value)
+    return values
 
 
-def _readable(values: Any, separator: str = "; ") -> str:
-    if not isinstance(values, (list, tuple)):
-        return "" if values is None else str(values).strip()
-    unique = sorted({_readable_item(value) for value in values if _readable_item(value)}, key=lambda item: (item.casefold(), item))
-    return separator.join(unique)
-
-
-def _source_name(value: str) -> str:
-    return _SOURCE_NAMES.get(value.casefold(), value.replace("-", " ").title())
-
-
-def _overflow(value: str, item_id: str, section: str) -> str:
-    if len(value) <= _EXCEL_CELL_LIMIT:
-        return value
-    return f"OVERFLOW: complete value retained in aggregate/provenance for {item_id}.{section}"
-
-
-def _editorial(row: Mapping[str, str]) -> Mapping[str, str]:
-    provenance = _json_value(row, "provenance_json", {})
-    value = provenance.get("editorial", {}) if isinstance(provenance, Mapping) else {}
-    return value if isinstance(value, Mapping) else {}
-
-
-def _source_text(row: Mapping[str, str], column_values: tuple[tuple[str, str], ...]) -> str:
-    sections = []
-    for label, column in column_values:
-        values = _json_value(row, column, [])
-        text = _readable(values, separator="\n\n")
+def _unique(values: list[Any]) -> list[str]:
+    rendered = set()
+    for value in values:
+        if isinstance(value, Mapping):
+            value = next((value.get(field) for field in ("text", "action", "actionText", "caption", "label", "description", "title", "name") if value.get(field)), json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        text = str(value).strip()
         if text:
-            sections.append(f"{label}: {text}")
+            rendered.add(text)
+    return sorted(rendered, key=lambda item: (item.casefold(), item))
+
+
+def _source_text(rows: tuple[Mapping[str, str], ...], fields: tuple[tuple[str, str], ...]) -> str:
+    sections = []
+    for label, field in fields:
+        values = _unique(_items(rows, field))
+        if values:
+            sections.append(f"{label}: {'\n\n'.join(values)}")
     return "\n\n".join(sections)
 
 
-def _resource_hierarchy(row: Mapping[str, str]) -> dict[str, Any]:
-    platforms = _json_value(row, "platforms_subscriptions_json", {})
-    resource_ids = _json_value(row, "published_resource_ids_json", [])
-    normalized_ids = _json_value(row, "normalized_resource_ids_json", [])
-    ids_by_key = {}
-    for value in (*resource_ids, *normalized_ids):
-        text = str(value).strip()
-        if text:
-            ids_by_key.setdefault(text.casefold(), text)
-    ids = sorted(ids_by_key.values(), key=str.casefold)
-    provenance = _json_value(row, "provenance_json", {})
-    evidence = provenance.get("resource_evidence", ()) if isinstance(provenance, Mapping) else ()
-    evidence_by_subscription: dict[str, list[Mapping[str, str]]] = {}
-    if isinstance(evidence, list):
-        for item in evidence:
-            if isinstance(item, (list, tuple)) and len(item) == 5:
-                subscription_id, resource_name, resource_group, resource_id, status = item
-                evidence_by_subscription.setdefault(str(subscription_id).casefold(), []).append({
-                    "resource_name": str(resource_name),
-                    "resource_group": str(resource_group),
-                    "resource_id": str(resource_id),
-                    "status": str(status),
-                })
-    if not isinstance(platforms, Mapping):
-        platforms = {}
-    result: dict[str, Any] = {}
-    for platform, subscriptions in sorted(platforms.items(), key=lambda item: str(item[0]).casefold()):
-        entries = []
-        for subscription in subscriptions if isinstance(subscriptions, list) else ():
-            if not isinstance(subscription, Mapping):
+def _dates(rows: tuple[Mapping[str, str], ...]) -> list[dict[str, str]]:
+    values = []
+    for row in rows:
+        for item in _json(row, "date_events_json", []):
+            if not isinstance(item, Mapping):
                 continue
-            subscription_id = str(subscription.get("subscription_id", "")).strip()
-            subscription_name = str(subscription.get("subscription_name", "")).strip()
-            matching_ids = [
-                resource_id for resource_id in ids
-                if f"/subscriptions/{subscription_id}/".casefold() in resource_id.casefold()
-            ]
-            groups: dict[str, list[str]] = {}
-            for resource_id in matching_ids:
-                match = re.search(r"/resourceGroups/([^/]+)", resource_id, re.IGNORECASE)
-                group = match.group(1) if match else "<unknown>"
-                groups.setdefault(group, []).append(resource_id)
-            for item in evidence_by_subscription.get(subscription_id.casefold(), ()):
-                group = item["resource_group"] or "<unknown>"
-                if item["resource_id"]:
-                    groups.setdefault(group, []).append(item["resource_id"])
-                else:
-                    groups.setdefault(group, [])
-            group_values = []
-            for group, values in sorted(groups.items(), key=lambda item: item[0].casefold()):
-                names = sorted({
-                    item["resource_name"]
-                    for item in evidence_by_subscription.get(subscription_id.casefold(), ())
-                    if item["resource_group"] == group and item["resource_name"]
-                }, key=str.casefold)
-                group_values.append({
-                    "resource_group": group,
-                    "resource_ids": sorted(set(values), key=str.casefold),
-                    **({"resource_names": names} if names else {}),
-                })
-            details = evidence_by_subscription.get(subscription_id.casefold(), ())
-            entries.append({
-                "subscription_id": subscription_id,
-                "subscription_name": subscription_name,
-                "resource_groups": group_values,
-                "resource_detail": "verified" if matching_ids or any(item["status"] == "matched" for item in details) else next((item["status"] for item in details if item["status"]), "unavailable"),
-            })
-        result[str(platform)] = {"subscriptions": entries}
-    if row.get("is_global") == "true":
-        return {"ALL": {"scope": "global", "resource_detail": "not_applicable"}}
-    return result
+            date_value = str(item.get("date", "")).strip()
+            source = str(item.get("source", "")).strip()
+            kind = str(item.get("kind", "")).strip()
+            meaning = _DATE_MEANINGS.get((source, kind))
+            if date_value and meaning:
+                values.append({"date": date_value, "meaning": meaning})
+    return [
+        {"date": date_value, "meaning": meaning}
+        for date_value, meaning in sorted({(item["date"], item["meaning"]) for item in values})
+    ]
 
 
-def _impact_scope(row: Mapping[str, str]) -> str:
-    if row.get("is_global") == "true":
-        return "global"
-    subscriptions = _json_value(row, "affected_subscription_names_json", [])
-    services = _json_value(row, "impacted_services_json", [])
-    regions = _json_value(row, "impacted_regions_json", [])
-    parts = []
-    if subscriptions:
-        parts.append(f"subscriptions: {_readable(subscriptions)}")
-    if services:
-        parts.append(f"services: {_readable(services)}")
-    if regions:
-        parts.append(f"regions: {_readable(regions)}")
-    return "; ".join(parts) or "unresolved impact"
+def _resources(rows: tuple[Mapping[str, str], ...]) -> dict[str, Any]:
+    if any(row.get("is_global") == "true" for row in rows):
+        return {"ALL": "global"}
+    resources: dict[str, dict[str, dict[str, set[str]]]] = {}
+    for row in rows:
+        platforms = _json(row, "platforms_subscriptions_json", {})
+        provenance = _json(row, "provenance_json", {})
+        evidence = provenance.get("resource_evidence", []) if isinstance(provenance, Mapping) else []
+        names_by_subscription: dict[str, list[tuple[str, str]]] = {}
+        for item in evidence if isinstance(evidence, list) else []:
+            if isinstance(item, list | tuple) and len(item) == 5 and item[1]:
+                names_by_subscription.setdefault(str(item[0]), []).append((str(item[2]) or "<unknown>", str(item[1])))
+        for platform, subscriptions in platforms.items() if isinstance(platforms, Mapping) else ():
+            for subscription in subscriptions if isinstance(subscriptions, list) else ():
+                if not isinstance(subscription, Mapping):
+                    continue
+                subscription_id = str(subscription.get("subscription_id", ""))
+                subscription_name = str(subscription.get("subscription_name", ""))
+                groups = resources.setdefault(str(platform), {}).setdefault(subscription_name, {})
+                for group, name in names_by_subscription.get(subscription_id, []):
+                    groups.setdefault(group, set()).add(name)
+    return {
+        platform: {
+            subscription: {group: sorted(names, key=str.casefold) for group, names in sorted(groups.items(), key=lambda pair: pair[0].casefold())}
+            for subscription, groups in sorted(subscriptions.items(), key=lambda pair: pair[0].casefold())
+        }
+        for platform, subscriptions in sorted(resources.items(), key=lambda pair: pair[0].casefold())
+    }
+
+
+def _impact_scope(rows: tuple[Mapping[str, str], ...]) -> dict[str, Any]:
+    if any(row.get("is_global") == "true" for row in rows):
+        return {"globale": True}
+    platforms: dict[str, set[str]] = {}
+    subscriptions: set[str] = set()
+    environments = {"PROD": set(), "UAT": set(), "DEV": set(), "ALTRO": set()}
+    services, regions = set(), set()
+    resources: set[tuple[str, str, str]] = set()
+    resource_platforms: dict[str, set[tuple[str, str, str]]] = {}
+    for row in rows:
+        services.update(_json(row, "impacted_services_json", []))
+        regions.update(_json(row, "impacted_regions_json", []))
+        provenance = _json(row, "provenance_json", {})
+        evidence = provenance.get("resource_evidence", []) if isinstance(provenance, Mapping) else []
+        evidence_rows = {
+            (str(item[0]), str(item[2]) or "<unknown>", str(item[1]))
+            for item in evidence if isinstance(item, list | tuple) and len(item) == 5 and item[1]
+        }
+        resources.update(evidence_rows)
+        breakdown = _json(row, "platforms_subscriptions_json", {})
+        for platform, entries in breakdown.items() if isinstance(breakdown, Mapping) else ():
+            platform = str(platform)
+            platform_subscriptions = platforms.setdefault(platform, set())
+            resource_platforms.setdefault(platform, set())
+            for entry in entries if isinstance(entries, list) else ():
+                if not isinstance(entry, Mapping):
+                    continue
+                sub_id = str(entry.get("subscription_id", ""))
+                name = str(entry.get("subscription_name", ""))
+                if sub_id:
+                    subscriptions.add(sub_id)
+                    platform_subscriptions.add(sub_id)
+                match = re.match(r"^(PROD|UAT|DEV)[-_]", name, re.IGNORECASE)
+                environments[match.group(1).upper() if match else "ALTRO"].add(sub_id or name)
+                resource_platforms[platform].update(item for item in evidence_rows if item[0] == sub_id)
+    return {
+        "totale_piattaforme": len(platforms),
+        "totale_subscription": len(subscriptions),
+        "totale_risorse": len(resources),
+        "ambienti": {key: len(value) for key, value in environments.items()},
+        "servizi": sorted({str(value) for value in services}, key=str.casefold),
+        "regioni": sorted({str(value) for value in regions}, key=str.casefold),
+        "piattaforme": {
+            platform: {"subscription": len(subscriptions_for_platform), "risorse": len(resource_platforms[platform])}
+            for platform, subscriptions_for_platform in sorted(platforms.items(), key=lambda pair: pair[0].casefold())
+        },
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,47 +174,51 @@ class SlideRecord(Mapping[str, str]):
     values: tuple[tuple[str, str], ...]
 
     @classmethod
-    def from_aggregate(cls, aggregate, *, status: str) -> "SlideRecord":
-        editorial = _editorial(aggregate)
-        item_id = str(aggregate["aggregate_id"])
-        title = str(editorial.get("title") or aggregate["technology_or_service"] or aggregate["retiring_feature"] or "Unknown change")
-        description = str(editorial.get("description") or f"Draft: {aggregate['retiring_feature'] or aggregate['technology_or_service'] or 'source item'}")
-        original_description = _source_text(aggregate, (
-            ("Advisor", "advisor_problem_descriptions_json"),
-            ("Service Health", "service_health_problem_descriptions_json"),
-        ))
-        original_action = _source_text(aggregate, (
-            ("Advisor", "advisor_actions_json"),
-            ("Service Health", "service_health_actions_json"),
-        ))
-        source_values = _json_value(aggregate, "source_systems_json", [])
-        sources = _readable([_source_name(str(value)) for value in source_values])
-        links = _readable(_json_value(aggregate, "source_links_json", []))
-        record_types = _json_value(aggregate, "record_types_json", [])
-        change_type = _readable(record_types) or "unknown"
-        editorial_state = "source-derived; human review not recorded"
+    def from_group(
+        cls,
+        rows: tuple[Mapping[str, str], ...],
+        *,
+        item_id: str,
+        primary_date: str,
+        status: str,
+    ) -> "SlideRecord":
+        titles = _unique(_items(rows, "problem_titles_json"))
+        retiring = _unique([row.get("retiring_feature", "") for row in rows])
+        services = _unique([row.get("technology_or_service", "") for row in rows])
+        description = (titles or retiring or services or [""])[0]
+        advisor_ids = _unique(_items(rows, "advisor_recommendation_type_ids_json"))
+        health_ids = _unique(_items(rows, "service_health_tracking_ids_json"))
+        impacts = {str(value).strip().casefold(): str(value).strip() for value in _items(rows, "advisor_impacts_json")}
+        impact = next((impacts[key] for key in ("high", "medium", "low") if key in impacts), "")
+        impact = {"High": "Alto", "Medium": "Medio", "Low": "Basso"}.get(impact, "")
+        date_values = _dates(rows)
+        date_cell = "\n".join(f"{item['date']} — {item['meaning']}" for item in date_values)
+        source_values = _unique(_items(rows, "source_systems_json"))
+        links = _unique(_items(rows, "source_links_json"))
+        platforms = _unique(_items(rows, "platforms_json"))
+        original_description = _source_text(rows, (("Advisor", "advisor_problem_descriptions_json"), ("Service Health", "service_health_problem_descriptions_json")))
+        original_action = _source_text(rows, (("Advisor", "advisor_actions_json"), ("Service Health", "service_health_actions_json")))
+        resource_value = json.dumps(_resources(rows), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         values = {
             "id_elemento": item_id,
-            "titolo_breve": title,
+            "titolo_breve": (services or retiring or description.splitlines() or [""])[0],
             "descrizione_breve": description,
             "comitato_priorità": "",
+            "impatto_microsoft": impact,
             "comitato_descrizione": "",
             "comitato_retirement_date": "",
-            "comitato_piattaforme": _readable(_json_value(aggregate, "platforms_json", [])),
-            "retirement_date": str(aggregate["retirement_date"]),
+            "comitato_piattaforme": "; ".join(platforms),
+            "retirement_date": date_cell,
             "stato_data": status,
-            "tipo_cambiamento": change_type,
-            "stato_editoriale": editorial_state,
-            "descrizione_originale_completa": _overflow(original_description, item_id, "descrizione_originale_completa"),
-            "azione_originale": _overflow(original_action, item_id, "azione_originale"),
-            "fonti": sources,
-            "link_fonti": links,
-            "ambito_impatto": _impact_scope(aggregate),
-            "id_advisor": _readable(_json_value(aggregate, "advisor_recommendation_ids_json", [])),
-            "id_service_health": _readable(_json_value(aggregate, "service_health_tracking_ids_json", [])),
-            "risorse_json": json.dumps(_resource_hierarchy(aggregate), ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            "descrizione_originale_completa": original_description,
+            "azione_originale": original_action,
+            "fonti": "; ".join(_unique([_SOURCE_NAMES.get(value.casefold(), value) for value in source_values])),
+            "link_fonti": "; ".join(links),
+            "ambito_impatto": json.dumps(_impact_scope(rows), ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+            "id_advisor": "; ".join(advisor_ids),
+            "id_service_health": "; ".join(health_ids),
+            "risorse_json": resource_value,
         }
-        values["risorse_json"] = _overflow(values["risorse_json"], item_id, "risorse_json")
         return cls(tuple((column, values[column]) for column in HEADER))
 
     def __getitem__(self, key: str) -> str:
@@ -229,28 +235,16 @@ class SlidesV1Contract(TsvContract[SlideRecord]):
     def validate(self, artifact, context):
         base = super().validate(artifact, context)
         diagnostics: list[Diagnostic] = []
-        previous: tuple[str, str] | None = None
         seen: set[str] = set()
         for row in artifact.records:
             if tuple(row) != HEADER:
                 diagnostics.append(Diagnostic("error", "invalid_slide_columns", "validation", "slides", context.run_id))
                 continue
-            aggregate_id = row["id_elemento"]
-            if aggregate_id in seen:
-                diagnostics.append(Diagnostic("error", "duplicate_slide_aggregate_id", "validation", "slides", context.run_id, record_ref=aggregate_id))
-            seen.add(aggregate_id)
-            order = (row["retirement_date"] or "9999-99-99", aggregate_id)
-            if previous is not None and order < previous:
-                diagnostics.append(Diagnostic("error", "slide_order_mismatch", "validation", "slides", context.run_id, record_ref=aggregate_id))
-            previous = order
-            if row["stato_data"] not in {
-                "upcoming", "elapsed", "beyond_committee_window", "missing", "partial", "conflicting", "invalid",
-            }:
-                diagnostics.append(Diagnostic("error", "invalid_slide_date_status", "validation", "slides", context.run_id, record_ref=aggregate_id))
+            if row["id_elemento"] in seen:
+                diagnostics.append(Diagnostic("error", "duplicate_slide_id", "validation", "slides", context.run_id, record_ref=row["id_elemento"]))
+            seen.add(row["id_elemento"])
             if row["comitato_priorità"]:
-                diagnostics.append(Diagnostic("error", "external_priority_required", "validation", "slides", context.run_id, record_ref=aggregate_id))
-            if row["comitato_descrizione"] or row["comitato_retirement_date"]:
-                diagnostics.append(Diagnostic("error", "editorial_committee_fields_must_be_empty", "validation", "slides", context.run_id, record_ref=aggregate_id))
+                diagnostics.append(Diagnostic("error", "external_priority_required", "validation", "slides", context.run_id, record_ref=row["id_elemento"]))
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
         return base

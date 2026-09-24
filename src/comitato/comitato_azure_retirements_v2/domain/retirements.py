@@ -139,6 +139,11 @@ def _rows(value: object) -> tuple[Mapping[str, Any], ...]:
             if isinstance(service_health, Mapping):
                 copied["source_health_tracking_ids"] = service_health.get("trackingIds", ())
                 copied["source_health_ash_urls"] = service_health.get("ashUrls", ())
+            recommendation = companion.get("recommendation", {}) if isinstance(companion, Mapping) else {}
+            recommendation_properties = recommendation.get("properties", {}) if isinstance(recommendation, Mapping) else {}
+            extended_properties = recommendation_properties.get("extendedProperties", {}) if isinstance(recommendation_properties, Mapping) else {}
+            if isinstance(extended_properties, Mapping):
+                copied["recommended_action_learn_more"] = extended_properties.get("recommendedActionLearnMore", "")
             enriched.append(copied)
         return tuple(enriched)
     if isinstance(value, Mapping):

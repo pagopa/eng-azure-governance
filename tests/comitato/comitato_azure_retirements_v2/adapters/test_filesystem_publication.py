@@ -15,9 +15,6 @@ from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
-    EDITORIAL_YAML_PATH,
-)
 
 
 def _seed(destination: Path) -> bytes:
@@ -137,8 +134,8 @@ def test_next_month_does_not_restore_an_editorial_sidecar(tmp_path: Path) -> Non
     store.publish(empty_candidate(editorial_yaml=editorial_yaml))
     store.publish(empty_candidate(as_of_date=date(2026, 8, 1)))
 
-    assert EDITORIAL_YAML_PATH not in read_monthly_tree(tmp_path, date(2026, 7, 30))
-    assert EDITORIAL_YAML_PATH not in read_monthly_tree(tmp_path, date(2026, 8, 1))
+    assert "comitato_editoriale.yaml" not in read_monthly_tree(tmp_path, date(2026, 7, 30))
+    assert "comitato_editoriale.yaml" not in read_monthly_tree(tmp_path, date(2026, 8, 1))
 
 
 def test_same_month_replacement_does_not_restore_an_editorial_sidecar(
@@ -151,7 +148,7 @@ def test_same_month_replacement_does_not_restore_an_editorial_sidecar(
     store.publish(empty_candidate(editorial_yaml="schema_version: 1\nitems: []\n"))
 
     current = read_monthly_tree(tmp_path, date(2026, 7, 30))
-    assert EDITORIAL_YAML_PATH not in current
+    assert "comitato_editoriale.yaml" not in current
     assert not (tmp_path / ".history").exists()
 
 
@@ -198,7 +195,7 @@ def test_failed_replacement_keeps_prior_manifest_and_no_sidecar(tmp_path: Path) 
         store.publish(empty_candidate(as_of_date=date(2026, 7, 31)))
 
     current = read_monthly_tree(tmp_path, date(2026, 7, 30))
-    assert EDITORIAL_YAML_PATH not in current
+    assert "comitato_editoriale.yaml" not in current
     assert current["publication-manifest.json"]
 
 
