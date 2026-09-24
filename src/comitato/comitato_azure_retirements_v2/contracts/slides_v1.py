@@ -13,19 +13,29 @@ from ._base import TsvContract
 HEADER = (
     "id_elemento", "titolo_breve", "descrizione_breve", "comitato_priorità",
     "impatto_microsoft", "comitato_descrizione", "comitato_retirement_date",
-    "comitato_piattaforme", "retirement_date", "stato_data",
+    "comitato_piattaforme", "retirement_date", "stato_data", "giorni_ritardo",
     "descrizione_originale_completa", "azione_originale", "fonti", "link_fonti",
     "ambito_impatto", "id_advisor", "id_service_health", "risorse_json",
 )
 
-_DATE_MEANINGS = {
-    ("advisor", "retirement"): "Data di ritiro (Azure Advisor)",
-    ("advisor", "last_updated"): "Ultimo aggiornamento (Azure Advisor)",
-    ("service-health", "retirement"): "Data di ritiro (Azure Service Health)",
-    ("service-health", "last_updated"): "Ultimo aggiornamento (Azure Service Health)",
-    ("service-health", "notice_start"): "Avviso pubblicato il",
-    ("service-health", "notice_end"): "Avviso attivo fino al",
+ADVISOR_TYPE_LINK = "https://portal.azure.com/#view/Microsoft_Azure_Expert/RecommendationListBlade/recommendationTypeId/"
+SERVICE_HEALTH_LINK = "https://app.azure.com/h/"
+
+# (source, kind) -> (slide meaning, YAML tipo, YAML fonte)
+DATE_KINDS = {
+    ("advisor", "retirement"): ("Data di ritiro (Azure Advisor)", "ritiro", "Azure Advisor (raccomandazione)"),
+    ("advisor", "retirement_metadata"): ("Data di ritiro (metadati Azure Advisor)", "ritiro", "Azure Advisor (metadati)"),
+    ("advisor", "image_removal"): ("Rimozione immagine (Azure Advisor)", "rimozione_immagine", "Azure Advisor"),
+    ("advisor", "oldest_update"): ("Aggiornamento meno recente osservato (Azure Advisor)", "aggiornamento_meno_recente", "Azure Advisor"),
+    ("advisor", "last_updated"): ("Ultimo aggiornamento (Azure Advisor)", "ultimo_aggiornamento", "Azure Advisor"),
+    ("service-health", "retirement"): ("Data di ritiro (Azure Service Health)", "ritiro", "Azure Service Health"),
+    ("service-health", "oldest_update"): ("Aggiornamento meno recente osservato (Azure Service Health)", "aggiornamento_meno_recente", "Azure Service Health"),
+    ("service-health", "last_updated"): ("Ultimo aggiornamento (Azure Service Health)", "ultimo_aggiornamento", "Azure Service Health"),
+    ("service-health", "notice_start"): ("Avviso pubblicato il", "avviso_inizio", "Azure Service Health"),
+    ("service-health", "notice_end"): ("Avviso attivo fino al", "avviso_fine", "Azure Service Health"),
 }
+_DATE_MEANINGS = {key: value[0] for key, value in DATE_KINDS.items()}
+DATE_MEANING_TYPES = {meaning: (tipo, fonte) for meaning, tipo, fonte in DATE_KINDS.values()}
 _SOURCE_NAMES = {
     "advisor": "Azure Advisor",
     "azure-advisor": "Azure Advisor",
@@ -73,7 +83,8 @@ def _source_text(rows: tuple[Mapping[str, str], ...], fields: tuple[tuple[str, s
 
 
 def _dates(rows: tuple[Mapping[str, str], ...]) -> list[dict[str, str]]:
-    values = []
+    values = set()
+    updates: dict[str, set[str]] = {}
     for row in rows:
         for item in _json(row, "date_events_json", []):
             if not isinstance(item, Mapping):
@@ -81,13 +92,17 @@ def _dates(rows: tuple[Mapping[str, str], ...]) -> list[dict[str, str]]:
             date_value = str(item.get("date", "")).strip()
             source = str(item.get("source", "")).strip()
             kind = str(item.get("kind", "")).strip()
-            meaning = _DATE_MEANINGS.get((source, kind))
-            if date_value and meaning:
-                values.append({"date": date_value, "meaning": meaning})
-    return [
-        {"date": date_value, "meaning": meaning}
-        for date_value, meaning in sorted({(item["date"], item["meaning"]) for item in values})
-    ]
+            if not date_value or (source, kind) not in _DATE_MEANINGS:
+                continue
+            if kind == "last_updated":
+                updates.setdefault(source, set()).add(date_value)
+            else:
+                values.add((date_value, _DATE_MEANINGS[(source, kind)]))
+    for source, update_dates in updates.items():
+        values.add((max(update_dates), _DATE_MEANINGS[(source, "last_updated")]))
+        if len(update_dates) > 1:
+            values.add((min(update_dates), _DATE_MEANINGS[(source, "oldest_update")]))
+    return [{"date": date_value, "meaning": meaning} for date_value, meaning in sorted(values)]
 
 
 def _resources(rows: tuple[Mapping[str, str], ...]) -> dict[str, Any]:
@@ -181,6 +196,7 @@ class SlideRecord(Mapping[str, str]):
         item_id: str,
         primary_date: str,
         status: str,
+        days_overdue: str = "",
     ) -> "SlideRecord":
         titles = _unique(_items(rows, "problem_titles_json"))
         retiring = _unique([row.get("retiring_feature", "") for row in rows])
@@ -210,13 +226,14 @@ class SlideRecord(Mapping[str, str]):
             "comitato_piattaforme": "; ".join(platforms),
             "retirement_date": date_cell,
             "stato_data": status,
+            "giorni_ritardo": days_overdue,
             "descrizione_originale_completa": original_description,
             "azione_originale": original_action,
             "fonti": "; ".join(_unique([_SOURCE_NAMES.get(value.casefold(), value) for value in source_values])),
             "link_fonti": "; ".join(links),
             "ambito_impatto": json.dumps(_impact_scope(rows), ensure_ascii=False, sort_keys=True, separators=(",", ":")),
-            "id_advisor": "; ".join(advisor_ids),
-            "id_service_health": "; ".join(health_ids),
+            "id_advisor": "; ".join(ADVISOR_TYPE_LINK + value for value in advisor_ids),
+            "id_service_health": "; ".join(SERVICE_HEALTH_LINK + value for value in health_ids),
             "risorse_json": resource_value,
         }
         return cls(tuple((column, values[column]) for column in HEADER))

@@ -38,7 +38,7 @@ resolved from the repository root: the catalog is
 root may be set with `COMITATO_AZURE_RETIREMENTS_CATALOG` and
 `COMITATO_AZURE_RETIREMENTS_OUTPUT`. `--committee-yaml` selects the committee
 sidecar path; the composition default is
-`src/comitato/comitato_azure_retirements_v2/comitato_editoriale.yaml`.
+`src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.yaml`.
 
 Each successful run writes its complete bundle under
 `exports/YYYY/MM`, where the partition comes from `--as-of-date`. A later run
@@ -54,7 +54,10 @@ in `publication-manifest.json`. A live slide run merges committee values from
 only after publication succeeds. A changed original description clears only
 `comitato_descrizione`; `comitato_retirement_date` is retained, and entries not
 present in the run are dropped. Pass `--committee-yaml PATH` to select another
-file. Schema-1 historical bundles without `saved_inputs` cannot be replayed
+file. In the YAML, descriptions longer than 100 characters use folded style,
+`link_fonti` omits Azure portal links (`app.azure.com`, `portal.azure.com`,
+`aka.ms/AzureServiceHealthAdvisories`), and `retirement_date` is a list of
+`{data, tipo, fonte}` entries. Schema-1 historical bundles without `saved_inputs` cannot be replayed
 because they do not preserve the acquisition inputs needed for deterministic
 replay.
 
@@ -67,18 +70,25 @@ status and emit sorted JSONL diagnostics on stderr without changing the
 existing monthly bundle.
 
 The complete aggregate retains source membership independently of the
-committee view. The slide artifact has exactly these 18 columns, in order:
+committee view. The slide artifact has exactly these 19 columns, in order:
 `id_elemento`, `titolo_breve`, `descrizione_breve`, `comitato_priorità`,
 `impatto_microsoft`, `comitato_descrizione`, `comitato_retirement_date`,
-`comitato_piattaforme`, `retirement_date`, `stato_data`,
+`comitato_piattaforme`, `retirement_date`, `stato_data`, `giorni_ritardo`,
 `descrizione_originale_completa`, `azione_originale`, `fonti`, `link_fonti`,
 `ambito_impatto`, `id_advisor`, `id_service_health`, `risorse_json`.
 Rows group by Advisor recommendation type id, then Service Health tracking id,
 then aggregate id. Stable slide ids use the `azure-retirement:v2:` prefix.
 `descrizione_breve` uses the first problem title, with retiring feature and
 service as fallbacks. `impatto_microsoft` maps the highest Advisor impact to
-`Alto`, `Medio`, or `Basso`; Service Health-only rows leave it empty. Retirement
-dates and notice dates are listed with their source meaning. Rows beyond the
+`Alto`, `Medio`, or `Basso`; Service Health-only rows leave it empty.
+`retirement_date` lists every date with its meaning: Advisor recommendation
+and metadata retirement dates, image removal dates, Service Health notice
+window, and the oldest and latest observed update per source. Only retirement
+dates, or the nearest image removal date when none exists, drive `stato_data`
+and ordering; differing recommendation and metadata dates yield `Date
+discordanti`. `giorni_ritardo` holds the days since the deadline for `Scaduta`
+rows only. `id_advisor` and `id_service_health` are portal links to the
+recommendation type and the Service Health tracking id. Rows beyond the
 committee window are excluded; the remaining date states are `Data non
 disponibile`, `Date discordanti`, `Scaduta`, and `In scadenza`.
 

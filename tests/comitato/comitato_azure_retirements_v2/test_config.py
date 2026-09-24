@@ -24,6 +24,7 @@ def test_defaults_to_repository_source_of_truth_paths() -> None:
 
     assert config.catalog_path == repository_root / "src/_source_of_truth/eng-finops-platforms.yaml"
     assert config.output_path == repository_root / "src/comitato/comitato_azure_retirements_v2/exports"
+    assert config.committee_yaml_path == repository_root / "src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.yaml"
 
 
 @pytest.mark.parametrize("selector", tuple(item.value for item in ReportSelector))

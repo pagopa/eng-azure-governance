@@ -18,6 +18,9 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
 from src.comitato.comitato_azure_retirements_v2.domain.slides import project_slides, select_slides
 
 
+ADVISOR_LINK = "https://portal.azure.com/#view/Microsoft_Azure_Expert/RecommendationListBlade/recommendationTypeId/"
+
+
 def context() -> RunContext:
     return RunContext(
         run_id="run-1",
@@ -90,7 +93,7 @@ def test_slides_v1_has_exact_utf8_header_and_empty_artifact() -> None:
     assert HEADER == (
         "id_elemento", "titolo_breve", "descrizione_breve", "comitato_priorità",
         "impatto_microsoft", "comitato_descrizione", "comitato_retirement_date",
-        "comitato_piattaforme", "retirement_date", "stato_data",
+        "comitato_piattaforme", "retirement_date", "stato_data", "giorni_ritardo",
         "descrizione_originale_completa", "azione_originale", "fonti", "link_fonti",
         "ambito_impatto", "id_advisor", "id_service_health", "risorse_json",
     )
@@ -115,6 +118,7 @@ def test_project_slides_emits_committee_projection_and_leaves_external_fields_em
     assert slide["comitato_retirement_date"] == ""
     assert slide["retirement_date"] == "2027-01-01 — Data di ritiro (Azure Advisor)"
     assert slide["stato_data"] == "In scadenza"
+    assert slide["giorni_ritardo"] == ""
     assert slide["fonti"] == "Azure Advisor"
     assert slide["link_fonti"] == "https://example.invalid/retirement"
     assert slide["id_advisor"] == ""
@@ -147,6 +151,7 @@ def test_project_slides_keeps_elapsed_rows_as_drafts() -> None:
     assert result.value is not None
     assert result.value.records[0]["id_elemento"].startswith("azure-retirement:v2:")
     assert result.value.records[0]["stato_data"] == "Scaduta"
+    assert result.value.records[0]["giorni_ritardo"] == "1"
 
 
 def test_selection_preserves_every_temporal_category_outside_the_slide_view() -> None:
@@ -208,8 +213,8 @@ def test_projection_uses_problem_titles_and_renders_source_singletons() -> None:
     assert slide["comitato_retirement_date"] == ""
     assert slide["azione_originale"] == "Advisor: Update SDK\n\nService Health: Migrate"
     assert slide["fonti"] == "Azure Advisor; Azure Service Health"
-    assert slide["id_advisor"] == "advisor-type-1"
-    assert slide["id_service_health"] == "track-1"
+    assert slide["id_advisor"] == ADVISOR_LINK + "advisor-type-1"
+    assert slide["id_service_health"] == "https://app.azure.com/h/track-1"
     assert json.loads(slide["risorse_json"])
 
 
@@ -277,7 +282,7 @@ def test_thirteen_advisor_records_of_one_type_become_one_stable_slide_row() -> N
     assert len(result.value.records) == 1
     slide = result.value.records[0]
     assert slide["id_elemento"] == "azure-retirement:v2:371255663d32dcbb300a4458cce2c28f710721e49c23ab37669141f932c38ae0"
-    assert slide["id_advisor"] == "advisor-type-1"
+    assert slide["id_advisor"] == ADVISOR_LINK + "advisor-type-1"
     assert slide["descrizione_breve"] == "One retirement problem"
 
 
@@ -298,9 +303,76 @@ def test_service_health_group_uses_tracking_key_and_keeps_impact_empty() -> None
     assert result.is_valid and result.value is not None
     slide = result.value.records[0]
     assert slide["id_elemento"] == "azure-retirement:v2:22a79fff2c46c18d6c03cbbd0a39addef718022f4fe8c7f4b5b19c3f8da49940"
-    assert slide["id_service_health"] == "track-1"
+    assert slide["id_service_health"] == "https://app.azure.com/h/track-1"
     assert slide["impatto_microsoft"] == ""
     assert slide["descrizione_breve"] == "Storage notice"
+
+
+def _typed_row(aggregate_id: str, events: list[dict[str, str]]) -> dict[str, str]:
+    row = aggregate_row(aggregate_id, "", quality="missing", claims=[])
+    row["advisor_recommendation_type_ids_json"] = '["type-1"]'
+    row["date_events_json"] = json.dumps(events)
+    return row
+
+
+def test_metadata_date_that_differs_from_recommendation_is_a_conflict() -> None:
+    row = _typed_row("aks", [
+        {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
+        {"date": "2026-03-31", "kind": "retirement_metadata", "source": "advisor"},
+    ])
+
+    slide = project_slides(aggregate_artifact(row), context()).value.records[0]
+
+    assert slide["stato_data"] == "Date discordanti"
+    assert slide["giorni_ritardo"] == ""
+    assert slide["retirement_date"] == (
+        "2026-03-01 — Data di ritiro (Azure Advisor)\n"
+        "2026-03-31 — Data di ritiro (metadati Azure Advisor)"
+    )
+
+
+def test_image_removal_dates_use_the_nearest_without_conflict() -> None:
+    rows = (
+        _typed_row("image-a", [{"date": "2026-07-20", "kind": "image_removal", "source": "advisor"}]),
+        _typed_row("image-b", [{"date": "2027-01-12", "kind": "image_removal", "source": "advisor"}]),
+    )
+
+    slide = project_slides(aggregate_artifact(*rows), context()).value.records[0]
+
+    assert slide["stato_data"] == "Scaduta"
+    assert slide["giorni_ritardo"] == "10"
+    assert slide["retirement_date"] == (
+        "2026-07-20 — Rimozione immagine (Azure Advisor)\n"
+        "2027-01-12 — Rimozione immagine (Azure Advisor)"
+    )
+
+
+def test_updates_keep_only_oldest_and_latest_per_source_and_do_not_drive_status() -> None:
+    rows = tuple(
+        _typed_row(f"update-{day}", [{"date": f"2026-05-{day}", "kind": "last_updated", "source": "advisor"}])
+        for day in ("01", "10", "20")
+    )
+
+    slide = project_slides(aggregate_artifact(*rows), context()).value.records[0]
+
+    assert slide["stato_data"] == "Data non disponibile"
+    assert slide["retirement_date"] == (
+        "2026-05-01 — Aggiornamento meno recente osservato (Azure Advisor)\n"
+        "2026-05-20 — Ultimo aggiornamento (Azure Advisor)"
+    )
+
+
+def test_slides_order_by_deadline_not_by_first_listed_date() -> None:
+    later = _typed_row("later", [
+        {"date": "2026-01-01", "kind": "last_updated", "source": "advisor"},
+        {"date": "2027-06-01", "kind": "retirement", "source": "advisor"},
+    ])
+    sooner = aggregate_row("sooner", "2026-12-01")
+    sooner["advisor_recommendation_type_ids_json"] = '["type-2"]'
+
+    records = project_slides(aggregate_artifact(later, sooner), context()).value.records
+
+    assert [row["retirement_date"][:10] for row in records] == ["2026-12-01", "2026-01-01"]
 
 
 def test_impact_scope_counts_environments_and_compact_resources() -> None:

@@ -223,3 +223,73 @@ def test_aggregate_projects_titles_impacts_dates_and_normalized_source_links() -
         "https://learn.example/advisor",
         "https://learn.example/health",
     ]
+
+
+def test_aggregate_adds_metadata_and_image_dates_with_diagnostic_flags() -> None:
+    advisor_acquisition = SimpleNamespace(
+        records=({
+            "advisor_recommendation_id": "advisor-1",
+            "recommendation_type_id": "type-1",
+            "retirement_date": "2026-03-01",
+            "raw_record_ref": "advisor-ref",
+        },),
+        companion_records=({
+            "raw_record_ref": "advisor-ref",
+            "advisor_metadata": {"sourceProperties": {"serviceRetirement": {"retirementDate": "2026-03-31"}}},
+            "recommendation": {"properties": {"extendedProperties": {"SoftDeleteRequestedTime": "2027-01-12T00:00:00.0000000Z"}}}},
+        ),
+    )
+
+    row = build_aggregate(advisor_acquisition, (), context=context(), catalog=catalog())[0]
+
+    assert json.loads(row["date_events_json"]) == [
+        {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
+        {"date": "2026-03-31", "kind": "retirement_metadata", "source": "advisor"},
+        {"date": "2027-01-12", "kind": "image_removal", "source": "advisor"},
+    ]
+    flags = set(row["diagnostic_flags"].split(","))
+    assert {"date_conflict", "date_from_extended_properties"} <= flags
+    assert "no_retirement_semantics" not in flags
+
+
+def test_aggregate_skips_equal_metadata_date_and_flags_undated_advisor_rows() -> None:
+    advisor_acquisition = SimpleNamespace(
+        records=(
+            {"advisor_recommendation_id": "dated", "recommendation_type_id": "type-1", "retirement_date": "2026-03-01", "raw_record_ref": "dated-ref"},
+            {"advisor_recommendation_id": "undated", "recommendation_type_id": "type-2", "raw_record_ref": "undated-ref"},
+        ),
+        companion_records=({
+            "raw_record_ref": "dated-ref",
+            "advisor_metadata": {"sourceProperties": {"serviceRetirement": {"retirementDate": "2026-03-01"}}},
+        },),
+    )
+
+    rows = {json.loads(row["advisor_recommendation_ids_json"])[0]: row for row in build_aggregate(advisor_acquisition, (), context=context(), catalog=catalog())}
+
+    assert json.loads(rows["dated"]["date_events_json"]) == [
+        {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
+    ]
+    assert "date_conflict" not in rows["dated"]["diagnostic_flags"]
+    assert "no_retirement_semantics" in rows["undated"]["diagnostic_flags"].split(",")
+
+
+def test_aggregate_adds_text_links_when_only_portal_links_exist() -> None:
+    health_records = ({
+        "service_health_event_id": "health-1",
+        "tracking_id": "notice-1",
+        "description_problem": (
+            "See Health advisories (https://aka.ms/AzureServiceHealthAdvisories). "
+            "Read the guidance (https://techcommunity.microsoft.com/blog/x/123)."
+        ),
+        "last_update_time": "2026-09-22T14:29:36Z",
+        "raw_record_ref": "health-ref",
+    },)
+
+    row = build_aggregate((), health_records, context=context(), catalog=catalog())[0]
+
+    assert json.loads(row["source_links_json"]) == [
+        "https://app.azure.com/h/notice-1",
+        "https://techcommunity.microsoft.com/blog/x/123",
+    ]
+    assert "link_from_text" in row["diagnostic_flags"].split(",")
+    assert {"date": "2026-09-22", "kind": "last_updated", "source": "service-health"} in json.loads(row["date_events_json"])

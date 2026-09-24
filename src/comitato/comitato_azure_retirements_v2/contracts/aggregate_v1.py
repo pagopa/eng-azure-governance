@@ -8,6 +8,7 @@ from typing import Any, Iterator
 from ..domain.correlation import correlate_source_events
 from ..domain.dates import parse_retirement_date
 from ..domain.diagnostics import Diagnostic, ValidationResult
+from ..domain.links import is_azure_portal_link, text_links
 from ..domain.platforms import PlatformCatalogSnapshot, SubscriptionId, project_platforms
 from ..domain.retirements import (
     SourceEventKey,
@@ -194,7 +195,10 @@ def _date_events(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, str], ...
         is_advisor = source == "azure_advisor" or bool(row.get("advisor_recommendation_id"))
         is_health = source == "azure_service_health" or bool(row.get("service_health_event_id"))
         if is_advisor:
-            candidates = (("retirement_date", "retirement"),)
+            candidates = (("retirement_date", "retirement"), ("image_removal_date", "image_removal"))
+            metadata_date = str(row.get("metadata_retirement_date", "") or "").strip()[:10]
+            if metadata_date != str(row.get("retirement_date", "") or "").strip()[:10]:
+                candidates += (("metadata_retirement_date", "retirement_metadata"),)
             if latest_advisor_update and str(row.get("last_updated", "")).strip()[:10] == latest_advisor_update:
                 candidates += (("last_updated", "last_updated"),)
         elif is_health:
@@ -202,6 +206,7 @@ def _date_events(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, str], ...
                 ("impact_start_time", "notice_start"),
                 ("impact_mitigation_time", "notice_end"),
                 ("retirement_date", "retirement"),
+                ("last_update_time", "last_updated"),
             )
         else:
             candidates = ()
@@ -272,6 +277,25 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot) -> Aggregat
         flags.add("conflicting_technology_or_service")
     if len(_unique_values(rows, ("retiring_feature",))) > 1:
         flags.add("conflicting_retiring_feature")
+    date_events = _date_events(rows)
+    date_kinds = {item["kind"] for item in date_events}
+    if "retirement_metadata" in date_kinds and "retirement" in date_kinds:
+        flags.add("date_conflict")
+    if "image_removal" in date_kinds:
+        flags.add("date_from_extended_properties")
+    if advisor_rows and not date_kinds & {"retirement", "retirement_metadata", "image_removal"}:
+        flags.add("no_retirement_semantics")
+    source_links = _source_links(rows)
+    if all(is_azure_portal_link(link) for link in source_links):
+        text_urls = tuple(
+            link
+            for text in _unique_values(rows, ("description_problem", "short_description_problem", "description"))
+            for link in text_links(text)
+            if not is_azure_portal_link(link)
+        )
+        if text_urls:
+            source_links = tuple(sorted(set(source_links) | set(text_urls)))
+            flags.add("link_from_text")
     source_field_provenance = {}
     for row in rows:
         try:
@@ -293,14 +317,14 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot) -> Aggregat
         "advisor_problem_descriptions_json": _json(list(_unique_values(advisor_rows, ("short_description_problem", "description")))), "service_health_problem_descriptions_json": _json(list(_unique_values(health_rows, ("description_problem",)))),
         "problem_titles_json": _json(list(_unique_values(advisor_rows, ("short_description_problem",))) + list(_unique_values(health_rows, ("title",)))),
         "advisor_impacts_json": _json(list(_unique_values(advisor_rows, ("impact",)))),
-        "date_events_json": _json(_date_events(rows)),
+        "date_events_json": _json(date_events),
         "advisor_actions_json": _json_array(advisor_rows, "actions_json"), "service_health_actions_json": _json_array(health_rows, "recommended_actions"),
         "retirement_date": retirement_date, "retirement_date_quality": date_quality, "retirement_dates_json": _json(retirement_dates), "retirement_date_sources_json": _json(date_sources),
         "affected_subscription_ids_json": _json(subscription_ids), "affected_subscription_names_json": _json(subscription_names), "is_global": "true" if explicit_global else "false",
         "platforms_json": _json(projection.value.platforms), "platforms_subscriptions_json": _json(projection.value.platforms_subscriptions),
         "published_resource_ids_json": _json(list(_unique_values(rows, ("published_resource_id",)))), "normalized_resource_ids_json": _json(list(_unique_values(rows, ("normalized_resource_id",)))),
         "impacted_services_json": _json(list(_unique_values(rows, ("impacted_service", "service_name")))), "impacted_regions_json": _json(list(_unique_values(rows, ("impacted_region",)))),
-        "source_links_json": _json(_source_links(rows)), "diagnostic_flags": ",".join(sorted(flags)),
+        "source_links_json": _json(source_links), "diagnostic_flags": ",".join(sorted(flags)),
         "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "resource_evidence": resource_evidence, "source_field_provenance": source_field_provenance}),
     }
     return AggregateRecord.from_mapping(record)

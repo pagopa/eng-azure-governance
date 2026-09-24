@@ -42,7 +42,7 @@ def _group_key(row) -> str:
     return f"aggregate:{row['aggregate_id']}"
 
 
-def _retirement_dates(rows) -> tuple[str, ...]:
+def _event_dates(rows, kinds: frozenset[str]) -> set[str]:
     dates = set()
     for row in rows:
         try:
@@ -54,9 +54,15 @@ def _retirement_dates(rows) -> tuple[str, ...]:
                 str(item.get("date", ""))
                 for item in events
                 if isinstance(item, dict)
-                and item.get("kind") == "retirement"
+                and item.get("kind") in kinds
                 and _ISO_DATE.fullmatch(str(item.get("date", "")))
             )
+    return dates
+
+
+def _retirement_dates(rows) -> tuple[str, ...]:
+    dates = _event_dates(rows, frozenset({"retirement", "retirement_metadata"}))
+    for row in rows:
         try:
             claims = json.loads(row["retirement_dates_json"])
         except (KeyError, TypeError, json.JSONDecodeError):
@@ -87,22 +93,28 @@ def select_slides(aggregate: Artifact, context) -> ValidationResult:
     excluded: dict[str, list[str]] = {}
     for key, rows in groups.items():
         dates = _retirement_dates(rows)
+        if not dates:
+            # Per-image removal dates legitimately differ; the nearest one is the deadline.
+            dates = tuple(sorted(_event_dates(rows, frozenset({"image_removal"}))))[:1]
         primary_date = dates[0] if dates else ""
         if primary_date and date.fromisoformat(primary_date) > window.upper_bound:
             excluded.setdefault("beyond_committee_window", []).append(key)
             continue
+        days_overdue = ""
         if not dates:
             status = "Data non disponibile"
         elif len(dates) > 1:
             status = "Date discordanti"
         elif date.fromisoformat(primary_date) < context.as_of_date:
             status = "Scaduta"
+            days_overdue = str((context.as_of_date - date.fromisoformat(primary_date)).days)
         else:
             status = "In scadenza"
         item_id = "azure-retirement:v2:" + sha256(key.encode("utf-8")).hexdigest()
-        selected.append(SlideRecord.from_group(tuple(rows), item_id=item_id, primary_date=primary_date, status=status))
-    selected.sort(key=lambda row: (row["retirement_date"][:10] or "9999-99-99", row["id_elemento"]))
-    artifact = Artifact(contract=SLIDES_V1.name, schema_version=SLIDES_V1.schema_version, run_id=context.run_id, records=tuple(selected))
+        record = SlideRecord.from_group(tuple(rows), item_id=item_id, primary_date=primary_date, status=status, days_overdue=days_overdue)
+        selected.append((primary_date or "9999-99-99", record))
+    selected.sort(key=lambda pair: (pair[0], pair[1]["id_elemento"]))
+    artifact = Artifact(contract=SLIDES_V1.name, schema_version=SLIDES_V1.schema_version, run_id=context.run_id, records=tuple(record for _, record in selected))
     checked = SLIDES_V1.validate(artifact, context)
     if not checked.is_valid:
         return ValidationResult.invalid(checked.diagnostics)

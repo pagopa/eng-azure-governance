@@ -136,6 +136,8 @@ def _rows(value: object) -> tuple[Mapping[str, Any], ...]:
             retirement = properties.get("serviceRetirement", {}) if isinstance(properties, Mapping) else {}
             service_health = retirement.get("serviceHealth", {}) if isinstance(retirement, Mapping) else {}
             copied = dict(row)
+            if isinstance(retirement, Mapping):
+                copied["metadata_retirement_date"] = retirement.get("retirementDate", "")
             if isinstance(service_health, Mapping):
                 copied["source_health_tracking_ids"] = service_health.get("trackingIds", ())
                 copied["source_health_ash_urls"] = service_health.get("ashUrls", ())
@@ -144,6 +146,7 @@ def _rows(value: object) -> tuple[Mapping[str, Any], ...]:
             extended_properties = recommendation_properties.get("extendedProperties", {}) if isinstance(recommendation_properties, Mapping) else {}
             if isinstance(extended_properties, Mapping):
                 copied["recommended_action_learn_more"] = extended_properties.get("recommendedActionLearnMore", "")
+                copied["image_removal_date"] = extended_properties.get("SoftDeleteRequestedTime", "")
             enriched.append(copied)
         return tuple(enriched)
     if isinstance(value, Mapping):

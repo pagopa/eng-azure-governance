@@ -15,7 +15,7 @@ from .domain.execution import ReportSelector, RunRequest
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 _DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
 _DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
-_DEFAULT_COMMITTEE_YAML_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "comitato_editoriale.yaml"
+_DEFAULT_COMMITTEE_YAML_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "data" / "comitato_editoriale.yaml"
 
 LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
 OUTPUT_FORMATS = ("human", "json")

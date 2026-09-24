@@ -228,7 +228,7 @@ def _recommended_action_section(value: Any) -> str:
     if not isinstance(value, str) or not value:
         return ""
     section = re.search(
-        r"(?is)<h[1-6]\b[^>]*>\s*recommended actions?\s*:?[\s]*</h[1-6]>(.*?)"
+        r"(?is)<h[1-6]\b[^>]*>\s*recommended actions?(?:\s|&nbsp;|:)*</h[1-6]>(.*?)"
         r"(?=<h[1-6]\b|$)",
         value,
     )
@@ -508,10 +508,12 @@ def normalize_service_health(
         )
         native_actions = _plain_text(props.get("recommendedActions"))
         article_actions = _recommended_action_section(article.get("articleContent"))
-        recommended_actions = native_actions or article_actions
+        description_actions = "" if article_actions else _recommended_action_section(props.get("description"))
+        recommended_actions = native_actions or article_actions or description_actions
         recommended_actions_source = (
             "properties.recommendedActions" if native_actions
             else "properties.article.articleContent.Recommended action" if article_actions
+            else "properties.description.Recommended action" if description_actions
             else ""
         )
         start, start_flag = _timestamp(props.get("impactStartTime"))
@@ -549,6 +551,8 @@ def normalize_service_health(
             event_flags.add("invalid_retirement_date")
         if retirement_quality == "conflict":
             event_flags.add("conflicting_retirement_date")
+        if recommended_actions and not native_actions:
+            event_flags.add("action_from_text")
         event_flags = frozenset(event_flags)
         service_regions = list(_impact_service_regions(props))
         collection_subscription = _collection_subscription(raw_record, event)

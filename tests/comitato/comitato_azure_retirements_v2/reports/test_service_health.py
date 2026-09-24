@@ -251,6 +251,32 @@ def test_normalize_service_health_extracts_actions_from_recommended_action_secti
     assert provenance["field_sources"]["recommended_actions"] == (
         "properties.article.articleContent.Recommended action"
     )
+    assert "action_from_text" in row["diagnostic_flags"].split(",")
+
+
+def test_normalize_service_health_extracts_actions_from_description_heading_with_nbsp() -> None:
+    payload = acquisition().records[0].copy()
+    payload["properties"] = dict(payload["properties"])
+    payload["properties"].pop("article", None)
+    payload["properties"]["description"] = (
+        "<p>Background.</p><h2>Recommended action&nbsp;</h2>"
+        "<p>Migrate affected workloads now.&nbsp;</p>"
+        "<h2>Help and support&nbsp;</h2><p>Open a ticket.</p>"
+    )
+    payload["properties"]["recommendedActions"] = {}
+
+    result = normalize_service_health(
+        SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
+        context(),
+        ServiceHealthSupplementalEvidence(),
+    )
+
+    assert result.is_valid and result.value is not None
+    row = result.value.records[0]
+    assert row["recommended_actions"] == "Migrate affected workloads now."
+    provenance = json.loads(row["provenance_json"])
+    assert provenance["field_sources"]["recommended_actions"] == "properties.description.Recommended action"
+    assert "action_from_text" in row["diagnostic_flags"].split(",")
 
 
 def test_normalize_service_health_does_not_promote_mitigation_time_without_retirement_semantics() -> None:
