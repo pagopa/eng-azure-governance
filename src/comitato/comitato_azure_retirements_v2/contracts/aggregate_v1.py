@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-import json
 from typing import Any, Iterator
 
 from ..domain.correlation import correlate_source_events
 from ..domain.dates import parse_retirement_date
 from ..domain.diagnostics import Diagnostic, ValidationResult
 from ..domain.links import is_azure_portal_link, text_links
-from ..domain.platforms import PlatformCatalogSnapshot, SubscriptionId, project_platforms
+from ..domain.platforms import (
+    PlatformCatalogSnapshot,
+    SubscriptionId,
+    project_platforms,
+)
 from ..domain.retirements import (
     SourceEventKey,
     aggregate_id_for,
@@ -18,22 +22,47 @@ from ..domain.retirements import (
 from ._base import TsvContract
 from .codecs import canonical_json
 
-
 HEADER = (
-    "schema_version", "run_id", "as_of_date", "aggregate_id", "correlation_status",
-    "correlation_basis", "source_event_keys_json", "correlation_candidates_json",
-    "source_systems_json", "record_types_json", "raw_record_refs_json",
-    "advisor_recommendation_ids_json", "advisor_recommendation_type_ids_json",
-    "service_health_event_ids_json", "service_health_tracking_ids_json",
-    "technology_or_service", "retiring_feature", "advisor_problem_descriptions_json",
-    "service_health_problem_descriptions_json", "problem_titles_json",
-    "advisor_impacts_json", "date_events_json", "advisor_actions_json",
-    "service_health_actions_json", "retirement_date", "retirement_date_quality",
-    "retirement_dates_json", "retirement_date_sources_json",
-    "affected_subscription_ids_json", "affected_subscription_names_json", "is_global",
-    "platforms_json", "platforms_subscriptions_json", "published_resource_ids_json",
-    "normalized_resource_ids_json", "impacted_services_json", "impacted_regions_json",
-    "source_links_json", "diagnostic_flags", "provenance_json",
+    "schema_version",
+    "run_id",
+    "as_of_date",
+    "aggregate_id",
+    "correlation_status",
+    "correlation_basis",
+    "source_event_keys_json",
+    "correlation_candidates_json",
+    "source_systems_json",
+    "record_types_json",
+    "raw_record_refs_json",
+    "advisor_recommendation_ids_json",
+    "advisor_recommendation_type_ids_json",
+    "service_health_event_ids_json",
+    "service_health_tracking_ids_json",
+    "technology_or_service",
+    "retiring_feature",
+    "advisor_problem_descriptions_json",
+    "service_health_problem_descriptions_json",
+    "problem_titles_json",
+    "advisor_impacts_json",
+    "date_events_json",
+    "advisor_actions_json",
+    "service_health_actions_json",
+    "retirement_date",
+    "retirement_date_quality",
+    "retirement_dates_json",
+    "retirement_date_sources_json",
+    "affected_subscription_ids_json",
+    "affected_subscription_names_json",
+    "is_global",
+    "platforms_json",
+    "platforms_subscriptions_json",
+    "published_resource_ids_json",
+    "normalized_resource_ids_json",
+    "impacted_services_json",
+    "impacted_regions_json",
+    "source_links_json",
+    "diagnostic_flags",
+    "provenance_json",
 )
 
 
@@ -57,7 +86,16 @@ def _json(value: Any) -> str:
 
 def _action_text(value: Any) -> str:
     if isinstance(value, Mapping):
-        for field in ("text", "action", "actionText", "caption", "label", "description", "title", "name"):
+        for field in (
+            "text",
+            "action",
+            "actionText",
+            "caption",
+            "label",
+            "description",
+            "title",
+            "name",
+        ):
             text = str(value.get(field, "")).strip()
             if text:
                 return text
@@ -82,13 +120,17 @@ def _json_array(rows: Iterable[Mapping[str, Any]], field: str) -> str:
             except json.JSONDecodeError:
                 parsed = [raw]
             if isinstance(parsed, list):
-                values.update(_action_text(item) for item in parsed if _action_text(item))
+                values.update(
+                    _action_text(item) for item in parsed if _action_text(item)
+                )
             elif _action_text(parsed):
                 values.add(_action_text(parsed))
     return _json(sorted(values))
 
 
-def _unique_values(rows: Iterable[Mapping[str, Any]], fields: tuple[str, ...]) -> tuple[str, ...]:
+def _unique_values(
+    rows: Iterable[Mapping[str, Any]], fields: tuple[str, ...]
+) -> tuple[str, ...]:
     values: set[str] = set()
     for row in rows:
         for field in fields:
@@ -104,7 +146,12 @@ class AggregateRecord(Mapping[str, str]):
 
     @classmethod
     def from_mapping(cls, row: Mapping[str, Any]) -> "AggregateRecord":
-        return cls(tuple((column, "" if row.get(column) is None else str(row.get(column))) for column in HEADER))
+        return cls(
+            tuple(
+                (column, "" if row.get(column) is None else str(row.get(column)))
+                for column in HEADER
+            )
+        )
 
     def __getitem__(self, key: str) -> str:
         return dict(self.values)[key]
@@ -121,12 +168,16 @@ class AggregateRecord(Mapping[str, str]):
         raise AttributeError(key)
 
 
-def _display_projection(rows: tuple[Mapping[str, Any], ...], fields: tuple[str, ...]) -> str:
+def _display_projection(
+    rows: tuple[Mapping[str, Any], ...], fields: tuple[str, ...]
+) -> str:
     values = _unique_values(rows, fields)
     return values[0] if len(values) == 1 else ""
 
 
-def _date_projection(rows: tuple[Mapping[str, Any], ...]) -> tuple[str, str, tuple[dict[str, Any], ...], tuple[str, ...]]:
+def _date_projection(
+    rows: tuple[Mapping[str, Any], ...],
+) -> tuple[str, str, tuple[dict[str, Any], ...], tuple[str, ...]]:
     claims = []
     quality_values: set[str] = set()
     for row in rows:
@@ -139,67 +190,154 @@ def _date_projection(rows: tuple[Mapping[str, Any], ...]) -> tuple[str, str, tup
         quality = str(row.get("retirement_date_quality", "")) or claim.quality
         quality_values.add(quality)
         if quality == "conflict":
-            claims.append({
-                "date": "",
-                "raw_value": str(row.get("retirement_date_raw", "")),
-                "quality": "conflict",
-                "raw_record_refs": [claim.raw_record_ref] if claim.raw_record_ref else [],
-                "source_path": claim.source_path,
-                "source_system": claim.source_system,
-            })
+            claims.append(
+                {
+                    "date": "",
+                    "raw_value": str(row.get("retirement_date_raw", "")),
+                    "quality": "conflict",
+                    "raw_record_refs": [claim.raw_record_ref]
+                    if claim.raw_record_ref
+                    else [],
+                    "source_path": claim.source_path,
+                    "source_system": claim.source_system,
+                }
+            )
             continue
         if claim.value is not None:
-            claims.append({
-                "date": claim.value.isoformat(),
-                "quality": "exact",
-                "raw_record_refs": [claim.raw_record_ref] if claim.raw_record_ref else [],
-                "source_path": claim.source_path,
-                "source_system": claim.source_system,
-            })
+            claims.append(
+                {
+                    "date": claim.value.isoformat(),
+                    "quality": "exact",
+                    "raw_record_refs": [claim.raw_record_ref]
+                    if claim.raw_record_ref
+                    else [],
+                    "source_path": claim.source_path,
+                    "source_system": claim.source_system,
+                }
+            )
         elif quality == "partial" or claim.quality == "partial":
-            claims.append({
-                "date": "",
-                "raw_value": str(row.get("retirement_date_raw", "")) or claim.raw_value,
-                "quality": "partial",
-                "raw_record_refs": [claim.raw_record_ref] if claim.raw_record_ref else [],
-                "source_path": claim.source_path,
-                "source_system": claim.source_system,
-            })
+            claims.append(
+                {
+                    "date": "",
+                    "raw_value": str(row.get("retirement_date_raw", ""))
+                    or claim.raw_value,
+                    "quality": "partial",
+                    "raw_record_refs": [claim.raw_record_ref]
+                    if claim.raw_record_ref
+                    else [],
+                    "source_path": claim.source_path,
+                    "source_system": claim.source_system,
+                }
+            )
     by_date: dict[str, dict[str, Any]] = {}
     for item in claims:
         claim_key = item["date"] or f"partial:{item.get('raw_value', '')}"
         current = by_date.setdefault(claim_key, {**item, "raw_record_refs": []})
-        current["raw_record_refs"] = sorted(set(current["raw_record_refs"]) | set(item["raw_record_refs"]))
+        current["raw_record_refs"] = sorted(
+            set(current["raw_record_refs"]) | set(item["raw_record_refs"])
+        )
     dates = tuple(by_date[key] for key in sorted(by_date))
     date_values = tuple(item["date"] for item in dates if item["date"])
-    partial_values = tuple(item.get("raw_value", "") for item in dates if item.get("quality") == "partial")
-    conflict_values = tuple(item.get("raw_value", "") for item in dates if item.get("quality") == "conflict")
+    partial_values = tuple(
+        item.get("raw_value", "") for item in dates if item.get("quality") == "partial"
+    )
+    conflict_values = tuple(
+        item.get("raw_value", "") for item in dates if item.get("quality") == "conflict"
+    )
     if "conflict" in quality_values or conflict_values:
-        return "", "conflict", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
+        return (
+            "",
+            "conflict",
+            dates,
+            tuple(
+                sorted(
+                    {
+                        str(row.get("retirement_date_source", ""))
+                        for row in rows
+                        if row.get("retirement_date_source", "")
+                    }
+                )
+            ),
+        )
     if partial_values:
-        return "", "partial", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
+        return (
+            "",
+            "partial",
+            dates,
+            tuple(
+                sorted(
+                    {
+                        str(row.get("retirement_date_source", ""))
+                        for row in rows
+                        if row.get("retirement_date_source", "")
+                    }
+                )
+            ),
+        )
     if len(date_values) == 1:
-        return date_values[0], "exact", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
+        return (
+            date_values[0],
+            "exact",
+            dates,
+            tuple(
+                sorted(
+                    {
+                        str(row.get("retirement_date_source", ""))
+                        for row in rows
+                        if row.get("retirement_date_source", "")
+                    }
+                )
+            ),
+        )
     if len(date_values) > 1:
-        return "", "conflict", dates, tuple(sorted({str(row.get("retirement_date_source", "")) for row in rows if row.get("retirement_date_source", "")}))
+        return (
+            "",
+            "conflict",
+            dates,
+            tuple(
+                sorted(
+                    {
+                        str(row.get("retirement_date_source", ""))
+                        for row in rows
+                        if row.get("retirement_date_source", "")
+                    }
+                )
+            ),
+        )
     return "", "invalid" if "invalid" in quality_values else "missing", dates, ()
-
 
 
 def _date_events(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, str], ...]:
     events: list[dict[str, str]] = []
-    advisor_dates = [str(row.get("last_updated", "")).strip()[:10] for row in rows if row.get("last_updated")]
+    advisor_dates = [
+        str(row.get("last_updated", "")).strip()[:10]
+        for row in rows
+        if row.get("last_updated")
+    ]
     latest_advisor_update = max(advisor_dates, default="")
     for row in rows:
         source = str(row.get("source_system", "")).strip().casefold()
-        is_advisor = source == "azure_advisor" or bool(row.get("advisor_recommendation_id"))
-        is_health = source == "azure_service_health" or bool(row.get("service_health_event_id"))
+        is_advisor = source == "azure_advisor" or bool(
+            row.get("advisor_recommendation_id")
+        )
+        is_health = source == "azure_service_health" or bool(
+            row.get("service_health_event_id")
+        )
         if is_advisor:
-            candidates = (("retirement_date", "retirement"), ("image_removal_date", "image_removal"))
-            metadata_date = str(row.get("metadata_retirement_date", "") or "").strip()[:10]
+            candidates = (
+                ("retirement_date", "retirement"),
+                ("image_removal_date", "image_removal"),
+            )
+            metadata_date = str(row.get("metadata_retirement_date", "") or "").strip()[
+                :10
+            ]
             if metadata_date != str(row.get("retirement_date", "") or "").strip()[:10]:
                 candidates += (("metadata_retirement_date", "retirement_metadata"),)
-            if latest_advisor_update and str(row.get("last_updated", "")).strip()[:10] == latest_advisor_update:
+            if (
+                latest_advisor_update
+                and str(row.get("last_updated", "")).strip()[:10]
+                == latest_advisor_update
+            ):
                 candidates += (("last_updated", "last_updated"),)
         elif is_health:
             candidates = (
@@ -213,17 +351,29 @@ def _date_events(rows: Iterable[Mapping[str, Any]]) -> tuple[dict[str, str], ...
         for field, kind in candidates:
             value = str(row.get(field, "")).strip()[:10]
             if value:
-                events.append({"date": value, "kind": kind, "source": "advisor" if is_advisor else "service-health"})
+                events.append(
+                    {
+                        "date": value,
+                        "kind": kind,
+                        "source": "advisor" if is_advisor else "service-health",
+                    }
+                )
     return tuple(
         {"date": date, "kind": kind, "source": source}
-        for date, kind, source in sorted({(item["date"], item["kind"], item["source"]) for item in events})
+        for date, kind, source in sorted(
+            {(item["date"], item["kind"], item["source"]) for item in events}
+        )
     )
 
 
 def _source_links(rows: Iterable[Mapping[str, Any]]) -> tuple[str, ...]:
     links: set[str] = set()
     for row in rows:
-        values: list[Any] = [row.get("learn_more_link", ""), row.get("source_link", ""), row.get("recommended_action_learn_more", "")]
+        values: list[Any] = [
+            row.get("learn_more_link", ""),
+            row.get("source_link", ""),
+            row.get("recommended_action_learn_more", ""),
+        ]
         for field in ("source_health_ash_urls", "ash_urls"):
             value = row.get(field, ())
             if isinstance(value, str):
@@ -232,7 +382,9 @@ def _source_links(rows: Iterable[Mapping[str, Any]]) -> tuple[str, ...]:
                 except json.JSONDecodeError:
                     value = (value,)
             values.extend(value if isinstance(value, (list, tuple)) else ())
-        tracking_id = str(row.get("tracking_id", row.get("service_health_tracking_id", ""))).strip()
+        tracking_id = str(
+            row.get("tracking_id", row.get("service_health_tracking_id", ""))
+        ).strip()
         if tracking_id:
             values.append(f"https://app.azure.com/h/{tracking_id}")
         for value in values:
@@ -241,36 +393,100 @@ def _source_links(rows: Iterable[Mapping[str, Any]]) -> tuple[str, ...]:
                 links.add(link)
     return tuple(sorted(links))
 
+
 def _row_for_group(group, context, catalog: PlatformCatalogSnapshot) -> AggregateRecord:
     keys = tuple(event.key for event in group)
     rows = tuple(row for event in group for row in event.records)
     aggregate_id = aggregate_id_for(keys)
-    source_refs = tuple(sorted({str(row.get("raw_record_ref", "")) for row in rows if row.get("raw_record_ref", "")}))
-    advisor_rows = tuple(row for event in group if event.source == "advisor" for row in event.records)
-    health_rows = tuple(row for event in group if event.source == "service-health" for row in event.records)
-    subscription_ids = tuple(sorted({str(row.get("subscription_id", "")).strip().lower() for row in rows if str(row.get("subscription_id", "")).strip()}))
-    subscription_names = tuple(sorted({str(row.get("subscription_name", "")).strip() for row in rows if str(row.get("subscription_name", "")).strip()}, key=lambda value: (value.casefold(), value)))
-    explicit_global = bool(rows) and all(str(row.get("subscription_evidence_source", "")) == "explicit_global" for row in rows) and not subscription_ids
-    projection = project_platforms(tuple(SubscriptionId(value) for value in subscription_ids), explicit_global, catalog, report="aggregate", run_id=context.run_id, record_refs={value: source_refs for value in subscription_ids})
-    if not projection.is_valid or projection.value is None:
-        raise ValueError("aggregate platform projection failed: " + ",".join(item.code for item in projection.diagnostics))
-    retirement_date, date_quality, retirement_dates, date_sources = _date_projection(rows)
-    resource_evidence = tuple(sorted(
-        {
-            (
-                str(row.get("subscription_id", "")).strip(),
-                str(row.get("resource_name", "")).strip(),
-                str(row.get("resource_group", "")).strip(),
-                str(row.get("published_resource_id", "") or row.get("normalized_resource_id", "")).strip(),
-                str(row.get("resource_evidence_status", "")).strip(),
-            )
+    source_refs = tuple(
+        sorted(
+            {
+                str(row.get("raw_record_ref", ""))
+                for row in rows
+                if row.get("raw_record_ref", "")
+            }
+        )
+    )
+    advisor_rows = tuple(
+        row for event in group if event.source == "advisor" for row in event.records
+    )
+    health_rows = tuple(
+        row
+        for event in group
+        if event.source == "service-health"
+        for row in event.records
+    )
+    subscription_ids = tuple(
+        sorted(
+            {
+                str(row.get("subscription_id", "")).strip().lower()
+                for row in rows
+                if str(row.get("subscription_id", "")).strip()
+            }
+        )
+    )
+    subscription_names = tuple(
+        sorted(
+            {
+                str(row.get("subscription_name", "")).strip()
+                for row in rows
+                if str(row.get("subscription_name", "")).strip()
+            },
+            key=lambda value: (value.casefold(), value),
+        )
+    )
+    explicit_global = (
+        bool(rows)
+        and all(
+            str(row.get("subscription_evidence_source", "")) == "explicit_global"
             for row in rows
-            if any(str(row.get(field, "")).strip() for field in (
-                "resource_name", "resource_group", "published_resource_id", "normalized_resource_id", "resource_evidence_status",
-            ))
-        },
-        key=lambda value: tuple(item.casefold() for item in value),
-    ))
+        )
+        and not subscription_ids
+    )
+    projection = project_platforms(
+        tuple(SubscriptionId(value) for value in subscription_ids),
+        explicit_global,
+        catalog,
+        report="aggregate",
+        run_id=context.run_id,
+        record_refs={value: source_refs for value in subscription_ids},
+    )
+    if not projection.is_valid or projection.value is None:
+        raise ValueError(
+            "aggregate platform projection failed: "
+            + ",".join(item.code for item in projection.diagnostics)
+        )
+    retirement_date, date_quality, retirement_dates, date_sources = _date_projection(
+        rows
+    )
+    resource_evidence = tuple(
+        sorted(
+            {
+                (
+                    str(row.get("subscription_id", "")).strip(),
+                    str(row.get("resource_name", "")).strip(),
+                    str(row.get("resource_group", "")).strip(),
+                    str(
+                        row.get("published_resource_id", "")
+                        or row.get("normalized_resource_id", "")
+                    ).strip(),
+                    str(row.get("resource_evidence_status", "")).strip(),
+                )
+                for row in rows
+                if any(
+                    str(row.get(field, "")).strip()
+                    for field in (
+                        "resource_name",
+                        "resource_group",
+                        "published_resource_id",
+                        "normalized_resource_id",
+                        "resource_evidence_status",
+                    )
+                )
+            },
+            key=lambda value: tuple(item.casefold() for item in value),
+        )
+    )
     flags = set(_unique_values(rows, ("diagnostic_flags",)))
     flags = {flag for value in flags for flag in value.split(",") if flag}
     if len(_unique_values(rows, ("service_name", "impacted_service"))) > 1:
@@ -283,13 +499,20 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot) -> Aggregat
         flags.add("date_conflict")
     if "image_removal" in date_kinds:
         flags.add("date_from_extended_properties")
-    if advisor_rows and not date_kinds & {"retirement", "retirement_metadata", "image_removal"}:
+    if advisor_rows and not date_kinds & {
+        "retirement",
+        "retirement_metadata",
+        "image_removal",
+    }:
         flags.add("no_retirement_semantics")
     source_links = _source_links(rows)
     if all(is_azure_portal_link(link) for link in source_links):
         text_urls = tuple(
             link
-            for text in _unique_values(rows, ("description_problem", "short_description_problem", "description"))
+            for text in _unique_values(
+                rows,
+                ("description_problem", "short_description_problem", "description"),
+            )
             for link in text_links(text)
             if not is_azure_portal_link(link)
         )
@@ -302,30 +525,89 @@ def _row_for_group(group, context, catalog: PlatformCatalogSnapshot) -> Aggregat
             source_provenance = json.loads(str(row.get("provenance_json", "{}")))
         except json.JSONDecodeError:
             source_provenance = {}
-        field_sources = source_provenance.get("field_sources", {}) if isinstance(source_provenance, Mapping) else {}
+        field_sources = (
+            source_provenance.get("field_sources", {})
+            if isinstance(source_provenance, Mapping)
+            else {}
+        )
         raw_ref = str(row.get("raw_record_ref", "")).strip()
         if raw_ref and isinstance(field_sources, Mapping) and field_sources:
             source_field_provenance[raw_ref] = dict(field_sources)
     record = {
-        "schema_version": "1", "run_id": context.run_id, "as_of_date": context.as_of_date.isoformat(), "aggregate_id": aggregate_id.value,
-        "correlation_status": "single_source", "correlation_basis": "",
-        "source_event_keys_json": _json([key.value for key in sorted(keys)]), "correlation_candidates_json": _json([]),
-        "source_systems_json": _json(_strings(rows, "source_system")), "record_types_json": _json(_strings(rows, "record_type")), "raw_record_refs_json": _json(source_refs),
-        "advisor_recommendation_ids_json": _json(_strings(advisor_rows, "advisor_recommendation_id")), "advisor_recommendation_type_ids_json": _json(_strings(advisor_rows, "recommendation_type_id")),
-        "service_health_event_ids_json": _json(_strings(health_rows, "service_health_event_id")), "service_health_tracking_ids_json": _json(_strings(health_rows, "tracking_id")),
-        "technology_or_service": _display_projection(rows, ("service_name", "impacted_service")), "retiring_feature": _display_projection(rows, ("retiring_feature",)),
-        "advisor_problem_descriptions_json": _json(list(_unique_values(advisor_rows, ("short_description_problem", "description")))), "service_health_problem_descriptions_json": _json(list(_unique_values(health_rows, ("description_problem",)))),
-        "problem_titles_json": _json(list(_unique_values(advisor_rows, ("short_description_problem",))) + list(_unique_values(health_rows, ("title",)))),
+        "schema_version": "1",
+        "run_id": context.run_id,
+        "as_of_date": context.as_of_date.isoformat(),
+        "aggregate_id": aggregate_id.value,
+        "correlation_status": "single_source",
+        "correlation_basis": "",
+        "source_event_keys_json": _json([key.value for key in sorted(keys)]),
+        "correlation_candidates_json": _json([]),
+        "source_systems_json": _json(_strings(rows, "source_system")),
+        "record_types_json": _json(_strings(rows, "record_type")),
+        "raw_record_refs_json": _json(source_refs),
+        "advisor_recommendation_ids_json": _json(
+            _strings(advisor_rows, "advisor_recommendation_id")
+        ),
+        "advisor_recommendation_type_ids_json": _json(
+            _strings(advisor_rows, "recommendation_type_id")
+        ),
+        "service_health_event_ids_json": _json(
+            _strings(health_rows, "service_health_event_id")
+        ),
+        "service_health_tracking_ids_json": _json(_strings(health_rows, "tracking_id")),
+        "technology_or_service": _display_projection(
+            rows, ("service_name", "impacted_service")
+        ),
+        "retiring_feature": _display_projection(rows, ("retiring_feature",)),
+        "advisor_problem_descriptions_json": _json(
+            list(
+                _unique_values(
+                    advisor_rows, ("short_description_problem", "description")
+                )
+            )
+        ),
+        "service_health_problem_descriptions_json": _json(
+            list(_unique_values(health_rows, ("description_problem",)))
+        ),
+        "problem_titles_json": _json(
+            list(_unique_values(advisor_rows, ("short_description_problem",)))
+            + list(_unique_values(health_rows, ("title",)))
+        ),
         "advisor_impacts_json": _json(list(_unique_values(advisor_rows, ("impact",)))),
         "date_events_json": _json(date_events),
-        "advisor_actions_json": _json_array(advisor_rows, "actions_json"), "service_health_actions_json": _json_array(health_rows, "recommended_actions"),
-        "retirement_date": retirement_date, "retirement_date_quality": date_quality, "retirement_dates_json": _json(retirement_dates), "retirement_date_sources_json": _json(date_sources),
-        "affected_subscription_ids_json": _json(subscription_ids), "affected_subscription_names_json": _json(subscription_names), "is_global": "true" if explicit_global else "false",
-        "platforms_json": _json(projection.value.platforms), "platforms_subscriptions_json": _json(projection.value.platforms_subscriptions),
-        "published_resource_ids_json": _json(list(_unique_values(rows, ("published_resource_id",)))), "normalized_resource_ids_json": _json(list(_unique_values(rows, ("normalized_resource_id",)))),
-        "impacted_services_json": _json(list(_unique_values(rows, ("impacted_service", "service_name")))), "impacted_regions_json": _json(list(_unique_values(rows, ("impacted_region",)))),
-        "source_links_json": _json(source_links), "diagnostic_flags": ",".join(sorted(flags)),
-        "provenance_json": _json({"raw_record_refs": source_refs, "source_event_keys": [key.value for key in sorted(keys)], "resource_evidence": resource_evidence, "source_field_provenance": source_field_provenance}),
+        "advisor_actions_json": _json_array(advisor_rows, "actions_json"),
+        "service_health_actions_json": _json_array(health_rows, "recommended_actions"),
+        "retirement_date": retirement_date,
+        "retirement_date_quality": date_quality,
+        "retirement_dates_json": _json(retirement_dates),
+        "retirement_date_sources_json": _json(date_sources),
+        "affected_subscription_ids_json": _json(subscription_ids),
+        "affected_subscription_names_json": _json(subscription_names),
+        "is_global": "true" if explicit_global else "false",
+        "platforms_json": _json(projection.value.platforms),
+        "platforms_subscriptions_json": _json(projection.value.platforms_subscriptions),
+        "published_resource_ids_json": _json(
+            list(_unique_values(rows, ("published_resource_id",)))
+        ),
+        "normalized_resource_ids_json": _json(
+            list(_unique_values(rows, ("normalized_resource_id",)))
+        ),
+        "impacted_services_json": _json(
+            list(_unique_values(rows, ("impacted_service", "service_name")))
+        ),
+        "impacted_regions_json": _json(
+            list(_unique_values(rows, ("impacted_region",)))
+        ),
+        "source_links_json": _json(source_links),
+        "diagnostic_flags": ",".join(sorted(flags)),
+        "provenance_json": _json(
+            {
+                "raw_record_refs": source_refs,
+                "source_event_keys": [key.value for key in sorted(keys)],
+                "resource_evidence": resource_evidence,
+                "source_field_provenance": source_field_provenance,
+            }
+        ),
     }
     return AggregateRecord.from_mapping(record)
 
@@ -346,7 +628,9 @@ def build_aggregate(
         values = dict(row.values)
         values["correlation_status"] = decision.status
         values["correlation_basis"] = decision.basis
-        values["correlation_candidates_json"] = _json([key.value for key in decision.candidate_keys])
+        values["correlation_candidates_json"] = _json(
+            [key.value for key in decision.candidate_keys]
+        )
         records.append(AggregateRecord.from_mapping(values))
     return tuple(sorted(records, key=lambda row: row["aggregate_id"]))
 
@@ -358,34 +642,102 @@ class AggregateV1Contract(TsvContract[AggregateRecord]):
         previous = ""
         for row in artifact.records:
             if set(row) != set(HEADER):
-                diagnostics.append(Diagnostic("error", "invalid_aggregate_columns", "validation", "aggregate", context.run_id))
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_aggregate_columns",
+                        "validation",
+                        "aggregate",
+                        context.run_id,
+                    )
+                )
                 continue
             if row["aggregate_id"] < previous:
-                diagnostics.append(Diagnostic("error", "aggregate_order_mismatch", "validation", "aggregate", context.run_id))
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "aggregate_order_mismatch",
+                        "validation",
+                        "aggregate",
+                        context.run_id,
+                    )
+                )
             previous = row["aggregate_id"]
             for field in (column for column in HEADER if column.endswith("_json")):
                 try:
                     json.loads(row[field])
                 except json.JSONDecodeError:
-                    diagnostics.append(Diagnostic("error", f"invalid_{field}", "validation", "aggregate", context.run_id, record_ref=row["aggregate_id"]))
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            f"invalid_{field}",
+                            "validation",
+                            "aggregate",
+                            context.run_id,
+                            record_ref=row["aggregate_id"],
+                        )
+                    )
             if row["is_global"] not in {"true", "false"}:
-                diagnostics.append(Diagnostic("error", "invalid_is_global", "validation", "aggregate", context.run_id, record_ref=row["aggregate_id"]))
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_is_global",
+                        "validation",
+                        "aggregate",
+                        context.run_id,
+                        record_ref=row["aggregate_id"],
+                    )
+                )
             try:
-                keys = tuple(SourceEventKey(*value.split(":", 1)) for value in json.loads(row["source_event_keys_json"]))
+                keys = tuple(
+                    SourceEventKey(*value.split(":", 1))
+                    for value in json.loads(row["source_event_keys_json"])
+                )
                 if aggregate_id_for(keys).value != row["aggregate_id"]:
-                    diagnostics.append(Diagnostic("error", "aggregate_id_mismatch", "validation", "aggregate", context.run_id, record_ref=row["aggregate_id"]))
+                    diagnostics.append(
+                        Diagnostic(
+                            "error",
+                            "aggregate_id_mismatch",
+                            "validation",
+                            "aggregate",
+                            context.run_id,
+                            record_ref=row["aggregate_id"],
+                        )
+                    )
             except (ValueError, TypeError, json.JSONDecodeError):
-                diagnostics.append(Diagnostic("error", "invalid_source_event_keys", "validation", "aggregate", context.run_id, record_ref=row["aggregate_id"]))
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_source_event_keys",
+                        "validation",
+                        "aggregate",
+                        context.run_id,
+                        record_ref=row["aggregate_id"],
+                    )
+                )
             platforms = json.loads(row["platforms_json"])
             breakdown = json.loads(row["platforms_subscriptions_json"])
-            if row["is_global"] == "true" and (platforms != ["ALL"] or breakdown != {"ALL": []}):
-                diagnostics.append(Diagnostic("error", "invalid_global_platform_projection", "validation", "aggregate", context.run_id, record_ref=row["aggregate_id"]))
+            if row["is_global"] == "true" and (
+                platforms != ["ALL"] or breakdown != {"ALL": []}
+            ):
+                diagnostics.append(
+                    Diagnostic(
+                        "error",
+                        "invalid_global_platform_projection",
+                        "validation",
+                        "aggregate",
+                        context.run_id,
+                        record_ref=row["aggregate_id"],
+                    )
+                )
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
         return base
 
 
-AGGREGATE_V1 = AggregateV1Contract(name="aggregate", header=HEADER, path="02_azure_retirements_aggregate.tsv")
+AGGREGATE_V1 = AggregateV1Contract(
+    name="aggregate", header=HEADER, path="02_azure_retirements_aggregate.tsv"
+)
 
 
 def encode(artifact):
@@ -400,4 +752,12 @@ def validate(artifact, context):
     return AGGREGATE_V1.validate(artifact, context)
 
 
-__all__ = ["AGGREGATE_V1", "AggregateRecord", "HEADER", "build_aggregate", "decode", "encode", "validate"]
+__all__ = [
+    "AGGREGATE_V1",
+    "AggregateRecord",
+    "HEADER",
+    "build_aggregate",
+    "decode",
+    "encode",
+    "validate",
+]

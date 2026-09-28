@@ -1,15 +1,20 @@
 import json
-from hashlib import sha256
 from dataclasses import dataclass, field
 from datetime import date
+from hashlib import sha256
 from typing import Any
 
 import pytest
 
 from src.comitato.comitato_azure_retirements_v2 import cli
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+    RetirementsApplication,
+)
 from src.comitato.comitato_azure_retirements_v2.config import RuntimeConfig
-from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector, RunRequest
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
+from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+    ReportSelector,
+    RunRequest,
+)
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
@@ -61,11 +66,13 @@ items:
         "platform_catalog": {
             "schema_version": 1,
             "sha256": "a" * 64,
-            "assignments": [{
-                "subscription_id": subscription_id,
-                "platform": "Platform A",
-                "subscription_name": "Subscription A",
-            }],
+            "assignments": [
+                {
+                    "subscription_id": subscription_id,
+                    "platform": "Platform A",
+                    "subscription_name": "Subscription A",
+                }
+            ],
         },
         "source_acquisitions": {
             "advisor": {
@@ -80,22 +87,24 @@ items:
                     "continuation_tokens": [],
                     "failed_subscriptions": [],
                 },
-                "records": [{
-                    "subscription_id": subscription_id,
-                    "identity": "advisor-1",
-                    "payload": {
-                        "id": f"/subscriptions/{subscription_id}/providers/Microsoft.Advisor/recommendations/rec-1",
-                        "subscriptionId": subscription_id,
-                        "properties": {
-                            "recommendationStatus": "New",
-                            "recommendationTypeId": "retirement-1",
-                            "detailedDescription": "Move the workload.",
+                "records": [
+                    {
+                        "subscription_id": subscription_id,
+                        "identity": "advisor-1",
+                        "payload": {
+                            "id": f"/subscriptions/{subscription_id}/providers/Microsoft.Advisor/recommendations/rec-1",
+                            "subscriptionId": subscription_id,
+                            "properties": {
+                                "recommendationStatus": "New",
+                                "recommendationTypeId": "retirement-1",
+                                "detailedDescription": "Move the workload.",
+                            },
                         },
-                    },
-                    "source": "advisor",
-                    "page_number": 1,
-                    "continuation_token": None,
-                }],
+                        "source": "advisor",
+                        "page_number": 1,
+                        "continuation_token": None,
+                    }
+                ],
                 "companion_records": [],
                 "accounting": [],
                 "collection_context": {},
@@ -131,14 +140,16 @@ items:
         "editorial_catalog": {
             "schema_version": 1,
             "sha256": sha256(editorial_yaml.encode("utf-8")).hexdigest(),
-            "items": [{
-                "item_id": "item-1",
-                "associations": [["advisor", ["retirement-1"]]],
-                "title": title,
-                "description": "Move the workload.",
-                "suggested_action": "Migrate the workload.",
-                "retirement_date": "",
-            }],
+            "items": [
+                {
+                    "item_id": "item-1",
+                    "associations": [["advisor", ["retirement-1"]]],
+                    "title": title,
+                    "description": "Move the workload.",
+                    "suggested_action": "Migrate the workload.",
+                    "retirement_date": "",
+                }
+            ],
             "yaml": editorial_yaml,
         },
     }
@@ -146,7 +157,15 @@ items:
         "as_of_date": "2026-09-22",
         "catalog": {"schema_version": 1, "sha256": "a" * 64},
         "created_at": "2026-09-22T10:00:00Z",
-        "dependency_closure": ["scope", "catalog", "advisor", "service-health", "aggregate", "slides", "publication"],
+        "dependency_closure": [
+            "scope",
+            "catalog",
+            "advisor",
+            "service-health",
+            "aggregate",
+            "slides",
+            "publication",
+        ],
         "editorial_catalog": {
             "schema_version": 1,
             "sha256": sha256(editorial_yaml.encode("utf-8")).hexdigest(),
@@ -159,7 +178,9 @@ items:
         "artifacts": [],
     }
     manifest["saved_inputs_sha256"] = sha256(
-        json.dumps(saved_inputs, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            saved_inputs, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode("utf-8")
     ).hexdigest()
     return manifest, editorial_yaml
 
@@ -193,7 +214,9 @@ def test_main_writes_one_success_result_to_stdout(monkeypatch, capsys) -> None:
     assert reporter.closed is True
 
 
-def test_main_writes_sorted_diagnostics_to_jsonl_stderr_and_returns_nonzero(monkeypatch, capsys) -> None:
+def test_main_writes_sorted_diagnostics_to_jsonl_stderr_and_returns_nonzero(
+    monkeypatch, capsys
+) -> None:
     class Failure(Exception):
         diagnostics = (
             {"code": "z", "stage": "validation"},
@@ -210,7 +233,10 @@ def test_main_writes_sorted_diagnostics_to_jsonl_stderr_and_returns_nonzero(monk
     assert cli.main([]) == 1
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert [json.loads(line)["code"] for line in captured.err.splitlines()] == ["a", "z"]
+    assert [json.loads(line)["code"] for line in captured.err.splitlines()] == [
+        "a",
+        "z",
+    ]
     assert reporter.exceptions
     assert reporter.closed is True
 
@@ -219,7 +245,9 @@ def test_python_module_help_is_available() -> None:
     assert callable(cli.main)
 
 
-def test_json_success_keeps_stdout_only_and_closes_reporter(monkeypatch, capsys) -> None:
+def test_json_success_keeps_stdout_only_and_closes_reporter(
+    monkeypatch, capsys
+) -> None:
     reporter = FakeReporter(human_console=False)
     result = FakeResult(exit_status=0)
     monkeypatch.setattr(cli, "build_runtime_reporter", lambda config, **_: reporter)
@@ -304,11 +332,20 @@ def test_replay_rejects_bundle_without_replay_inputs(tmp_path) -> None:
     }
     for path in expected_paths:
         (bundle / path).write_bytes(b"header\nvalue\n")
-        manifest["artifacts"].append({"media_type": "text/plain", "path": path, "schema_version": 1})
+        manifest["artifacts"].append(
+            {"media_type": "text/plain", "path": path, "schema_version": 1}
+        )
     manifest["saved_inputs_sha256"] = sha256(
-        json.dumps(manifest["saved_inputs"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            manifest["saved_inputs"],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
     ).hexdigest()
-    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
 
     class NoLiveSource:
         def resolve(self, *args, **kwargs):
@@ -320,7 +357,9 @@ def test_replay_rejects_bundle_without_replay_inputs(tmp_path) -> None:
 
         def publish(self, candidate):
             self.candidate = candidate
-            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
 
     store = Store()
     application = type(
@@ -363,8 +402,12 @@ def test_replay_rejects_bundle_without_saved_catalog_and_acquisitions(tmp_path) 
     }
     for path in expected_paths:
         (bundle / path).write_bytes(b"header\nvalue\n")
-        manifest["artifacts"].append({"media_type": "text/plain", "path": path, "schema_version": 1})
-    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        manifest["artifacts"].append(
+            {"media_type": "text/plain", "path": path, "schema_version": 1}
+        )
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
 
     class Store:
         def __init__(self):
@@ -372,10 +415,16 @@ def test_replay_rejects_bundle_without_saved_catalog_and_acquisitions(tmp_path) 
 
         def publish(self, candidate):
             self.candidate = candidate
-            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
 
     store = Store()
-    application = type("Application", (), {"report_catalog": DEFAULT_REPORT_CATALOG, "publication_store": store})()
+    application = type(
+        "Application",
+        (),
+        {"report_catalog": DEFAULT_REPORT_CATALOG, "publication_store": store},
+    )()
     config = RuntimeConfig.from_request(
         RunRequest(ReportSelector.ALL, as_of_date=date(2026, 9, 22)),
         replay_bundle_path=bundle,
@@ -400,8 +449,12 @@ def test_replay_rejects_artifact_only_bundle(tmp_path) -> None:
     }
     for path in DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths:
         (bundle / path).write_bytes(b"header\nvalue\n")
-        manifest["artifacts"].append({"media_type": "text/plain", "path": path, "schema_version": 1})
-    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        manifest["artifacts"].append(
+            {"media_type": "text/plain", "path": path, "schema_version": 1}
+        )
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
 
     application = type("Application", (), {"report_catalog": DEFAULT_REPORT_CATALOG})()
     config = RuntimeConfig.from_request(
@@ -413,7 +466,9 @@ def test_replay_rejects_artifact_only_bundle(tmp_path) -> None:
         cli._run_replay(config, application)
 
 
-def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(tmp_path) -> None:
+def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
+    tmp_path,
+) -> None:
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     subscription_id = "11111111-1111-1111-1111-111111111111"
@@ -431,11 +486,13 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
             "platform_catalog": {
                 "schema_version": 1,
                 "sha256": "a" * 64,
-                "assignments": [{
-                    "subscription_id": subscription_id,
-                    "platform": "Platform A",
-                    "subscription_name": "Subscription A",
-                }],
+                "assignments": [
+                    {
+                        "subscription_id": subscription_id,
+                        "platform": "Platform A",
+                        "subscription_name": "Subscription A",
+                    }
+                ],
             },
             "source_acquisitions": {
                 "advisor": {
@@ -458,15 +515,26 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
                     "response_context": [],
                 },
             },
-            "advisor_enrichments": {"metadata": {}, "resources": {}, "subscriptions": {}},
+            "advisor_enrichments": {
+                "metadata": {},
+                "resources": {},
+                "subscriptions": {},
+            },
             "editorial_catalog": None,
         },
         "artifacts": [],
     }
     manifest["saved_inputs_sha256"] = sha256(
-        json.dumps(manifest["saved_inputs"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            manifest["saved_inputs"],
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
     ).hexdigest()
-    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
 
     class Store:
         def __init__(self):
@@ -474,7 +542,9 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
 
         def publish(self, candidate):
             self.candidate = candidate
-            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
 
     store = Store()
     application = type(
@@ -506,13 +576,17 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
 
         def publish(self, candidate):
             self.candidate = candidate
-            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
 
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     manifest, editorial_yaml = _replay_slide_fixture("Old title")
     (bundle / "comitato_editoriale.yaml").write_text(editorial_yaml, encoding="utf-8")
-    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
 
     store = Store()
     config = RuntimeConfig.from_request(
@@ -521,15 +595,24 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     )
     result = cli._run_replay(config, _replay_application(store))
 
-    slide = next(item for item in store.candidate.artifacts if item.logical_path == "03_azure_retirements_slide.tsv")
+    slide = next(
+        item
+        for item in store.candidate.artifacts
+        if item.logical_path == "03_azure_retirements_slide.tsv"
+    )
     assert result.exit_status == 0
     assert b"Old title" not in slide.data
-    assert all(item.logical_path != "comitato_editoriale.yaml" for item in store.candidate.artifacts)
+    assert all(
+        item.logical_path != "comitato_editoriale.yaml"
+        for item in store.candidate.artifacts
+    )
 
     changed_bundle = tmp_path / "changed-bundle"
     changed_bundle.mkdir()
     changed_manifest, changed_yaml = _replay_slide_fixture("New title")
-    (changed_bundle / "comitato_editoriale.yaml").write_text(changed_yaml, encoding="utf-8")
+    (changed_bundle / "comitato_editoriale.yaml").write_text(
+        changed_yaml, encoding="utf-8"
+    )
     (changed_bundle / "publication-manifest.json").write_text(
         json.dumps(changed_manifest),
         encoding="utf-8",
@@ -547,10 +630,15 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     )
     assert changed_slide.data == slide.data
     assert b"Old title" not in changed_slide.data
-    assert all(item.logical_path != "comitato_editoriale.yaml" for item in changed_store.candidate.artifacts)
+    assert all(
+        item.logical_path != "comitato_editoriale.yaml"
+        for item in changed_store.candidate.artifacts
+    )
 
 
-def test_schema_one_legacy_bundle_without_saved_inputs_is_a_documented_limitation(tmp_path) -> None:
+def test_schema_one_legacy_bundle_without_saved_inputs_is_a_documented_limitation(
+    tmp_path,
+) -> None:
     bundle = tmp_path / "legacy"
     bundle.mkdir()
     (bundle / "publication-manifest.json").write_text(
@@ -565,7 +653,9 @@ def test_schema_one_legacy_bundle_without_saved_inputs_is_a_documented_limitatio
         cli._run_replay(config, _replay_application(object()))
 
 
-def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(tmp_path) -> None:
+def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(
+    tmp_path,
+) -> None:
     bundle = tmp_path / "bundle"
     bundle.mkdir()
     manifest, editorial_yaml = _replay_slide_fixture("Saved title")
@@ -573,7 +663,9 @@ def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(tmp_
         editorial_yaml.replace("Saved title", "Different title"),
         encoding="utf-8",
     )
-    (bundle / "publication-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (bundle / "publication-manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
 
     config = RuntimeConfig.from_request(
         RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
@@ -585,9 +677,14 @@ def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(tmp_
 
         def publish(self, candidate):
             self.candidate = candidate
-            return type("Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"})()
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
 
     store = Store()
     result = cli._run_replay(config, _replay_application(store))
     assert result.exit_status == 0
-    assert all(item.logical_path != "comitato_editoriale.yaml" for item in store.candidate.artifacts)
+    assert all(
+        item.logical_path != "comitato_editoriale.yaml"
+        for item in store.candidate.artifacts
+    )

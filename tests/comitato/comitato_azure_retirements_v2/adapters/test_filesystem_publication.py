@@ -7,11 +7,13 @@ from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication 
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,
 )
+from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.publication.model import (
+    PublicationError,
+)
 from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
     read_monthly_tree,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationError
-from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
 )
@@ -90,7 +92,9 @@ def test_publish_emits_atomic_publication_events(tmp_path: Path) -> None:
     assert "publication_staging_completed" in event_names
     assert "publication_switch_started" in event_names
     assert "publication_completed" in event_names
-    assert {event.run_id for event in observer.events} == {empty_candidate().context.run_id}
+    assert {event.run_id for event in observer.events} == {
+        empty_candidate().context.run_id
+    }
 
 
 def test_cleanup_warning_emits_publication_event(tmp_path: Path) -> None:
@@ -100,7 +104,9 @@ def test_cleanup_warning_emits_publication_event(tmp_path: Path) -> None:
 
     store.publish(empty_candidate())
 
-    assert any(event.event == "publication_cleanup_warning" for event in observer.events)
+    assert any(
+        event.event == "publication_cleanup_warning" for event in observer.events
+    )
 
 
 def test_publish_replaces_the_complete_monthly_bundle(tmp_path: Path) -> None:
@@ -134,8 +140,12 @@ def test_next_month_does_not_restore_an_editorial_sidecar(tmp_path: Path) -> Non
     store.publish(empty_candidate(editorial_yaml=editorial_yaml))
     store.publish(empty_candidate(as_of_date=date(2026, 8, 1)))
 
-    assert "comitato_editoriale.yaml" not in read_monthly_tree(tmp_path, date(2026, 7, 30))
-    assert "comitato_editoriale.yaml" not in read_monthly_tree(tmp_path, date(2026, 8, 1))
+    assert "comitato_editoriale.yaml" not in read_monthly_tree(
+        tmp_path, date(2026, 7, 30)
+    )
+    assert "comitato_editoriale.yaml" not in read_monthly_tree(
+        tmp_path, date(2026, 8, 1)
+    )
 
 
 def test_same_month_replacement_does_not_restore_an_editorial_sidecar(
@@ -199,7 +209,9 @@ def test_failed_replacement_keeps_prior_manifest_and_no_sidecar(tmp_path: Path) 
     assert current["publication-manifest.json"]
 
 
-def test_success_replaces_one_monthly_bundle_with_complete_artifacts(tmp_path: Path) -> None:
+def test_success_replaces_one_monthly_bundle_with_complete_artifacts(
+    tmp_path: Path,
+) -> None:
     _seed(tmp_path)
     store = FilesystemAtomicPublicationStore(tmp_path)
 
@@ -209,7 +221,9 @@ def test_success_replaces_one_monthly_bundle_with_complete_artifacts(tmp_path: P
     assert read_monthly_tree(tmp_path, date(2026, 7, 30))["publication-manifest.json"]
 
 
-def test_post_commit_cleanup_failure_is_warning_and_does_not_roll_back(tmp_path: Path) -> None:
+def test_post_commit_cleanup_failure_is_warning_and_does_not_roll_back(
+    tmp_path: Path,
+) -> None:
     _seed(tmp_path)
     store = FaultInjectingPublicationStore(tmp_path, fault="cleanup")
 

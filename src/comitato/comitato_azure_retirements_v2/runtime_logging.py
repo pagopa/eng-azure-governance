@@ -20,7 +20,6 @@ from .config import RuntimeLoggingSettings
 from .ports import RuntimeEvent
 from .publication.model import RunResult
 
-
 _LEVELS = {
     "DEBUG": logging.DEBUG,
     "INFO": logging.INFO,
@@ -47,9 +46,7 @@ _BEARER_PATTERN = re.compile(r"(?i)\bbearer\s+[^\s,;]+")
 _TOKEN_PARAMETER_PATTERN = re.compile(
     r"(?i)(\b(?:access_token|api[_-]?key|token|sig)=)[^\s&#,;]+"
 )
-_BODY_PATTERN = re.compile(
-    r"(?i)\b(?:private|request|response)?[\s_-]*body\b[^\n]*"
-)
+_BODY_PATTERN = re.compile(r"(?i)\b(?:private|request|response)?[\s_-]*body\b[^\n]*")
 _MAX_CONTEXT_VALUE_LENGTH = 1000
 
 
@@ -72,9 +69,13 @@ def build_debug_log_path(
 
 
 class _UtcFormatter(logging.Formatter):
-    converter = staticmethod(lambda value: datetime.fromtimestamp(value, tz=timezone.utc).timetuple())
+    converter = staticmethod(
+        lambda value: datetime.fromtimestamp(value, tz=timezone.utc).timetuple()
+    )
 
-    def formatException(self, exc_info: tuple[type[BaseException], BaseException, Any]) -> str:
+    def formatException(
+        self, exc_info: tuple[type[BaseException], BaseException, Any]
+    ) -> str:
         return _redact_free_text(super().formatException(exc_info))
 
 
@@ -91,7 +92,9 @@ class TextRunLogger:
         self.include_traceback = include_traceback
         self.enabled = enabled
         self._level = _LEVELS.get(level.upper(), logging.INFO)
-        self._logger = logging.getLogger(f"comitato.azure_retirements_v2.runtime.{id(self)}")
+        self._logger = logging.getLogger(
+            f"comitato.azure_retirements_v2.runtime.{id(self)}"
+        )
         self._logger.setLevel(self._level)
         self._logger.propagate = False
         self._handler: logging.FileHandler | None = None
@@ -228,7 +231,11 @@ class RuntimeReporter:
         self._ensure_text_logger(run_id)
         if self._text_logger is not None:
             self._text_logger.exception("run_failed", "Run failed", run_id, error)
-        if self._human_console and self._allows_console("ERROR") and self._console is not None:
+        if (
+            self._human_console
+            and self._allows_console("ERROR")
+            and self._console is not None
+        ):
             self._console.print(
                 f"[bold red]Error:[/] {escape(_redact_free_text(str(error)))}"
             )
@@ -253,7 +260,11 @@ class RuntimeReporter:
                     event_context,
                 )
             )
-        if self._human_console and not self._summary_rendered and self._allows_console("INFO"):
+        if (
+            self._human_console
+            and not self._summary_rendered
+            and self._allows_console("INFO")
+        ):
             self._render_summary(run_id, event_context)
 
     def close(self) -> None:
@@ -304,9 +315,7 @@ class RuntimeReporter:
             return
 
         if title is None and self._settings.verbose:
-            self._console.print(
-                f"• {escape(event.event)}: {escape(event.message)}"
-            )
+            self._console.print(f"• {escape(event.event)}: {escape(event.message)}")
             return
         self._console.print(escape(event.message))
 
@@ -317,7 +326,9 @@ class RuntimeReporter:
         summary.add_row("Run ID", escape(event.run_id))
         for key in ("report", "subscriptions", "management_groups"):
             if key in event.context:
-                summary.add_row(key.replace("_", " ").title(), escape(str(event.context[key])))
+                summary.add_row(
+                    key.replace("_", " ").title(), escape(str(event.context[key]))
+                )
         self._console.print(
             Panel.fit(summary, title="Azure Retirements Export", border_style="cyan")
         )

@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
-
 EnrichmentValue = Mapping[str, Any] | tuple[Mapping[str, Any], ...]
 
 
@@ -20,8 +19,12 @@ class AdvisorEnrichments:
 class ServiceHealthSupplementalEvidence:
     advisor_records: tuple[Mapping[str, Any], ...] = ()
     resource_inventory: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
-    subscription_inventory: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)
-    resource_associations: Mapping[tuple[str, str], tuple[Mapping[str, Any], ...]] = field(default_factory=dict)
+    subscription_inventory: Mapping[str, Mapping[str, Any]] = field(
+        default_factory=dict
+    )
+    resource_associations: Mapping[tuple[str, str], tuple[Mapping[str, Any], ...]] = (
+        field(default_factory=dict)
+    )
     subscription_name_sources: Mapping[str, str] = field(default_factory=dict)
 
 

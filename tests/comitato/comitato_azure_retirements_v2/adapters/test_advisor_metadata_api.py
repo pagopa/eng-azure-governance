@@ -24,7 +24,9 @@ class RecordingHttp:
         self.pages = pages
         self.calls: list[tuple[str, dict[str, str], str]] = []
 
-    def list_pages(self, url: str, *, params: dict[str, str], run_id: str) -> tuple[ArmPageEnvelope, ...]:
+    def list_pages(
+        self, url: str, *, params: dict[str, str], run_id: str
+    ) -> tuple[ArmPageEnvelope, ...]:
         self.calls.append((url, params, run_id))
         return self.pages
 
@@ -89,7 +91,10 @@ def test_flatten_metadata_items_accepts_top_level_and_nested_supported_values() 
     rows = flatten_metadata_items(
         (
             {"id": "parent", "supportedValues": [{"id": "child"}]},
-            {"id": "nested-parent", "properties": {"supportedValues": [{"id": "nested-child"}]}},
+            {
+                "id": "nested-parent",
+                "properties": {"supportedValues": [{"id": "nested-child"}]},
+            },
             {"id": "plain"},
         )
     )

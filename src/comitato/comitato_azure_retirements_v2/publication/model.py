@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from typing import Any, Mapping
 
 from ..contracts.model import EncodedArtifact
-from ..domain.execution import RunContext
 from ..domain.diagnostics import Diagnostic
+from ..domain.execution import RunContext
 from ..reports.catalog import SelectedReportClosure
 
 
@@ -50,7 +50,12 @@ class PublicationManifest:
         return self.payload
 
     def to_bytes(self) -> bytes:
-        return (json.dumps(self.payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+        return (
+            json.dumps(
+                self.payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+            )
+            + "\n"
+        ).encode("utf-8")
 
 
 @dataclass(frozen=True, slots=True)

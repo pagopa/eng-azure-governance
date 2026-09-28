@@ -5,10 +5,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Protocol, TypeVar
 
-from .domain.execution import RunContext, RunRequest, Scope
 from .domain.evidence import AdvisorEnrichments
+from .domain.execution import RunContext, RunRequest, Scope
 from .publication.model import PublicationCandidate, PublicationReceipt
-
 
 T = TypeVar("T")
 
@@ -23,8 +22,7 @@ class RuntimeEvent:
 
 
 class RunObserver(Protocol):
-    def emit(self, event: RuntimeEvent) -> None:
-        ...
+    def emit(self, event: RuntimeEvent) -> None: ...
 
 
 class NullRunObserver:
@@ -33,43 +31,37 @@ class NullRunObserver:
 
 
 class Validator(Protocol[T]):
-    def validate(self, value: T, context: Any) -> Any:
-        ...
+    def validate(self, value: T, context: Any) -> Any: ...
 
 
 class Clock(Protocol):
-    def now(self) -> datetime:
-        ...
+    def now(self) -> datetime: ...
 
 
 class RunIdFactory(Protocol):
-    def new_id(self) -> str:
-        ...
+    def new_id(self) -> str: ...
 
 
 class AdvisorSource(Protocol):
-    def acquire(self, context: RunContext) -> Any:
-        ...
+    def acquire(self, context: RunContext) -> Any: ...
 
 
 class AdvisorEnrichmentSource(Protocol):
-    def enrich(self, context: RunContext, recommendations: Any) -> AdvisorEnrichments:
-        ...
+    def enrich(
+        self, context: RunContext, recommendations: Any
+    ) -> AdvisorEnrichments: ...
 
 
 class ServiceHealthSource(Protocol):
-    def acquire(self, context: RunContext) -> Any:
-        ...
+    def acquire(self, context: RunContext) -> Any: ...
 
 
 class SubscriptionScopeSource(Protocol):
-    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope:
-        ...
+    def resolve(self, request: RunRequest, *, run_id: str = "") -> Scope: ...
 
 
 class PlatformCatalogSource(Protocol):
-    def load(self) -> Any:
-        ...
+    def load(self) -> Any: ...
 
 
 class AtomicPublicationStore(Protocol):

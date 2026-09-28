@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import json
+import re
 from calendar import monthrange
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
-import json
-import re
 
 
 def add_calendar_months(value: date, months: int) -> date:
@@ -59,17 +59,31 @@ class RetirementDateClaim:
     raw_record_ref: str = ""
 
 
-def parse_retirement_date(raw_value: object, *, source_path: str = "", source_system: str = "", raw_record_ref: str = "") -> RetirementDateClaim:
+def parse_retirement_date(
+    raw_value: object,
+    *,
+    source_path: str = "",
+    source_system: str = "",
+    raw_record_ref: str = "",
+) -> RetirementDateClaim:
     raw = "" if raw_value is None else str(raw_value).strip()
     if not raw:
-        return RetirementDateClaim(raw, None, "missing", source_path, source_system, raw_record_ref)
+        return RetirementDateClaim(
+            raw, None, "missing", source_path, source_system, raw_record_ref
+        )
     if re.fullmatch(r"\d{4}(?:-\d{2})?", raw):
-        return RetirementDateClaim(raw, None, "partial", source_path, source_system, raw_record_ref)
+        return RetirementDateClaim(
+            raw, None, "partial", source_path, source_system, raw_record_ref
+        )
     try:
         parsed = date.fromisoformat(raw[:10])
     except ValueError:
-        return RetirementDateClaim(raw, None, "invalid", source_path, source_system, raw_record_ref)
-    return RetirementDateClaim(raw, parsed, "exact", source_path, source_system, raw_record_ref)
+        return RetirementDateClaim(
+            raw, None, "invalid", source_path, source_system, raw_record_ref
+        )
+    return RetirementDateClaim(
+        raw, parsed, "exact", source_path, source_system, raw_record_ref
+    )
 
 
 def _strict_iso_date(raw_value: object) -> date | None:

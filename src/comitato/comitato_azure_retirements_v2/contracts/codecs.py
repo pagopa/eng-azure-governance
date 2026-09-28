@@ -54,7 +54,9 @@ def encode_tsv(header: tuple[str, ...], rows: Iterable[Any]) -> bytes:
     for row in rows:
         mapping = _row_mapping(row)
         values = [_cell(mapping.get(column, "")) for column in header]
-        last_value = max((index for index, value in enumerate(values) if value), default=-1)
+        last_value = max(
+            (index for index, value in enumerate(values) if value), default=-1
+        )
         output.write(
             "\t".join(
                 _encode_cell(value, quote_empty=index > last_value)
@@ -65,7 +67,9 @@ def encode_tsv(header: tuple[str, ...], rows: Iterable[Any]) -> bytes:
     return output.getvalue().encode("utf-8")
 
 
-def decode_tsv(data: bytes, expected_header: tuple[str, ...]) -> tuple[dict[str, str], ...]:
+def decode_tsv(
+    data: bytes, expected_header: tuple[str, ...]
+) -> tuple[dict[str, str], ...]:
     reader = csv.reader(io.StringIO(data.decode("utf-8"), newline=""), delimiter="\t")
     rows = list(reader)
     if not rows or tuple(rows[0]) != expected_header:

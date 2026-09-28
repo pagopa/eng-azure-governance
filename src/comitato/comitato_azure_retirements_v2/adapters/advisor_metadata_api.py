@@ -8,12 +8,15 @@ from typing import Any
 from ..domain.execution import RunContext
 from .arm_http import ArmHttpClient
 
-
 ADVISOR_METADATA_API_VERSION = "2025-01-01"
-ADVISOR_METADATA_URL = "https://management.azure.com/providers/Microsoft.Advisor/metadata"
+ADVISOR_METADATA_URL = (
+    "https://management.azure.com/providers/Microsoft.Advisor/metadata"
+)
 
 
-def flatten_metadata_items(items: Sequence[Mapping[str, Any]]) -> tuple[dict[str, Any], ...]:
+def flatten_metadata_items(
+    items: Sequence[Mapping[str, Any]],
+) -> tuple[dict[str, Any], ...]:
     rows: list[dict[str, Any]] = []
     for item in items:
         if not isinstance(item, Mapping):
@@ -30,13 +33,17 @@ def flatten_metadata_items(items: Sequence[Mapping[str, Any]]) -> tuple[dict[str
             raise ValueError("Advisor metadata supportedValues has unsupported shape")
         for child in supported_values:
             if not isinstance(child, Mapping):
-                raise ValueError("Advisor metadata supportedValues child has unsupported shape")
+                raise ValueError(
+                    "Advisor metadata supportedValues child has unsupported shape"
+                )
             rows.append(dict(child))
     return tuple(rows)
 
 
 class AdvisorMetadataApiSource:
-    def __init__(self, http: ArmHttpClient, *, api_version: str = ADVISOR_METADATA_API_VERSION) -> None:
+    def __init__(
+        self, http: ArmHttpClient, *, api_version: str = ADVISOR_METADATA_API_VERSION
+    ) -> None:
         self.http = http
         self.api_version = api_version
 
@@ -56,4 +63,8 @@ class AdvisorMetadataApiSource:
         return tuple(rows)
 
 
-__all__ = ["ADVISOR_METADATA_API_VERSION", "AdvisorMetadataApiSource", "flatten_metadata_items"]
+__all__ = [
+    "ADVISOR_METADATA_API_VERSION",
+    "AdvisorMetadataApiSource",
+    "flatten_metadata_items",
+]

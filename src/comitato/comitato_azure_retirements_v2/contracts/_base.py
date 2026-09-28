@@ -8,7 +8,6 @@ from ..domain.execution import RunContext
 from .codecs import decode_jsonl, decode_tsv, encode_jsonl, encode_tsv
 from .model import Artifact, EncodedArtifact
 
-
 T = TypeVar("T")
 
 
@@ -72,7 +71,10 @@ class TsvContract(Generic[T]):
     def validate(
         self, artifact: Artifact[T], context: RunContext
     ) -> ValidationResult[Artifact[T]]:
-        if artifact.contract != self.name or artifact.schema_version != self.schema_version:
+        if (
+            artifact.contract != self.name
+            or artifact.schema_version != self.schema_version
+        ):
             raise ValueError("artifact does not belong to this contract")
         if artifact.run_id != context.run_id:
             raise ValueError("artifact run_id does not match context")

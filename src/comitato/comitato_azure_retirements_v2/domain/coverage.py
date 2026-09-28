@@ -24,6 +24,7 @@ def validate_platform_coverage(
             required.add(SubscriptionId(raw_id).value)
         except (ValueError, AttributeError):
             continue
+
     def rows(value: object) -> Iterable[Mapping[str, object]]:
         artifact = getattr(value, "artifact", None)
         if artifact is not None:
@@ -49,28 +50,46 @@ def validate_platform_coverage(
         except (ValueError, AttributeError):
             continue
         required.add(canonical)
-        references.setdefault(canonical, set()).add(str(record.get("raw_record_ref", "")))
+        references.setdefault(canonical, set()).add(
+            str(record.get("raw_record_ref", ""))
+        )
         name = str(record.get("subscription_name", "")).strip()
         if name:
             names.setdefault(canonical, set()).add(name)
     diagnostics: list[Diagnostic] = []
     for subscription_id in sorted(required):
         if catalog.lookup(subscription_id) is None:
-            refs = tuple(sorted(ref for ref in references.get(subscription_id, set()) if ref))
-            name_candidates = sorted(
-                names.get(subscription_id, ()), key=lambda value: (value.casefold(), value)
+            refs = tuple(
+                sorted(ref for ref in references.get(subscription_id, set()) if ref)
             )
-            display_name = name_candidates[0] if name_candidates else "(name unavailable)"
-            refs = tuple(sorted(ref for ref in references.get(subscription_id, set()) if ref))
-            diagnostics.append(Diagnostic(
-                "error", "platform_mapping_unmapped_subscription", "mapping", report, run_id,
-                subscription_id=subscription_id,
-                message=f"Publication blocked: subscription {display_name} ({subscription_id}) has no active assignment in src/_source_of_truth/eng-finops-platforms.yaml",
-                context=(
-                    ("subscription_name", "" if not name_candidates else name_candidates[0]),
-                    ("record_refs", ",".join(refs)),
-                ),
-            ))
+            name_candidates = sorted(
+                names.get(subscription_id, ()),
+                key=lambda value: (value.casefold(), value),
+            )
+            display_name = (
+                name_candidates[0] if name_candidates else "(name unavailable)"
+            )
+            refs = tuple(
+                sorted(ref for ref in references.get(subscription_id, set()) if ref)
+            )
+            diagnostics.append(
+                Diagnostic(
+                    "error",
+                    "platform_mapping_unmapped_subscription",
+                    "mapping",
+                    report,
+                    run_id,
+                    subscription_id=subscription_id,
+                    message=f"Publication blocked: subscription {display_name} ({subscription_id}) has no active assignment in src/_source_of_truth/eng-finops-platforms.yaml",
+                    context=(
+                        (
+                            "subscription_name",
+                            "" if not name_candidates else name_candidates[0],
+                        ),
+                        ("record_refs", ",".join(refs)),
+                    ),
+                )
+            )
     if diagnostics:
         return ValidationResult.invalid(tuple(diagnostics))
     return ValidationResult.valid(tuple(sorted(required)))

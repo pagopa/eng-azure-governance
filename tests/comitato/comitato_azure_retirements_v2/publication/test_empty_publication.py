@@ -9,13 +9,16 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
+    FilesystemAtomicPublicationStore,
+)
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
+    stage_candidate,
+)
 from src.comitato.comitato_azure_retirements_v2.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import DEFAULT_REPORT_CATALOG
-from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -24,15 +27,16 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
-    FilesystemAtomicPublicationStore,
-)
-from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
-    stage_candidate,
-)
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
     PublicationError,
+)
+from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+    DEFAULT_REPORT_CATALOG,
+)
+from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
+    SERVICE_HEALTH_REPORT,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
     read_monthly_tree,
@@ -55,7 +59,15 @@ def empty_candidate(
         ),
         catalog_identity=CatalogIdentity(schema_version=1, sha256="e" * 64),
         dependency_plan=DependencyPlan(
-            stages=("scope", "catalog", "advisor", "service-health", "aggregate", "slides", "publication")
+            stages=(
+                "scope",
+                "catalog",
+                "advisor",
+                "service-health",
+                "aggregate",
+                "slides",
+                "publication",
+            )
         ),
     )
     advisor = ADVISOR_REPORT.contract.empty_artifact(context)
@@ -94,7 +106,9 @@ def _closure_with_custom_owners(candidate: PublicationCandidate):
     )
 
 
-def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(tmp_path: Path) -> None:
+def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(
+    tmp_path: Path,
+) -> None:
     candidate = empty_candidate()
     store = FilesystemAtomicPublicationStore(tmp_path)
 
@@ -141,17 +155,16 @@ def test_staging_uses_candidate_closure_for_manifest_ownership(tmp_path: Path) -
     )
 
     staged = stage_candidate(candidate, tmp_path)
-    reports = {
-        item["path"]: item["report"]
-        for item in staged.manifest["artifacts"]
-    }
+    reports = {item["path"]: item["report"] for item in staged.manifest["artifacts"]}
 
     assert reports["01_azure_advisor_retirements_raw.tsv"] == "custom-advisor"
     assert reports["03_azure_retirements_slide.tsv"] == "custom-slides"
     assert tuple(reports) == candidate.report_closure.expected_paths
 
 
-def test_failed_commit_leaves_existing_current_generation_unchanged(tmp_path: Path) -> None:
+def test_failed_commit_leaves_existing_current_generation_unchanged(
+    tmp_path: Path,
+) -> None:
     seeded = tmp_path / "2026" / "07"
     seeded.mkdir(parents=True)
     (seeded / "sentinel.txt").write_bytes(b"seeded-current")

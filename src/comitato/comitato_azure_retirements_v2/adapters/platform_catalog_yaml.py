@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
-from typing import Any
-from uuid import UUID
 
 import yaml
 
-from ..domain.platforms import PlatformAssignment, PlatformCatalogSnapshot, SubscriptionId
+from ..domain.platforms import (
+    PlatformAssignment,
+    PlatformCatalogSnapshot,
+    SubscriptionId,
+)
 
 
 class CatalogLoadError(ValueError):
@@ -39,13 +41,23 @@ class YamlPlatformCatalogSource:
         names: set[str] = set()
         seen_ids: set[str] = set()
         for platform, definition in payload["platforms"].items():
-            if not isinstance(platform, str) or not platform.strip() or platform.casefold() == "all":
+            if (
+                not isinstance(platform, str)
+                or not platform.strip()
+                or platform.casefold() == "all"
+            ):
                 raise CatalogLoadError("platform catalog has an invalid platform name")
-            if not isinstance(definition, dict) or set(definition) != {"subscriptions"} or not isinstance(definition["subscriptions"], list):
+            if (
+                not isinstance(definition, dict)
+                or set(definition) != {"subscriptions"}
+                or not isinstance(definition["subscriptions"], list)
+            ):
                 raise CatalogLoadError("platform catalog platform shape is invalid")
             for item in definition["subscriptions"]:
                 if not isinstance(item, dict) or set(item) != {"name", "id", "state"}:
-                    raise CatalogLoadError("platform catalog subscription shape is invalid")
+                    raise CatalogLoadError(
+                        "platform catalog subscription shape is invalid"
+                    )
                 name, identifier, state = item["name"], item["id"], item["state"]
                 if (
                     not isinstance(name, str)
@@ -53,27 +65,45 @@ class YamlPlatformCatalogSource:
                     or not isinstance(state, str)
                     or state not in {"active", "disabled", "deleted"}
                 ):
-                    raise CatalogLoadError("platform catalog subscription values are invalid")
+                    raise CatalogLoadError(
+                        "platform catalog subscription values are invalid"
+                    )
                 if identifier is None:
                     if state == "active":
-                        raise CatalogLoadError("platform catalog active subscription id is null")
+                        raise CatalogLoadError(
+                            "platform catalog active subscription id is null"
+                        )
                     continue
                 if not isinstance(identifier, str):
-                    raise CatalogLoadError("platform catalog subscription id must be a string")
+                    raise CatalogLoadError(
+                        "platform catalog subscription id must be a string"
+                    )
                 try:
                     canonical = SubscriptionId(identifier)
                 except (ValueError, AttributeError) as exc:
-                    raise CatalogLoadError("platform catalog subscription id is not a UUID") from exc
+                    raise CatalogLoadError(
+                        "platform catalog subscription id is not a UUID"
+                    ) from exc
                 if canonical.value in seen_ids:
-                    raise CatalogLoadError("platform catalog contains duplicate subscription UUID")
+                    raise CatalogLoadError(
+                        "platform catalog contains duplicate subscription UUID"
+                    )
                 seen_ids.add(canonical.value)
                 if state == "active":
                     folded_name = name.strip().casefold()
                     if folded_name in names:
-                        raise CatalogLoadError("platform catalog contains duplicate active names")
+                        raise CatalogLoadError(
+                            "platform catalog contains duplicate active names"
+                        )
                     names.add(folded_name)
-                    assignments.append(PlatformAssignment(canonical, platform, name.strip()))
-        return PlatformCatalogSnapshot(1, sha256(raw).hexdigest(), tuple(sorted(assignments, key=lambda item: item.subscription_id.value)))
+                    assignments.append(
+                        PlatformAssignment(canonical, platform, name.strip())
+                    )
+        return PlatformCatalogSnapshot(
+            1,
+            sha256(raw).hexdigest(),
+            tuple(sorted(assignments, key=lambda item: item.subscription_id.value)),
+        )
 
 
 __all__ = ["CatalogLoadError", "YamlPlatformCatalogSource"]

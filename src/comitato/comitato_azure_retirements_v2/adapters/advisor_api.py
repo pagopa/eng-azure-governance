@@ -7,12 +7,13 @@ from ..domain.execution import RunContext
 from .arm_http import ArmHttpClient
 from .subscription_list import acquire_subscription_list
 
-
 ADVISOR_API_VERSION = "2025-01-01"
 
 
 class AdvisorApiSource:
-    def __init__(self, http: ArmHttpClient, *, api_version: str = ADVISOR_API_VERSION) -> None:
+    def __init__(
+        self, http: ArmHttpClient, *, api_version: str = ADVISOR_API_VERSION
+    ) -> None:
         self.http = http
         self.api_version = api_version
 

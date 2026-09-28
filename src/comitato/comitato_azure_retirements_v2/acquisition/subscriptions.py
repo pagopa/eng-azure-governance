@@ -12,7 +12,9 @@ class FixedSubscriptionScopeSource:
     mode: str = "explicit"
 
     def resolve(self, request: RunRequest) -> Scope:
-        canonical = tuple(sorted({str(UUID(item)).lower() for item in self.subscription_ids}))
+        canonical = tuple(
+            sorted({str(UUID(item)).lower() for item in self.subscription_ids})
+        )
         return Scope(subscription_ids=canonical, mode=self.mode)
 
 

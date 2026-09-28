@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest
 
-
 ROOT = Path(__file__).parents[3]
 
 
@@ -32,7 +31,9 @@ class FakeV2Launcher:
         return environment
 
     def _result(self, returncode: int, stdout: str, stderr: str) -> LauncherResult:
-        recorded_arguments = self.record.read_text(encoding="utf-8") if self.record.exists() else ""
+        recorded_arguments = (
+            self.record.read_text(encoding="utf-8") if self.record.exists() else ""
+        )
         return LauncherResult(returncode, stdout, stderr, recorded_arguments)
 
     def run(self, *arguments: str) -> LauncherResult:
@@ -86,7 +87,7 @@ def fake_v2_launcher(tmp_path: Path) -> FakeV2Launcher:
     fake_python = package / ".venv" / "bin" / "python"
     fake_python.parent.mkdir(parents=True)
     fake_python.write_text(
-        "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$FAKE_RECORD\"\n",
+        '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$FAKE_RECORD"\n',
         encoding="utf-8",
     )
     fake_python.chmod(fake_python.stat().st_mode | stat.S_IXUSR)
@@ -95,7 +96,11 @@ def fake_v2_launcher(tmp_path: Path) -> FakeV2Launcher:
 
 def test_bash_entrypoint_help_is_bootstrap_free() -> None:
     result = subprocess.run(
-        ["bash", str(ROOT / "src/comitato/comitato_azure_retirements_v2/run.sh"), "--help"],
+        [
+            "bash",
+            str(ROOT / "src/comitato/comitato_azure_retirements_v2/run.sh"),
+            "--help",
+        ],
         cwd=ROOT,
         capture_output=True,
         text=True,

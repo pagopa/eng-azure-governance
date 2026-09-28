@@ -12,7 +12,9 @@ from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml i
 SUB_A = "11111111-1111-1111-1111-111111111111"
 
 
-def test_yaml_catalog_loads_active_assignments_and_hashes_exact_bytes(tmp_path: Path) -> None:
+def test_yaml_catalog_loads_active_assignments_and_hashes_exact_bytes(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "catalog.yaml"
     data = (
         "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n"
@@ -45,7 +47,9 @@ def test_yaml_catalog_loads_repository_source_of_truth() -> None:
         "schema_version: 1\nplatforms:\n  Alpha: {}\n",
         "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n      - name: A\n        id: null\n        state: active\n",
         "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n      - name: A\n        id: not-a-uuid\n        state: active\n",
-        "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n      - name: A\n        id: " + SUB_A + "\n        state: unknown\n",
+        "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n      - name: A\n        id: "
+        + SUB_A
+        + "\n        state: unknown\n",
     ],
 )
 def test_yaml_catalog_rejects_invalid_entry_values(tmp_path: Path, data: str) -> None:
@@ -67,7 +71,9 @@ def test_yaml_catalog_rejects_duplicate_uuid_across_states(tmp_path: Path) -> No
         YamlPlatformCatalogSource(path).load()
 
 
-def test_yaml_catalog_rejects_duplicate_active_names_after_unicode_casefold(tmp_path: Path) -> None:
+def test_yaml_catalog_rejects_duplicate_active_names_after_unicode_casefold(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "catalog.yaml"
     path.write_text(
         "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n"
@@ -80,7 +86,9 @@ def test_yaml_catalog_rejects_duplicate_active_names_after_unicode_casefold(tmp_
         YamlPlatformCatalogSource(path).load()
 
 
-def test_yaml_catalog_allows_null_id_only_for_non_active_history(tmp_path: Path) -> None:
+def test_yaml_catalog_allows_null_id_only_for_non_active_history(
+    tmp_path: Path,
+) -> None:
     path = tmp_path / "catalog.yaml"
     path.write_text(
         "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n"

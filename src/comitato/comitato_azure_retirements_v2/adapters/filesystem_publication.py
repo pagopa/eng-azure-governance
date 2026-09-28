@@ -6,14 +6,13 @@ from pathlib import Path
 from typing import Any
 
 from ..domain.diagnostics import Diagnostic
+from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 from ..publication.model import (
     PublicationCandidate,
     PublicationError,
     PublicationReceipt,
 )
-from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 from .filesystem_staging import _ValidatedStagedGeneration, stage_candidate
-
 
 _COMMIT_FAULTS = {"before_switch", "durable_marker"}
 
@@ -121,21 +120,44 @@ class FilesystemAtomicPublicationStore:
             generation_dir.relative_to(staging_root)
         except ValueError as exc:
             raise PublicationError(
-                Diagnostic("error", "unsafe_staged_generation", "commit", "", "", message="staged generation is outside the private staging area")
+                Diagnostic(
+                    "error",
+                    "unsafe_staged_generation",
+                    "commit",
+                    "",
+                    "",
+                    message="staged generation is outside the private staging area",
+                )
             ) from exc
         if generation_dir.stat().st_dev != self.destination.stat().st_dev:
             raise PublicationError(
-                Diagnostic("error", "cross_device_publication", "commit", "", "", message="publication generation is not on the destination filesystem")
+                Diagnostic(
+                    "error",
+                    "cross_device_publication",
+                    "commit",
+                    "",
+                    "",
+                    message="publication generation is not on the destination filesystem",
+                )
             )
 
         candidate = getattr(self, "_candidate", None)
         if candidate is None:
             raise PublicationError(
-                Diagnostic("error", "missing_publication_candidate", "commit", "", "", message="publication candidate is unavailable")
+                Diagnostic(
+                    "error",
+                    "missing_publication_candidate",
+                    "commit",
+                    "",
+                    "",
+                    message="publication candidate is unavailable",
+                )
             )
         month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
         monthly_bundle = self.destination / month_reference
-        backup_bundle = self.destination / ".staging" / f"{generation_dir.name}-previous"
+        backup_bundle = (
+            self.destination / ".staging" / f"{generation_dir.name}-previous"
+        )
         previous_bundle_moved = False
         new_bundle_moved = False
         try:
@@ -165,10 +187,19 @@ class FilesystemAtomicPublicationStore:
                 try:
                     os.replace(backup_bundle, monthly_bundle)
                 except OSError:
-                    self._warnings.append("superseded monthly bundle restoration failed")
+                    self._warnings.append(
+                        "superseded monthly bundle restoration failed"
+                    )
             shutil.rmtree(generation_dir, ignore_errors=True)
             raise PublicationError(
-                Diagnostic("error", "commit_failure", "commit", "", "", message="monthly publication replacement failed")
+                Diagnostic(
+                    "error",
+                    "commit_failure",
+                    "commit",
+                    "",
+                    "",
+                    message="monthly publication replacement failed",
+                )
             ) from exc
 
         if previous_bundle_moved:
@@ -261,7 +292,11 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
         if self.fault in _COMMIT_FAULTS:
             candidate = getattr(self, "_candidate", None)
             report = getattr(getattr(candidate, "context", None), "request", None)
-            report_name = getattr(report, "selector", "").value if getattr(report, "selector", None) else ""
+            report_name = (
+                getattr(report, "selector", "").value
+                if getattr(report, "selector", None)
+                else ""
+            )
             run_id = getattr(getattr(candidate, "context", None), "run_id", "")
             raise PublicationError(
                 Diagnostic(

@@ -1,4 +1,5 @@
 from dataclasses import FrozenInstanceError
+
 import pytest
 
 from src.comitato.comitato_azure_retirements_v2.contracts import AGGREGATE_V1, SLIDES_V1
@@ -60,9 +61,7 @@ def test_plan_returns_one_immutable_selected_closure() -> None:
     closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
 
     assert isinstance(closure, SelectedReportClosure)
-    assert closure.expected_paths == (
-        "03_azure_retirements_slide.tsv",
-    )
+    assert closure.expected_paths == ("03_azure_retirements_slide.tsv",)
     assert closure.owner_of("03_azure_retirements_slide.tsv").name == "slides"
     with pytest.raises(KeyError):
         closure.owner_of("comitato_editoriale.yaml")
@@ -73,8 +72,14 @@ def test_plan_returns_one_immutable_selected_closure() -> None:
 def test_non_default_catalog_closure_preserves_custom_ownership() -> None:
     closure = _renamed_catalog().plan(ReportSelector.ALL)
 
-    assert closure.expected_paths == DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths
-    assert closure.owner_of("01_azure_advisor_retirements_raw.tsv").name == "custom-advisor"
+    assert (
+        closure.expected_paths
+        == DEFAULT_REPORT_CATALOG.plan(ReportSelector.ALL).expected_paths
+    )
+    assert (
+        closure.owner_of("01_azure_advisor_retirements_raw.tsv").name
+        == "custom-advisor"
+    )
     assert closure.owner_of("03_azure_retirements_slide.tsv").name == "custom-slides"
 
 
@@ -83,7 +88,15 @@ def test_non_default_catalog_closure_preserves_custom_ownership() -> None:
     (
         (
             ReportSelector.ALL,
-            ("scope", "catalog", "advisor", "service-health", "aggregate", "slides", "publication"),
+            (
+                "scope",
+                "catalog",
+                "advisor",
+                "service-health",
+                "aggregate",
+                "slides",
+                "publication",
+            ),
             ("advisor", "service-health", "aggregate", "slides"),
         ),
         (
@@ -98,12 +111,27 @@ def test_non_default_catalog_closure_preserves_custom_ownership() -> None:
         ),
         (
             ReportSelector.AGGREGATE,
-            ("scope", "catalog", "advisor", "service-health", "aggregate", "publication"),
+            (
+                "scope",
+                "catalog",
+                "advisor",
+                "service-health",
+                "aggregate",
+                "publication",
+            ),
             ("aggregate",),
         ),
         (
             ReportSelector.SLIDES,
-            ("scope", "catalog", "advisor", "service-health", "aggregate", "slides", "publication"),
+            (
+                "scope",
+                "catalog",
+                "advisor",
+                "service-health",
+                "aggregate",
+                "slides",
+                "publication",
+            ),
             ("slides",),
         ),
     ),
@@ -129,16 +157,15 @@ def test_every_declared_path_has_exactly_one_owner():
 
 def test_report_definition_verifies_staged_artifacts():
     candidate = empty_candidate()
-    definition = DEFAULT_REPORT_CATALOG.owner_of(
-        "01_azure_advisor_retirements_raw.tsv"
-    )
-    payloads = {
-        item.logical_path: item.data for item in candidate.artifacts
-    }
+    definition = DEFAULT_REPORT_CATALOG.owner_of("01_azure_advisor_retirements_raw.tsv")
+    payloads = {item.logical_path: item.data for item in candidate.artifacts}
 
-    assert definition.verify_staged_artifact(
-        definition.contract.path, payloads, candidate.context
-    ) == ()
+    assert (
+        definition.verify_staged_artifact(
+            definition.contract.path, payloads, candidate.context
+        )
+        == ()
+    )
 
     payloads[definition.contract.companion_path] = b"not-json\n"
     with pytest.raises(StagedDecodeFailure) as raised:

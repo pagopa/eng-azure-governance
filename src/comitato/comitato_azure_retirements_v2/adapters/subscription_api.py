@@ -5,12 +5,13 @@ from __future__ import annotations
 from ..domain.execution import RunRequest, Scope
 from .arm_http import ArmHttpClient
 
-
 SUBSCRIPTIONS_API_VERSION = "2022-12-01"
 
 
 class SubscriptionApiSource:
-    def __init__(self, http: ArmHttpClient, *, api_version: str = SUBSCRIPTIONS_API_VERSION) -> None:
+    def __init__(
+        self, http: ArmHttpClient, *, api_version: str = SUBSCRIPTIONS_API_VERSION
+    ) -> None:
         self.http = http
         self.api_version = api_version
 
@@ -25,7 +26,10 @@ class SubscriptionApiSource:
         subscription_ids = tuple(
             sorted(
                 {
-                    str(item.get("subscriptionId") or item.get("id", "").rsplit("/", 1)[-1])
+                    str(
+                        item.get("subscriptionId")
+                        or item.get("id", "").rsplit("/", 1)[-1]
+                    )
                     for page in pages
                     for item in page.items
                     if str(item.get("subscriptionId") or item.get("id", "")).strip()

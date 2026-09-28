@@ -56,10 +56,14 @@ class RecordingRunObserver:
 
 
 def test_redacts_authorization_and_error_body() -> None:
-    session = Session([Response(401, {"error": "secret-token"}, text="secret-token Authorization")])
+    session = Session(
+        [Response(401, {"error": "secret-token"}, text="secret-token Authorization")]
+    )
 
     with pytest.raises(ArmHttpError) as caught:
-        ArmHttpClient(Token(), session=session, sleep=lambda _: None).get_json("https://management.azure.com/x")
+        ArmHttpClient(Token(), session=session, sleep=lambda _: None).get_json(
+            "https://management.azure.com/x"
+        )
 
     message = str(caught.value)
     assert "secret-token" not in message
@@ -70,7 +74,9 @@ def test_passes_central_timeout_and_translates_transport_errors() -> None:
     session = Session([requests.Timeout("secret-token")])
 
     with pytest.raises(ArmHttpError) as caught:
-        ArmHttpClient(Token(), timeout_seconds=4, session=session, sleep=lambda _: None).get_json("https://management.azure.com/x")
+        ArmHttpClient(
+            Token(), timeout_seconds=4, session=session, sleep=lambda _: None
+        ).get_json("https://management.azure.com/x")
 
     assert "timeout" in str(caught.value).casefold()
     assert "secret-token" not in str(caught.value)
@@ -80,7 +86,9 @@ def test_passes_central_timeout_and_translates_transport_errors() -> None:
 def test_retries_throttling_with_a_bounded_policy() -> None:
     session = Session([Response(429), Response(200, {"value": [1]})])
 
-    payload = ArmHttpClient(Token(), retry_attempts=1, session=session, sleep=lambda _: None).get_json("https://management.azure.com/x")
+    payload = ArmHttpClient(
+        Token(), retry_attempts=1, session=session, sleep=lambda _: None
+    ).get_json("https://management.azure.com/x")
 
     assert payload == {"value": [1]}
     assert len(session.calls) == 2
@@ -114,7 +122,9 @@ def test_reports_retry_exhaustion_without_sensitive_response_text() -> None:
     session = Session([Response(503, text="secret-token")] * 2)
 
     with pytest.raises(ArmHttpError, match="retry") as caught:
-        ArmHttpClient(Token(), retry_attempts=1, session=session, sleep=lambda _: None).get_json("https://management.azure.com/x")
+        ArmHttpClient(
+            Token(), retry_attempts=1, session=session, sleep=lambda _: None
+        ).get_json("https://management.azure.com/x")
 
     assert "secret-token" not in str(caught.value)
 
@@ -127,24 +137,49 @@ def test_rejects_malformed_or_unsupported_json_shape(payload) -> None:
         session.responses[0].payload = ValueError("malformed")
 
     with pytest.raises(ArmHttpError):
-        ArmHttpClient(Token(), session=session, sleep=lambda _: None).list_pages("https://management.azure.com/x")
+        ArmHttpClient(Token(), session=session, sleep=lambda _: None).list_pages(
+            "https://management.azure.com/x"
+        )
 
 
 def test_traverses_continuations_and_rejects_repeated_tokens() -> None:
-    session = Session([
-        Response(200, {"value": [{"id": "one"}], "nextLink": "https://management.azure.com/x?page=2"}),
-        Response(200, {"value": [{"id": "two"}]}, url="https://management.azure.com/x?page=2"),
-    ])
-    pages = ArmHttpClient(Token(), session=session, sleep=lambda _: None).list_pages("https://management.azure.com/x")
-    assert [item for page in pages for item in page.items] == [{"id": "one"}, {"id": "two"}]
+    session = Session(
+        [
+            Response(
+                200,
+                {
+                    "value": [{"id": "one"}],
+                    "nextLink": "https://management.azure.com/x?page=2",
+                },
+            ),
+            Response(
+                200,
+                {"value": [{"id": "two"}]},
+                url="https://management.azure.com/x?page=2",
+            ),
+        ]
+    )
+    pages = ArmHttpClient(Token(), session=session, sleep=lambda _: None).list_pages(
+        "https://management.azure.com/x"
+    )
+    assert [item for page in pages for item in page.items] == [
+        {"id": "one"},
+        {"id": "two"},
+    ]
     assert len(pages) == 2
 
-    repeated = Session([Response(200, {"value": [], "nextLink": "https://management.azure.com/x"})])
+    repeated = Session(
+        [Response(200, {"value": [], "nextLink": "https://management.azure.com/x"})]
+    )
     with pytest.raises(RepeatedContinuationError):
-        ArmHttpClient(Token(), session=repeated, sleep=lambda _: None).list_pages("https://management.azure.com/x")
+        ArmHttpClient(Token(), session=repeated, sleep=lambda _: None).list_pages(
+            "https://management.azure.com/x"
+        )
 
 
-def test_cli_token_provider_reads_environment_without_exposing_token(monkeypatch) -> None:
+def test_cli_token_provider_reads_environment_without_exposing_token(
+    monkeypatch,
+) -> None:
     monkeypatch.setenv("AZURE_BEARER_TOKEN", "secret-token")
     provider = AzureCliTokenProvider()
 

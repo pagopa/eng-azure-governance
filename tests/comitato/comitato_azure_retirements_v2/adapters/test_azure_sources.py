@@ -4,11 +4,19 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.advisor_api import AdvisorApiSource
-from src.comitato.comitato_azure_retirements_v2.adapters.resource_graph_api import ResourceGraphApiSource
-from src.comitato.comitato_azure_retirements_v2.adapters.resource_health_api import ResourceHealthApiSource
-from src.comitato.comitato_azure_retirements_v2.adapters.subscription_api import SubscriptionApiSource
+from src.comitato.comitato_azure_retirements_v2.adapters.advisor_api import (
+    AdvisorApiSource,
+)
 from src.comitato.comitato_azure_retirements_v2.adapters.arm_http import ArmPageEnvelope
+from src.comitato.comitato_azure_retirements_v2.adapters.resource_graph_api import (
+    ResourceGraphApiSource,
+)
+from src.comitato.comitato_azure_retirements_v2.adapters.resource_health_api import (
+    ResourceHealthApiSource,
+)
+from src.comitato.comitato_azure_retirements_v2.adapters.subscription_api import (
+    SubscriptionApiSource,
+)
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -27,14 +35,34 @@ class Http:
     def list_pages(self, url, **kwargs):
         self.list_calls.append((url, kwargs))
         if "Microsoft.Advisor/" in url:
-            return (ArmPageEnvelope(url, ({"id": "/advisor/1", "properties": {"recommendationStatus": "New"}},)),)
+            return (
+                ArmPageEnvelope(
+                    url,
+                    (
+                        {
+                            "id": "/advisor/1",
+                            "properties": {"recommendationStatus": "New"},
+                        },
+                    ),
+                ),
+            )
         if "ResourceHealth" in url:
-            return (ArmPageEnvelope(url, ({"id": "/health/1", "properties": {"status": "Active"}},)),)
+            return (
+                ArmPageEnvelope(
+                    url, ({"id": "/health/1", "properties": {"status": "Active"}},)
+                ),
+            )
         return (ArmPageEnvelope(url, ({"id": "sub-a", "displayName": "A"},)),)
 
     def post_json(self, url, payload):
         self.post_calls.append((url, payload))
-        return {"data": [{"id": "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"}]}
+        return {
+            "data": [
+                {
+                    "id": "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"
+                }
+            ]
+        }
 
 
 class HttpWithResponses:
@@ -139,7 +167,9 @@ def test_resource_graph_source_posts_query_without_normalizing_rows() -> None:
 
 
 def test_resource_graph_lookup_projects_normalized_resource_fields() -> None:
-    resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    resource_id = (
+        "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    )
     http = HttpWithResponses(
         {
             "data": [
@@ -185,7 +215,9 @@ def test_resource_graph_lookup_subscriptions_uses_resourcecontainers() -> None:
     assert "microsoft.resources/subscriptions" in http.post_calls[0][1]["query"].lower()
 
 
-def test_resource_graph_lookup_subscriptions_rejects_repeated_continuation_tokens() -> None:
+def test_resource_graph_lookup_subscriptions_rejects_repeated_continuation_tokens() -> (
+    None
+):
     http = HttpWithResponses(
         {"data": [], "$skipToken": "same-token"},
         {"data": [], "$skipToken": "same-token"},
@@ -195,7 +227,9 @@ def test_resource_graph_lookup_subscriptions_rejects_repeated_continuation_token
         ResourceGraphApiSource(http).lookup_subscriptions(context())
 
 
-def test_resource_graph_lookup_subscriptions_rejects_non_string_continuation_tokens() -> None:
+def test_resource_graph_lookup_subscriptions_rejects_non_string_continuation_tokens() -> (
+    None
+):
     http = HttpWithResponses({"data": [], "$skipToken": 0})
 
     with pytest.raises(ValueError, match="continuation token"):
@@ -229,14 +263,19 @@ def test_resource_graph_source_queries_service_health_resources() -> None:
 def test_resource_graph_source_queries_verified_resource_metadata() -> None:
     http = QueryHttp()
     result = ResourceGraphApiSource(http).lookup_resources(
-        context(), ("/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1",)
+        context(),
+        (
+            "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1",
+        ),
     )
 
     assert result[0]["name"] == "vm-1"
     query = http.post_calls[0][1]["query"]
     assert "resources" in query
     assert "tolower(id) in" in query
-    assert "project id, name, type, location, resourceGroup, subscriptionId, tags" in query
+    assert (
+        "project id, name, type, location, resourceGroup, subscriptionId, tags" in query
+    )
 
 
 def test_resource_graph_source_does_not_query_all_resources_for_empty_ids() -> None:

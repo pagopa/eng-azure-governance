@@ -10,10 +10,18 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application import orchestration as orchestration_module
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import ApplicationError
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import ServiceHealthSupplementalEvidence
+from src.comitato.comitato_azure_retirements_v2.application import (
+    orchestration as orchestration_module,
+)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+    RetirementsApplication,
+)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+    ApplicationError,
+)
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+    ServiceHealthSupplementalEvidence,
+)
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -22,9 +30,9 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.platforms import PlatformCatalogSnapshot
-from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationReceipt
-
+from src.comitato.comitato_azure_retirements_v2.publication.model import (
+    PublicationReceipt,
+)
 
 SUBSCRIPTION_ID = "sub-a"
 RESOURCE_ID = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
@@ -42,10 +50,14 @@ def context() -> RunContext:
         run_id="run-health-evidence",
         as_of_date=date(2026, 7, 31),
         created_at=datetime(2026, 7, 31, tzinfo=timezone.utc),
-        request=RunRequest(ReportSelector.SERVICE_HEALTH, (SUBSCRIPTION_ID,), date(2026, 7, 31)),
+        request=RunRequest(
+            ReportSelector.SERVICE_HEALTH, (SUBSCRIPTION_ID,), date(2026, 7, 31)
+        ),
         scope=Scope((SUBSCRIPTION_ID,), mode="explicit"),
         catalog_identity=CatalogIdentity(1, "a" * 64),
-        dependency_plan=DependencyPlan(("scope", "catalog", "service-health", "publication")),
+        dependency_plan=DependencyPlan(
+            ("scope", "catalog", "service-health", "publication")
+        ),
     )
 
 
@@ -110,15 +122,21 @@ class FakeResourceGraph:
         if self.fail_on == name:
             raise RuntimeError(f"{name} query failed")
 
-    def lookup_subscription_inventory(self, context: RunContext) -> tuple[dict[str, Any], ...]:
+    def lookup_subscription_inventory(
+        self, context: RunContext
+    ) -> tuple[dict[str, Any], ...]:
         self._record("subscription_inventory")
         return self.subscription_rows
 
-    def lookup_service_health_resources(self, context: RunContext) -> tuple[dict[str, Any], ...]:
+    def lookup_service_health_resources(
+        self, context: RunContext
+    ) -> tuple[dict[str, Any], ...]:
         self._record("service_health_resources")
         return self.service_health_rows
 
-    def lookup_resources(self, context: RunContext, resource_ids: tuple[str, ...]) -> tuple[dict[str, Any], ...]:
+    def lookup_resources(
+        self, context: RunContext, resource_ids: tuple[str, ...]
+    ) -> tuple[dict[str, Any], ...]:
         self._record("resources")
         return self.resource_rows
 
@@ -133,7 +151,9 @@ class FakeCatalog:
         return "pagoPA", self.name
 
 
-def application(resource_graph_source: FakeResourceGraph, catalog: FakeCatalog) -> RetirementsApplication:
+def application(
+    resource_graph_source: FakeResourceGraph, catalog: FakeCatalog
+) -> RetirementsApplication:
     return RetirementsApplication(
         scope_source=object(),
         catalog_source=object(),
@@ -154,14 +174,22 @@ def test_collect_service_health_evidence_prefers_resource_graph_inventory() -> N
 
     assert evidence.subscription_inventory["sub-a"]["name"] == "Live Subscription"
     assert evidence.subscription_name_sources["sub-a"] == "resource_graph_inventory"
-    assert evidence.resource_associations[("track-1", "sub-a")][0]["resourceId"].endswith("/vm-1")
+    assert evidence.resource_associations[("track-1", "sub-a")][0][
+        "resourceId"
+    ].endswith("/vm-1")
     normalized_resource_id = RESOURCE_ID.casefold()
     assert evidence.resource_inventory[normalized_resource_id]["name"] == "vm-1"
-    assert graph.calls == ["subscription_inventory", "service_health_resources", "resources"]
+    assert graph.calls == [
+        "subscription_inventory",
+        "service_health_resources",
+        "resources",
+    ]
 
 
 def test_collect_service_health_evidence_falls_back_to_platform_catalog() -> None:
-    graph = FakeResourceGraph(subscription_rows=(), service_health_rows=(), resource_rows=())
+    graph = FakeResourceGraph(
+        subscription_rows=(), service_health_rows=(), resource_rows=()
+    )
     catalog = FakeCatalog(name="UAT-pagoPA")
     evidence = application(graph, catalog)._collect_service_health_evidence(
         context(), acquisition(), catalog
@@ -171,10 +199,14 @@ def test_collect_service_health_evidence_falls_back_to_platform_catalog() -> Non
     assert evidence.subscription_name_sources["sub-a"] == "platform_catalog"
 
 
-def test_collect_service_health_evidence_does_not_turn_query_failure_into_not_published() -> None:
+def test_collect_service_health_evidence_does_not_turn_query_failure_into_not_published() -> (
+    None
+):
     graph = FakeResourceGraph(fail_on="service_health_resources")
 
-    with pytest.raises(ApplicationError, match="supplemental evidence acquisition failed"):
+    with pytest.raises(
+        ApplicationError, match="supplemental evidence acquisition failed"
+    ):
         application(graph, FakeCatalog())._collect_service_health_evidence(
             context(), acquisition(), FakeCatalog()
         )
@@ -215,7 +247,9 @@ class FakePublicationStore:
         return PublicationReceipt("generation", "2026/07")
 
 
-def test_application_passes_collected_evidence_to_service_health_report(monkeypatch) -> None:
+def test_application_passes_collected_evidence_to_service_health_report(
+    monkeypatch,
+) -> None:
     graph = FakeResourceGraph()
     catalog = FakeCatalog()
     captured: list[object] = []
@@ -237,7 +271,9 @@ def test_application_passes_collected_evidence_to_service_health_report(monkeypa
         resource_graph_source=graph,
     )
 
-    app.run(RunRequest(ReportSelector.SERVICE_HEALTH, (SUBSCRIPTION_ID,), date(2026, 7, 31)))
+    app.run(
+        RunRequest(ReportSelector.SERVICE_HEALTH, (SUBSCRIPTION_ID,), date(2026, 7, 31))
+    )
 
     assert len(captured) == 1
     evidence = captured[0]

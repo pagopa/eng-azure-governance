@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
 import re
+from collections.abc import Mapping, Sequence
 from typing import Any
 
 from ..domain.evidence import AdvisorEnrichments, EnrichmentValue
@@ -29,7 +29,9 @@ def _normalized_arm(value: Any) -> str:
 
 
 def _subscription_id(recommendation: Mapping[str, Any], resource_id: str) -> str:
-    direct = recommendation.get("subscriptionId") or recommendation.get("subscription_id")
+    direct = recommendation.get("subscriptionId") or recommendation.get(
+        "subscription_id"
+    )
     if direct:
         return _fold(direct)
     match = re.search(r"/subscriptions/([^/]+)", resource_id, re.IGNORECASE)
@@ -38,8 +40,15 @@ def _subscription_id(recommendation: Mapping[str, Any], resource_id: str) -> str
 
 def _resource_id(recommendation: Mapping[str, Any]) -> str:
     properties = _mapping(recommendation.get("properties"))
-    metadata = _mapping(properties.get("resourceMetadata") or properties.get("resource_metadata"))
-    return str(metadata.get("resourceId") or metadata.get("resource_id") or metadata.get("id") or "")
+    metadata = _mapping(
+        properties.get("resourceMetadata") or properties.get("resource_metadata")
+    )
+    return str(
+        metadata.get("resourceId")
+        or metadata.get("resource_id")
+        or metadata.get("id")
+        or ""
+    )
 
 
 def _metadata_service_id(row: Mapping[str, Any]) -> str:
@@ -64,11 +73,18 @@ def _metadata_service_id(row: Mapping[str, Any]) -> str:
 
 def _metadata_id(row: Mapping[str, Any]) -> str:
     properties = _mapping(row.get("properties"))
-    return _fold(row.get("id") or row.get("metadataId") or properties.get("id") or properties.get("metadataId"))
+    return _fold(
+        row.get("id")
+        or row.get("metadataId")
+        or properties.get("id")
+        or properties.get("metadataId")
+    )
 
 
 def _resource_key(row: Mapping[str, Any]) -> str:
-    return _normalized_arm(row.get("resourceId") or row.get("resource_id") or row.get("id"))
+    return _normalized_arm(
+        row.get("resourceId") or row.get("resource_id") or row.get("id")
+    )
 
 
 def _subscription_key(row: Mapping[str, Any]) -> str:
@@ -112,10 +128,14 @@ class AzureAdvisorEnrichmentSource:
         recommendations: Sequence[Any],
     ) -> AdvisorEnrichments:
         try:
-            recommendation_rows = tuple(_mapping(getattr(item, "payload", item)) for item in recommendations)
+            recommendation_rows = tuple(
+                _mapping(getattr(item, "payload", item)) for item in recommendations
+            )
             if any(not row for row in recommendation_rows):
                 raise ValueError("Advisor recommendation has an unsupported shape")
-            metadata_rows = _rows(self.metadata_source.acquire(context), "Advisor metadata")
+            metadata_rows = _rows(
+                self.metadata_source.acquire(context), "Advisor metadata"
+            )
             resource_ids: list[str] = []
             seen_resource_ids: set[str] = set()
             for recommendation in recommendation_rows:
@@ -152,7 +172,9 @@ class AzureAdvisorEnrichmentSource:
         except AdvisorEnrichmentError:
             raise
         except Exception as exc:
-            raise AdvisorEnrichmentError("advisor enrichment source acquisition failed") from exc
+            raise AdvisorEnrichmentError(
+                "advisor enrichment source acquisition failed"
+            ) from exc
 
 
 __all__ = ["AdvisorEnrichmentError", "AzureAdvisorEnrichmentSource"]

@@ -10,9 +10,8 @@ import requests
 from requests import Session
 from requests.exceptions import RequestException, Timeout
 
-from .azure_auth import AccessTokenProvider
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
-
+from .azure_auth import AccessTokenProvider
 
 RETRYABLE_STATUS_CODES = frozenset({408, 429, 500, 502, 503, 504})
 
@@ -104,12 +103,20 @@ class ArmHttpClient:
             payload = self.get_json(current_url, current_params, run_id=run_id)
             current_params = None
             raw_items = payload.get(items_key, [])
-            if not isinstance(raw_items, list) or any(not isinstance(item, Mapping) for item in raw_items):
-                raise ArmHttpError(f"unsupported {items_key} response shape from {_safe_url(current_url)}")
+            if not isinstance(raw_items, list) or any(
+                not isinstance(item, Mapping) for item in raw_items
+            ):
+                raise ArmHttpError(
+                    f"unsupported {items_key} response shape from {_safe_url(current_url)}"
+                )
             next_url = payload.get("nextLink")
             if next_url is not None and not isinstance(next_url, str):
-                raise ArmHttpError(f"unsupported continuation shape from {_safe_url(current_url)}")
-            pages.append(ArmPageEnvelope(current_url, tuple(raw_items), next_url or None))
+                raise ArmHttpError(
+                    f"unsupported continuation shape from {_safe_url(current_url)}"
+                )
+            pages.append(
+                ArmPageEnvelope(current_url, tuple(raw_items), next_url or None)
+            )
             current_url = next_url or None
         return tuple(pages)
 
@@ -141,7 +148,9 @@ class ArmHttpClient:
             except Timeout as exc:
                 raise ArmHttpError(f"ARM request timeout for {_safe_url(url)}") from exc
             except RequestException as exc:
-                raise ArmHttpError(f"ARM transport failure for {_safe_url(url)}") from exc
+                raise ArmHttpError(
+                    f"ARM transport failure for {_safe_url(url)}"
+                ) from exc
             status = int(getattr(response, "status_code", 0))
             if status in RETRYABLE_STATUS_CODES and attempt < self._retry_attempts:
                 self._observer.emit(
@@ -163,13 +172,24 @@ class ArmHttpClient:
                 continue
             if status < 200 or status >= 300:
                 if status in RETRYABLE_STATUS_CODES:
-                    raise ArmHttpError(f"ARM request retry budget exhausted for {_safe_url(url)}")
-                raise ArmHttpError(f"ARM request returned HTTP {status} for {_safe_url(url)}")
+                    raise ArmHttpError(
+                        f"ARM request retry budget exhausted for {_safe_url(url)}"
+                    )
+                raise ArmHttpError(
+                    f"ARM request returned HTTP {status} for {_safe_url(url)}"
+                )
             try:
                 return response.json()
             except (ValueError, TypeError) as exc:
-                raise ArmHttpError(f"malformed JSON response from {_safe_url(url)}") from exc
+                raise ArmHttpError(
+                    f"malformed JSON response from {_safe_url(url)}"
+                ) from exc
         raise ArmHttpError("ARM request retry budget exhausted")
 
 
-__all__ = ["ArmHttpClient", "ArmHttpError", "ArmPageEnvelope", "RepeatedContinuationError"]
+__all__ = [
+    "ArmHttpClient",
+    "ArmHttpError",
+    "ArmPageEnvelope",
+    "RepeatedContinuationError",
+]

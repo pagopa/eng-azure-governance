@@ -3,11 +3,13 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import AcquisitionReceipt
 from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
     stage_candidate,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.codecs import decode_tsv, encode_tsv
+from src.comitato.comitato_azure_retirements_v2.contracts.codecs import (
+    decode_tsv,
+    encode_tsv,
+)
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationError,
 )
@@ -49,8 +51,13 @@ def test_stage_rereads_and_validates_mutated_tsv_header(tmp_path: Path) -> None:
             ),
         )
 
-    assert raised.value.diagnostics[0].artifact == "01_azure_advisor_retirements_raw.tsv"
-    assert raised.value.diagnostics[0].code in {"invalid_staged_header", "staged_bytes_changed"}
+    assert (
+        raised.value.diagnostics[0].artifact == "01_azure_advisor_retirements_raw.tsv"
+    )
+    assert raised.value.diagnostics[0].code in {
+        "invalid_staged_header",
+        "staged_bytes_changed",
+    }
 
 
 def test_stage_rejects_missing_and_extra_payload_files(tmp_path: Path) -> None:
@@ -69,7 +76,9 @@ def test_stage_rejects_missing_and_extra_payload_files(tmp_path: Path) -> None:
         stage_candidate(candidate, tmp_path, staged_byte_mutator=add_payload)
 
 
-def test_stage_rejects_mutated_jsonl_reference_and_changed_measured_hash(tmp_path: Path) -> None:
+def test_stage_rejects_mutated_jsonl_reference_and_changed_measured_hash(
+    tmp_path: Path,
+) -> None:
     candidate = empty_candidate()
 
     def mutate_reference(generation: Path) -> None:
@@ -85,7 +94,9 @@ def test_stage_rejects_mutated_jsonl_reference_and_changed_measured_hash(tmp_pat
     assert "raw_pair_bijection_failed" in codes or "invalid_staged_jsonl" in codes
 
 
-def test_stage_reports_exact_diagnostics_for_malformed_advisor_jsonl(tmp_path: Path) -> None:
+def test_stage_reports_exact_diagnostics_for_malformed_advisor_jsonl(
+    tmp_path: Path,
+) -> None:
     candidate = empty_candidate()
 
     with pytest.raises(PublicationError) as raised:
@@ -102,13 +113,30 @@ def test_stage_reports_exact_diagnostics_for_malformed_advisor_jsonl(tmp_path: P
         (item.code, item.artifact, item.stage, item.report)
         for item in raised.value.diagnostics
     ] == [
-        ("invalid_staged_header", "01_azure_advisor_retirements_raw.tsv", "staging", "all"),
-        ("invalid_staged_jsonl", "01_azure_advisor_retirements_raw.jsonl", "staging", "all"),
-        ("staged_bytes_changed", "01_azure_advisor_retirements_raw.jsonl", "staging", "all"),
+        (
+            "invalid_staged_header",
+            "01_azure_advisor_retirements_raw.tsv",
+            "staging",
+            "all",
+        ),
+        (
+            "invalid_staged_jsonl",
+            "01_azure_advisor_retirements_raw.jsonl",
+            "staging",
+            "all",
+        ),
+        (
+            "staged_bytes_changed",
+            "01_azure_advisor_retirements_raw.jsonl",
+            "staging",
+            "all",
+        ),
     ]
 
 
-def test_stage_rejects_incomplete_acquisition_and_reports_no_success_manifest(tmp_path: Path) -> None:
+def test_stage_rejects_incomplete_acquisition_and_reports_no_success_manifest(
+    tmp_path: Path,
+) -> None:
     candidate = empty_candidate()
     incomplete = replace(
         candidate,
@@ -128,7 +156,9 @@ def test_stage_rejects_incomplete_acquisition_and_reports_no_success_manifest(tm
     assert not list((tmp_path / ".staging").glob("*/publication-manifest.json"))
 
 
-def test_stage_returns_validated_generation_and_manifest_uses_measured_facts(tmp_path: Path) -> None:
+def test_stage_returns_validated_generation_and_manifest_uses_measured_facts(
+    tmp_path: Path,
+) -> None:
     candidate = empty_candidate()
     candidate = replace(
         candidate,
@@ -146,7 +176,13 @@ def test_stage_returns_validated_generation_and_manifest_uses_measured_facts(tmp
         "program_revision": "0.1.0",
     }
     for measured in staged.artifacts:
-        assert measured.bytes == len((staged.generation_dir / measured.logical_path).read_bytes())
-        manifest_item = next(item for item in staged.manifest["artifacts"] if item["path"] == measured.logical_path)
+        assert measured.bytes == len(
+            (staged.generation_dir / measured.logical_path).read_bytes()
+        )
+        manifest_item = next(
+            item
+            for item in staged.manifest["artifacts"]
+            if item["path"] == measured.logical_path
+        )
         assert manifest_item["bytes"] == measured.bytes
         assert manifest_item["sha256"] == measured.digest

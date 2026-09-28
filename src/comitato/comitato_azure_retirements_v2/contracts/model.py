@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from hashlib import sha256
 from typing import Any, Generic, Mapping, Protocol, TypeVar
 
 from ..domain.diagnostics import ValidationResult
 from ..domain.execution import RunContext
-
 
 T = TypeVar("T")
 
@@ -49,16 +48,12 @@ class Contract(Protocol[T]):
     path: str
     schema_version: int
 
-    def empty_artifact(self, context: RunContext) -> Artifact[T]:
-        ...
+    def empty_artifact(self, context: RunContext) -> Artifact[T]: ...
 
-    def encode(self, artifact: Artifact[T]) -> EncodedArtifact:
-        ...
+    def encode(self, artifact: Artifact[T]) -> EncodedArtifact: ...
 
-    def decode(self, data: bytes) -> Artifact[Mapping[str, str]]:
-        ...
+    def decode(self, data: bytes) -> Artifact[Mapping[str, str]]: ...
 
     def validate(
         self, artifact: Artifact[T], context: RunContext
-    ) -> ValidationResult[Artifact[T]]:
-        ...
+    ) -> ValidationResult[Artifact[T]]: ...

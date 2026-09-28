@@ -16,7 +16,6 @@ from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
 
-
 EXPECTED_PATHS = {
     ReportSelector.ALL: (
         "01_azure_advisor_retirements_raw.tsv",
@@ -51,7 +50,9 @@ def _context(run_id: str = "run-1", as_of_date: date = date(2026, 7, 30)) -> Run
     )
 
 
-def _artifact(path: str, *, run_id: str = "run-1", as_of_date: str = "2026-07-30") -> EncodedArtifact:
+def _artifact(
+    path: str, *, run_id: str = "run-1", as_of_date: str = "2026-07-30"
+) -> EncodedArtifact:
     if path.endswith(".jsonl"):
         data = (
             '{"as_of_date":"%s","raw_record_ref":"ref-1","run_id":"%s"}\n'
@@ -59,16 +60,16 @@ def _artifact(path: str, *, run_id: str = "run-1", as_of_date: str = "2026-07-30
         ).encode()
         media_type = "application/x-ndjson"
     else:
-        data = ("schema_version\trun_id\tas_of_date\n1\t%s\t%s\n" % (run_id, as_of_date)).encode()
+        data = (
+            "schema_version\trun_id\tas_of_date\n1\t%s\t%s\n" % (run_id, as_of_date)
+        ).encode()
         media_type = "text/tab-separated-values"
     return EncodedArtifact(path, data, 1, media_type, 1, run_id)
 
 
 def test_selected_set_uses_catalog_publication_paths():
     plan = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
-    assert plan.expected_paths == (
-        "03_azure_retirements_slide.tsv",
-    )
+    assert plan.expected_paths == ("03_azure_retirements_slide.tsv",)
 
 
 def test_selected_set_rejects_mixed_run_ids_and_evaluation_dates() -> None:

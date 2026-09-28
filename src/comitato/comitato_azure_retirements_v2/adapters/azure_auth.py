@@ -10,8 +10,7 @@ from typing import Protocol
 
 
 class AccessTokenProvider(Protocol):
-    def get_token(self) -> str:
-        ...
+    def get_token(self) -> str: ...
 
 
 class AzureCliTokenProvider:
@@ -26,7 +25,9 @@ class AzureCliTokenProvider:
             return explicit
         executable = shutil.which("az")
         if not executable:
-            raise RuntimeError("Azure authentication requires az CLI or AZURE_BEARER_TOKEN")
+            raise RuntimeError(
+                "Azure authentication requires az CLI or AZURE_BEARER_TOKEN"
+            )
         try:
             result = subprocess.run(
                 [
@@ -44,7 +45,12 @@ class AzureCliTokenProvider:
             )
             payload = json.loads(result.stdout)
             token = payload.get("accessToken", "") if isinstance(payload, dict) else ""
-        except (OSError, subprocess.SubprocessError, ValueError, json.JSONDecodeError) as exc:
+        except (
+            OSError,
+            subprocess.SubprocessError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as exc:
             raise RuntimeError("Azure authentication failed") from exc
         if not isinstance(token, str) or not token.strip():
             raise RuntimeError("Azure authentication returned no usable token")

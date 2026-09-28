@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from typing import Generic, TypeVar
 
 
@@ -55,7 +55,9 @@ def sort_diagnostics(
 
 def diagnostics_jsonl(diagnostics: tuple[Diagnostic, ...] | list[Diagnostic]) -> bytes:
     return b"".join(
-        (json.dumps(item.to_dict(), sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+        (
+            json.dumps(item.to_dict(), sort_keys=True, separators=(",", ":")) + "\n"
+        ).encode("utf-8")
         for item in sort_diagnostics(diagnostics)
     )
 

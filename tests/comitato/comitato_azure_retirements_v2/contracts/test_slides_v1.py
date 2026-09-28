@@ -1,7 +1,9 @@
 import json
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import HEADER as AGGREGATE_HEADER
+from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
+    HEADER as AGGREGATE_HEADER,
+)
 from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
 from src.comitato.comitato_azure_retirements_v2.contracts.slides_v1 import (
     HEADER,
@@ -15,8 +17,10 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.slides import project_slides, select_slides
-
+from src.comitato.comitato_azure_retirements_v2.domain.slides import (
+    project_slides,
+    select_slides,
+)
 
 ADVISOR_LINK = "https://portal.azure.com/#view/Microsoft_Azure_Expert/RecommendationListBlade/recommendationTypeId/"
 
@@ -57,13 +61,26 @@ def aggregate_row(
             "retirement_date": retirement_date,
             "retirement_date_quality": quality,
             "retirement_dates_json": json.dumps(
-                claims if claims is not None else [{"date": retirement_date, "quality": "exact"}]
+                claims
+                if claims is not None
+                else [{"date": retirement_date, "quality": "exact"}]
             ),
-            "date_events_json": json.dumps([
-                {"date": claim.get("date", retirement_date), "kind": "retirement", "source": "advisor"}
-                for claim in (claims if claims is not None else [{"date": retirement_date, "quality": "exact"}])
-                if claim.get("date", retirement_date) and claim.get("quality", "exact") == "exact"
-            ]),
+            "date_events_json": json.dumps(
+                [
+                    {
+                        "date": claim.get("date", retirement_date),
+                        "kind": "retirement",
+                        "source": "advisor",
+                    }
+                    for claim in (
+                        claims
+                        if claims is not None
+                        else [{"date": retirement_date, "quality": "exact"}]
+                    )
+                    if claim.get("date", retirement_date)
+                    and claim.get("quality", "exact") == "exact"
+                ]
+            ),
             "retirement_date_sources_json": '["structured"]',
             "source_systems_json": '["azure-advisor"]',
             "technology_or_service": "Compute",
@@ -79,7 +96,9 @@ def aggregate_row(
 
 
 def aggregate_artifact(*rows: dict[str, str]) -> Artifact:
-    from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import AggregateRecord
+    from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
+        AggregateRecord,
+    )
 
     return Artifact(
         contract="aggregate",
@@ -91,18 +110,34 @@ def aggregate_artifact(*rows: dict[str, str]) -> Artifact:
 
 def test_slides_v1_has_exact_utf8_header_and_empty_artifact() -> None:
     assert HEADER == (
-        "id_elemento", "titolo_breve", "descrizione_breve", "comitato_priorità",
-        "impatto_microsoft", "comitato_descrizione", "comitato_retirement_date",
-        "comitato_piattaforme", "retirement_date", "stato_data", "giorni_ritardo",
-        "descrizione_originale_completa", "azione_originale", "fonti", "link_fonti",
-        "ambito_impatto", "id_advisor", "id_service_health", "risorse_json",
+        "id_elemento",
+        "titolo_breve",
+        "descrizione_breve",
+        "comitato_priorità",
+        "impatto_microsoft",
+        "comitato_descrizione",
+        "comitato_retirement_date",
+        "comitato_piattaforme",
+        "retirement_date",
+        "stato_data",
+        "giorni_ritardo",
+        "descrizione_originale_completa",
+        "azione_originale",
+        "fonti",
+        "link_fonti",
+        "ambito_impatto",
+        "id_advisor",
+        "id_service_health",
+        "risorse_json",
     )
     assert SLIDES_V1.encode(SLIDES_V1.empty_artifact(context())).data == (
         "\t".join(HEADER) + "\n"
     ).encode("utf-8")
 
 
-def test_project_slides_emits_committee_projection_and_leaves_external_fields_empty() -> None:
+def test_project_slides_emits_committee_projection_and_leaves_external_fields_empty() -> (
+    None
+):
     aggregate = aggregate_artifact(aggregate_row("aggregate-1", "2027-01-01"))
 
     result = project_slides(aggregate, context())
@@ -137,7 +172,11 @@ def test_project_slides_orders_by_date_then_id_and_rejects_no_duplicates() -> No
 
     assert result.is_valid
     assert result.value is not None
-    assert [row["stato_data"] for row in result.value.records] == ["In scadenza", "In scadenza", "In scadenza"]
+    assert [row["stato_data"] for row in result.value.records] == [
+        "In scadenza",
+        "In scadenza",
+        "In scadenza",
+    ]
     assert len({row["id_elemento"] for row in result.value.records}) == 3
 
 
@@ -161,7 +200,12 @@ def test_selection_preserves_every_temporal_category_outside_the_slide_view() ->
         aggregate_row("beyond", "2027-07-31"),
         aggregate_row("missing", "", quality="missing", claims=[]),
         aggregate_row("invalid", "not-a-date", quality="invalid", claims=[]),
-        aggregate_row("partial", "", quality="partial", claims=[{"raw_value": "2027", "quality": "partial"}]),
+        aggregate_row(
+            "partial",
+            "",
+            quality="partial",
+            claims=[{"raw_value": "2027", "quality": "partial"}],
+        ),
         aggregate_row(
             "conflict",
             "",
@@ -177,7 +221,10 @@ def test_selection_preserves_every_temporal_category_outside_the_slide_view() ->
     assert len(aggregate.records) == 7
     assert len(result.value.artifact.records) == 6
     assert {row["stato_data"] for row in result.value.artifact.records} == {
-        "In scadenza", "Scaduta", "Date discordanti", "Data non disponibile"
+        "In scadenza",
+        "Scaduta",
+        "Date discordanti",
+        "Data non disponibile",
     }
     assert set(result.value.excluded_by_reason) == {"beyond_committee_window"}
 
@@ -189,16 +236,24 @@ def test_projection_uses_problem_titles_and_renders_source_singletons() -> None:
     row["problem_titles_json"] = '["Retire SDK"]'
     row["advisor_impacts_json"] = '["High"]'
     row["advisor_recommendation_type_ids_json"] = '["advisor-type-1"]'
-    row["date_events_json"] = '[{"date":"2027-01-01","kind":"retirement","source":"advisor"}]'
+    row["date_events_json"] = (
+        '[{"date":"2027-01-01","kind":"retirement","source":"advisor"}]'
+    )
     row["advisor_problem_descriptions_json"] = '["Advisor body"]'
     row["advisor_actions_json"] = '["Update SDK"]'
     row["service_health_problem_descriptions_json"] = '["Health body"]'
     row["service_health_actions_json"] = '["Migrate"]'
     row["source_systems_json"] = '["azure-advisor", "azure-service-health"]'
-    row["source_links_json"] = '["https://example.invalid/advisor", "https://example.invalid/health"]'
+    row["source_links_json"] = (
+        '["https://example.invalid/advisor", "https://example.invalid/health"]'
+    )
     row["platforms_json"] = '["Platform A"]'
-    row["platforms_subscriptions_json"] = '{"Platform A":[{"subscription_id":"11111111-1111-1111-1111-111111111111","subscription_name":"Subscription A"}]}'
-    row["published_resource_ids_json"] = '["/subscriptions/111/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"]'
+    row["platforms_subscriptions_json"] = (
+        '{"Platform A":[{"subscription_id":"11111111-1111-1111-1111-111111111111","subscription_name":"Subscription A"}]}'
+    )
+    row["published_resource_ids_json"] = (
+        '["/subscriptions/111/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"]'
+    )
     row["provenance_json"] = json.dumps({"raw_record_refs": ["raw-aggregate-1"]})
 
     result = project_slides(aggregate_artifact(row), context())
@@ -220,13 +275,15 @@ def test_projection_uses_problem_titles_and_renders_source_singletons() -> None:
 
 def test_projection_renders_structured_actions_as_readable_source_text() -> None:
     row = aggregate_row("aggregate-actions", "2027-01-01")
-    row["advisor_actions_json"] = json.dumps([
-        {
-            "caption": "Migrate the workload",
-            "label": "Open migration guidance",
-            "learnMoreLink": "https://example.invalid/action",
-        }
-    ])
+    row["advisor_actions_json"] = json.dumps(
+        [
+            {
+                "caption": "Migrate the workload",
+                "label": "Open migration guidance",
+                "learnMoreLink": "https://example.invalid/action",
+            }
+        ]
+    )
 
     result = project_slides(aggregate_artifact(row), context())
 
@@ -270,9 +327,11 @@ def test_thirteen_advisor_records_of_one_type_become_one_stable_slide_row() -> N
         row["advisor_recommendation_type_ids_json"] = '["advisor-type-1"]'
         row["problem_titles_json"] = '["One retirement problem"]'
         row["advisor_impacts_json"] = '["High"]'
-        row["date_events_json"] = json.dumps([
-            {"date": "2027-01-01", "kind": "retirement", "source": "advisor"},
-        ])
+        row["date_events_json"] = json.dumps(
+            [
+                {"date": "2027-01-01", "kind": "retirement", "source": "advisor"},
+            ]
+        )
         rows.append(row)
 
     result = project_slides(aggregate_artifact(*rows), context())
@@ -281,7 +340,10 @@ def test_thirteen_advisor_records_of_one_type_become_one_stable_slide_row() -> N
     assert result.value is not None
     assert len(result.value.records) == 1
     slide = result.value.records[0]
-    assert slide["id_elemento"] == "azure-retirement:v2:371255663d32dcbb300a4458cce2c28f710721e49c23ab37669141f932c38ae0"
+    assert (
+        slide["id_elemento"]
+        == "azure-retirement:v2:371255663d32dcbb300a4458cce2c28f710721e49c23ab37669141f932c38ae0"
+    )
     assert slide["id_advisor"] == ADVISOR_LINK + "advisor-type-1"
     assert slide["descrizione_breve"] == "One retirement problem"
 
@@ -294,15 +356,20 @@ def test_service_health_group_uses_tracking_key_and_keeps_impact_empty() -> None
     row["service_health_event_ids_json"] = '["event-1"]'
     row["service_health_tracking_ids_json"] = '["track-1"]'
     row["problem_titles_json"] = '["Storage notice"]'
-    row["date_events_json"] = json.dumps([
-        {"date": "2027-03-01", "kind": "retirement", "source": "service-health"},
-    ])
+    row["date_events_json"] = json.dumps(
+        [
+            {"date": "2027-03-01", "kind": "retirement", "source": "service-health"},
+        ]
+    )
 
     result = project_slides(aggregate_artifact(row), context())
 
     assert result.is_valid and result.value is not None
     slide = result.value.records[0]
-    assert slide["id_elemento"] == "azure-retirement:v2:22a79fff2c46c18d6c03cbbd0a39addef718022f4fe8c7f4b5b19c3f8da49940"
+    assert (
+        slide["id_elemento"]
+        == "azure-retirement:v2:22a79fff2c46c18d6c03cbbd0a39addef718022f4fe8c7f4b5b19c3f8da49940"
+    )
     assert slide["id_service_health"] == "https://app.azure.com/h/track-1"
     assert slide["impatto_microsoft"] == ""
     assert slide["descrizione_breve"] == "Storage notice"
@@ -316,10 +383,13 @@ def _typed_row(aggregate_id: str, events: list[dict[str, str]]) -> dict[str, str
 
 
 def test_metadata_date_that_differs_from_recommendation_is_a_conflict() -> None:
-    row = _typed_row("aks", [
-        {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
-        {"date": "2026-03-31", "kind": "retirement_metadata", "source": "advisor"},
-    ])
+    row = _typed_row(
+        "aks",
+        [
+            {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
+            {"date": "2026-03-31", "kind": "retirement_metadata", "source": "advisor"},
+        ],
+    )
 
     slide = project_slides(aggregate_artifact(row), context()).value.records[0]
 
@@ -333,8 +403,14 @@ def test_metadata_date_that_differs_from_recommendation_is_a_conflict() -> None:
 
 def test_image_removal_dates_use_the_nearest_without_conflict() -> None:
     rows = (
-        _typed_row("image-a", [{"date": "2026-07-20", "kind": "image_removal", "source": "advisor"}]),
-        _typed_row("image-b", [{"date": "2027-01-12", "kind": "image_removal", "source": "advisor"}]),
+        _typed_row(
+            "image-a",
+            [{"date": "2026-07-20", "kind": "image_removal", "source": "advisor"}],
+        ),
+        _typed_row(
+            "image-b",
+            [{"date": "2027-01-12", "kind": "image_removal", "source": "advisor"}],
+        ),
     )
 
     slide = project_slides(aggregate_artifact(*rows), context()).value.records[0]
@@ -347,9 +423,14 @@ def test_image_removal_dates_use_the_nearest_without_conflict() -> None:
     )
 
 
-def test_updates_keep_only_oldest_and_latest_per_source_and_do_not_drive_status() -> None:
+def test_updates_keep_only_oldest_and_latest_per_source_and_do_not_drive_status() -> (
+    None
+):
     rows = tuple(
-        _typed_row(f"update-{day}", [{"date": f"2026-05-{day}", "kind": "last_updated", "source": "advisor"}])
+        _typed_row(
+            f"update-{day}",
+            [{"date": f"2026-05-{day}", "kind": "last_updated", "source": "advisor"}],
+        )
         for day in ("01", "10", "20")
     )
 
@@ -363,29 +444,48 @@ def test_updates_keep_only_oldest_and_latest_per_source_and_do_not_drive_status(
 
 
 def test_slides_order_by_deadline_not_by_first_listed_date() -> None:
-    later = _typed_row("later", [
-        {"date": "2026-01-01", "kind": "last_updated", "source": "advisor"},
-        {"date": "2027-06-01", "kind": "retirement", "source": "advisor"},
-    ])
+    later = _typed_row(
+        "later",
+        [
+            {"date": "2026-01-01", "kind": "last_updated", "source": "advisor"},
+            {"date": "2027-06-01", "kind": "retirement", "source": "advisor"},
+        ],
+    )
     sooner = aggregate_row("sooner", "2026-12-01")
     sooner["advisor_recommendation_type_ids_json"] = '["type-2"]'
 
     records = project_slides(aggregate_artifact(later, sooner), context()).value.records
 
-    assert [row["retirement_date"][:10] for row in records] == ["2026-12-01", "2026-01-01"]
+    assert [row["retirement_date"][:10] for row in records] == [
+        "2026-12-01",
+        "2026-01-01",
+    ]
 
 
 def test_impact_scope_counts_environments_and_compact_resources() -> None:
     row = aggregate_row("impact-aggregate", "2027-01-01")
     entries = [
         {"subscription_id": f"sub-{index}", "subscription_name": name}
-        for index, name in enumerate(("PROD-east", "UAT-test", "DEV-lab", "shared"), start=1)
+        for index, name in enumerate(
+            ("PROD-east", "UAT-test", "DEV-lab", "shared"), start=1
+        )
     ]
     row["platforms_subscriptions_json"] = json.dumps({"Platform A": entries})
-    row["affected_subscription_names_json"] = json.dumps([entry["subscription_name"] for entry in entries])
+    row["affected_subscription_names_json"] = json.dumps(
+        [entry["subscription_name"] for entry in entries]
+    )
     row["impacted_services_json"] = '["Storage"]'
     row["impacted_regions_json"] = '["westeurope"]'
-    evidence = [[f"sub-{index}", f"vm-{index}", "rg", f"/subscriptions/sub-{index}/resourceGroups/rg/providers/x/vm-{index}", "matched"] for index in range(1, 5)]
+    evidence = [
+        [
+            f"sub-{index}",
+            f"vm-{index}",
+            "rg",
+            f"/subscriptions/sub-{index}/resourceGroups/rg/providers/x/vm-{index}",
+            "matched",
+        ]
+        for index in range(1, 5)
+    ]
     row["provenance_json"] = json.dumps({"resource_evidence": evidence})
 
     result = project_slides(aggregate_artifact(row), context())
@@ -401,4 +501,7 @@ def test_impact_scope_counts_environments_and_compact_resources() -> None:
         "regioni": ["westeurope"],
         "piattaforme": {"Platform A": {"subscription": 4, "risorse": 4}},
     }
-    assert slide["risorse_json"] == '{"Platform A":{"DEV-lab":{"rg":["vm-3"]},"PROD-east":{"rg":["vm-1"]},"UAT-test":{"rg":["vm-2"]},"shared":{"rg":["vm-4"]}}}'
+    assert (
+        slide["risorse_json"]
+        == '{"Platform A":{"DEV-lab":{"rg":["vm-3"]},"PROD-east":{"rg":["vm-1"]},"UAT-test":{"rg":["vm-2"]},"shared":{"rg":["vm-4"]}}}'
+    )

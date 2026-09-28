@@ -3,8 +3,8 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
-from dataclasses import asdict, dataclass, is_dataclass
 from collections.abc import Mapping
+from dataclasses import asdict, dataclass, is_dataclass
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -33,7 +33,13 @@ class _ValidatedStagedGeneration:
     artifacts: tuple[EncodedArtifact, ...]
 
 
-def _error(code: str, candidate: PublicationCandidate, *, artifact: str = "", message: str | None = None) -> PublicationError:
+def _error(
+    code: str,
+    candidate: PublicationCandidate,
+    *,
+    artifact: str = "",
+    message: str | None = None,
+) -> PublicationError:
     diagnostic = Diagnostic(
         severity="error",
         code=code,
@@ -46,7 +52,9 @@ def _error(code: str, candidate: PublicationCandidate, *, artifact: str = "", me
     return PublicationError(diagnostic)
 
 
-def _fsync_file(path: Path, data: bytes, fault_injector: Any = None, logical_path: str = "") -> None:
+def _fsync_file(
+    path: Path, data: bytes, fault_injector: Any = None, logical_path: str = ""
+) -> None:
     with path.open("wb") as handle:
         handle.write(data)
         if fault_injector:
@@ -66,7 +74,9 @@ def _decode_and_validate(
 ) -> tuple[Diagnostic, ...]:
     diagnostics: list[Diagnostic] = []
     payloads = {artifact.logical_path: artifact.data for artifact in artifacts}
-    original_by_path = {artifact.logical_path: artifact for artifact in candidate.artifacts}
+    original_by_path = {
+        artifact.logical_path: artifact for artifact in candidate.artifacts
+    }
     for artifact in artifacts:
         target = generation_dir / PurePosixPath(artifact.logical_path)
         try:
@@ -81,12 +91,20 @@ def _decode_and_validate(
                     ).diagnostics[0]
                 )
         except OSError:
-            diagnostics.append(_error("staged_artifact_missing", candidate, artifact=artifact.logical_path).diagnostics[0])
+            diagnostics.append(
+                _error(
+                    "staged_artifact_missing", candidate, artifact=artifact.logical_path
+                ).diagnostics[0]
+            )
             continue
         try:
             definition = candidate.report_closure.owner_of(artifact.logical_path)
         except KeyError:
-            diagnostics.append(_error("undeclared_artifact", candidate, artifact=artifact.logical_path).diagnostics[0])
+            diagnostics.append(
+                _error(
+                    "undeclared_artifact", candidate, artifact=artifact.logical_path
+                ).diagnostics[0]
+            )
             continue
         try:
             diagnostics.extend(
@@ -95,11 +113,22 @@ def _decode_and_validate(
                 )
             )
         except StagedDecodeFailure as exc:
-            diagnostics.append(_error("invalid_staged_header" if exc.logical_path.endswith(".tsv") else "invalid_staged_jsonl", candidate, artifact=exc.logical_path, message="staged bytes do not satisfy the owning contract").diagnostics[0])
+            diagnostics.append(
+                _error(
+                    "invalid_staged_header"
+                    if exc.logical_path.endswith(".tsv")
+                    else "invalid_staged_jsonl",
+                    candidate,
+                    artifact=exc.logical_path,
+                    message="staged bytes do not satisfy the owning contract",
+                ).diagnostics[0]
+            )
     return tuple(diagnostics)
 
 
-def _measured_artifacts(candidate: PublicationCandidate, generation_dir: Path, fault_injector: Any = None) -> tuple[EncodedArtifact, ...]:
+def _measured_artifacts(
+    candidate: PublicationCandidate, generation_dir: Path, fault_injector: Any = None
+) -> tuple[EncodedArtifact, ...]:
     measured: list[EncodedArtifact] = []
     for artifact in candidate.artifacts:
         target = generation_dir / PurePosixPath(artifact.logical_path)
@@ -114,18 +143,22 @@ def _measured_artifacts(candidate: PublicationCandidate, generation_dir: Path, f
             rows = artifact.rows
         if fault_injector:
             fault_injector("hash", artifact.logical_path)
-        measured.append(EncodedArtifact(
-            logical_path=artifact.logical_path,
-            data=data,
-            rows=rows,
-            media_type=artifact.media_type,
-            schema_version=artifact.schema_version,
-            run_id=artifact.run_id,
-        ))
+        measured.append(
+            EncodedArtifact(
+                logical_path=artifact.logical_path,
+                data=data,
+                rows=rows,
+                media_type=artifact.media_type,
+                schema_version=artifact.schema_version,
+                run_id=artifact.run_id,
+            )
+        )
     return tuple(measured)
 
 
-def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact, ...]) -> dict[str, Any]:
+def _manifest(
+    candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact, ...]
+) -> dict[str, Any]:
     artifact_entries = [
         {
             "bytes": len(artifact.data),
@@ -151,47 +184,68 @@ def _manifest(candidate: PublicationCandidate, artifacts: tuple[EncodedArtifact,
                 for item in getattr(acquisition, "accounting", ())
             ],
         }
-        for acquisition in sorted(candidate.acquisitions, key=lambda item: item.receipt.source)
+        for acquisition in sorted(
+            candidate.acquisitions, key=lambda item: item.receipt.source
+        )
     ]
-    expected = sum(item.receipt.expected_subscriptions for item in candidate.acquisitions)
-    completed = sum(item.receipt.completed_subscriptions for item in candidate.acquisitions)
+    expected = sum(
+        item.receipt.expected_subscriptions for item in candidate.acquisitions
+    )
+    completed = sum(
+        item.receipt.completed_subscriptions for item in candidate.acquisitions
+    )
     context = candidate.context
     manifest = dict(candidate.manifest_metadata or {})
-    manifest.update({
-        "acquisition": {
-            "completed_subscriptions": completed,
-            "expected_subscriptions": expected,
-            "sources": sources,
+    manifest.update(
+        {
+            "acquisition": {
+                "completed_subscriptions": completed,
+                "expected_subscriptions": expected,
+                "sources": sources,
+            },
+            "artifacts": artifact_entries,
+            "as_of_date": context.as_of_date.isoformat(),
+            "catalog": {
+                "schema_version": context.catalog_identity.schema_version,
+                "sha256": context.catalog_identity.sha256,
+            },
+            "created_at": context.created_at.isoformat().replace("+00:00", "Z"),
+            "dependency_closure": list(context.dependency_plan.stages),
+            "manifest_schema_version": 1,
+            "run_id": context.run_id,
+            "scope": {
+                "mode": context.scope.mode,
+                "subscription_ids": list(context.scope.subscription_ids),
+            },
+            "selector": context.request.selector.value,
+            "validation": {"error_count": 0, "status": "passed"},
+        }
+    )
+    manifest.setdefault(
+        "settings",
+        {
+            "committee_window_months": context.request.committee_window_months,
         },
-        "artifacts": artifact_entries,
-        "as_of_date": context.as_of_date.isoformat(),
-        "catalog": {
-            "schema_version": context.catalog_identity.schema_version,
-            "sha256": context.catalog_identity.sha256,
+    )
+    manifest.setdefault(
+        "derivation",
+        {
+            "mode": "live",
+            "program_revision": __version__,
         },
-        "created_at": context.created_at.isoformat().replace("+00:00", "Z"),
-        "dependency_closure": list(context.dependency_plan.stages),
-        "manifest_schema_version": 1,
-        "run_id": context.run_id,
-        "scope": {
-            "mode": context.scope.mode,
-            "subscription_ids": list(context.scope.subscription_ids),
+    )
+    manifest.setdefault(
+        "saved_inputs",
+        candidate.saved_inputs
+        or {
+            "schema_version": 1,
+            "source_acquisitions": [
+                _saved_acquisition(acquisition)
+                for acquisition in candidate.acquisitions
+            ],
+            "publication_settings": dict(manifest.get("settings", {})),
         },
-        "selector": context.request.selector.value,
-        "validation": {"error_count": 0, "status": "passed"},
-    })
-    manifest.setdefault("settings", {
-        "committee_window_months": context.request.committee_window_months,
-    })
-    manifest.setdefault("derivation", {
-        "mode": "live",
-        "program_revision": __version__,
-    })
-    manifest.setdefault("saved_inputs", candidate.saved_inputs or {
-        "schema_version": 1,
-        "source_acquisitions": [_saved_acquisition(acquisition) for acquisition in candidate.acquisitions],
-        "publication_settings": dict(manifest.get("settings", {})),
-    })
+    )
     if isinstance(manifest["saved_inputs"], Mapping):
         manifest["saved_inputs"] = dict(manifest["saved_inputs"])
         manifest["saved_inputs"].pop("editorial_catalog", None)
@@ -222,7 +276,9 @@ def _saved_acquisition(acquisition: Any) -> dict[str, Any]:
         "records": _json_safe(getattr(acquisition, "records", ())),
         "companion_records": _json_safe(getattr(acquisition, "companion_records", ())),
         "accounting": _json_safe(getattr(acquisition, "accounting", ())),
-        "collection_context": _json_safe(getattr(acquisition, "collection_context", {})),
+        "collection_context": _json_safe(
+            getattr(acquisition, "collection_context", {})
+        ),
         "response_context": _json_safe(getattr(acquisition, "response_context", ())),
     }
 
@@ -246,11 +302,17 @@ def stage_candidate(
         raise PublicationError(selected_diagnostics[0])
     for acquisition in candidate.acquisitions:
         if not acquisition.receipt.is_complete:
-            raise _error("incomplete_acquisition", candidate, message=f"{acquisition.receipt.source} acquisition is incomplete")
+            raise _error(
+                "incomplete_acquisition",
+                candidate,
+                message=f"{acquisition.receipt.source} acquisition is incomplete",
+            )
     destination.mkdir(parents=True, exist_ok=True)
     staging_root = destination / ".staging"
     staging_root.mkdir(parents=True, exist_ok=True)
-    generation_dir = Path(tempfile.mkdtemp(prefix=f"{candidate.context.run_id}-", dir=staging_root))
+    generation_dir = Path(
+        tempfile.mkdtemp(prefix=f"{candidate.context.run_id}-", dir=staging_root)
+    )
     try:
         for artifact in candidate.artifacts:
             target = generation_dir / PurePosixPath(artifact.logical_path)
@@ -277,7 +339,9 @@ def stage_candidate(
         manifest = _manifest(candidate, measured)
         manifest_diagnostics = validate_manifest(candidate, manifest, measured)
         if manifest_diagnostics:
-            raise PublicationError("publication manifest validation failed", manifest_diagnostics)
+            raise PublicationError(
+                "publication manifest validation failed", manifest_diagnostics
+            )
         _fsync_file(
             generation_dir / "publication-manifest.json",
             PublicationManifest(manifest).to_bytes(),

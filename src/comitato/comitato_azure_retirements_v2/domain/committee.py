@@ -11,7 +11,6 @@ import yaml
 from ..contracts.slides_v1 import DATE_MEANING_TYPES, SlideRecord
 from .links import is_azure_portal_link
 
-
 _WRAPPED_FIELDS = frozenset({"comitato_descrizione", "descrizione_originale_completa"})
 _WRAP_WIDTH = 100
 
@@ -53,7 +52,9 @@ def load(path: Path) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def merge(old: Mapping[str, Any], rows: Sequence[Mapping[str, str]]) -> tuple[tuple[SlideRecord, ...], dict[str, Any]]:
+def merge(
+    old: Mapping[str, Any], rows: Sequence[Mapping[str, str]]
+) -> tuple[tuple[SlideRecord, ...], dict[str, Any]]:
     merged_rows = []
     updated: dict[str, Any] = {}
     for row in rows:
@@ -68,13 +69,16 @@ def merge(old: Mapping[str, Any], rows: Sequence[Mapping[str, str]]) -> tuple[tu
         values = dict(row)
         values["comitato_descrizione"] = committee_description
         values["comitato_retirement_date"] = committee_date
-        merged_rows.append(SlideRecord(tuple((key, str(value)) for key, value in values.items())))
+        merged_rows.append(
+            SlideRecord(tuple((key, str(value)) for key, value in values.items()))
+        )
         updated[item_id] = {
             "comitato_descrizione": committee_description,
             "comitato_retirement_date": committee_date,
             "descrizione_originale_completa": description,
             "link_fonti": [
-                value for value in str(row.get("link_fonti", "")).split("; ")
+                value
+                for value in str(row.get("link_fonti", "")).split("; ")
                 if value and not is_azure_portal_link(value)
             ],
             "retirement_date": _date_entries(str(row.get("retirement_date", ""))),
@@ -85,7 +89,9 @@ def merge(old: Mapping[str, Any], rows: Sequence[Mapping[str, str]]) -> tuple[tu
 def write(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        yaml.dump(dict(value), Dumper=_CommitteeDumper, allow_unicode=True, width=_WRAP_WIDTH),
+        yaml.dump(
+            dict(value), Dumper=_CommitteeDumper, allow_unicode=True, width=_WRAP_WIDTH
+        ),
         encoding="utf-8",
     )
 

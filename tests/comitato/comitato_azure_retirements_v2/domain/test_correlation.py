@@ -6,9 +6,14 @@ from src.comitato.comitato_azure_retirements_v2.domain.retirements import Source
 
 
 def event(source: str, identity: str, recommendation_type: str = "") -> SourceEvent:
-    row = {"recommendation_type_id": recommendation_type, "service_health_event_id": identity}
+    row = {
+        "recommendation_type_id": recommendation_type,
+        "service_health_event_id": identity,
+    }
     if source == "advisor" and recommendation_type:
-        row["provenance_json"] = '{"service_health_tracking_ids":["' + recommendation_type + '"]}'
+        row["provenance_json"] = (
+            '{"service_health_tracking_ids":["' + recommendation_type + '"]}'
+        )
     elif source == "service-health":
         row["tracking_id"] = recommendation_type
     return SourceEvent(
@@ -19,7 +24,9 @@ def event(source: str, identity: str, recommendation_type: str = "") -> SourceEv
     )
 
 
-def test_only_explicit_one_to_one_edges_merge_and_ambiguous_candidates_remain_separate() -> None:
+def test_only_explicit_one_to_one_edges_merge_and_ambiguous_candidates_remain_separate() -> (
+    None
+):
     advisor = event("advisor", "a", "type-1")
     health_one = event("service-health", "h1", "type-1")
     health_two = event("service-health", "h2", "type-1")
@@ -82,11 +89,17 @@ def test_native_advisor_tracking_id_links_one_health_event() -> None:
 
 def test_native_advisor_ash_url_links_health_by_its_tracking_id() -> None:
     advisor = SourceEvent(
-        key=("advisor", "a"), source="advisor", record_ref="ref-a",
-        row={"provenance_json": '{"service_health_ash_urls":["https://app.azure.com/h/track-8/"]}'},
+        key=("advisor", "a"),
+        source="advisor",
+        record_ref="ref-a",
+        row={
+            "provenance_json": '{"service_health_ash_urls":["https://app.azure.com/h/track-8/"]}'
+        },
     )
     health = SourceEvent(
-        key=("service-health", "h"), source="service-health", record_ref="ref-h",
+        key=("service-health", "h"),
+        source="service-health",
+        record_ref="ref-h",
         row={"tracking_id": "track-8"},
     )
 
@@ -98,11 +111,15 @@ def test_native_advisor_ash_url_links_health_by_its_tracking_id() -> None:
 
 def test_recommendation_type_id_alone_does_not_correlate_events() -> None:
     advisor = SourceEvent(
-        key=("advisor", "a"), source="advisor", record_ref="ref-a",
+        key=("advisor", "a"),
+        source="advisor",
+        record_ref="ref-a",
         row={"recommendation_type_id": "same-type"},
     )
     health = SourceEvent(
-        key=("service-health", "h"), source="service-health", record_ref="ref-h",
+        key=("service-health", "h"),
+        source="service-health",
+        record_ref="ref-h",
         row={"recommendation_type_id": "same-type"},
     )
 

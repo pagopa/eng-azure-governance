@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from pathlib import Path
-from dataclasses import asdict, dataclass, field, is_dataclass
 import re
+from collections.abc import Mapping
+from dataclasses import asdict, dataclass, field, is_dataclass
+from pathlib import Path
 from typing import Any
 
 from ..acquisition.model import SourceAcquisition
@@ -12,9 +12,12 @@ from ..contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from ..contracts.model import Artifact
 from ..contracts.aggregate_v1 import build_aggregate
-from ..domain.platforms import PlatformCatalogSnapshot
+from ..contracts.model import Artifact
+from ..domain import committee
+from ..domain.coverage import validate_platform_coverage
+from ..domain.diagnostics import Diagnostic
+from ..domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
 from ..domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -22,19 +25,20 @@ from ..domain.execution import (
     RunContext,
     RunRequest,
 )
-from ..domain.coverage import validate_platform_coverage
-from ..domain.diagnostics import Diagnostic
+from ..domain.platforms import PlatformCatalogSnapshot
 from ..domain.slides import SlideSelection, select_slides
-from ..domain import committee
-from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
-from ..reports.catalog import DEFAULT_REPORT_CATALOG, ReportCatalog, SelectedReportClosure
+from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..reports.advisor import prepare_advisor_report
+from ..reports.catalog import (
+    DEFAULT_REPORT_CATALOG,
+    ReportCatalog,
+    SelectedReportClosure,
+)
 from ..reports.model import PreparedRawReport
 from ..reports.service_health import (
     prepare_service_health_report,
 )
-from ..domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
 from .orchestration_errors import (
     ApplicationError,
     ContractValidationError,
@@ -115,11 +119,15 @@ def _source_yaml(source: Any) -> str:
 def _saved_catalog(catalog: Any, source: Any = None) -> dict[str, Any]:
     assignments = []
     for assignment in getattr(catalog, "assignments", ()):
-        assignments.append({
-            "subscription_id": str(getattr(getattr(assignment, "subscription_id", None), "value", "")),
-            "platform": str(getattr(assignment, "platform", "")),
-            "subscription_name": str(getattr(assignment, "subscription_name", "")),
-        })
+        assignments.append(
+            {
+                "subscription_id": str(
+                    getattr(getattr(assignment, "subscription_id", None), "value", "")
+                ),
+                "platform": str(getattr(assignment, "platform", "")),
+                "subscription_name": str(getattr(assignment, "subscription_name", "")),
+            }
+        )
     return {
         "schema_version": int(getattr(catalog, "schema_version", 1)),
         "sha256": str(getattr(catalog, "sha256", "")),
@@ -128,7 +136,9 @@ def _saved_catalog(catalog: Any, source: Any = None) -> dict[str, Any]:
     }
 
 
-def _saved_service_health_evidence(evidence: ServiceHealthSupplementalEvidence) -> dict[str, Any]:
+def _saved_service_health_evidence(
+    evidence: ServiceHealthSupplementalEvidence,
+) -> dict[str, Any]:
     return {
         "advisor_records": _json_safe(evidence.advisor_records),
         "resource_inventory": _json_safe(evidence.resource_inventory),
@@ -229,7 +239,9 @@ class RetirementsApplication:
                 source="advisor",
             )
             advisor_acquisition = self.advisor_source.acquire(context)
-            saved_inputs["source_acquisitions"]["advisor"] = _saved_acquisition(advisor_acquisition)
+            saved_inputs["source_acquisitions"]["advisor"] = _saved_acquisition(
+                advisor_acquisition
+            )
             self._emit_acquisition_completed(context.run_id, advisor_acquisition)
             advisor_enrichments = AdvisorEnrichments()
             if self.advisor_enrichment_source is not None:
@@ -255,16 +267,22 @@ class RetirementsApplication:
                 source="service-health",
             )
             service_health_acquisition = self.service_health_source.acquire(context)
-            saved_inputs["source_acquisitions"]["service-health"] = _saved_acquisition(service_health_acquisition)
+            saved_inputs["source_acquisitions"]["service-health"] = _saved_acquisition(
+                service_health_acquisition
+            )
             self._emit_acquisition_completed(context.run_id, service_health_acquisition)
             service_health_evidence = self._collect_service_health_evidence(
                 context, service_health_acquisition, catalog
             )
-            saved_inputs["service_health_evidence"] = _saved_service_health_evidence(service_health_evidence)
-            prepared_by_selector[ReportSelector.SERVICE_HEALTH] = prepare_service_health_report(
-                service_health_acquisition,
-                context,
-                service_health_evidence,
+            saved_inputs["service_health_evidence"] = _saved_service_health_evidence(
+                service_health_evidence
+            )
+            prepared_by_selector[ReportSelector.SERVICE_HEALTH] = (
+                prepare_service_health_report(
+                    service_health_acquisition,
+                    context,
+                    service_health_evidence,
+                )
             )
         acquisitions = [
             prepared_by_selector[selector].acquisition
@@ -333,17 +351,21 @@ class RetirementsApplication:
             receipt = self.publication_store.publish(candidate)
         except PublicationError as exc:
             diagnostic_stage = (
-                exc.diagnostics[0].stage
-                if exc.diagnostics
-                else "publication"
+                exc.diagnostics[0].stage if exc.diagnostics else "publication"
             )
             raise self._translate_publication_error(
                 exc,
                 context,
                 stage=diagnostic_stage,
             ) from exc
-        if self.committee_yaml_path is not None and slide_selection is not None and slide_selection.committee_document is not None:
-            committee.write(self.committee_yaml_path, slide_selection.committee_document)
+        if (
+            self.committee_yaml_path is not None
+            and slide_selection is not None
+            and slide_selection.committee_document is not None
+        ):
+            committee.write(
+                self.committee_yaml_path, slide_selection.committee_document
+            )
         self._emit(
             "INFO",
             "publication_completed",
@@ -375,16 +397,24 @@ class RetirementsApplication:
         if not acquisition.records:
             return ServiceHealthSupplementalEvidence()
         if self.resource_graph_source is None:
-            raise ApplicationError("service-health supplemental evidence requires Resource Graph")
+            raise ApplicationError(
+                "service-health supplemental evidence requires Resource Graph"
+            )
 
         try:
             subscription_inventory: dict[str, Mapping[str, Any]] = {}
             subscription_name_sources: dict[str, str] = {}
-            for raw_row in self.resource_graph_source.lookup_subscription_inventory(context):
+            for raw_row in self.resource_graph_source.lookup_subscription_inventory(
+                context
+            ):
                 if not isinstance(raw_row, Mapping):
-                    raise ValueError("Resource Graph subscription inventory row has unsupported shape")
+                    raise ValueError(
+                        "Resource Graph subscription inventory row has unsupported shape"
+                    )
                 subscription_id = str(
-                    raw_row.get("subscriptionId") or raw_row.get("subscription_id") or ""
+                    raw_row.get("subscriptionId")
+                    or raw_row.get("subscription_id")
+                    or ""
                 ).strip()
                 subscription_name = str(
                     raw_row.get("subscriptionName") or raw_row.get("name") or ""
@@ -395,7 +425,9 @@ class RetirementsApplication:
                 inventory_row = dict(raw_row)
                 inventory_row.update({"id": subscription_id, "name": subscription_name})
                 subscription_inventory[normalized_subscription_id] = inventory_row
-                subscription_name_sources[normalized_subscription_id] = "resource_graph_inventory"
+                subscription_name_sources[normalized_subscription_id] = (
+                    "resource_graph_inventory"
+                )
 
             for subscription_id in context.scope.subscription_ids:
                 normalized_subscription_id = subscription_id.casefold()
@@ -417,31 +449,45 @@ class RetirementsApplication:
                     "name": subscription_name,
                     "platform": str(platform),
                 }
-                subscription_name_sources[normalized_subscription_id] = "platform_catalog"
+                subscription_name_sources[normalized_subscription_id] = (
+                    "platform_catalog"
+                )
 
             event_keys: set[tuple[str, str]] = set()
             for raw_record in acquisition.records:
                 event = _record_payload(raw_record)
                 properties = event.get("properties")
                 properties_map = properties if isinstance(properties, Mapping) else {}
-                tracking_id = str(properties_map.get("trackingId") or event.get("name") or "").strip()
+                tracking_id = str(
+                    properties_map.get("trackingId") or event.get("name") or ""
+                ).strip()
                 subscription_id = _record_subscription_id(raw_record, event)
                 if tracking_id and subscription_id:
                     event_keys.add((tracking_id.casefold(), subscription_id.casefold()))
 
             associations: dict[tuple[str, str], list[Mapping[str, Any]]] = {}
-            for raw_row in self.resource_graph_source.lookup_service_health_resources(context):
+            for raw_row in self.resource_graph_source.lookup_service_health_resources(
+                context
+            ):
                 if not isinstance(raw_row, Mapping):
-                    raise ValueError("Resource Graph service-health row has unsupported shape")
+                    raise ValueError(
+                        "Resource Graph service-health row has unsupported shape"
+                    )
                 properties = raw_row.get("properties")
                 if not isinstance(properties, Mapping):
-                    raise ValueError("Resource Graph service-health properties have unsupported shape")
+                    raise ValueError(
+                        "Resource Graph service-health properties have unsupported shape"
+                    )
                 tracking_id = _resource_graph_tracking_id(str(raw_row.get("id") or ""))
                 subscription_id = str(
-                    raw_row.get("subscriptionId") or raw_row.get("subscription_id") or ""
+                    raw_row.get("subscriptionId")
+                    or raw_row.get("subscription_id")
+                    or ""
                 ).strip()
                 if not tracking_id or not subscription_id:
-                    raise ValueError("Resource Graph service-health row has incomplete identity")
+                    raise ValueError(
+                        "Resource Graph service-health row has incomplete identity"
+                    )
                 key = (tracking_id.casefold(), subscription_id.casefold())
                 if key not in event_keys:
                     continue
@@ -470,10 +516,16 @@ class RetirementsApplication:
                 )
             )
             resource_inventory: dict[str, Mapping[str, Any]] = {}
-            for raw_row in self.resource_graph_source.lookup_resources(context, resource_ids):
+            for raw_row in self.resource_graph_source.lookup_resources(
+                context, resource_ids
+            ):
                 if not isinstance(raw_row, Mapping):
-                    raise ValueError("Resource Graph resource inventory row has unsupported shape")
-                resource_id = str(raw_row.get("id") or raw_row.get("resourceId") or "").strip()
+                    raise ValueError(
+                        "Resource Graph resource inventory row has unsupported shape"
+                    )
+                resource_id = str(
+                    raw_row.get("id") or raw_row.get("resourceId") or ""
+                ).strip()
                 if resource_id:
                     resource_inventory[_normalize_resource_id(resource_id)] = raw_row
 
@@ -502,7 +554,9 @@ class RetirementsApplication:
     ) -> None:
         self.observer.emit(RuntimeEvent(level, event, message, run_id, context))
 
-    def _emit_acquisition_completed(self, run_id: str, acquisition: SourceAcquisition) -> None:
+    def _emit_acquisition_completed(
+        self, run_id: str, acquisition: SourceAcquisition
+    ) -> None:
         receipt = acquisition.receipt
         self._emit(
             "INFO",
@@ -535,7 +589,9 @@ class RetirementsApplication:
                     message="publication failed before the monthly bundle replacement",
                 ),
             )
-        return ApplicationError("publication failed; existing monthly bundle was not changed", diagnostics)
+        return ApplicationError(
+            "publication failed; existing monthly bundle was not changed", diagnostics
+        )
 
     @staticmethod
     def _as_of_date(request: RunRequest):
@@ -552,7 +608,9 @@ class RetirementsApplication:
             try:
                 identity = CatalogIdentity(catalog.schema_version, catalog.sha256)
             except (AttributeError, TypeError, ValueError) as exc:
-                raise ApplicationError("catalog does not expose a valid identity") from exc
+                raise ApplicationError(
+                    "catalog does not expose a valid identity"
+                ) from exc
         return identity
 
     @staticmethod
@@ -565,9 +623,7 @@ class RetirementsApplication:
         run_id: str,
     ) -> None:
         records = tuple(
-            record
-            for acquisition in acquisitions
-            for record in acquisition.records
+            record for acquisition in acquisitions for record in acquisition.records
         )
         if callable(getattr(catalog, "lookup", None)):
             result = validate_platform_coverage(
@@ -589,7 +645,11 @@ class RetirementsApplication:
             raise PlatformCoverageError(
                 tuple(
                     validate_platform_coverage(
-                        (item,), (), _empty_catalog_for_legacy_check(), report=report, run_id=run_id
+                        (item,),
+                        (),
+                        _empty_catalog_for_legacy_check(),
+                        report=report,
+                        run_id=run_id,
                     ).diagnostics[0]
                     for item in missing
                 )
@@ -604,19 +664,26 @@ class RetirementsApplication:
         catalog: Any,
         committee_yaml_path: Path | None = None,
     ):
-        by_source = {acquisition.receipt.source: acquisition for acquisition in acquisitions}
+        by_source = {
+            acquisition.receipt.source: acquisition for acquisition in acquisitions
+        }
         selected = []
         slide_selection: SlideSelection | None = None
         aggregate: Artifact | None = None
         if report_closure.publishes(ReportSelector.ADVISOR):
             selected.extend(prepared_by_selector[ReportSelector.ADVISOR].artifacts)
         if report_closure.publishes(ReportSelector.SERVICE_HEALTH):
-            selected.extend(prepared_by_selector[ReportSelector.SERVICE_HEALTH].artifacts)
+            selected.extend(
+                prepared_by_selector[ReportSelector.SERVICE_HEALTH].artifacts
+            )
         if report_closure.requires(ReportSelector.AGGREGATE):
             aggregate = AGGREGATE_V1.empty_artifact(context)
             if any(acquisition.records for acquisition in acquisitions):
                 if not isinstance(catalog, PlatformCatalogSnapshot):
-                    raise ApplicationError("aggregate requires a validated platform catalog snapshot")
+                    raise ApplicationError(
+                        "aggregate requires a validated platform catalog snapshot"
+                    )
+
                 def records_for(source: str):
                     acquisition = by_source.get(source)
                     return acquisition if acquisition is not None else ()
@@ -635,7 +702,9 @@ class RetirementsApplication:
                 )
                 checked = AGGREGATE_V1.validate(aggregate, context)
                 if not checked.is_valid:
-                    raise ContractValidationError(checked.diagnostics, "invalid aggregate contract")
+                    raise ContractValidationError(
+                        checked.diagnostics, "invalid aggregate contract"
+                    )
             if report_closure.publishes(ReportSelector.AGGREGATE):
                 selected.append(AGGREGATE_V1.encode(aggregate))
         if report_closure.publishes(ReportSelector.SLIDES):
@@ -643,11 +712,15 @@ class RetirementsApplication:
                 raise ApplicationError("slides requires an aggregate artifact")
             projected = select_slides(aggregate, context)
             if not projected.is_valid or projected.value is None:
-                raise ContractValidationError(projected.diagnostics, "invalid slide contract")
+                raise ContractValidationError(
+                    projected.diagnostics, "invalid slide contract"
+                )
             slide_selection = projected.value
             if committee_yaml_path is not None:
                 previous = committee.load(committee_yaml_path)
-                merged_rows, committee_document = committee.merge(previous, slide_selection.artifact.records)
+                merged_rows, committee_document = committee.merge(
+                    previous, slide_selection.artifact.records
+                )
                 slide_selection = SlideSelection(
                     artifact=Artifact(
                         contract=slide_selection.artifact.contract,
@@ -660,6 +733,8 @@ class RetirementsApplication:
                 )
                 checked = SLIDES_V1.validate(slide_selection.artifact, context)
                 if not checked.is_valid:
-                    raise ContractValidationError(checked.diagnostics, "invalid slide contract")
+                    raise ContractValidationError(
+                        checked.diagnostics, "invalid slide contract"
+                    )
             selected.append(SLIDES_V1.encode(slide_selection.artifact))
         return selected, slide_selection

@@ -20,25 +20,27 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.paging import (
     SourcePage,
     collect_complete_pages,
 )
+from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
+    FaultInjectingPublicationStore,
+    FilesystemAtomicPublicationStore,
+)
+from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml import (
+    YamlPlatformCatalogSource,
+)
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
     ApplicationError,
     RetirementsApplication,
 )
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
-)
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     ReportSelector,
     RunContext,
     RunRequest,
     Scope,
 )
-from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import read_monthly_tree
-from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
-    FaultInjectingPublicationStore,
-    FilesystemAtomicPublicationStore,
+from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
+    read_monthly_tree,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml import YamlPlatformCatalogSource
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,7 +96,13 @@ class ScriptedAdvisorSource:
     complete: bool = True
 
     def acquire(self, context: RunContext) -> SourceAcquisition:
-        return _source_acquisition("advisor", self.pages, context, self.complete, lambda item: item.get("id", ""))
+        return _source_acquisition(
+            "advisor",
+            self.pages,
+            context,
+            self.complete,
+            lambda item: item.get("id", ""),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,7 +111,13 @@ class ScriptedServiceHealthSource:
     complete: bool = True
 
     def acquire(self, context: RunContext) -> SourceAcquisition:
-        return _source_acquisition("service-health", self.pages, context, self.complete, lambda item: item.get("id", ""))
+        return _source_acquisition(
+            "service-health",
+            self.pages,
+            context,
+            self.complete,
+            lambda item: item.get("id", ""),
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,10 +126,14 @@ class ScriptedResourceGraphSource:
     service_health_rows: tuple[dict[str, Any], ...] = ()
     resource_rows: tuple[dict[str, Any], ...] = ()
 
-    def lookup_subscription_inventory(self, context: RunContext) -> tuple[dict[str, Any], ...]:
+    def lookup_subscription_inventory(
+        self, context: RunContext
+    ) -> tuple[dict[str, Any], ...]:
         return self.subscription_rows
 
-    def lookup_service_health_resources(self, context: RunContext) -> tuple[dict[str, Any], ...]:
+    def lookup_service_health_resources(
+        self, context: RunContext
+    ) -> tuple[dict[str, Any], ...]:
         return self.service_health_rows
 
     def lookup_resources(
@@ -157,7 +175,9 @@ def _source_acquisition(
     complete: bool,
     identity_of: Any,
 ) -> SourceAcquisition:
-    subscription_id = context.scope.subscription_ids[0] if context.scope.subscription_ids else ""
+    subscription_id = (
+        context.scope.subscription_ids[0] if context.scope.subscription_ids else ""
+    )
     scripted_pages = tuple(
         SourcePage(
             subscription_id=subscription_id,
@@ -188,7 +208,10 @@ def _source_acquisition(
 def _reject_sensitive_keys(value: Any) -> None:
     if isinstance(value, dict):
         for key, child in value.items():
-            if any(token in key.casefold() for token in ("token", "secret", "password", "authorization", "header")):
+            if any(
+                token in key.casefold()
+                for token in ("token", "secret", "password", "authorization", "header")
+            ):
                 raise ValueError(f"fixture contains forbidden sensitive key: {key}")
             _reject_sensitive_keys(child)
     elif isinstance(value, list):
@@ -199,9 +222,19 @@ def _reject_sensitive_keys(value: Any) -> None:
 def load_scenario(fixture_dir: Path) -> Scenario:
     payload = json.loads((fixture_dir / "scenario.json").read_text(encoding="utf-8"))
     _reject_sensitive_keys(payload)
-    expected_keys = {"selector", "run_id", "as_of_date", "created_at", "expected_exit_status", "scope", "azure"}
+    expected_keys = {
+        "selector",
+        "run_id",
+        "as_of_date",
+        "created_at",
+        "expected_exit_status",
+        "scope",
+        "azure",
+    }
     optional_keys = {"publication_fault"}
-    if set(payload) - expected_keys - optional_keys or not expected_keys.issubset(payload):
+    if set(payload) - expected_keys - optional_keys or not expected_keys.issubset(
+        payload
+    ):
         raise ValueError("scenario has an unsupported shape")
     scope_payload = payload["scope"]
     if set(scope_payload) != {"mode", "subscription_ids"}:
@@ -211,7 +244,9 @@ def load_scenario(fixture_dir: Path) -> Scenario:
         raise ValueError("scenario Azure sources have an unsupported shape")
 
     created_at = datetime.fromisoformat(payload["created_at"].replace("Z", "+00:00"))
-    if created_at.tzinfo is None or created_at.utcoffset() != timezone.utc.utcoffset(created_at):
+    if created_at.tzinfo is None or created_at.utcoffset() != timezone.utc.utcoffset(
+        created_at
+    ):
         raise ValueError("scenario created_at must be UTC-aware")
 
     return Scenario(
@@ -251,11 +286,16 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         )
     live_subscription_rows = []
     if not callable(getattr(catalog, "lookup", None)):
-        scoped_subscription_ids = {item.casefold() for item in scenario.scope.subscription_ids}
+        scoped_subscription_ids = {
+            item.casefold() for item in scenario.scope.subscription_ids
+        }
         for page in scenario.service_health_pages:
             for item in page.get("items", ()):
                 subscription_id = str(item.get("subscriptionId") or "").strip()
-                if subscription_id and subscription_id.casefold() in scoped_subscription_ids:
+                if (
+                    subscription_id
+                    and subscription_id.casefold() in scoped_subscription_ids
+                ):
                     live_subscription_rows.append(
                         {
                             "subscriptionId": subscription_id,
@@ -264,12 +304,15 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
                     )
         live_subscription_rows = list(
             {
-                row["subscriptionId"].casefold(): row
-                for row in live_subscription_rows
+                row["subscriptionId"].casefold(): row for row in live_subscription_rows
             }.values()
         )
     seeded_current = scenario.fixture_dir / "seeded" / "current"
-    monthly_bundle = destination / f"{scenario.as_of_date.year:04d}" / f"{scenario.as_of_date.month:02d}"
+    monthly_bundle = (
+        destination
+        / f"{scenario.as_of_date.year:04d}"
+        / f"{scenario.as_of_date.month:02d}"
+    )
     if seeded_current.is_dir():
         monthly_bundle.mkdir(parents=True, exist_ok=True)
         for source in seeded_current.rglob("*"):
@@ -278,18 +321,26 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source, target)
     if scenario.publication_fault:
-        publication = FaultInjectingPublicationStore(destination, fault=scenario.publication_fault)
+        publication = FaultInjectingPublicationStore(
+            destination, fault=scenario.publication_fault
+        )
     else:
         publication = TemporaryAtomicPublicationStore(destination)
     application = RetirementsApplication(
         scope_source=_FixedScopeSource(scenario.scope),
         catalog_source=_CatalogSource(catalog),
-        advisor_source=ScriptedAdvisorSource(scenario.advisor_pages, scenario.advisor_complete),
-        service_health_source=ScriptedServiceHealthSource(scenario.service_health_pages, scenario.service_health_complete),
+        advisor_source=ScriptedAdvisorSource(
+            scenario.advisor_pages, scenario.advisor_complete
+        ),
+        service_health_source=ScriptedServiceHealthSource(
+            scenario.service_health_pages, scenario.service_health_complete
+        ),
         publication_store=publication,
         clock=FixedClock(scenario.created_at),
         run_id_factory=FixedRunIdFactory(scenario.run_id),
-        resource_graph_source=ScriptedResourceGraphSource(tuple(live_subscription_rows)),
+        resource_graph_source=ScriptedResourceGraphSource(
+            tuple(live_subscription_rows)
+        ),
     )
     try:
         application.run(
@@ -308,7 +359,9 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         current_tree = read_monthly_tree(destination, scenario.as_of_date)
     return ScenarioResult(
         exit_status=exit_status,
-        stderr_jsonl=(destination / "stderr.jsonl").read_bytes() if exit_status else (scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),
+        stderr_jsonl=(destination / "stderr.jsonl").read_bytes()
+        if exit_status
+        else (scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),
         current_tree=current_tree,
         slide_selection=(
             publication.candidates[0].slide_selection.excluded_by_reason
@@ -317,7 +370,11 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         ),
         slide_records=tuple(
             dict(row.values)
-            for row in (publication.candidates[0].slide_selection.artifact.records if publication.candidates and publication.candidates[0].slide_selection else ())
+            for row in (
+                publication.candidates[0].slide_selection.artifact.records
+                if publication.candidates and publication.candidates[0].slide_selection
+                else ()
+            )
         ),
     )
 
@@ -326,7 +383,9 @@ def _diagnostic_jsonl(exc: Exception, scenario: Scenario) -> bytes:
     diagnostics = getattr(exc, "diagnostics", ())
     if diagnostics:
         return b"".join(
-            (json.dumps(item.to_dict(), sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+            (
+                json.dumps(item.to_dict(), sort_keys=True, separators=(",", ":")) + "\n"
+            ).encode("utf-8")
             for item in diagnostics
         )
     message = str(exc)
@@ -334,7 +393,10 @@ def _diagnostic_jsonl(exc: Exception, scenario: Scenario) -> bytes:
         code, stage = "conflicting_source_record", "acquisition"
     elif "incomplete acquisition" in message:
         code, stage = "incomplete_acquisition", "acquisition"
-    elif "invalid_service_health_classification" in message or "invalid service-health raw contract" in message:
+    elif (
+        "invalid_service_health_classification" in message
+        or "invalid service-health raw contract" in message
+    ):
         code, stage = "invalid_service_health_classification", "validation"
     else:
         code, stage = "application_error", "validation"
@@ -349,4 +411,6 @@ def _diagnostic_jsonl(exc: Exception, scenario: Scenario) -> bytes:
         "stage": stage,
         "subscription_id": "",
     }
-    return (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    return (json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n").encode(
+        "utf-8"
+    )

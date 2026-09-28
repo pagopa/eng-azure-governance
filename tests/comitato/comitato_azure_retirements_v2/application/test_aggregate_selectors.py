@@ -1,12 +1,27 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import AcquisitionReceipt, SourceAcquisition
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
-from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector, RunRequest, Scope
-from src.comitato.comitato_azure_retirements_v2.domain.platforms import PlatformAssignment, PlatformCatalogSnapshot, SubscriptionId
-from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationCandidate, PublicationReceipt
-
+from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+    AcquisitionReceipt,
+    SourceAcquisition,
+)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+    RetirementsApplication,
+)
+from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+    ReportSelector,
+    RunRequest,
+    Scope,
+)
+from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
+    PlatformAssignment,
+    PlatformCatalogSnapshot,
+    SubscriptionId,
+)
+from src.comitato.comitato_azure_retirements_v2.publication.model import (
+    PublicationCandidate,
+    PublicationReceipt,
+)
 
 SUBSCRIPTION = "11111111-1111-1111-1111-111111111111"
 
@@ -18,7 +33,9 @@ def advisor_payload() -> dict[str, object]:
         "properties": {
             "recommendationStatus": "New",
             "recommendationTypeId": "retirement-type",
-            "resourceMetadata": {"resourceId": f"/subscriptions/{SUBSCRIPTION}/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"},
+            "resourceMetadata": {
+                "resourceId": f"/subscriptions/{SUBSCRIPTION}/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm"
+            },
         },
     }
 
@@ -33,7 +50,11 @@ class CatalogSource:
         return PlatformCatalogSnapshot(
             schema_version=1,
             sha256="a" * 64,
-            assignments=(PlatformAssignment(SubscriptionId(SUBSCRIPTION), "Platform A", "Subscription A"),),
+            assignments=(
+                PlatformAssignment(
+                    SubscriptionId(SUBSCRIPTION), "Platform A", "Subscription A"
+                ),
+            ),
         )
 
 
@@ -44,7 +65,9 @@ class Source:
 
     def acquire(self, context):
         return SourceAcquisition(
-            receipt=AcquisitionReceipt(self.name, "test-v1", 1, 1, 1, len(self.records), True),
+            receipt=AcquisitionReceipt(
+                self.name, "test-v1", 1, 1, 1, len(self.records), True
+            ),
             records=self.records,
         )
 
@@ -71,7 +94,9 @@ class Publication:
         )
 
 
-def test_aggregate_selector_publishes_aggregate_from_run_local_raw_dependencies() -> None:
+def test_aggregate_selector_publishes_aggregate_from_run_local_raw_dependencies() -> (
+    None
+):
     publication = Publication()
     app = RetirementsApplication(
         scope_source=ScopeSource(),

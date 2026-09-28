@@ -10,7 +10,9 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.paging import (
 )
 
 
-def test_collect_complete_pages_traverses_pages_and_collapses_exact_duplicates() -> None:
+def test_collect_complete_pages_traverses_pages_and_collapses_exact_duplicates() -> (
+    None
+):
     requests = (
         ScriptedRequest(
             subscription_id="sub-b",
@@ -85,7 +87,9 @@ def test_collect_complete_pages_rejects_conflicting_payloads_for_one_identity() 
         collect_complete_pages((request,), lambda item: item["id"])
 
 
-def test_collect_complete_pages_preserves_partial_observations_with_incomplete_receipt() -> None:
+def test_collect_complete_pages_preserves_partial_observations_with_incomplete_receipt() -> (
+    None
+):
     request = ScriptedRequest(
         subscription_id="sub-a",
         complete=False,

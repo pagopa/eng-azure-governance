@@ -12,21 +12,37 @@ from typing import Any, Sequence
 
 from .acquisition.evidence import ObservationAccounting, SourceRecord
 from .acquisition.model import AcquisitionReceipt, SourceAcquisition
+from .application.orchestration import RetirementsApplication
 from .config import RuntimeConfig, parse_config
+from .contracts.codecs import canonical_json
 from .domain.diagnostics import Diagnostic
 from .domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
-from .domain.execution import CatalogIdentity, DependencyPlan, ReportSelector, RunContext, RunRequest, Scope
-from .domain.platforms import PlatformAssignment, PlatformCatalogSnapshot, SubscriptionId
-from .application.orchestration import RetirementsApplication
-from .contracts.codecs import canonical_json
-from .publication.model import PublicationCandidate, RunResult
+from .domain.execution import (
+    CatalogIdentity,
+    DependencyPlan,
+    ReportSelector,
+    RunContext,
+    RunRequest,
+    Scope,
+)
+from .domain.platforms import (
+    PlatformAssignment,
+    PlatformCatalogSnapshot,
+    SubscriptionId,
+)
 from .ports import RunObserver
+from .publication.model import PublicationCandidate, RunResult
 from .reports.advisor import prepare_advisor_report
 from .reports.service_health import prepare_service_health_report
 from .runtime_logging import RuntimeReporter
 
-
-_RUNTIME_LOG_ROOT = Path(__file__).resolve().parents[3] / "tmp" / "comitato" / "comitato_azure_retirements_v2" / "exports"
+_RUNTIME_LOG_ROOT = (
+    Path(__file__).resolve().parents[3]
+    / "tmp"
+    / "comitato"
+    / "comitato_azure_retirements_v2"
+    / "exports"
+)
 
 
 def run_config(config: RuntimeConfig, reporter: RunObserver | None = None) -> Any:
@@ -43,23 +59,34 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
     if bundle is None:
         raise ValueError("replay bundle is required")
     try:
-        manifest = json.loads((bundle / "publication-manifest.json").read_text(encoding="utf-8"))
+        manifest = json.loads(
+            (bundle / "publication-manifest.json").read_text(encoding="utf-8")
+        )
         if not isinstance(manifest.get("saved_inputs"), Mapping):
             if manifest.get("manifest_schema_version") == 1:
-                raise ValueError("legacy schema-1 replay is unsupported because saved input evidence is absent")
+                raise ValueError(
+                    "legacy schema-1 replay is unsupported because saved input evidence is absent"
+                )
             raise ValueError("replay bundle requires saved inputs")
         saved_inputs = manifest["saved_inputs"]
         expected_saved_inputs_hash = str(manifest.get("saved_inputs_sha256", ""))
         actual_saved_inputs_hash = sha256(
             canonical_json(saved_inputs).encode("utf-8")
         ).hexdigest()
-        if not expected_saved_inputs_hash or expected_saved_inputs_hash != actual_saved_inputs_hash:
+        if (
+            not expected_saved_inputs_hash
+            or expected_saved_inputs_hash != actual_saved_inputs_hash
+        ):
             raise ValueError("replay bundle saved inputs integrity check failed")
         as_of_date = date.fromisoformat(str(manifest["as_of_date"]))
-        created_at = datetime.fromisoformat(str(manifest["created_at"]).replace("Z", "+00:00"))
+        created_at = datetime.fromisoformat(
+            str(manifest["created_at"]).replace("Z", "+00:00")
+        )
         catalog_payload = manifest["catalog"]
         selector = ReportSelector(str(manifest["selector"]))
-        committee_window_months = int(manifest.get("settings", {}).get("committee_window_months", 12))
+        committee_window_months = int(
+            manifest.get("settings", {}).get("committee_window_months", 12)
+        )
         request = RunRequest(
             selector=selector,
             subscription_ids=tuple(manifest["scope"]["subscription_ids"]),
@@ -71,8 +98,13 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             as_of_date=as_of_date,
             created_at=created_at,
             request=request,
-            scope=Scope(tuple(manifest["scope"]["subscription_ids"]), str(manifest["scope"]["mode"])),
-            catalog_identity=CatalogIdentity(int(catalog_payload["schema_version"]), str(catalog_payload["sha256"])),
+            scope=Scope(
+                tuple(manifest["scope"]["subscription_ids"]),
+                str(manifest["scope"]["mode"]),
+            ),
+            catalog_identity=CatalogIdentity(
+                int(catalog_payload["schema_version"]), str(catalog_payload["sha256"])
+            ),
             dependency_plan=DependencyPlan(tuple(manifest["dependency_closure"])),
         )
         closure = application.report_catalog.plan(selector)
@@ -82,11 +114,15 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
         if closure.requires(ReportSelector.ADVISOR):
             advisor = acquisitions["advisor"]
             enrichments = _advisor_enrichments_from_saved_inputs(saved_inputs)
-            prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(advisor, context, enrichments)
+            prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(
+                advisor, context, enrichments
+            )
         if closure.requires(ReportSelector.SERVICE_HEALTH):
             service_health = acquisitions["service-health"]
             supplemental = _service_health_evidence_from_saved_inputs(saved_inputs)
-            prepared_by_selector[ReportSelector.SERVICE_HEALTH] = prepare_service_health_report(service_health, context, supplemental)
+            prepared_by_selector[ReportSelector.SERVICE_HEALTH] = (
+                prepare_service_health_report(service_health, context, supplemental)
+            )
         selected_acquisitions = [
             prepared_by_selector[selector].acquisition
             for selector in (ReportSelector.ADVISOR, ReportSelector.SERVICE_HEALTH)
@@ -121,9 +157,13 @@ def _run_replay(config: RuntimeConfig, application: Any) -> RunResult:
     return RunResult(0, context, candidate, receipt)
 
 
-def _catalog_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> PlatformCatalogSnapshot:
+def _catalog_from_saved_inputs(
+    saved_inputs: Mapping[str, Any],
+) -> PlatformCatalogSnapshot:
     payload = saved_inputs.get("platform_catalog")
-    if not isinstance(payload, Mapping) or not isinstance(payload.get("assignments"), list):
+    if not isinstance(payload, Mapping) or not isinstance(
+        payload.get("assignments"), list
+    ):
         raise ValueError("replay bundle is missing saved platform catalog")
     assignments = tuple(
         PlatformAssignment(
@@ -134,7 +174,9 @@ def _catalog_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> PlatformCatal
         for item in payload["assignments"]
         if isinstance(item, Mapping)
     )
-    return PlatformCatalogSnapshot(int(payload["schema_version"]), str(payload["sha256"]), assignments)
+    return PlatformCatalogSnapshot(
+        int(payload["schema_version"]), str(payload["sha256"]), assignments
+    )
 
 
 def _acquisitions_from_saved_inputs(
@@ -152,7 +194,9 @@ def _acquisitions_from_saved_inputs(
         required.append("service-health")
     for source in required:
         item = payload.get(source)
-        if not isinstance(item, Mapping) or not isinstance(item.get("receipt"), Mapping):
+        if not isinstance(item, Mapping) or not isinstance(
+            item.get("receipt"), Mapping
+        ):
             raise ValueError(f"replay bundle is missing saved {source} acquisition")
         receipt_payload = item["receipt"]
         receipt = AcquisitionReceipt(
@@ -163,8 +207,12 @@ def _acquisitions_from_saved_inputs(
             pages=int(receipt_payload["pages"]),
             source_records=int(receipt_payload["source_records"]),
             complete=bool(receipt_payload["complete"]),
-            continuation_tokens=tuple(str(value) for value in receipt_payload.get("continuation_tokens", ())),
-            failed_subscriptions=tuple(str(value) for value in receipt_payload.get("failed_subscriptions", ())),
+            continuation_tokens=tuple(
+                str(value) for value in receipt_payload.get("continuation_tokens", ())
+            ),
+            failed_subscriptions=tuple(
+                str(value) for value in receipt_payload.get("failed_subscriptions", ())
+            ),
             completeness_reason=str(receipt_payload.get("completeness_reason", "")),
         )
         accounting = tuple(
@@ -203,7 +251,9 @@ def _source_record(value: Any) -> Any:
     )
 
 
-def _advisor_enrichments_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> AdvisorEnrichments:
+def _advisor_enrichments_from_saved_inputs(
+    saved_inputs: Mapping[str, Any],
+) -> AdvisorEnrichments:
     payload = saved_inputs.get("advisor_enrichments", {})
     if not isinstance(payload, Mapping):
         raise ValueError("replay bundle has invalid Advisor enrichment inputs")
@@ -214,12 +264,17 @@ def _advisor_enrichments_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> A
     )
 
 
-def _service_health_evidence_from_saved_inputs(saved_inputs: Mapping[str, Any]) -> ServiceHealthSupplementalEvidence:
+def _service_health_evidence_from_saved_inputs(
+    saved_inputs: Mapping[str, Any],
+) -> ServiceHealthSupplementalEvidence:
     payload = saved_inputs.get("service_health_evidence", {})
     if not isinstance(payload, Mapping):
         raise ValueError("replay bundle has invalid Service Health evidence inputs")
     associations = {
-        (str(item["tracking_id"]).casefold(), str(item["subscription_id"]).casefold()): tuple(item.get("resources", ()))
+        (
+            str(item["tracking_id"]).casefold(),
+            str(item["subscription_id"]).casefold(),
+        ): tuple(item.get("resources", ()))
         for item in payload.get("resource_associations", ())
         if isinstance(item, Mapping)
     }
@@ -278,7 +333,12 @@ def _diagnostic_dict(value: Any) -> dict[str, Any]:
 def _diagnostics_payload(error: BaseException) -> bytes:
     values = tuple(getattr(error, "diagnostics", ()))
     dictionaries = [_diagnostic_dict(value) for value in values]
-    dictionaries.sort(key=lambda item: tuple(str(item.get(key, "")) for key in ("stage", "code", "subscription_id", "record_ref", "artifact")))
+    dictionaries.sort(
+        key=lambda item: tuple(
+            str(item.get(key, ""))
+            for key in ("stage", "code", "subscription_id", "record_ref", "artifact")
+        )
+    )
     if not dictionaries:
         dictionaries = [_diagnostic_dict(error)]
     return b"".join(
@@ -329,7 +389,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         elif diagnostics_error is not None:
             sys.stderr.buffer.write(_diagnostics_payload(diagnostics_error))
         elif success_payload is not None:
-            sys.stdout.write(json.dumps(success_payload, sort_keys=True, separators=(",", ":")) + "\n")
+            sys.stdout.write(
+                json.dumps(success_payload, sort_keys=True, separators=(",", ":"))
+                + "\n"
+            )
     return exit_status
 
 

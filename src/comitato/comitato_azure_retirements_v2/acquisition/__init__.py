@@ -1,4 +1,5 @@
 """Acquisition models and source boundaries."""
+
 from .evidence import SourcePage, SourceRecord
 from .paging import (
     AcquisitionIntegrityError,

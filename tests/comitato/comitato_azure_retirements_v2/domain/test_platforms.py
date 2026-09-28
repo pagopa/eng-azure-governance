@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
@@ -7,8 +9,6 @@ from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
     SubscriptionId,
     project_platforms,
 )
-import pytest
-
 
 SUB_A = "11111111-1111-1111-1111-111111111111"
 SUB_B = "22222222-2222-2222-2222-222222222222"
@@ -87,7 +87,9 @@ def test_projection_sorts_platforms_and_subscription_breakdown() -> None:
         assignments=(
             PlatformAssignment(SubscriptionId(SUB_B), "Alpha", "B"),
             PlatformAssignment(SubscriptionId(SUB_A), "Alpha", "A"),
-            PlatformAssignment(SubscriptionId("33333333-3333-3333-3333-333333333333"), "Zeta", "C"),
+            PlatformAssignment(
+                SubscriptionId("33333333-3333-3333-3333-333333333333"), "Zeta", "C"
+            ),
         ),
     )
     result = project_platforms(

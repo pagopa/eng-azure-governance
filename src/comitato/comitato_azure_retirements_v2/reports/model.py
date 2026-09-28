@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-import json
 from typing import Any
 
 from ..acquisition.model import SourceAcquisition
@@ -51,7 +51,9 @@ class ReportDefinition:
         try:
             for sidecar in self.sidecar_contracts:
                 if logical_path == sidecar.path:
-                    return sidecar.verify_staged_artifact(logical_path, payloads, context)
+                    return sidecar.verify_staged_artifact(
+                        logical_path, payloads, context
+                    )
             if logical_path == self.contract.path:
                 decoded = self.contract.decode(payloads[logical_path])
                 companion_records = decoded.companion_records
@@ -59,7 +61,9 @@ class ReportDefinition:
                 if companion_path:
                     companion_data = payloads.get(companion_path)
                     if companion_data is not None:
-                        decoded_companions = self.contract.decode_companion(companion_data)
+                        decoded_companions = self.contract.decode_companion(
+                            companion_data
+                        )
                         companion_records = tuple(
                             item
                             for item in decoded_companions

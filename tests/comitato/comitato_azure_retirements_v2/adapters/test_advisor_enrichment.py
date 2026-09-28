@@ -10,7 +10,6 @@ from src.comitato.comitato_azure_retirements_v2.adapters.advisor_enrichment impo
     AdvisorEnrichmentError,
     AzureAdvisorEnrichmentSource,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import AdvisorEnrichments
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -72,19 +71,23 @@ class FakeResourceGraphSource:
             raise self.resource_error
         return self.resources
 
-    def lookup_subscriptions(self, run_context: RunContext) -> tuple[dict[str, Any], ...]:
+    def lookup_subscriptions(
+        self, run_context: RunContext
+    ) -> tuple[dict[str, Any], ...]:
         if self.subscription_error is not None:
             raise self.subscription_error
         return self.subscriptions
 
 
-def test_enrichment_indexes_metadata_resource_and_subscription_keys_case_insensitively() -> None:
-    resource_id = "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Web/sites/app"
+def test_enrichment_indexes_metadata_resource_and_subscription_keys_case_insensitively() -> (
+    None
+):
+    resource_id = (
+        "/subscriptions/SUB/resourceGroups/RG/providers/Microsoft.Web/sites/app"
+    )
     source = AzureAdvisorEnrichmentSource(
         FakeMetadataSource(
-            rows=(
-                {"id": "SERVICE-A", "serviceRetirement": {"serviceId": "SERVICE-A"}},
-            )
+            rows=({"id": "SERVICE-A", "serviceRetirement": {"serviceId": "SERVICE-A"}},)
         ),
         FakeResourceGraphSource(
             resources=(
@@ -98,7 +101,9 @@ def test_enrichment_indexes_metadata_resource_and_subscription_keys_case_insensi
         ),
     )
 
-    result = source.enrich(context(), (recommendation("service-a", resource_id.casefold()),))
+    result = source.enrich(
+        context(), (recommendation("service-a", resource_id.casefold()),)
+    )
 
     assert result.metadata["service-a"]["id"] == "SERVICE-A"
     assert result.resources[resource_id.casefold()]["name"] == "app"
@@ -106,7 +111,9 @@ def test_enrichment_indexes_metadata_resource_and_subscription_keys_case_insensi
 
 
 def test_enrichment_preserves_duplicate_matches_for_normalization() -> None:
-    resource_id = "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    resource_id = (
+        "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"
+    )
     source = AzureAdvisorEnrichmentSource(
         FakeMetadataSource(
             rows=(
@@ -139,12 +146,26 @@ def test_enrichment_preserves_duplicate_matches_for_normalization() -> None:
 @pytest.mark.parametrize("failure", ("metadata", "resource", "subscription"))
 def test_enrichment_wraps_source_failures(failure: str) -> None:
     source = AzureAdvisorEnrichmentSource(
-        FakeMetadataSource(error=RuntimeError("metadata failure") if failure == "metadata" else None),
+        FakeMetadataSource(
+            error=RuntimeError("metadata failure") if failure == "metadata" else None
+        ),
         FakeResourceGraphSource(
-            resource_error=RuntimeError("resource failure") if failure == "resource" else None,
-            subscription_error=RuntimeError("subscription failure") if failure == "subscription" else None,
+            resource_error=RuntimeError("resource failure")
+            if failure == "resource"
+            else None,
+            subscription_error=RuntimeError("subscription failure")
+            if failure == "subscription"
+            else None,
         ),
     )
 
     with pytest.raises(AdvisorEnrichmentError, match="source acquisition failed"):
-        source.enrich(context(), (recommendation("service-a", "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app"),))
+        source.enrich(
+            context(),
+            (
+                recommendation(
+                    "service-a",
+                    "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.Web/sites/app",
+                ),
+            ),
+        )

@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import csv
+import json
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from io import StringIO
-import json
 from pathlib import Path
 from typing import Any
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
-    AcquisitionReceipt,
-    SourceAcquisition,
-)
 from src.comitato.comitato_azure_retirements_v2.acquisition.evidence import (
     ObservationAccounting,
     SourceRecord,
+)
+from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+    AcquisitionReceipt,
+    SourceAcquisition,
 )
 from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
     RetirementsApplication,
@@ -40,7 +40,6 @@ from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
     TemporaryAtomicPublicationStore,
     _FixedScopeSource,
 )
-
 
 SUBSCRIPTIONS = (
     "11111111-1111-1111-1111-111111111111",
@@ -81,7 +80,9 @@ class EmptyResourceGraphSource:
             {"subscriptionId": SUBSCRIPTIONS[1], "subscriptionName": "PROD-pagoPA"},
         )
 
-    def lookup_service_health_resources(self, context: Any) -> tuple[dict[str, Any], ...]:
+    def lookup_service_health_resources(
+        self, context: Any
+    ) -> tuple[dict[str, Any], ...]:
         self.service_health_resource_calls += 1
         return ()
 
@@ -131,7 +132,9 @@ def _catalog() -> PlatformCatalogSnapshot:
     return PlatformCatalogSnapshot(1, "a" * 64, assignments)
 
 
-def test_service_health_acceptance_preserves_region_cardinality_and_evidence(tmp_path: Path) -> None:
+def test_service_health_acceptance_preserves_region_cardinality_and_evidence(
+    tmp_path: Path,
+) -> None:
     events = tuple(_event(subscription_id) for subscription_id in SUBSCRIPTIONS)
     acquisition = SourceAcquisition(
         receipt=AcquisitionReceipt(
@@ -179,16 +182,29 @@ def test_service_health_acceptance_preserves_region_cardinality_and_evidence(tmp
     )
     assert len(service_health_rows) == 195
     assert {row["impacted_service"] for row in service_health_rows} == {"Service Bus"}
-    assert {row["impacted_service_guid"] for row in service_health_rows} == {SERVICE_GUID}
+    assert {row["impacted_service_guid"] for row in service_health_rows} == {
+        SERVICE_GUID
+    }
     assert {row["subscription_name"] for row in service_health_rows} == {
         "UAT-pagoPA",
         "PROD-pagoPA",
         "DEV-pagoPA",
     }
-    assert all(row["resource_evidence_status"] == "not_published" for row in service_health_rows)
-    assert all(row["resource_inventory_match_status"] == "not_applicable" for row in service_health_rows)
-    assert {row["description_problem"] for row in service_health_rows} == {"We’ll retire the SDKs."}
-    assert all("<" not in row["title"] and ">" not in row["title"] for row in service_health_rows)
+    assert all(
+        row["resource_evidence_status"] == "not_published"
+        for row in service_health_rows
+    )
+    assert all(
+        row["resource_inventory_match_status"] == "not_applicable"
+        for row in service_health_rows
+    )
+    assert {row["description_problem"] for row in service_health_rows} == {
+        "We’ll retire the SDKs."
+    }
+    assert all(
+        "<" not in row["title"] and ">" not in row["title"]
+        for row in service_health_rows
+    )
     assert {row["impacted_region"] for row in service_health_rows} == set(REGIONS)
 
     aggregate_artifact = next(
@@ -197,10 +213,14 @@ def test_service_health_acceptance_preserves_region_cardinality_and_evidence(tmp
         if artifact.logical_path == AGGREGATE_V1.path
     )
     aggregate_rows = list(
-        csv.DictReader(StringIO(aggregate_artifact.data.decode("utf-8")), delimiter="\t")
+        csv.DictReader(
+            StringIO(aggregate_artifact.data.decode("utf-8")), delimiter="\t"
+        )
     )
     assert len(aggregate_rows) == 1
-    assert json.loads(aggregate_rows[0]["service_health_tracking_ids_json"]) == [TRACKING_ID]
+    assert json.loads(aggregate_rows[0]["service_health_tracking_ids_json"]) == [
+        TRACKING_ID
+    ]
     assert set(json.loads(aggregate_rows[0]["impacted_regions_json"])) == set(REGIONS)
     assert resource_graph.subscription_inventory_calls == 1
     assert resource_graph.service_health_resource_calls == 1

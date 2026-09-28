@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from pathlib import PurePosixPath
 import re
+from pathlib import PurePosixPath
 
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..domain.execution import ReportSelector, RunContext
+from ..publication.model import PublicationCandidate
 from ..reports.catalog import SelectedReportClosure
 from .model import EncodedArtifact
-from ..publication.model import PublicationCandidate
 
 
 def validate_candidate_paths(candidate: PublicationCandidate) -> tuple[Diagnostic, ...]:
@@ -54,7 +54,9 @@ def _field_values(artifact: EncodedArtifact, field: str) -> set[str]:
     return {value for value in values if value}
 
 
-def _diagnostic(code: str, selector: ReportSelector, context: RunContext | None, artifact: str = "") -> Diagnostic:
+def _diagnostic(
+    code: str, selector: ReportSelector, context: RunContext | None, artifact: str = ""
+) -> Diagnostic:
     return Diagnostic(
         severity="error",
         code=code,
@@ -79,24 +81,47 @@ def validate_selected_set(
     diagnostics: list[Diagnostic] = []
     for artifact in artifacts:
         if artifact.logical_path in by_path:
-            diagnostics.append(_diagnostic("duplicate_artifact", selector, context, artifact.logical_path))
+            diagnostics.append(
+                _diagnostic(
+                    "duplicate_artifact", selector, context, artifact.logical_path
+                )
+            )
         by_path[artifact.logical_path] = artifact
         if artifact.logical_path not in expected:
-            diagnostics.append(_diagnostic("undeclared_artifact", selector, context, artifact.logical_path))
+            diagnostics.append(
+                _diagnostic(
+                    "undeclared_artifact", selector, context, artifact.logical_path
+                )
+            )
             if artifact.logical_path in known_paths:
-                diagnostics.append(_diagnostic("dependency_artifact_selected", selector, context, artifact.logical_path))
+                diagnostics.append(
+                    _diagnostic(
+                        "dependency_artifact_selected",
+                        selector,
+                        context,
+                        artifact.logical_path,
+                    )
+                )
     for path in expected:
         if path not in by_path:
-            diagnostics.append(_diagnostic("missing_selected_artifact", selector, context, path))
+            diagnostics.append(
+                _diagnostic("missing_selected_artifact", selector, context, path)
+            )
     for definition in closure.published:
         if len(definition.paths) > 1:
             present = {path for path in definition.paths if path in by_path}
             if present and len(present) != len(definition.paths):
                 missing = next(path for path in definition.paths if path not in present)
-                diagnostics.append(_diagnostic("missing_companion_artifact", selector, context, missing))
+                diagnostics.append(
+                    _diagnostic(
+                        "missing_companion_artifact", selector, context, missing
+                    )
+                )
 
     run_ids = {artifact.run_id for artifact in artifacts if artifact.run_id}
-    run_ids.update(value for artifact in artifacts for value in _field_values(artifact, "run_id"))
+    run_ids.update(
+        value for artifact in artifacts for value in _field_values(artifact, "run_id")
+    )
     if context:
         run_ids.discard(context.run_id)
     if len(run_ids) > 1 or (context and run_ids and run_ids != {context.run_id}):
@@ -121,12 +146,28 @@ def validate_manifest(
     diagnostics: list[Diagnostic] = []
     expected_paths = candidate.report_closure.expected_paths
     entries = manifest.get("artifacts")
-    if not isinstance(entries, list) or tuple(item.get("path") for item in entries if isinstance(item, dict)) != expected_paths:
-        diagnostics.append(_diagnostic("manifest_artifact_closure_mismatch", candidate.context.request.selector, candidate.context))
+    if (
+        not isinstance(entries, list)
+        or tuple(item.get("path") for item in entries if isinstance(item, dict))
+        != expected_paths
+    ):
+        diagnostics.append(
+            _diagnostic(
+                "manifest_artifact_closure_mismatch",
+                candidate.context.request.selector,
+                candidate.context,
+            )
+        )
         return sort_diagnostics(diagnostics)
     for artifact, entry in zip(measured_artifacts, entries, strict=True):
         if not isinstance(entry, dict):
-            diagnostics.append(_diagnostic("invalid_manifest_artifact", candidate.context.request.selector, candidate.context))
+            diagnostics.append(
+                _diagnostic(
+                    "invalid_manifest_artifact",
+                    candidate.context.request.selector,
+                    candidate.context,
+                )
+            )
             continue
         expected = {
             "path": artifact.logical_path,
@@ -137,9 +178,28 @@ def validate_manifest(
             "media_type": artifact.media_type,
         }
         if any(entry.get(key) != value for key, value in expected.items()):
-            diagnostics.append(_diagnostic("manifest_measured_fact_mismatch", candidate.context.request.selector, candidate.context, artifact.logical_path))
+            diagnostics.append(
+                _diagnostic(
+                    "manifest_measured_fact_mismatch",
+                    candidate.context.request.selector,
+                    candidate.context,
+                    artifact.logical_path,
+                )
+            )
     if manifest.get("run_id") != candidate.context.run_id:
-        diagnostics.append(_diagnostic("manifest_run_id_mismatch", candidate.context.request.selector, candidate.context))
+        diagnostics.append(
+            _diagnostic(
+                "manifest_run_id_mismatch",
+                candidate.context.request.selector,
+                candidate.context,
+            )
+        )
     if manifest.get("selector") != candidate.context.request.selector.value:
-        diagnostics.append(_diagnostic("manifest_selector_mismatch", candidate.context.request.selector, candidate.context))
+        diagnostics.append(
+            _diagnostic(
+                "manifest_selector_mismatch",
+                candidate.context.request.selector,
+                candidate.context,
+            )
+        )
     return sort_diagnostics(diagnostics)

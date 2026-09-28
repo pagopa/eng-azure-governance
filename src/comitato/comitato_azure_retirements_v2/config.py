@@ -4,18 +4,28 @@ from __future__ import annotations
 
 import argparse
 import os
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date
-from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from .domain.execution import ReportSelector, RunRequest
 
-
 _REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
-_DEFAULT_CATALOG_PATH = _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
-_DEFAULT_OUTPUT_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
-_DEFAULT_COMMITTEE_YAML_PATH = _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "data" / "comitato_editoriale.yaml"
+_DEFAULT_CATALOG_PATH = (
+    _REPOSITORY_ROOT / "src" / "_source_of_truth" / "eng-finops-platforms.yaml"
+)
+_DEFAULT_OUTPUT_PATH = (
+    _REPOSITORY_ROOT / "src" / "comitato" / "comitato_azure_retirements_v2" / "exports"
+)
+_DEFAULT_COMMITTEE_YAML_PATH = (
+    _REPOSITORY_ROOT
+    / "src"
+    / "comitato"
+    / "comitato_azure_retirements_v2"
+    / "data"
+    / "comitato_editoriale.yaml"
+)
 
 LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
 OUTPUT_FORMATS = ("human", "json")
@@ -112,15 +122,27 @@ def _parser() -> argparse.ArgumentParser:
         prog="comitato-azure-retirements-v2",
         description="Acquire and publish live Azure retirement reports.",
     )
-    parser.add_argument("--report", choices=tuple(item.value for item in ReportSelector), default="all")
+    parser.add_argument(
+        "--report", choices=tuple(item.value for item in ReportSelector), default="all"
+    )
     parser.add_argument("--as-of-date", type=_iso_date, default=None)
     parser.add_argument("--committee-window-months", type=int, default=12)
-    parser.add_argument("--subscriptions", default=None, help="Comma-separated subscription IDs")
-    parser.add_argument("--subscription", action="append", default=[], dest="subscription_values")
-    parser.add_argument("--management-groups", default=None, help="Comma-separated management group IDs")
-    parser.add_argument("--catalog-path", "--catalog", dest="catalog_path", default=None)
+    parser.add_argument(
+        "--subscriptions", default=None, help="Comma-separated subscription IDs"
+    )
+    parser.add_argument(
+        "--subscription", action="append", default=[], dest="subscription_values"
+    )
+    parser.add_argument(
+        "--management-groups", default=None, help="Comma-separated management group IDs"
+    )
+    parser.add_argument(
+        "--catalog-path", "--catalog", dest="catalog_path", default=None
+    )
     parser.add_argument("--replay-bundle", type=Path, default=None)
-    parser.add_argument("--output-path", "--output-root", dest="output_path", default=None)
+    parser.add_argument(
+        "--output-path", "--output-root", dest="output_path", default=None
+    )
     parser.add_argument("--committee-yaml", type=Path, default=None)
     parser.add_argument("--timeout-seconds", type=float, default=60.0)
     parser.add_argument("--retry-attempts", type=int, default=3)
@@ -128,7 +150,9 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--log-level", type=_log_level, default="INFO")
     parser.add_argument("--console-level", type=_log_level, default="INFO")
-    parser.add_argument("--no-debug-log", action="store_false", dest="debug_log_enabled")
+    parser.add_argument(
+        "--no-debug-log", action="store_false", dest="debug_log_enabled"
+    )
     parser.add_argument("--log-directory", type=Path, default=None)
     return parser
 
@@ -162,7 +186,9 @@ def _parse_namespace(argv: Sequence[str] | None) -> argparse.Namespace:
         subscriptions.extend(_csv_values(value))
     management_groups = _csv_values(args.management_groups)
     if args.management_groups and subscriptions:
-        parser.error("--subscriptions/--subscription cannot be combined with --management-groups")
+        parser.error(
+            "--subscriptions/--subscription cannot be combined with --management-groups"
+        )
     args.subscription_ids = tuple(sorted(set(subscriptions)))
     args.management_group_ids = tuple(sorted(set(management_groups)))
     return args

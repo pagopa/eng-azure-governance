@@ -7,16 +7,24 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import ApplicationError
-from src.comitato.comitato_azure_retirements_v2.adapters.advisor_enrichment import AdvisorEnrichmentError
+from src.comitato.comitato_azure_retirements_v2.adapters.advisor_enrichment import (
+    AdvisorEnrichmentError,
+)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+    RetirementsApplication,
+)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+    ApplicationError,
+)
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+    AdvisorEnrichments,
+)
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     ReportSelector,
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import AdvisorEnrichments
 from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
 from src.comitato.comitato_azure_retirements_v2.publication.model import (
     PublicationCandidate,
@@ -25,7 +33,6 @@ from src.comitato.comitato_azure_retirements_v2.publication.model import (
 from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
-
 
 SUBSCRIPTION_ID = "11111111-1111-1111-1111-111111111111"
 UNMAPPED_SUBSCRIPTION_ID = "22222222-2222-2222-2222-222222222222"
@@ -235,7 +242,9 @@ def test_enrichment_failure_blocks_publication() -> None:
     assert publication.published == []
 
 
-def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifacts() -> None:
+def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifacts() -> (
+    None
+):
     log = EventLog()
     publication = FakePublicationStore()
 
@@ -243,7 +252,9 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
 
     assert log.events == ["scope", "catalog", "advisor", "service-health"]
     assert result.exit_status == 0
-    assert [artifact.logical_path for artifact in publication.published[0].artifacts] == [
+    assert [
+        artifact.logical_path for artifact in publication.published[0].artifacts
+    ] == [
         "01_azure_advisor_retirements_raw.tsv",
         "01_azure_advisor_retirements_raw.jsonl",
         "01_azure_service_health_advisories_raw.tsv",
@@ -285,9 +296,9 @@ def test_non_empty_raw_publication_is_allowed_after_coverage() -> None:
     log = EventLog()
     publication = FakePublicationStore()
 
-    result = build_application(
-        log, publication, records=(advisor_payload(),)
-    ).run(RunRequest(ReportSelector.ADVISOR))
+    result = build_application(log, publication, records=(advisor_payload(),)).run(
+        RunRequest(ReportSelector.ADVISOR)
+    )
 
     assert result.exit_status == 0
     assert len(publication.published) == 1
@@ -297,12 +308,14 @@ def test_covered_advisor_selector_publishes_only_raw_pair() -> None:
     log = EventLog()
     publication = FakePublicationStore()
 
-    result = build_application(
-        log, publication, records=(advisor_payload(),)
-    ).run(RunRequest(ReportSelector.ADVISOR))
+    result = build_application(log, publication, records=(advisor_payload(),)).run(
+        RunRequest(ReportSelector.ADVISOR)
+    )
 
     assert result.exit_status == 0
-    assert [artifact.logical_path for artifact in publication.published[0].artifacts] == [
+    assert [
+        artifact.logical_path for artifact in publication.published[0].artifacts
+    ] == [
         "01_azure_advisor_retirements_raw.tsv",
         "01_azure_advisor_retirements_raw.jsonl",
     ]
@@ -313,7 +326,9 @@ def test_unmapped_evidence_subscription_blocks_before_staging() -> None:
     log = EventLog()
     publication = FakePublicationStore()
 
-    with pytest.raises(ApplicationError, match="platform_mapping_unmapped_subscription"):
+    with pytest.raises(
+        ApplicationError, match="platform_mapping_unmapped_subscription"
+    ):
         build_application(
             log, publication, records=(advisor_payload(UNMAPPED_SUBSCRIPTION_ID),)
         ).run(RunRequest(ReportSelector.ADVISOR))
@@ -325,9 +340,7 @@ def test_application_uses_one_publish_operation() -> None:
     log = EventLog()
     publication = FakePublicationStore()
 
-    result = build_application(log, publication).run(
-        RunRequest(ReportSelector.ADVISOR)
-    )
+    result = build_application(log, publication).run(RunRequest(ReportSelector.ADVISOR))
 
     assert len(publication.published) == 1
     assert result.publication_receipt.current_reference == "2026/07"

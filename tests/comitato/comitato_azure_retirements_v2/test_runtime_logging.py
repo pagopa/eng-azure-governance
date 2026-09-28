@@ -42,7 +42,9 @@ def test_text_logger_writes_sorted_human_context(tmp_path: Path) -> None:
     assert not content.lstrip().startswith("{")
 
 
-def test_text_logger_redacts_sensitive_context_and_query_strings(tmp_path: Path) -> None:
+def test_text_logger_redacts_sensitive_context_and_query_strings(
+    tmp_path: Path,
+) -> None:
     logger = TextRunLogger(tmp_path / "run.log", level="INFO")
     logger.emit(
         RuntimeEvent(
@@ -98,13 +100,25 @@ def test_human_reporter_renders_v1_style_sections_and_summary(tmp_path: Path) ->
         settings=RuntimeLoggingSettings(output_format="human"),
         runtime_root=tmp_path,
         human_console=True,
-        console=Console(file=stream, color_system=None, force_terminal=False, width=120),
+        console=Console(
+            file=stream, color_system=None, force_terminal=False, width=120
+        ),
         now=lambda: datetime(2026, 7, 31, 14, 22, tzinfo=timezone.utc),
     )
 
-    reporter.emit(RuntimeEvent("INFO", "run_started", "Run started", "run-1", {"report": "all"}))
-    reporter.emit(RuntimeEvent("INFO", "scope_resolved", "Scope resolved", "run-1", {"subscriptions": 2}))
-    reporter.emit(RuntimeEvent("INFO", "run_completed", "Run completed", "run-1", {"artifacts": 6}))
+    reporter.emit(
+        RuntimeEvent("INFO", "run_started", "Run started", "run-1", {"report": "all"})
+    )
+    reporter.emit(
+        RuntimeEvent(
+            "INFO", "scope_resolved", "Scope resolved", "run-1", {"subscriptions": 2}
+        )
+    )
+    reporter.emit(
+        RuntimeEvent(
+            "INFO", "run_completed", "Run completed", "run-1", {"artifacts": 6}
+        )
+    )
     reporter.close()
 
     output = stream.getvalue()
@@ -143,7 +157,9 @@ def test_reporter_filters_console_level_and_renders_verbose_unknown_events(
         ),
         runtime_root=tmp_path,
         human_console=True,
-        console=Console(file=stream, color_system=None, force_terminal=False, width=120),
+        console=Console(
+            file=stream, color_system=None, force_terminal=False, width=120
+        ),
     )
 
     reporter.emit(RuntimeEvent("INFO", "run_started", "hidden info", "run-1"))
@@ -168,7 +184,9 @@ def test_reporter_disabled_debug_logging_creates_no_file(tmp_path: Path) -> None
     assert list(tmp_path.rglob("*.log")) == []
 
 
-def test_reporter_exception_writes_traceback_without_sensitive_context(tmp_path: Path) -> None:
+def test_reporter_exception_writes_traceback_without_sensitive_context(
+    tmp_path: Path,
+) -> None:
     reporter = RuntimeReporter(
         settings=RuntimeLoggingSettings(),
         runtime_root=tmp_path,

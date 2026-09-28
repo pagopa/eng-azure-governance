@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from uuid import UUID
-from collections.abc import Mapping
 
 from .diagnostics import Diagnostic, ValidationResult
 
@@ -28,9 +27,16 @@ class PlatformAssignment:
     subscription_name: str
 
     def __post_init__(self) -> None:
-        if not isinstance(self.platform, str) or not self.platform.strip() or self.platform.casefold() == "all":
+        if (
+            not isinstance(self.platform, str)
+            or not self.platform.strip()
+            or self.platform.casefold() == "all"
+        ):
             raise ValueError("platform name must be non-empty and not ALL")
-        if not isinstance(self.subscription_name, str) or not self.subscription_name.strip():
+        if (
+            not isinstance(self.subscription_name, str)
+            or not self.subscription_name.strip()
+        ):
             raise ValueError("subscription name must be non-empty")
         object.__setattr__(self, "platform", self.platform.strip())
         object.__setattr__(self, "subscription_name", self.subscription_name.strip())
@@ -107,7 +113,13 @@ def project_platforms(
 ) -> ValidationResult[PlatformProjection]:
     unique = tuple(sorted({item.value for item in subscription_ids}))
     if is_explicit_global and unique:
-        return ValidationResult.invalid((Diagnostic("error", "global_subscription_conflict", "mapping", report, run_id),))
+        return ValidationResult.invalid(
+            (
+                Diagnostic(
+                    "error", "global_subscription_conflict", "mapping", report, run_id
+                ),
+            )
+        )
     if is_explicit_global:
         return ValidationResult.valid(PlatformProjection(("ALL",), {"ALL": ()}))
     missing: list[Diagnostic] = []
@@ -133,7 +145,9 @@ def project_platforms(
             )
             continue
         platform, name = assignment
-        groups.setdefault(platform, []).append({"subscription_id": raw_id, "subscription_name": name})
+        groups.setdefault(platform, []).append(
+            {"subscription_id": raw_id, "subscription_name": name}
+        )
     if missing:
         return ValidationResult.invalid(tuple(missing))
     ordered = {
@@ -143,4 +157,10 @@ def project_platforms(
     return ValidationResult.valid(PlatformProjection(tuple(ordered), ordered))
 
 
-__all__ = ["PlatformAssignment", "PlatformCatalogSnapshot", "PlatformProjection", "SubscriptionId", "project_platforms"]
+__all__ = [
+    "PlatformAssignment",
+    "PlatformCatalogSnapshot",
+    "PlatformProjection",
+    "SubscriptionId",
+    "project_platforms",
+]

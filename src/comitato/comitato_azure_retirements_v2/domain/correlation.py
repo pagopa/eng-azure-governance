@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass
-import json
 from urllib.parse import urlsplit
 
 from .retirements import SourceEvent, SourceEventKey
-
 
 _BASES = frozenset({"tracking_id", "ash_url"})
 
@@ -25,7 +24,9 @@ def _values(value: object) -> tuple[str, ...]:
         except json.JSONDecodeError:
             return (value.strip().casefold(),) if value.strip() else ()
     if isinstance(value, (list, tuple, set)):
-        return tuple(str(item).strip().casefold() for item in value if str(item).strip())
+        return tuple(
+            str(item).strip().casefold() for item in value if str(item).strip()
+        )
     return ()
 
 
@@ -40,9 +41,25 @@ def _advisor_identifiers(event: SourceEvent) -> dict[str, set[str]]:
                 provenance = {}
         if not isinstance(provenance, Mapping):
             provenance = {}
-        for value in _values(row.get("trackingIds", row.get("source_health_tracking_ids", provenance.get("service_health_tracking_ids", ())))):
+        for value in _values(
+            row.get(
+                "trackingIds",
+                row.get(
+                    "source_health_tracking_ids",
+                    provenance.get("service_health_tracking_ids", ()),
+                ),
+            )
+        ):
             result["tracking_id"].add(value)
-        urls = _values(row.get("ashUrls", row.get("source_health_ash_urls", provenance.get("service_health_ash_urls", ()))))
+        urls = _values(
+            row.get(
+                "ashUrls",
+                row.get(
+                    "source_health_ash_urls",
+                    provenance.get("service_health_ash_urls", ()),
+                ),
+            )
+        )
         for value in urls:
             parts = [part for part in urlsplit(value).path.split("/") if part]
             if len(parts) >= 2 and parts[-2].casefold() == "h":
@@ -54,7 +71,9 @@ def _health_tracking_ids(event: SourceEvent) -> set[str]:
     return {
         value
         for row in event.records
-        for value in _values(row.get("tracking_id", row.get("service_health_tracking_id", "")))
+        for value in _values(
+            row.get("tracking_id", row.get("service_health_tracking_id", ""))
+        )
     }
 
 
@@ -95,12 +114,18 @@ class CorrelationResult:
 
     @property
     def status_by_event(self) -> Mapping[SourceEventKey, str]:
-        return {key: decision.status for key, decision in self.decision_by_event.items()}
+        return {
+            key: decision.status for key, decision in self.decision_by_event.items()
+        }
 
     @property
     def decision_by_group(self) -> tuple[CorrelationDecision, ...]:
         return tuple(
-            next(decision for decision in self.decisions if decision.event_key == group[0].key)
+            next(
+                decision
+                for decision in self.decisions
+                if decision.event_key == group[0].key
+            )
             for group in self.groups
         )
 
@@ -130,10 +155,19 @@ def correlate_source_events(
                 continue
             health_values = _health_tracking_ids(health_event)
             for basis in ("tracking_id", "ash_url"):
-                if any(value and value in advisor_values[basis] for value in health_values):
-                    candidate_edges.append(CorrelationEdge(advisor.key, health_event.key, basis))
+                if any(
+                    value and value in advisor_values[basis] for value in health_values
+                ):
+                    candidate_edges.append(
+                        CorrelationEdge(advisor.key, health_event.key, basis)
+                    )
                     break
-    unique_edges = tuple(sorted(set(candidate_edges), key=lambda edge: (edge.advisor_key, edge.service_health_key, edge.basis)))
+    unique_edges = tuple(
+        sorted(
+            set(candidate_edges),
+            key=lambda edge: (edge.advisor_key, edge.service_health_key, edge.basis),
+        )
+    )
     for edge in unique_edges:
         if edge.advisor_key not in by_key or edge.service_health_key not in by_key:
             raise ValueError("correlation edge references an unknown source event")
@@ -158,16 +192,24 @@ def correlate_source_events(
         frontier = [event.key]
         while frontier:
             current = frontier.pop()
-            neighbours = set(advisor_to_health.get(current, ())) | set(health_to_advisor.get(current, ()))
+            neighbours = set(advisor_to_health.get(current, ())) | set(
+                health_to_advisor.get(current, ())
+            )
             for neighbour in neighbours:
                 if neighbour not in component:
                     component.add(neighbour)
                     frontier.append(neighbour)
         visited.update(component)
-        component_edges = tuple(sorted(
-            {edge for key in component for edge in edges_by_event.get(key, ())},
-            key=lambda edge: (edge.advisor_key, edge.service_health_key, edge.basis),
-        ))
+        component_edges = tuple(
+            sorted(
+                {edge for key in component for edge in edges_by_event.get(key, ())},
+                key=lambda edge: (
+                    edge.advisor_key,
+                    edge.service_health_key,
+                    edge.basis,
+                ),
+            )
+        )
         advisors = {key for key in component if key.source == "advisor"}
         health = {key for key in component if key.source == "service-health"}
         one_to_one = (
@@ -179,7 +221,12 @@ def correlate_source_events(
         if one_to_one:
             advisor_key = next(iter(advisors))
             health_key = next(iter(health))
-            basis = next(edge.basis for edge in component_edges if edge.advisor_key == advisor_key and edge.service_health_key == health_key)
+            basis = next(
+                edge.basis
+                for edge in component_edges
+                if edge.advisor_key == advisor_key
+                and edge.service_health_key == health_key
+            )
             group = (by_key[advisor_key], by_key[health_key])
             groups.append(group)
             decisions.extend(
@@ -191,9 +238,11 @@ def correlate_source_events(
             continue
 
         for key in sorted(component):
-            candidates = tuple(sorted(
-                (health if key.source == "advisor" else advisors),
-            ))
+            candidates = tuple(
+                sorted(
+                    (health if key.source == "advisor" else advisors),
+                )
+            )
             groups.append((by_key[key],))
             decisions.append(
                 CorrelationDecision(

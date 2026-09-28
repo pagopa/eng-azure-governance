@@ -2,7 +2,7 @@ import sys
 
 
 def main() -> None:
-    if sys.argv[1:] in (['--help'], ['-h']):
+    if sys.argv[1:] in (["--help"], ["-h"]):
         from .config import _parser
 
         _parser().parse_args()

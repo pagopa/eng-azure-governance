@@ -2,22 +2,33 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import ApplicationError
-from src.comitato.comitato_azure_retirements_v2.publication.model import PublicationError
+from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+    RetirementsApplication,
+)
+from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+    ApplicationError,
+)
+from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+    ReportSelector,
+    RunRequest,
+)
+from src.comitato.comitato_azure_retirements_v2.publication.model import (
+    PublicationError,
+)
 from tests.comitato.comitato_azure_retirements_v2.application.test_aggregate_selectors import (
+    SUBSCRIPTION,
     CatalogSource,
     Clock,
     Publication,
     RunId,
     ScopeSource,
     Source,
-    SUBSCRIPTION,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import RetirementsApplication
-from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector, RunRequest
 
 
-def test_slides_selector_publishes_only_slide_target_while_using_run_local_aggregate() -> None:
+def test_slides_selector_publishes_only_slide_target_while_using_run_local_aggregate() -> (
+    None
+):
     publication = Publication()
     app = RetirementsApplication(
         scope_source=ScopeSource(),
@@ -45,7 +56,9 @@ class PublishProbe:
         assert not self.path.exists()
         if self.fail:
             raise PublicationError("publication failed")
-        return type("Receipt", (), {"generation": "2026/07", "current_reference": "2026/07"})()
+        return type(
+            "Receipt", (), {"generation": "2026/07", "current_reference": "2026/07"}
+        )()
 
 
 def _committee_app(path: Path | None, publication):
@@ -63,7 +76,9 @@ def _committee_app(path: Path | None, publication):
 
 def test_committee_yaml_is_written_only_after_publish_returns(tmp_path: Path) -> None:
     path = tmp_path / "committee.yaml"
-    _committee_app(path, PublishProbe(path)).run(RunRequest(ReportSelector.SLIDES, (SUBSCRIPTION,)))
+    _committee_app(path, PublishProbe(path)).run(
+        RunRequest(ReportSelector.SLIDES, (SUBSCRIPTION,))
+    )
     assert path.is_file()
 
 

@@ -1,15 +1,14 @@
 import csv
-from pathlib import Path
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
+from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
     load_scenario,
     run_scenario,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector
-
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
@@ -39,12 +38,16 @@ def test_negative_acceptance_scenarios_emit_stable_errors_and_publish_nothing(
 
     result = run_scenario(scenario, tmp_path)
 
-    assert result.exit_status == int((fixture / "expected" / "exit-status.txt").read_text())
+    assert result.exit_status == int(
+        (fixture / "expected" / "exit-status.txt").read_text()
+    )
     assert result.stderr_jsonl == (fixture / "expected" / "stderr.jsonl").read_bytes()
     assert result.current_tree == seeded_current(fixture)
 
 
-def test_s07_missing_non_global_subscription_is_blocking_and_publishes_nothing(tmp_path):
+def test_s07_missing_non_global_subscription_is_blocking_and_publishes_nothing(
+    tmp_path,
+):
     fixture = FIXTURES / "s07_missing_non_global_subscription"
     scenario = load_scenario(fixture)
     result = run_scenario(scenario, tmp_path)
@@ -78,6 +81,8 @@ def test_s03_explicit_global_raw_evidence_has_no_subscription_fallback(tmp_path)
     assert values["subscription_evidence_source"] == "explicit_global"
     expected = {
         relative_path: (fixture / "expected" / "current" / relative_path).read_bytes()
-        for relative_path in sorted(path.name for path in (fixture / "expected" / "current").iterdir())
+        for relative_path in sorted(
+            path.name for path in (fixture / "expected" / "current").iterdir()
+        )
     }
     assert result.current_tree == expected

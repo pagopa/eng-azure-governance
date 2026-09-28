@@ -1,6 +1,6 @@
 import json
-from types import SimpleNamespace
 from datetime import date, datetime, timezone
+from types import SimpleNamespace
 
 from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
     AGGREGATE_V1,
@@ -19,7 +19,6 @@ from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
     PlatformCatalogSnapshot,
     SubscriptionId,
 )
-
 
 SUBSCRIPTION = "11111111-1111-1111-1111-111111111111"
 
@@ -40,7 +39,11 @@ def catalog() -> PlatformCatalogSnapshot:
     return PlatformCatalogSnapshot(
         schema_version=1,
         sha256="a" * 64,
-        assignments=(PlatformAssignment(SubscriptionId(SUBSCRIPTION), "Platform A", "Subscription A"),),
+        assignments=(
+            PlatformAssignment(
+                SubscriptionId(SUBSCRIPTION), "Platform A", "Subscription A"
+            ),
+        ),
     )
 
 
@@ -73,14 +76,19 @@ def test_build_aggregate_preserves_membership_and_catalog_projection() -> None:
     assert json.loads(row["raw_record_refs_json"]) == ["advisor-ref"]
     assert json.loads(row["platforms_json"]) == ["Platform A"]
     assert json.loads(row["platforms_subscriptions_json"]) == {
-        "Platform A": [{"subscription_id": SUBSCRIPTION, "subscription_name": "Subscription A"}]
+        "Platform A": [
+            {"subscription_id": SUBSCRIPTION, "subscription_name": "Subscription A"}
+        ]
     }
     assert row["is_global"] == "false"
     assert AGGREGATE_V1.validate(
         AGGREGATE_V1.empty_artifact(context()).__class__(
-            contract="aggregate", schema_version=1, run_id="run-1", records=tuple(records)
+            contract="aggregate",
+            schema_version=1,
+            run_id="run-1",
+            records=tuple(records),
         ),
-            context(),
+        context(),
     ).is_valid
 
 
@@ -149,30 +157,32 @@ def test_build_aggregate_preserves_partial_retirement_evidence() -> None:
     assert claims[0]["quality"] == "partial"
 
 
-
-
 def test_aggregate_projects_titles_impacts_dates_and_normalized_source_links() -> None:
-    advisor_records = ({
-        "advisor_recommendation_id": "advisor-1",
-        "recommendation_type_id": "retirement-1",
-        "short_description_problem": "Advisor retirement problem",
-        "impact": "High",
-        "retirement_date": "2027-01-01",
-        "last_updated": "2026-09-20T12:00:00Z",
-        "learn_more_link": "https://learn.example/advisor/",
-        "source_health_ash_urls": ["https://app.azure.com/h/notice-1/"],
-        "raw_record_ref": "advisor-ref",
-    },)
-    health_records = ({
-        "service_health_event_id": "health-1",
-        "tracking_id": "notice-1",
-        "title": "Service Health retirement notice",
-        "retirement_date": "2027-02-01",
-        "impact_start_time": "2026-08-01T00:00:00Z",
-        "impact_mitigation_time": "2026-10-01T00:00:00Z",
-        "source_link": "https://learn.example/health/",
-        "raw_record_ref": "health-ref",
-    },)
+    advisor_records = (
+        {
+            "advisor_recommendation_id": "advisor-1",
+            "recommendation_type_id": "retirement-1",
+            "short_description_problem": "Advisor retirement problem",
+            "impact": "High",
+            "retirement_date": "2027-01-01",
+            "last_updated": "2026-09-20T12:00:00Z",
+            "learn_more_link": "https://learn.example/advisor/",
+            "source_health_ash_urls": ["https://app.azure.com/h/notice-1/"],
+            "raw_record_ref": "advisor-ref",
+        },
+    )
+    health_records = (
+        {
+            "service_health_event_id": "health-1",
+            "tracking_id": "notice-1",
+            "title": "Service Health retirement notice",
+            "retirement_date": "2027-02-01",
+            "impact_start_time": "2026-08-01T00:00:00Z",
+            "impact_mitigation_time": "2026-10-01T00:00:00Z",
+            "source_link": "https://learn.example/health/",
+            "raw_record_ref": "health-ref",
+        },
+    )
 
     advisor_acquisition = SimpleNamespace(
         records=advisor_records,
@@ -182,7 +192,9 @@ def test_aggregate_projects_titles_impacts_dates_and_normalized_source_links() -
                 "advisor_metadata": {
                     "sourceProperties": {
                         "serviceRetirement": {
-                            "serviceHealth": {"ashUrls": ["https://app.azure.com/h/notice-1/"]},
+                            "serviceHealth": {
+                                "ashUrls": ["https://app.azure.com/h/notice-1/"]
+                            },
                         },
                     },
                 },
@@ -227,20 +239,36 @@ def test_aggregate_projects_titles_impacts_dates_and_normalized_source_links() -
 
 def test_aggregate_adds_metadata_and_image_dates_with_diagnostic_flags() -> None:
     advisor_acquisition = SimpleNamespace(
-        records=({
-            "advisor_recommendation_id": "advisor-1",
-            "recommendation_type_id": "type-1",
-            "retirement_date": "2026-03-01",
-            "raw_record_ref": "advisor-ref",
-        },),
-        companion_records=({
-            "raw_record_ref": "advisor-ref",
-            "advisor_metadata": {"sourceProperties": {"serviceRetirement": {"retirementDate": "2026-03-31"}}},
-            "recommendation": {"properties": {"extendedProperties": {"SoftDeleteRequestedTime": "2027-01-12T00:00:00.0000000Z"}}}},
+        records=(
+            {
+                "advisor_recommendation_id": "advisor-1",
+                "recommendation_type_id": "type-1",
+                "retirement_date": "2026-03-01",
+                "raw_record_ref": "advisor-ref",
+            },
+        ),
+        companion_records=(
+            {
+                "raw_record_ref": "advisor-ref",
+                "advisor_metadata": {
+                    "sourceProperties": {
+                        "serviceRetirement": {"retirementDate": "2026-03-31"}
+                    }
+                },
+                "recommendation": {
+                    "properties": {
+                        "extendedProperties": {
+                            "SoftDeleteRequestedTime": "2027-01-12T00:00:00.0000000Z"
+                        }
+                    }
+                },
+            },
         ),
     )
 
-    row = build_aggregate(advisor_acquisition, (), context=context(), catalog=catalog())[0]
+    row = build_aggregate(
+        advisor_acquisition, (), context=context(), catalog=catalog()
+    )[0]
 
     assert json.loads(row["date_events_json"]) == [
         {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
@@ -255,16 +283,36 @@ def test_aggregate_adds_metadata_and_image_dates_with_diagnostic_flags() -> None
 def test_aggregate_skips_equal_metadata_date_and_flags_undated_advisor_rows() -> None:
     advisor_acquisition = SimpleNamespace(
         records=(
-            {"advisor_recommendation_id": "dated", "recommendation_type_id": "type-1", "retirement_date": "2026-03-01", "raw_record_ref": "dated-ref"},
-            {"advisor_recommendation_id": "undated", "recommendation_type_id": "type-2", "raw_record_ref": "undated-ref"},
+            {
+                "advisor_recommendation_id": "dated",
+                "recommendation_type_id": "type-1",
+                "retirement_date": "2026-03-01",
+                "raw_record_ref": "dated-ref",
+            },
+            {
+                "advisor_recommendation_id": "undated",
+                "recommendation_type_id": "type-2",
+                "raw_record_ref": "undated-ref",
+            },
         ),
-        companion_records=({
-            "raw_record_ref": "dated-ref",
-            "advisor_metadata": {"sourceProperties": {"serviceRetirement": {"retirementDate": "2026-03-01"}}},
-        },),
+        companion_records=(
+            {
+                "raw_record_ref": "dated-ref",
+                "advisor_metadata": {
+                    "sourceProperties": {
+                        "serviceRetirement": {"retirementDate": "2026-03-01"}
+                    }
+                },
+            },
+        ),
     )
 
-    rows = {json.loads(row["advisor_recommendation_ids_json"])[0]: row for row in build_aggregate(advisor_acquisition, (), context=context(), catalog=catalog())}
+    rows = {
+        json.loads(row["advisor_recommendation_ids_json"])[0]: row
+        for row in build_aggregate(
+            advisor_acquisition, (), context=context(), catalog=catalog()
+        )
+    }
 
     assert json.loads(rows["dated"]["date_events_json"]) == [
         {"date": "2026-03-01", "kind": "retirement", "source": "advisor"},
@@ -274,16 +322,18 @@ def test_aggregate_skips_equal_metadata_date_and_flags_undated_advisor_rows() ->
 
 
 def test_aggregate_adds_text_links_when_only_portal_links_exist() -> None:
-    health_records = ({
-        "service_health_event_id": "health-1",
-        "tracking_id": "notice-1",
-        "description_problem": (
-            "See Health advisories (https://aka.ms/AzureServiceHealthAdvisories). "
-            "Read the guidance (https://techcommunity.microsoft.com/blog/x/123)."
-        ),
-        "last_update_time": "2026-09-22T14:29:36Z",
-        "raw_record_ref": "health-ref",
-    },)
+    health_records = (
+        {
+            "service_health_event_id": "health-1",
+            "tracking_id": "notice-1",
+            "description_problem": (
+                "See Health advisories (https://aka.ms/AzureServiceHealthAdvisories). "
+                "Read the guidance (https://techcommunity.microsoft.com/blog/x/123)."
+            ),
+            "last_update_time": "2026-09-22T14:29:36Z",
+            "raw_record_ref": "health-ref",
+        },
+    )
 
     row = build_aggregate((), health_records, context=context(), catalog=catalog())[0]
 
@@ -292,4 +342,8 @@ def test_aggregate_adds_text_links_when_only_portal_links_exist() -> None:
         "https://techcommunity.microsoft.com/blog/x/123",
     ]
     assert "link_from_text" in row["diagnostic_flags"].split(",")
-    assert {"date": "2026-09-22", "kind": "last_updated", "source": "service-health"} in json.loads(row["date_events_json"])
+    assert {
+        "date": "2026-09-22",
+        "kind": "last_updated",
+        "source": "service-health",
+    } in json.loads(row["date_events_json"])

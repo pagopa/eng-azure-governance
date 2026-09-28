@@ -54,9 +54,7 @@ class ReportCatalog:
             raise ValueError("report paths must be unique")
         self._definitions = definitions
         self._by_selector = {item.selector: item for item in definitions}
-        self._by_path = {
-            path: item for item in definitions for path in item.paths
-        }
+        self._by_path = {path: item for item in definitions for path in item.paths}
         self._sidecar_contracts = sidecar_contracts
 
     def _closure_definition(self, definition: ReportDefinition) -> ReportDefinition:
@@ -99,9 +97,11 @@ class ReportCatalog:
         for root in roots:
             visit(root)
 
-        stages = ("scope", "catalog") + tuple(
-            item.stage for item in required
-        ) + ("publication",)
+        stages = (
+            ("scope", "catalog")
+            + tuple(item.stage for item in required)
+            + ("publication",)
+        )
         published = tuple(
             self._closure_definition(item)
             for item in roots

@@ -1,5 +1,5 @@
-from datetime import date, datetime, timezone
 import json
+from datetime import date, datetime, timezone
 
 import pytest
 
@@ -11,7 +11,9 @@ from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors
     ApplicationError,
 )
 from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import AdvisorEnrichments
+from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+    AdvisorEnrichments,
+)
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -60,7 +62,10 @@ def acquisition() -> SourceAcquisition:
                         "resourceId": "/subscriptions/sub-a/resourceGroups/RG/providers/Microsoft.Storage/storageAccounts/a"
                     },
                     "shortDescription": {"problem": "problem", "solution": "solution"},
-                    "actions": [{"order": 2, "text": "second"}, {"order": 1, "text": "first"}],
+                    "actions": [
+                        {"order": 2, "text": "second"},
+                        {"order": 1, "text": "first"},
+                    ],
                     "retirementDate": "2027-03-31",
                     "category": "Reliability",
                     "impact": "High",
@@ -71,7 +76,9 @@ def acquisition() -> SourceAcquisition:
     )
 
 
-def test_normalize_advisor_preserves_the_complete_recommendation_evidence_pair() -> None:
+def test_normalize_advisor_preserves_the_complete_recommendation_evidence_pair() -> (
+    None
+):
     result = normalize_advisor(acquisition(), context(), AdvisorEnrichments())
 
     assert result.is_valid
@@ -81,19 +88,30 @@ def test_normalize_advisor_preserves_the_complete_recommendation_evidence_pair()
     assert artifact.records[0]["recommendation_status"] == "nEw"
     assert artifact.records[0]["published_resource_id"].endswith("/a")
     assert artifact.records[0]["resource_linkage_source"] == "resource_id"
-    assert artifact.records[0]["actions_json"] == '[{"order":2,"text":"second"},{"order":1,"text":"first"}]'
+    assert (
+        artifact.records[0]["actions_json"]
+        == '[{"order":2,"text":"second"},{"order":1,"text":"first"}]'
+    )
     assert artifact.records[0]["retirement_date"] == "2027-03-31"
     assert len(artifact.companion_records) == 1
-    assert artifact.records[0]["raw_record_ref"] == artifact.companion_records[0]["raw_record_ref"]
+    assert (
+        artifact.records[0]["raw_record_ref"]
+        == artifact.companion_records[0]["raw_record_ref"]
+    )
 
     encoded = ADVISOR_REPORT.contract.encode(artifact)
-    assert tuple(encoded.data.splitlines()[0].decode().split("\t")) == ADVISOR_REPORT.contract.header
+    assert (
+        tuple(encoded.data.splitlines()[0].decode().split("\t"))
+        == ADVISOR_REPORT.contract.header
+    )
 
 
 def test_normalize_advisor_prefers_detailed_description_over_short_problem() -> None:
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
-    payload["properties"]["detailedDescription"] = "Complete Advisor explanation with conditions."
+    payload["properties"]["detailedDescription"] = (
+        "Complete Advisor explanation with conditions."
+    )
 
     result = normalize_advisor(
         SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
@@ -103,10 +121,15 @@ def test_normalize_advisor_prefers_detailed_description_over_short_problem() -> 
 
     assert result.is_valid
     assert result.value is not None
-    assert result.value.records[0]["description"] == "Complete Advisor explanation with conditions."
+    assert (
+        result.value.records[0]["description"]
+        == "Complete Advisor explanation with conditions."
+    )
 
 
-def test_prepare_advisor_report_preserves_acquisition_context_after_normalization() -> None:
+def test_prepare_advisor_report_preserves_acquisition_context_after_normalization() -> (
+    None
+):
     source = SourceAcquisition(
         receipt=acquisition().receipt,
         records=acquisition().records,
@@ -116,11 +139,15 @@ def test_prepare_advisor_report_preserves_acquisition_context_after_normalizatio
 
     prepared = prepare_advisor_report(source, context(), AdvisorEnrichments())
 
-    assert prepared.acquisition.collection_context == {"query": "advisor-recommendations"}
+    assert prepared.acquisition.collection_context == {
+        "query": "advisor-recommendations"
+    }
     assert prepared.acquisition.response_context == ({"status": 200, "page": 1},)
 
 
-def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_it() -> None:
+def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_it() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"]["recommendationStatus"] = "Unexpected"
@@ -134,7 +161,9 @@ def test_normalize_advisor_rejects_unknown_status_instead_of_silently_dropping_i
     assert result.diagnostics[0].code == "invalid_recommendation_status"
 
 
-def test_normalize_advisor_accounts_excluded_and_invalid_observations_before_filtering() -> None:
+def test_normalize_advisor_accounts_excluded_and_invalid_observations_before_filtering() -> (
+    None
+):
     completed = acquisition().records[0].copy()
     completed["id"] = completed["id"].replace("rec-1", "rec-completed")
     completed["properties"] = dict(completed["properties"])
@@ -176,7 +205,9 @@ def test_normalize_advisor_defaults_missing_live_status_to_new() -> None:
     assert result.value.records[0]["recommendation_status"] == "New"
 
 
-def test_normalize_advisor_reads_live_retirement_fields_from_extended_properties() -> None:
+def test_normalize_advisor_reads_live_retirement_fields_from_extended_properties() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"].pop("retirementDate")
@@ -196,7 +227,9 @@ def test_normalize_advisor_reads_live_retirement_fields_from_extended_properties
     row = result.value.records[0]
     assert row["retiring_feature"] == "Legacy feature"
     assert row["retirement_date"] == "2028-04-15"
-    assert row["retirement_date_source"] == "properties.extendedProperties.retirementDate"
+    assert (
+        row["retirement_date_source"] == "properties.extendedProperties.retirementDate"
+    )
 
 
 def _integrity_context() -> RunContext:
@@ -286,14 +319,21 @@ def test_prepare_advisor_report_preserves_complete_empty_source() -> None:
     )
 
     assert prepared.acquisition.records == ()
-    assert tuple(item.logical_path for item in prepared.artifacts) == ADVISOR_REPORT.paths
-    assert prepared.artifacts[0].data == ("\t".join(ADVISOR_REPORT.contract.header) + "\n").encode()
+    assert (
+        tuple(item.logical_path for item in prepared.artifacts) == ADVISOR_REPORT.paths
+    )
+    assert (
+        prepared.artifacts[0].data
+        == ("\t".join(ADVISOR_REPORT.contract.header) + "\n").encode()
+    )
 
 
 def test_prepare_advisor_report_rejects_incomplete_receipt() -> None:
     with pytest.raises(ApplicationError, match="incomplete advisor acquisition"):
         prepare_advisor_report(
-            _empty_acquisition(complete=False), _integrity_context(), AdvisorEnrichments()
+            _empty_acquisition(complete=False),
+            _integrity_context(),
+            AdvisorEnrichments(),
         )
 
 
@@ -301,12 +341,17 @@ def test_prepare_advisor_report_returns_normalized_acquisition_and_encoded_pair(
     prepared = prepare_advisor_report(acquisition(), context(), AdvisorEnrichments())
     assert prepared.acquisition.records == prepared.artifact.records
     assert prepared.acquisition.companion_records == prepared.artifact.companion_records
-    assert tuple(item.logical_path for item in prepared.artifacts) == ADVISOR_REPORT.paths
-    assert ADVISOR_REPORT.verify_staged_artifact(
-        ADVISOR_REPORT.contract.path,
-        {item.logical_path: item.data for item in prepared.artifacts},
-        context(),
-    ) == ()
+    assert (
+        tuple(item.logical_path for item in prepared.artifacts) == ADVISOR_REPORT.paths
+    )
+    assert (
+        ADVISOR_REPORT.verify_staged_artifact(
+            ADVISOR_REPORT.contract.path,
+            {item.logical_path: item.data for item in prepared.artifacts},
+            context(),
+        )
+        == ()
+    )
 
 
 def acquisition_with_real_container_insights_payload() -> SourceAcquisition:
@@ -373,7 +418,9 @@ def enriched_container_insights() -> AdvisorEnrichments:
     )
 
 
-def test_normalize_advisor_uses_metadata_inventory_and_authoritative_fallbacks() -> None:
+def test_normalize_advisor_uses_metadata_inventory_and_authoritative_fallbacks() -> (
+    None
+):
     result = normalize_advisor(
         acquisition_with_real_container_insights_payload(),
         context(),
@@ -385,27 +432,42 @@ def test_normalize_advisor_uses_metadata_inventory_and_authoritative_fallbacks()
     assert row["service_name"] == "Kubernetes service"
     assert row["subscription_name"] == "DEV-P4PA"
     assert row["description"] == "Short description fallback"
-    assert row["potential_benefits"] == "Managed identity removes legacy authentication."
+    assert (
+        row["potential_benefits"] == "Managed identity removes legacy authentication."
+    )
     assert row["learn_more_link"] == "https://learn.example/container-insights"
     assert row["label"] == "Container Insights authentication"
     assert row["metadata_match_status"] == "matched"
     assert row["resource_inventory_match_status"] == "matched"
     assert row["subscription_inventory_match_status"] == "matched"
     provenance = json.loads(row["provenance_json"])
-    assert provenance["enrichment"]["metadata_key"] == "b005ecf0-23e2-4279-9ca2-718d1518c9fb"
+    assert (
+        provenance["enrichment"]["metadata_key"]
+        == "b005ecf0-23e2-4279-9ca2-718d1518c9fb"
+    )
     assert provenance["enrichment"]["resource_key"].endswith("/managedclusters/aks")
     assert provenance["enrichment"]["subscription_key"] == "sub-a"
-    assert provenance["field_sources"]["service_name"] == "metadata.properties.resourceMetadata.singular"
-    assert provenance["field_sources"]["description"] == "advisor.shortDescription.problem"
-    assert provenance["field_sources"]["learn_more_link"] == "metadata.properties.learnMoreLink"
+    assert (
+        provenance["field_sources"]["service_name"]
+        == "metadata.properties.resourceMetadata.singular"
+    )
+    assert (
+        provenance["field_sources"]["description"] == "advisor.shortDescription.problem"
+    )
+    assert (
+        provenance["field_sources"]["learn_more_link"]
+        == "metadata.properties.learnMoreLink"
+    )
     assert result.value.companion_records[0]["advisor_metadata"]["id"] == "metadata-aks"
 
 
-def test_normalize_advisor_prefers_metadata_detailed_description_to_short_problem() -> None:
+def test_normalize_advisor_prefers_metadata_detailed_description_to_short_problem() -> (
+    None
+):
     metadata = enriched_container_insights().metadata
-    metadata["b005ecf0-23e2-4279-9ca2-718d1518c9fb"]["properties"]["detailedDescription"] = (
-        "The native metadata explanation."
-    )
+    metadata["b005ecf0-23e2-4279-9ca2-718d1518c9fb"]["properties"][
+        "detailedDescription"
+    ] = "The native metadata explanation."
 
     result = normalize_advisor(
         acquisition_with_real_container_insights_payload(),
@@ -422,7 +484,9 @@ def test_normalize_advisor_prefers_metadata_detailed_description_to_short_proble
     )
 
 
-def test_normalize_advisor_prefers_recommendation_fields_and_short_description_fallback() -> None:
+def test_normalize_advisor_prefers_recommendation_fields_and_short_description_fallback() -> (
+    None
+):
     payload = acquisition_with_real_container_insights_payload().records[0].copy()
     payload["properties"] = {
         **payload["properties"],
@@ -455,7 +519,14 @@ def test_normalize_advisor_prefers_recommendation_fields_and_short_description_f
         key: value
         for key, value in payload["properties"].items()
         if key
-        not in {"serviceName", "description", "potentialBenefits", "learnMoreLink", "label", "actions"}
+        not in {
+            "serviceName",
+            "description",
+            "potentialBenefits",
+            "learnMoreLink",
+            "label",
+            "actions",
+        }
     }
     result = normalize_advisor(
         SourceAcquisition(
@@ -469,7 +540,9 @@ def test_normalize_advisor_prefers_recommendation_fields_and_short_description_f
     assert result.value.records[0]["description"] == "Short description fallback"
 
 
-def test_normalize_advisor_reports_missing_authoritative_optional_values_without_synthetic_text() -> None:
+def test_normalize_advisor_reports_missing_authoritative_optional_values_without_synthetic_text() -> (
+    None
+):
     result = normalize_advisor(
         acquisition_with_real_container_insights_payload(),
         context(),
@@ -490,21 +563,35 @@ def test_normalize_advisor_reports_missing_authoritative_optional_values_without
     assert row["learn_more_link"] == ""
     assert row["potential_benefits"] == ""
     assert row["label"] == ""
-    assert {"missing_learn_more_link", "missing_potential_benefits", "missing_label"} <= flags
+    assert {
+        "missing_learn_more_link",
+        "missing_potential_benefits",
+        "missing_label",
+    } <= flags
     assert "https://" not in row["learn_more_link"]
 
 
 def test_normalize_advisor_rejects_ambiguous_metadata_enrichment() -> None:
     duplicate = (
-        {"id": "metadata-a", "serviceRetirement": {"serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"}},
-        {"id": "metadata-b", "serviceRetirement": {"serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"}},
+        {
+            "id": "metadata-a",
+            "serviceRetirement": {"serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"},
+        },
+        {
+            "id": "metadata-b",
+            "serviceRetirement": {"serviceId": "b005ecf0-23e2-4279-9ca2-718d1518c9fb"},
+        },
     )
 
     result = normalize_advisor(
         acquisition_with_real_container_insights_payload(),
         context(),
-        AdvisorEnrichments(metadata={"b005ecf0-23e2-4279-9ca2-718d1518c9fb": duplicate}),
+        AdvisorEnrichments(
+            metadata={"b005ecf0-23e2-4279-9ca2-718d1518c9fb": duplicate}
+        ),
     )
 
     assert not result.is_valid
-    assert any(item.code == "ambiguous_metadata_enrichment" for item in result.diagnostics)
+    assert any(
+        item.code == "ambiguous_metadata_enrichment" for item in result.diagnostics
+    )

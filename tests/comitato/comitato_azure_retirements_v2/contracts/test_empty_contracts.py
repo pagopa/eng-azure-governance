@@ -6,8 +6,6 @@ from src.comitato.comitato_azure_retirements_v2.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
-from src.comitato.comitato_azure_retirements_v2.reports.service_health import SERVICE_HEALTH_REPORT
 from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
@@ -16,7 +14,10 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-
+from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
+    SERVICE_HEALTH_REPORT,
+)
 
 EXPECTED_HEADERS = {
     "advisor": "schema_version\trun_id\tas_of_date\tscope_mode\trecord_type\tsource_system\tadvisor_recommendation_id\trecommendation_type_id\trecommendation_status\tsubscription_id\tsubscription_name\tresource_linkage_source\tpublished_resource_id\tnormalized_resource_id\tresource_name\tresource_group\tresource_type\tlocation\ttags_json\tadvisor_metadata_id\tservice_name\tretiring_feature\tretirement_date_raw\tretirement_date\tretirement_date_source\tretirement_date_quality\timpact\trisk\tcategory\tsub_category\tlast_updated\tlabel\tshort_description_problem\tshort_description_solution\tdescription\tpotential_benefits\tlearn_more_link\tactions_json\tmetadata_match_status\tresource_inventory_match_status\tsubscription_inventory_match_status\tdiagnostic_flags\tprovenance_json\traw_record_ref",
@@ -25,7 +26,12 @@ EXPECTED_HEADERS = {
     "slides": "id_elemento\ttitolo_breve\tdescrizione_breve\tcomitato_priorità\timpatto_microsoft\tcomitato_descrizione\tcomitato_retirement_date\tcomitato_piattaforme\tretirement_date\tstato_data\tgiorni_ritardo\tdescrizione_originale_completa\tazione_originale\tfonti\tlink_fonti\tambito_impatto\tid_advisor\tid_service_health\trisorse_json",
 }
 
-ALL_V1_CONTRACTS = (ADVISOR_REPORT.contract, SERVICE_HEALTH_REPORT.contract, AGGREGATE_V1, SLIDES_V1)
+ALL_V1_CONTRACTS = (
+    ADVISOR_REPORT.contract,
+    SERVICE_HEALTH_REPORT.contract,
+    AGGREGATE_V1,
+    SLIDES_V1,
+)
 RAW_V1_CONTRACTS = (ADVISOR_REPORT.contract, SERVICE_HEALTH_REPORT.contract)
 
 

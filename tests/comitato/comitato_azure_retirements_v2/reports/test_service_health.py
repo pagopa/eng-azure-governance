@@ -1,5 +1,5 @@
-from datetime import date, datetime, timezone
 import json
+from datetime import date, datetime, timezone
 
 import pytest
 
@@ -10,8 +10,8 @@ from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
 from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
 from src.comitato.comitato_azure_retirements_v2.contracts.codecs import decode_tsv
+from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
 from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
     ServiceHealthSupplementalEvidence,
 )
@@ -39,7 +39,9 @@ def context(*subscription_ids: str) -> RunContext:
         request=RunRequest(ReportSelector.SERVICE_HEALTH),
         scope=Scope(mode="explicit", subscription_ids=scoped_subscriptions),
         catalog_identity=CatalogIdentity(1, "a" * 64),
-        dependency_plan=DependencyPlan(("scope", "catalog", "service-health", "publication")),
+        dependency_plan=DependencyPlan(
+            ("scope", "catalog", "service-health", "publication")
+        ),
     )
 
 
@@ -60,20 +62,35 @@ def acquisition() -> SourceAcquisition:
                     "eventSource": "ServiceHealth",
                     "title": "Title",
                     "summary": "Summary",
-                    "article": {"articleContent": '<p>Read <a href="https://example.test">details</a>.</p>'},
+                    "article": {
+                        "articleContent": '<p>Read <a href="https://example.test">details</a>.</p>'
+                    },
                     "recommendedActions": "Act now",
                     "impactStartTime": "2026-07-01T00:00:00Z",
                     "impactMitigationTime": "2027-03-31T00:00:00Z",
                     "lastUpdateTime": "2026-07-29T12:00:00Z",
-                    "impactedServices": [{"serviceName": "Storage", "serviceGuid": "guid-1", "impactedRegions": [{"regionName": "West Europe"}]}],
-                    "impactedResources": [{"subscriptionId": "sub-a", "resourceId": "/subscriptions/sub-a/resourceGroups/RG/providers/Microsoft.Storage/storageAccounts/a"}],
+                    "impactedServices": [
+                        {
+                            "serviceName": "Storage",
+                            "serviceGuid": "guid-1",
+                            "impactedRegions": [{"regionName": "West Europe"}],
+                        }
+                    ],
+                    "impactedResources": [
+                        {
+                            "subscriptionId": "sub-a",
+                            "resourceId": "/subscriptions/sub-a/resourceGroups/RG/providers/Microsoft.Storage/storageAccounts/a",
+                        }
+                    ],
                 },
             },
         ),
     )
 
 
-def test_normalize_service_health_does_not_treat_mitigation_time_as_retirement_date() -> None:
+def test_normalize_service_health_does_not_treat_mitigation_time_as_retirement_date() -> (
+    None
+):
     result = normalize_service_health(
         acquisition(), context(), ServiceHealthSupplementalEvidence()
     )
@@ -92,18 +109,21 @@ def test_normalize_service_health_does_not_treat_mitigation_time_as_retirement_d
     assert row["raw_record_ref"] == artifact.companion_records[0]["raw_record_ref"]
 
     encoded = SERVICE_HEALTH_REPORT.contract.encode(artifact)
-    assert tuple(encoded.data.splitlines()[0].decode().split("\t")) == SERVICE_HEALTH_REPORT.contract.header
+    assert (
+        tuple(encoded.data.splitlines()[0].decode().split("\t"))
+        == SERVICE_HEALTH_REPORT.contract.header
+    )
 
 
-def test_normalize_service_health_preserves_unicode_article_text_and_action_object() -> None:
+def test_normalize_service_health_preserves_unicode_article_text_and_action_object() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"]["article"] = {
         "articleContent": "<p>Gestisci l'azione per la città.</p><p>Seconda riga –.</p>"
     }
-    payload["properties"]["recommendedActions"] = {
-        "actionText": "Aggiorna l'istanza à"
-    }
+    payload["properties"]["recommendedActions"] = {"actionText": "Aggiorna l'istanza à"}
 
     result = normalize_service_health(
         SourceAcquisition(receipt=acquisition().receipt, records=(payload,)),
@@ -119,7 +139,9 @@ def test_normalize_service_health_preserves_unicode_article_text_and_action_obje
     assert row["recommended_actions"] == "Aggiorna l'istanza à"
 
 
-def test_normalize_service_health_uses_summary_when_original_description_is_absent() -> None:
+def test_normalize_service_health_uses_summary_when_original_description_is_absent() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"].pop("article")
@@ -139,7 +161,9 @@ def test_normalize_service_health_uses_summary_when_original_description_is_abse
     assert row["description_quality"] == "summary_fallback"
 
 
-def test_normalize_service_health_uses_explicit_retirement_claim_in_original_text() -> None:
+def test_normalize_service_health_uses_explicit_retirement_claim_in_original_text() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"]["article"] = {
@@ -201,7 +225,9 @@ def test_normalize_service_health_retains_conflicting_retirement_claims() -> Non
     assert row["retirement_date_quality"] == "conflict"
 
 
-def test_normalize_service_health_marks_month_only_retirement_claim_as_partial() -> None:
+def test_normalize_service_health_marks_month_only_retirement_claim_as_partial() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"]["article"] = {
@@ -222,7 +248,9 @@ def test_normalize_service_health_marks_month_only_retirement_claim_as_partial()
     assert row["retirement_date_quality"] == "partial"
 
 
-def test_normalize_service_health_extracts_actions_from_recommended_action_section() -> None:
+def test_normalize_service_health_extracts_actions_from_recommended_action_section() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"]["article"] = {
@@ -254,7 +282,9 @@ def test_normalize_service_health_extracts_actions_from_recommended_action_secti
     assert "action_from_text" in row["diagnostic_flags"].split(",")
 
 
-def test_normalize_service_health_extracts_actions_from_description_heading_with_nbsp() -> None:
+def test_normalize_service_health_extracts_actions_from_description_heading_with_nbsp() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"].pop("article", None)
@@ -275,11 +305,16 @@ def test_normalize_service_health_extracts_actions_from_description_heading_with
     row = result.value.records[0]
     assert row["recommended_actions"] == "Migrate affected workloads now."
     provenance = json.loads(row["provenance_json"])
-    assert provenance["field_sources"]["recommended_actions"] == "properties.description.Recommended action"
+    assert (
+        provenance["field_sources"]["recommended_actions"]
+        == "properties.description.Recommended action"
+    )
     assert "action_from_text" in row["diagnostic_flags"].split(",")
 
 
-def test_normalize_service_health_does_not_promote_mitigation_time_without_retirement_semantics() -> None:
+def test_normalize_service_health_does_not_promote_mitigation_time_without_retirement_semantics() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"].pop("eventSubType")
@@ -334,7 +369,9 @@ def test_normalize_service_health_skips_unrelated_resource_health_events() -> No
     assert result.value.records == ()
 
 
-def test_normalize_service_health_retains_resolved_advisory_without_calling_mitigation_time_retirement() -> None:
+def test_normalize_service_health_retains_resolved_advisory_without_calling_mitigation_time_retirement() -> (
+    None
+):
     payload = acquisition().records[0].copy()
     payload["properties"] = dict(payload["properties"])
     payload["properties"]["status"] = "Resolved"
@@ -410,7 +447,9 @@ def _health_acquisition(
     records = (event,) if isinstance(event, dict) else event
     count = len(records)
     return SourceAcquisition(
-        receipt=AcquisitionReceipt("service-health", "test-v1", count, count, count, count, True),
+        receipt=AcquisitionReceipt(
+            "service-health", "test-v1", count, count, count, count, True
+        ),
         records=records,
     )
 
@@ -457,7 +496,9 @@ def _impact_event(
     return event
 
 
-def test_normalize_service_health_reads_impact_and_canonicalizes_published_text() -> None:
+def test_normalize_service_health_reads_impact_and_canonicalizes_published_text() -> (
+    None
+):
     result = normalize_service_health(
         _health_acquisition(
             _impact_event(regions=("West US", "North Europe"), include_unrelated=True)
@@ -472,13 +513,18 @@ def test_normalize_service_health_reads_impact_and_canonicalizes_published_text(
     assert result.value is not None
     rows = result.value.records
     assert len(rows) == 3
-    assert {(row["impacted_service"], row["impacted_service_guid"], row["impacted_region"]) for row in rows} == {
+    assert {
+        (row["impacted_service"], row["impacted_service_guid"], row["impacted_region"])
+        for row in rows
+    } == {
         ("Service Bus", "2f15c16c-f172-4947-961f-7291994ba791", "West US"),
         ("Service Bus", "2f15c16c-f172-4947-961f-7291994ba791", "North Europe"),
         ("Compute", "compute-guid", "West US"),
     }
     row = rows[0]
-    assert all(item["record_type"] == "service_health_event_service_region" for item in rows)
+    assert all(
+        item["record_type"] == "service_health_event_service_region" for item in rows
+    )
     assert row["title"].isascii()
     assert row["summary"] == "You’re receiving this notice."
     assert row["description_problem"] == "We’ll retire the SDKs."
@@ -486,7 +532,9 @@ def test_normalize_service_health_reads_impact_and_canonicalizes_published_text(
     assert "<" not in row["title"] + row["summary"] + row["description_problem"]
 
 
-def test_normalize_service_health_consumes_resource_graph_association_and_provenance() -> None:
+def test_normalize_service_health_consumes_resource_graph_association_and_provenance() -> (
+    None
+):
     resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
     result = normalize_service_health(
         _health_acquisition(_impact_event()),
@@ -532,7 +580,9 @@ def test_normalize_service_health_consumes_resource_graph_association_and_proven
     ]
 
 
-def test_normalize_service_health_does_not_infer_resource_metadata_without_inventory() -> None:
+def test_normalize_service_health_does_not_infer_resource_metadata_without_inventory() -> (
+    None
+):
     resource_id = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
     result = normalize_service_health(
         _health_acquisition(_impact_event()),
@@ -564,8 +614,16 @@ def test_normalize_service_health_keeps_resource_diagnostics_per_association() -
         context(),
         ServiceHealthSupplementalEvidence(
             advisor_records=(
-                {"tracking_id": "8Q2_-MK8", "subscription_id": "sub-a", "resource_id": missing_resource_id},
-                {"tracking_id": "8Q2_-MK8", "subscription_id": "sub-a", "resource_id": matched_resource_id},
+                {
+                    "tracking_id": "8Q2_-MK8",
+                    "subscription_id": "sub-a",
+                    "resource_id": missing_resource_id,
+                },
+                {
+                    "tracking_id": "8Q2_-MK8",
+                    "subscription_id": "sub-a",
+                    "resource_id": matched_resource_id,
+                },
             ),
             resource_inventory={
                 matched_resource_id.casefold(): {
@@ -581,14 +639,27 @@ def test_normalize_service_health_keeps_resource_diagnostics_per_association() -
 
     assert result.is_valid
     assert result.value is not None
-    rows_by_resource = {row["published_resource_id"]: row for row in result.value.records}
+    rows_by_resource = {
+        row["published_resource_id"]: row for row in result.value.records
+    }
     assert "resource_not_published" in rows_by_resource[""]["diagnostic_flags"]
-    assert "resource_inventory_not_found" in rows_by_resource[missing_resource_id]["diagnostic_flags"]
-    assert "resource_not_published" not in rows_by_resource[matched_resource_id]["diagnostic_flags"]
-    assert "resource_inventory_not_found" not in rows_by_resource[matched_resource_id]["diagnostic_flags"]
+    assert (
+        "resource_inventory_not_found"
+        in rows_by_resource[missing_resource_id]["diagnostic_flags"]
+    )
+    assert (
+        "resource_not_published"
+        not in rows_by_resource[matched_resource_id]["diagnostic_flags"]
+    )
+    assert (
+        "resource_inventory_not_found"
+        not in rows_by_resource[matched_resource_id]["diagnostic_flags"]
+    )
 
 
-def test_normalize_service_health_marks_completed_resource_no_match_as_not_published() -> None:
+def test_normalize_service_health_marks_completed_resource_no_match_as_not_published() -> (
+    None
+):
     result = normalize_service_health(
         _health_acquisition(_impact_event()),
         context(),
@@ -659,16 +730,32 @@ def test_normalize_service_health_expands_65_regions_for_three_subscriptions() -
 
 def test_service_health_preserves_each_resource_without_service_cross_product() -> None:
     result = normalize_service_health(
-        _health_acquisition(_health_event(
-            impactedServices=[
-                {"serviceName": "Storage", "serviceGuid": "storage-guid", "impactedRegions": [{"regionName": "West Europe"}]},
-                {"serviceName": "Compute", "serviceGuid": "compute-guid", "impactedRegions": [{"regionName": "North Europe"}]},
-            ],
-            impactedResources=[
-                {"subscriptionId": "sub-a", "resourceId": "/subscriptions/sub-a/r1"},
-                {"subscriptionId": "sub-a", "resourceId": "/subscriptions/sub-a/r2"},
-            ],
-        )),
+        _health_acquisition(
+            _health_event(
+                impactedServices=[
+                    {
+                        "serviceName": "Storage",
+                        "serviceGuid": "storage-guid",
+                        "impactedRegions": [{"regionName": "West Europe"}],
+                    },
+                    {
+                        "serviceName": "Compute",
+                        "serviceGuid": "compute-guid",
+                        "impactedRegions": [{"regionName": "North Europe"}],
+                    },
+                ],
+                impactedResources=[
+                    {
+                        "subscriptionId": "sub-a",
+                        "resourceId": "/subscriptions/sub-a/r1",
+                    },
+                    {
+                        "subscriptionId": "sub-a",
+                        "resourceId": "/subscriptions/sub-a/r2",
+                    },
+                ],
+            )
+        ),
         context(),
         ServiceHealthSupplementalEvidence(),
     )
@@ -677,7 +764,8 @@ def test_service_health_preserves_each_resource_without_service_cross_product() 
     assert result.value is not None
     assert len(result.value.records) == 2
     assert {row["published_resource_id"] for row in result.value.records} == {
-        "/subscriptions/sub-a/r1", "/subscriptions/sub-a/r2"
+        "/subscriptions/sub-a/r1",
+        "/subscriptions/sub-a/r2",
     }
 
 
@@ -703,10 +791,15 @@ def test_service_health_non_global_without_affected_subscription_is_blocked() ->
     )
     assert not result.is_valid
     assert result.diagnostics[0].code == "missing_affected_subscription"
-    assert result.diagnostics[0].record_ref == "/subscriptions/sub-a/providers/Microsoft.ResourceHealth/events/event-1"
+    assert (
+        result.diagnostics[0].record_ref
+        == "/subscriptions/sub-a/providers/Microsoft.ResourceHealth/events/event-1"
+    )
 
 
-def test_service_health_global_projection_rejects_affected_subscription_or_resource() -> None:
+def test_service_health_global_projection_rejects_affected_subscription_or_resource() -> (
+    None
+):
     result = normalize_service_health(
         _health_acquisition(_health_event(isGlobal=True)),
         context(),
@@ -724,7 +817,9 @@ def test_service_health_global_projection_rejects_affected_subscription_or_resou
     )
     checked = SERVICE_HEALTH_REPORT.contract.validate(invalid, context())
     assert not checked.is_valid
-    assert any(item.code == "global_evidence_has_subscription" for item in checked.diagnostics)
+    assert any(
+        item.code == "global_evidence_has_subscription" for item in checked.diagnostics
+    )
 
 
 def _validate_service_health_row(row: dict[str, str]):
@@ -768,7 +863,10 @@ def test_service_health_contract_requires_empty_fields_for_not_published() -> No
     checked = _validate_service_health_row(row)
 
     assert not checked.is_valid
-    assert any(item.code == "invalid_not_published_resource_fields" for item in checked.diagnostics)
+    assert any(
+        item.code == "invalid_not_published_resource_fields"
+        for item in checked.diagnostics
+    )
 
 
 def test_service_health_contract_rejects_not_published_with_missing_inventory() -> None:
@@ -778,7 +876,10 @@ def test_service_health_contract_rejects_not_published_with_missing_inventory() 
     checked = _validate_service_health_row(row)
 
     assert not checked.is_valid
-    assert any(item.code == "invalid_not_published_resource_fields" for item in checked.diagnostics)
+    assert any(
+        item.code == "invalid_not_published_resource_fields"
+        for item in checked.diagnostics
+    )
 
 
 def test_service_health_contract_requires_resource_id_for_published_status() -> None:
@@ -788,7 +889,9 @@ def test_service_health_contract_requires_resource_id_for_published_status() -> 
     checked = _validate_service_health_row(row)
 
     assert not checked.is_valid
-    assert any(item.code == "published_resource_missing_id" for item in checked.diagnostics)
+    assert any(
+        item.code == "published_resource_missing_id" for item in checked.diagnostics
+    )
 
 
 @pytest.mark.parametrize(
@@ -799,8 +902,18 @@ def test_service_health_contract_requires_resource_id_for_published_status() -> 
         "expected_code",
     ),
     (
-        ("inventory_missing", "missing", False, "invalid_inventory_missing_resource_evidence"),
-        ("inventory_missing", "matched", True, "invalid_inventory_missing_resource_evidence"),
+        (
+            "inventory_missing",
+            "missing",
+            False,
+            "invalid_inventory_missing_resource_evidence",
+        ),
+        (
+            "inventory_missing",
+            "matched",
+            True,
+            "invalid_inventory_missing_resource_evidence",
+        ),
         ("published", "missing", True, "invalid_published_resource_evidence"),
     ),
 )
@@ -812,8 +925,12 @@ def test_service_health_contract_rejects_incoherent_resource_evidence_matrix(
 ) -> None:
     row = _service_health_contract_row()
     if has_published_resource_id:
-        row["published_resource_id"] = "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
-        row["normalized_resource_id"] = "/subscriptions/sub-a/resourcegroups/rg/providers/microsoft.compute/virtualmachines/vm-1"
+        row["published_resource_id"] = (
+            "/subscriptions/sub-a/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/vm-1"
+        )
+        row["normalized_resource_id"] = (
+            "/subscriptions/sub-a/resourcegroups/rg/providers/microsoft.compute/virtualmachines/vm-1"
+        )
     row["resource_evidence_status"] = resource_evidence_status
     row["resource_inventory_match_status"] = resource_inventory_match_status
 
@@ -825,19 +942,30 @@ def test_service_health_contract_rejects_incoherent_resource_evidence_matrix(
 
 @pytest.mark.parametrize(
     ("field", "value"),
-    (("title", "<p>title</p>"), ("summary", "<p>summary</p>"), ("description_problem", "<p>description</p>"), ("recommended_actions", "<p>act</p>")),
+    (
+        ("title", "<p>title</p>"),
+        ("summary", "<p>summary</p>"),
+        ("description_problem", "<p>description</p>"),
+        ("recommended_actions", "<p>act</p>"),
+    ),
 )
-def test_service_health_contract_rejects_noncanonical_published_text(field: str, value: str) -> None:
+def test_service_health_contract_rejects_noncanonical_published_text(
+    field: str, value: str
+) -> None:
     row = _service_health_contract_row()
     row[field] = value
 
     checked = _validate_service_health_row(row)
 
     assert not checked.is_valid
-    assert any(item.code == "noncanonical_service_health_text" for item in checked.diagnostics)
+    assert any(
+        item.code == "noncanonical_service_health_text" for item in checked.diagnostics
+    )
 
 
-def test_service_health_contract_accepts_literal_angle_bracket_in_published_text() -> None:
+def test_service_health_contract_accepts_literal_angle_bracket_in_published_text() -> (
+    None
+):
     row = _service_health_contract_row()
     row["description_problem"] = "Service Health > Health advisories"
 
@@ -850,56 +978,90 @@ def test_service_health_contract_rejects_unknown_resource_graph_query_label() ->
     row = _service_health_contract_row()
     provenance = json.loads(row["provenance_json"])
     provenance["resource_graph_queries"] = ["unknown_query"]
-    row["provenance_json"] = json.dumps(provenance, separators=(",", ":"), sort_keys=True)
+    row["provenance_json"] = json.dumps(
+        provenance, separators=(",", ":"), sort_keys=True
+    )
 
     checked = _validate_service_health_row(row)
 
     assert not checked.is_valid
-    assert any(item.code == "invalid_resource_graph_query_label" for item in checked.diagnostics)
+    assert any(
+        item.code == "invalid_resource_graph_query_label"
+        for item in checked.diagnostics
+    )
 
 
 def test_service_health_keeps_direct_and_supplemental_resource_associations() -> None:
     result = normalize_service_health(
-        _health_acquisition(_health_event(
-            trackingId="TRACK-1",
-            impactedResources=[{"subscriptionId": "sub-a", "resourceId": "/subscriptions/sub-a/direct"}],
-        )),
+        _health_acquisition(
+            _health_event(
+                trackingId="TRACK-1",
+                impactedResources=[
+                    {
+                        "subscriptionId": "sub-a",
+                        "resourceId": "/subscriptions/sub-a/direct",
+                    }
+                ],
+            )
+        ),
         context(),
-        ServiceHealthSupplementalEvidence(advisor_records=(
-            {"tracking_id": "TRACK-1", "subscription_id": "sub-a", "resource_id": "/subscriptions/sub-a/supplemental", "recommendation_type_id": "retirement-1", "platform_state": "New"},
-        )),
+        ServiceHealthSupplementalEvidence(
+            advisor_records=(
+                {
+                    "tracking_id": "TRACK-1",
+                    "subscription_id": "sub-a",
+                    "resource_id": "/subscriptions/sub-a/supplemental",
+                    "recommendation_type_id": "retirement-1",
+                    "platform_state": "New",
+                },
+            )
+        ),
     )
 
     assert result.is_valid
     assert result.value is not None
     assert {row["published_resource_id"] for row in result.value.records} == {
-        "/subscriptions/sub-a/direct", "/subscriptions/sub-a/supplemental"
+        "/subscriptions/sub-a/direct",
+        "/subscriptions/sub-a/supplemental",
     }
     assert {row["resource_evidence_source"] for row in result.value.records} == {
-        "service_health_resource", "advisor_recommendation"
+        "service_health_resource",
+        "advisor_recommendation",
     }
 
 
 def _empty_acquisition(*, complete: bool) -> SourceAcquisition:
     return SourceAcquisition(
-        receipt=AcquisitionReceipt("service-health", "test-v1", 1, 1 if complete else 0, 1, 0, complete)
+        receipt=AcquisitionReceipt(
+            "service-health", "test-v1", 1, 1 if complete else 0, 1, 0, complete
+        )
     )
 
 
 def test_prepare_service_health_report_preserves_complete_empty_source() -> None:
     prepared = prepare_service_health_report(
-        _empty_acquisition(complete=True), context(), ServiceHealthSupplementalEvidence()
+        _empty_acquisition(complete=True),
+        context(),
+        ServiceHealthSupplementalEvidence(),
     )
 
     assert prepared.acquisition.records == ()
-    assert tuple(item.logical_path for item in prepared.artifacts) == SERVICE_HEALTH_REPORT.paths
-    assert prepared.artifacts[0].data == ("\t".join(SERVICE_HEALTH_REPORT.contract.header) + "\n").encode()
+    assert (
+        tuple(item.logical_path for item in prepared.artifacts)
+        == SERVICE_HEALTH_REPORT.paths
+    )
+    assert (
+        prepared.artifacts[0].data
+        == ("\t".join(SERVICE_HEALTH_REPORT.contract.header) + "\n").encode()
+    )
 
 
 def test_prepare_service_health_report_rejects_incomplete_receipt() -> None:
     with pytest.raises(ApplicationError, match="incomplete service-health acquisition"):
         prepare_service_health_report(
-            _empty_acquisition(complete=False), context(), ServiceHealthSupplementalEvidence()
+            _empty_acquisition(complete=False),
+            context(),
+            ServiceHealthSupplementalEvidence(),
         )
 
 
@@ -913,15 +1075,23 @@ def test_prepare_service_health_report_returns_normalized_acquisition_and_encode
     )
     assert prepared.acquisition.records == prepared.artifact.records
     assert prepared.acquisition.companion_records == prepared.artifact.companion_records
-    assert tuple(item.logical_path for item in prepared.artifacts) == SERVICE_HEALTH_REPORT.paths
-    assert SERVICE_HEALTH_REPORT.verify_staged_artifact(
-        SERVICE_HEALTH_REPORT.contract.path,
-        {item.logical_path: item.data for item in prepared.artifacts},
-        context(),
-    ) == ()
+    assert (
+        tuple(item.logical_path for item in prepared.artifacts)
+        == SERVICE_HEALTH_REPORT.paths
+    )
+    assert (
+        SERVICE_HEALTH_REPORT.verify_staged_artifact(
+            SERVICE_HEALTH_REPORT.contract.path,
+            {item.logical_path: item.data for item in prepared.artifacts},
+            context(),
+        )
+        == ()
+    )
     exported = decode_tsv(
         prepared.artifacts[0].data,
         SERVICE_HEALTH_REPORT.contract.header,
     )
     assert "field_sources" not in json.loads(exported[0]["provenance_json"])
-    assert "field_sources" in json.loads(prepared.acquisition.records[0]["provenance_json"])
+    assert "field_sources" in json.loads(
+        prepared.acquisition.records[0]["provenance_json"]
+    )

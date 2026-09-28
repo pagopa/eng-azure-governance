@@ -7,12 +7,13 @@ from ..domain.execution import RunContext
 from .arm_http import ArmHttpClient
 from .subscription_list import acquire_subscription_list
 
-
 RESOURCE_HEALTH_API_VERSION = "2025-05-01"
 
 
 class ResourceHealthApiSource:
-    def __init__(self, http: ArmHttpClient, *, api_version: str = RESOURCE_HEALTH_API_VERSION) -> None:
+    def __init__(
+        self, http: ArmHttpClient, *, api_version: str = RESOURCE_HEALTH_API_VERSION
+    ) -> None:
         self.http = http
         self.api_version = api_version
 
@@ -37,4 +38,8 @@ class ResourceHealthApiSource:
 
 ServiceHealthApiSource = ResourceHealthApiSource
 
-__all__ = ["RESOURCE_HEALTH_API_VERSION", "ResourceHealthApiSource", "ServiceHealthApiSource"]
+__all__ = [
+    "RESOURCE_HEALTH_API_VERSION",
+    "ResourceHealthApiSource",
+    "ServiceHealthApiSource",
+]
