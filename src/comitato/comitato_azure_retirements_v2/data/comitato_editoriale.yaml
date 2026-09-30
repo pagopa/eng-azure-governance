@@ -113,9 +113,45 @@ azure-retirement:v2:0dda532f9277a67d20d5882550f858d605002e5611be1bb62c261b6e25a8
   - data: '2026-05-13'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-09-24'
+  - data: '2026-09-30'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
+azure-retirement:v2:194d85400e8dee189beccb5882d05b8d85806b15ebe7d824e38cd0837eb2ae7f:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Advisor: Migrate to virtual network flow logs
+
+
+    Network security group (NSG) flow logs in Azure Network Watcher is retiring. As part of this retirement,
+    customers will no longer be able to create new NSG flow logs. Migrate to virtual network flow logs
+    in Network Watcher.
+  link_fonti:
+  - https://azure.microsoft.com/updates/v2/Azure-NSG-flow-logs-Retirement
+  retirement_date:
+  - data: '2026-04-16'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2027-09-30'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
+azure-retirement:v2:20be56f25f50b996cf7007a6b4e3d41d7e8ecb4a4e8ea167fad952589fa3a611:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Advisor: Azure CDN Standard from Microsoft (classic) is being retired.
+
+
+    To avoid service disruptions, you need to migrate to Azure Front Door Standard or Premium
+  link_fonti:
+  - https://azure.microsoft.com/updates?id=Azure-CDN-Standard-from-Microsoft-classic-will-be-retired-on-30-September-2027
+  retirement_date:
+  - data: '2026-04-16'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2027-09-30'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
 azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d23983a1c:
   comitato_descrizione: >-
     **AKS: fine del supporto per Kubernetes 1.35**
@@ -140,6 +176,9 @@ azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d2398
   - https://learn.microsoft.com/azure/aks/supported-kubernetes-versions?branch=main&branchFallbackFrom=pr-en-us-3520&tabs=azure-cli
   retirement_date:
   - data: '2026-09-22'
+    fonte: Azure Advisor
+    tipo: aggiornamento_meno_recente
+  - data: '2026-09-29'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
   - data: '2027-03-01'
@@ -263,7 +302,7 @@ azure-retirement:v2:7212de1ba3c64dc372630196d2ed51ba344e4e465247bfa430bf3f3bcc89
   - data: '2026-04-16'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-06-19'
+  - data: '2026-09-24'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
   - data: '2026-09-30'
@@ -494,6 +533,38 @@ azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07
   - data: '2027-05-31'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
+azure-retirement:v2:ae2318058b0970e85a60699e2d9286a252d71c07f24167e3ab658cda7d9aa448:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Service Health: You're receiving this notification because you're associated with one or more Azure
+    subscriptions that use Azure Monitor Action Groups. Azure Monitor Action Groups has officially rolled
+    out the new OTP feature to all regions in the Public cloud. New email addresses added to new or existing
+    action groups must be verified using a one-time passcode (OTP) before they can receive notifications.
+    This change is aimed at improving overall security. No immediate action is required for email addresses
+    that are already configured in existing action groups. These addresses will continue to receive notifications.
+    These addresses will be marked as "Legacy Allowed" after the rollout. However, adding a legacy-allowed
+    email address to a new action group will require OTP verification. All new email addresses must complete
+    a one-time verification within the same tenant before receiving notifications. An OTP email will be
+    sent when the action group is saved, and the passcode will expire after 30 minutes. If needed, a new
+    verification email can be requested from the Azure Portal Action Group blade. As part of this change,
+    users will also be required to save and verify an email address before they are able to send test
+    email notifications. Help and support If you have questions, get answers from community experts in
+    Microsoft Q&A (https://aka.ms/azureqa). If you have a support plan and need technical help, create
+    a support request. (https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request)
+  link_fonti:
+  - https://aka.ms/azureqa
+  - https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request
+  retirement_date:
+  - data: '2026-09-02'
+    fonte: Azure Service Health
+    tipo: avviso_inizio
+  - data: '2026-09-29'
+    fonte: Azure Service Health
+    tipo: ultimo_aggiornamento
+  - data: '2026-10-07'
+    fonte: Azure Service Health
+    tipo: avviso_fine
 azure-retirement:v2:af57e9232ec93e0ad205c79a07a1b6475ce60752502d510d56aa0b08245a9f28:
   comitato_descrizione: >-
     **Azure Synapse: fine supporto per Apache Spark 3.4**
@@ -609,62 +680,6 @@ azure-retirement:v2:bd402fdf56128f709d3f49aa4a376d29f3b5fb3c5fc0303c3326578c1347
   - data: '2026-09-30'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:e033ed5ff305d543c0b8f1014658ef37678121ca65e1a31d8b5b26b5530fdaea:
-  comitato_descrizione: >-
-    **Windows Server 2022: immagini con .NET 6 deprecate**
-
-
-    **Suggerimento:** inventariare le SKU colpite, migrare a immagini supportate e verificare in Service
-    Health la data valida per ogni immagine.
-
-
-    [Annuncio Azure Compute](https://techcommunity.microsoft.com/blog/azurecompute/incoming-changes-for-window-server-2022-marketplace-image-users/4262423)
-    · [FAQ immagini Azure Marketplace deprecate | Microsoft Learn](https://learn.microsoft.com/en-us/azure/virtual-machines/deprecated-images)
-  comitato_retirement_date: '06/09/2026 [SCADUTA; data del blog Microsoft] — Fine supporto .NET 6 e avvio
-    della deprecazione
-
-    07/14/2026 [SCADUTA; data del Service Health da riconciliare] — Deprecazione immagini riportata nell’avviso
-
-    09/22/2026 [inizio finestra; avviso attualmente in corso] — Azure Service Health
-
-    10/06/2026 — Fine avviso Azure Service Health
-
-    12/2026 [fine anno; giorno non indicato] — Inizio enforcement Marketplace (blog Microsoft)'
-  descrizione_originale_completa: >-
-    Service Health: You’re receiving this notification because one or more Azure subscriptions associated
-    with your account use Microsoft Marketplace Windows Server 2022 images. You can also find this notification
-    in the Azure portal under Service Health > Health advisories (https://aka.ms/AzureServiceHealthAdvisories)
-    by using tracking ID 8PJS-_48. In October 2024, we announced upcoming changes to Microsoft Marketplace
-    Windows Server 2022 images (https://techcommunity.microsoft.com/blog/azurecompute/incoming-changes-for-window-server-2022-marketplace-image-users/4262423).
-    On 14 July 2026, we deprecated images preinstalled with .NET 6 because .NET 6 had reached the end
-    of support. To avoid disruptions, migrate any affected SKUs listed below to supported Windows Server
-    2022 images. Use the new offer ID (Offer ID) provided in the linked announcement. 2022-DATACENTER
-    2022-DATACENTER-AZURE-EDITION 2022-DATACENTER-AZURE-EDITION-CORE 2022-DATACENTER-AZURE-EDITION-CORE-SMALLDISK
-    2022-DATACENTER-AZURE-EDITION-HOTPATCH 2022-DATACENTER-AZURE-EDITION-HOTPATCH-SMALLDISK 2022-DATACENTER-AZURE-EDITION-SMALLDISK
-    2022-DATACENTER-CORE 2022-DATACENTER-CORE-G2 2022-DATACENTER-CORE-SMALLDISK 2022-DATACENTER-CORE-SMALLDISK-G2
-    2022-DATACENTER-G2 2022-DATACENTER-SMALLDISK 2022-DATACENTER-SMALLDISK-G2 Recommended action To avoid
-    disruptions, migrate affected workloads to supported Microsoft Marketplace Windows Server 2022 images
-    now. Review the .NET 6 image migration guidance (https://techcommunity.microsoft.com/blog/azurecompute/incoming-changes-for-window-server-2022-marketplace-image-users/4262423)
-    to learn how to identify affected images in your subscriptions, complete the migration, and locate
-    the replacement images. Help and support If you have questions or encounter issues related to the
-    end of support for .NET 6 or migration to a supported version, visit the Services Hub (https://support.serviceshub.microsoft.com/supportforbusiness/onboarding?origin=/supportforbusiness/create)
-    or create an Azure support request (https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request).
-    When creating the request, select the product family Developer Tools, the product .NET, and the version
-    .NET 10.
-  link_fonti:
-  - https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request
-  - https://support.serviceshub.microsoft.com/supportforbusiness/onboarding?origin=/supportforbusiness/create
-  - https://techcommunity.microsoft.com/blog/azurecompute/incoming-changes-for-window-server-2022-marketplace-image-users/4262423
-  retirement_date:
-  - data: '2026-09-22'
-    fonte: Azure Service Health
-    tipo: avviso_inizio
-  - data: '2026-09-22'
-    fonte: Azure Service Health
-    tipo: ultimo_aggiornamento
-  - data: '2026-10-06'
-    fonte: Azure Service Health
-    tipo: avviso_fine
 azure-retirement:v2:e505206ada85e3679d8b5a971c35d0904498361c7d88d0aa54c7fa0f4d85619c:
   comitato_descrizione: >-
     **AKS: ritiro del supporto per Ubuntu 22.04**
@@ -727,4 +742,34 @@ azure-retirement:v2:ec4229f9a6745cfa8690af126ea8150fc9dd643b1915c79a80f68863365c
     tipo: ritiro
   - data: '2026-11-30'
     fonte: Azure Advisor (metadati)
+    tipo: ritiro
+azure-retirement:v2:f73c9057ca3e07c308401793d6dc4159dade245b61cfac9a676888db6589f61b:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Service Health: You're receiving this notification because you are associated with one or more Azure
+    subscriptions that use Azure Monitor container insights. On 30 September 2026, we'll retire the ContainerLog
+    table in Azure Monitor and you'll need to transition to the ContainerLogV2 table. The ContainerLogV2
+    table offers all the functionality of ContainerLog, plus: Compatibility with the basic logs pricing
+    tier. Additional pod and container metadata for easier querying. Support for multiline log entries.
+    Recommended action To ensure your alerts and dashboards continue to work as expected, transition (https://aka.ms/containerlogmigration)
+    to ContainerLogV2 by 30 September 2026. Help and support If you have questions, get answers from community
+    experts in Microsoft Q&A (https://aka.ms/ContainerLogQA). If you have a support plan and need technical
+    help, open the Azure portal (https://portal.azure.com/#blade/Microsoft_Azure_Support/HelpAndSupportBlade/overview)
+    and select the question mark icon at the top of the page.
+  link_fonti:
+  - https://aka.ms/containerlogmigration
+  - https://aka.ms/ContainerLogQA
+  retirement_date:
+  - data: '2026-01-23'
+    fonte: Azure Service Health
+    tipo: avviso_inizio
+  - data: '2026-09-29'
+    fonte: Azure Service Health
+    tipo: ultimo_aggiornamento
+  - data: '2026-09-30'
+    fonte: Azure Service Health
+    tipo: avviso_fine
+  - data: '2026-09-30'
+    fonte: Azure Service Health
     tipo: ritiro
