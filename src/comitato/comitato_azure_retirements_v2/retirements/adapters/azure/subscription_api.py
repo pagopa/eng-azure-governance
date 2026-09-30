@@ -19,7 +19,7 @@ class SubscriptionApiSource:
         if request.subscription_ids:
             return Scope(tuple(sorted(set(request.subscription_ids))), mode="explicit")
         pages = self.http.list_pages(
-            f"https://management.azure.com/subscriptions",
+            "https://management.azure.com/subscriptions",
             params={"api-version": self.api_version},
             run_id=run_id,
         )
