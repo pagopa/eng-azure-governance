@@ -1,0 +1,33 @@
+{
+  "include": [
+    "src/comitato/comitato_azure_retirements_v2",
+    "tests/comitato/comitato_azure_retirements_v2"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "src/comitato/comitato_azure_retirements/.venv"
+  ],
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.13",
+  "reportMissingImports": true,
+  "reportUnknownMemberType": false,
+  "reportUnknownArgumentType": false,
+  "reportUnknownVariableType": false,
+  "reportUnknownParameterType": false,
+  "reportMissingParameterType": false,
+  "reportUnknownLambdaType": false,
+  "reportArgumentType": false,
+  "reportUnusedImport": false,
+  "reportUnusedVariable": false,
+  "reportUnnecessaryIsInstance": false,
+  "reportAttributeAccessIssue": false,
+  "reportGeneralTypeIssues": false,
+  "reportAssignmentType": false,
+  "reportMissingTypeArgument": false,
+  "reportCallIssue": false,
+  "reportPossiblyUnboundVariable": false,
+  "reportIncompatibleMethodOverride": false,
+  "reportOptionalMemberAccess": false,
+  "reportInvalidTypeVarUse": false,
+  "reportReturnType": false
+}

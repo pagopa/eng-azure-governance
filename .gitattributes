@@ -7,3 +7,4 @@
 *.py text eol=lf
 *.tf text eol=lf
 *.tfvars text eol=lf
+graphify-out/graph.json merge=graphify

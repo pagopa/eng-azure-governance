@@ -1,0 +1,3 @@
+-r requirements.in
+pyright==1.1.403
+pytest

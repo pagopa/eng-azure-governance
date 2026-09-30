@@ -1,0 +1,7 @@
+schema_version: 1
+platforms:
+  Platform A:
+    subscriptions:
+      - id: 11111111-1111-1111-1111-111111111111
+        name: S04 Synthetic Subscription
+        state: active

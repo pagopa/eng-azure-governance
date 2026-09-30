@@ -1,87 +1,83 @@
 # Slide Conversion Contract
 
-This reference defines deterministic conversion rules from aggregate to slide TSV.
+This reference defines deterministic grouping and conversion from aggregate
+02 to slide TSV 03 for `comitato_azure_retirements_v2`.
 
-## Input file
+## Input and output
 
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/02_azure_retirements_aggregate.tsv`
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/02_azure_service_health_supplemental.tsv`
-
-## Output file
-
-- `src/comitato/comitato_azure_retirements/exports/YYYY/MM/03_azure_retirements_slide.tsv`
+- Input: `src/comitato/comitato_azure_retirements_v2/exports/YYYY/MM/02_azure_retirements_aggregate.tsv`
+- Output: `src/comitato/comitato_azure_retirements_v2/exports/YYYY/MM/03_azure_retirements_slide.tsv`
 
 ## Ordered output schema
 
-The output header must contain these columns in this exact order:
+The header must contain these 19 columns in this exact order:
 
-1. `technology_or_service`
-2. `retiring_feature`
-3. `platforms`
-4. `platforms_subscriptions_json`
-5. `comitato_priorità`
-6. `advice_type`
-7. `action_required`
-8. `comitato_descrizione_completa`
-9. `comitato_retirement_date`
-10. `comitato_piattaforme`
-11. `source_links`
-12. `source`
+1. `id_elemento`
+2. `titolo_breve`
+3. `descrizione_breve`
+4. `comitato_priorità`
+5. `impatto_microsoft`
+6. `comitato_descrizione`
+7. `comitato_retirement_date`
+8. `comitato_piattaforme`
+9. `retirement_date`
+10. `stato_data`
+11. `giorni_ritardo`
+12. `descrizione_originale_completa`
+13. `azione_originale`
+14. `fonti`
+15. `link_fonti`
+16. `ambito_impatto`
+17. `id_advisor`
+18. `id_service_health`
+19. `risorse_json`
 
-## Field mapping
+## Grouping and identity
 
-| Slide field | Aggregate source | Rule |
-| --- | --- | --- |
-| `technology_or_service` | `technology_or_service` | Copy verbatim |
-| `retiring_feature` | `retiring_feature` | Copy verbatim |
-| `platforms` | `impacted_platforms` | Copy verbatim |
-| `platforms_subscriptions_json` | `impacted_platforms_subscriptions_json` | Copy verbatim |
-| `comitato_priorità` | `priority_label` | Copy verbatim |
-| `advice_type` | `advice_type` | Copy verbatim |
-| `action_required` | `action_required`, `summary_text` | Use `action_required`; fallback to `summary_text` when empty, then remove XML tags and normalize whitespace |
-| `comitato_descrizione_completa` | `details_text`, `action_required`, `summary_text` | Remove XML tags and normalize whitespace from the complete description and action, then join non-empty values with a space |
-| `comitato_retirement_date` | `retirement_date` | Copy verbatim |
-| `comitato_piattaforme` | `impacted_platforms` | Copy the same value as `platforms` |
-| `source_links` | `source_links`, `source_identifiers` | Preserve non-empty `source_links`; otherwise apply the fallback rules below |
-| `source` | `source_systems`, `advice_type` | Use `Fonte: service-health` for Service Health rows; otherwise use `Fonte: advisor` |
+- Group by `advisor-type:<recommendation_type_id>` when an Advisor type id exists.
+- Otherwise group by `service-health:<tracking_id>` when a Service Health tracking id exists.
+- Otherwise group by `aggregate:<aggregate_id>`.
+- `id_elemento` is `azure-retirement:v2:` followed by the SHA-256 hex digest of the UTF-8 group key.
+- The primary date is the earliest exact retirement date in the group, from recommendation or metadata retirement dates. When none exists, use the earliest image removal date. Exclude the group only when that date is beyond the committee window.
+- Sort by primary date ascending, using `9999-99-99` when missing, then `id_elemento`.
 
-## Source link fallback
+## Projection rules
 
-Split `source_identifiers` into non-empty identifiers, then convert each one:
+| Field | Rule |
+| --- | --- |
+| `titolo_breve` | First available technology or service, retiring feature, then problem title. |
+| `descrizione_breve` | First problem title, then retiring feature, then technology or service. Do not add a draft prefix. |
+| `comitato_priorità` | Empty. |
+| `impatto_microsoft` | Highest Advisor impact: `High` → `Alto`, `Medium` → `Medio`, `Low` → `Basso`; empty for Service Health-only groups. |
+| `retirement_date` | One line per date as `YYYY-MM-DD — <meaning>`, ordered by date. Updates keep only the oldest and latest date per source. |
+| `stato_data` | Exactly one of `Data non disponibile`, `Date discordanti`, `Scaduta`, or `In scadenza`. More than one distinct retirement date yields `Date discordanti`; multiple image removal dates do not. |
+| `giorni_ritardo` | Days between the primary date and `as_of_date` for `Scaduta` rows; empty otherwise. |
+| `link_fonti` | Sorted union of the group `source_links_json` values. |
+| `id_advisor` | `https://portal.azure.com/#view/Microsoft_Azure_Expert/RecommendationListBlade/recommendationTypeId/<id>` per Advisor recommendation type id. |
+| `id_service_health` | `https://app.azure.com/h/<tracking_id>` per Service Health tracking id. |
+| `ambito_impatto` | JSON with platform, subscription, resource, environment, service, and region counts. Environments are `PROD`, `UAT`, `DEV`, and `ALTRO`; names begin with `PROD-`, `PROD_`, `UAT-`, `UAT_`, `DEV-`, or `DEV_`, case-insensitively. Global rows use `{"globale": true}`. |
+| `risorse_json` | Compact JSON grouped as platform → subscription name → resource group → resource names. Global rows use `{"ALL":"global"}`. |
 
-1. Preserve an `http://` or `https://` identifier unchanged.
-2. For an identifier starting with `/`, prepend
-   `https://portal.azure.com/#resource` and URL-encode characters other than
-   `/`.
-3. For every other identifier, prepend
-   `https://portal.azure.com/#search/` and URL-encode the complete identifier.
-4. Remove duplicate links, sort case-insensitively, and join them with `,`.
+Date meanings are `Data di ritiro (Azure Advisor)`,
+`Data di ritiro (metadati Azure Advisor)`, `Rimozione immagine (Azure Advisor)`,
+`Data di ritiro (Azure Service Health)`,
+`Aggiornamento meno recente osservato (Azure Advisor)`,
+`Aggiornamento meno recente osservato (Azure Service Health)`,
+`Ultimo aggiornamento (Azure Advisor)`,
+`Ultimo aggiornamento (Azure Service Health)`, `Avviso pubblicato il`, and
+`Avviso attivo fino al`.
 
-## Ordering
+## Committee YAML
 
-Sort rows by:
-
-1. Priority order: `Critico`, `Prioritario`, `Da pianificare`, `Debito`.
-2. `comitato_retirement_date` ascending, with empty values last.
-3. `technology_or_service` case-insensitive ascending.
-4. `retiring_feature` case-insensitive ascending.
-
-Unrecognized priority labels sort after the four known labels. Keep those rows
-visible.
-
-## Failure handling
-
-- Missing `action_required`: use `summary_text` fallback.
-- Missing `retirement_date`: keep row and preserve priority from aggregate.
-- Unknown platform payloads: keep row unchanged.
-- Missing `source_links`: derive from `source_identifiers`; fail conversion with an explicit diagnostic only when still empty.
-- Missing aggregate input file: fail conversion with explicit path diagnostic.
-- Empty aggregate input: fail conversion instead of emitting a successful empty slide.
-
-## Completion checks
-
-- The output header matches the ordered schema.
-- Every input row is projected before exact duplicate slide rows are collapsed.
-- `platforms_subscriptions_json` remains byte-for-byte unchanged per projected row.
-- Sorting follows all four ordering keys.
-- The slide-stage diagnostics contain no errors.
+Live execution reads the YAML mapping by `id_elemento` before slide encoding.
+It keeps `comitato_descrizione` when `descrizione_originale_completa` is
+unchanged, and clears only that description when the source description changes.
+It always keeps `comitato_retirement_date`, refreshes the original description,
+links, and retirement date list, and drops ids absent from the run. The date
+list keeps every slide date as `{data, tipo, fonte}`; `tipo` is one of
+`ritiro`, `rimozione_immagine`, `avviso_inizio`, `avviso_fine`,
+`aggiornamento_meno_recente`, or `ultimo_aggiornamento`. YAML `link_fonti`
+omits Azure portal links, and descriptions longer than 100 characters use
+folded style. Non-empty committee values fill the
+slide cells. Write the YAML only after publication succeeds. Replay does not
+read or write the YAML; replayed committee cells stay empty.

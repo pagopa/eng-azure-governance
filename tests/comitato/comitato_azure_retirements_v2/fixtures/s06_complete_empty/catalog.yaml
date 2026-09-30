@@ -1,0 +1,5 @@
+schema_version: 1
+subscriptions:
+  - subscription_id: 11111111-1111-1111-1111-111111111111
+    subscription_name: S06 Synthetic Subscription
+    platform: Platform Alpha

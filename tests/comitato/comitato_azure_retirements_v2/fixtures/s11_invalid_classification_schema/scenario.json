@@ -1,0 +1,17 @@
+{
+  "selector": "service-health",
+  "run_id": "s11-invalid-classification",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 1,
+  "scope": {
+    "mode": "explicit",
+    "subscription_ids": ["33333333-3333-3333-3333-333333333333"]
+  },
+  "azure": {
+    "advisor": {"pages": [{"items": [], "next_link": null}]},
+    "service_health": {
+      "pages": [{"items": [{"id": "/subscriptions/33333333-3333-3333-3333-333333333333/providers/Microsoft.ResourceHealth/events/event-1", "subscriptionId": "33333333-3333-3333-3333-333333333333", "name": "TRACK-1", "properties": {"trackingId": "TRACK-1", "eventType": "HealthAdvisory", "level": "Notice", "status": "Active"}}], "next_link": null}]
+    }
+  }
+}

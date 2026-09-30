@@ -1,0 +1,15 @@
+{
+  "selector": "all",
+  "run_id": "s08-unmapped-subscription",
+  "as_of_date": "2026-07-30",
+  "created_at": "2026-07-30T00:00:00Z",
+  "expected_exit_status": 1,
+  "scope": {
+    "mode": "explicit",
+    "subscription_ids": ["22222222-2222-2222-2222-222222222222"]
+  },
+  "azure": {
+    "advisor": {"pages": [{"items": [], "next_link": null}]},
+    "service_health": {"pages": [{"items": [], "next_link": null}]}
+  }
+}
