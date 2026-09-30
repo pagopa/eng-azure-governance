@@ -4,13 +4,15 @@ from pathlib import Path
 
 from rich.console import Console
 
-from src.comitato.comitato_azure_retirements_v2.retirements.config import RuntimeLoggingSettings
-from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.runtime_logging import (
     RuntimeReporter,
     TextRunLogger,
     build_debug_log_path,
 )
+from src.comitato.comitato_azure_retirements_v2.retirements.config import (
+    RuntimeLoggingSettings,
+)
+from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
 
 
 def test_build_debug_log_path_uses_exports_month_partition(tmp_path: Path) -> None:

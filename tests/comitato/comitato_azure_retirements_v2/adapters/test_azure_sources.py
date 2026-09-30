@@ -7,7 +7,9 @@ import pytest
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advisor_api import (
     AdvisorApiSource,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import ArmPageEnvelope
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+    ArmPageEnvelope,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.resource_graph_api import (
     ResourceGraphApiSource,
 )

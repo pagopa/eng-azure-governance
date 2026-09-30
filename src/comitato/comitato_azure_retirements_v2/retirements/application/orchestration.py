@@ -8,12 +8,15 @@ from typing import Any
 
 from ..acquisition.model import SourceAcquisition
 from ..adapters.azure.advisor_enrichment import AdvisorEnrichmentError
+from ..adapters.filesystem import committee_yaml
 from ..contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
 from ..contracts.aggregate_v1 import build_aggregate
+from ..contracts.committee import merge as merge_committee
 from ..contracts.model import Artifact
+from ..contracts.slides_projection import SlideSelection, select_slides
 from ..domain.coverage import validate_platform_coverage
 from ..domain.diagnostics import Diagnostic
 from ..domain.evidence import AdvisorEnrichments, ServiceHealthSupplementalEvidence
@@ -25,9 +28,6 @@ from ..domain.execution import (
     RunRequest,
 )
 from ..domain.platforms import PlatformCatalogSnapshot
-from ..adapters.filesystem import committee_yaml
-from ..contracts.committee import merge as merge_committee
-from ..contracts.slides_projection import SlideSelection, select_slides
 from ..ports import NullRunObserver, RunObserver, RuntimeEvent
 from ..publication.model import PublicationCandidate, PublicationError, RunResult
 from ..reports.advisor.normalize import prepare_advisor_report

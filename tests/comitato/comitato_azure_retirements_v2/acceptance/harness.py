@@ -20,12 +20,12 @@ from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.paging i
     SourcePage,
     collect_complete_pages,
 )
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
+    YamlPlatformCatalogSource,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,
-)
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
-    YamlPlatformCatalogSource,
 )
 from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     ApplicationError,

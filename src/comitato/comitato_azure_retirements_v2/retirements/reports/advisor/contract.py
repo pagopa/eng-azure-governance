@@ -57,6 +57,7 @@ HEADER = (
 
 ADVISOR_V1_HEADER = HEADER
 
+
 class AdvisorV1Contract(TsvContract[Mapping[str, str]]):
     def validate(self, artifact, context):
         base = super().validate(artifact, context)
@@ -270,6 +271,7 @@ class AdvisorV1Contract(TsvContract[Mapping[str, str]]):
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
         return base
+
 
 ADVISOR_V1 = AdvisorV1Contract(
     name="advisor",

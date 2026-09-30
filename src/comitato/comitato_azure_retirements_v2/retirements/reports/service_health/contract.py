@@ -76,6 +76,7 @@ _RESOURCE_GRAPH_QUERY_LABELS = {
     "resource_inventory",
 }
 
+
 class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
     def validate(self, artifact, context):
         base = super().validate(artifact, context)
@@ -485,6 +486,7 @@ class ServiceHealthV1Contract(TsvContract[Mapping[str, str]]):
             return ValidationResult.invalid(tuple(diagnostics))
         return base
 
+
 SERVICE_HEALTH_V1 = ServiceHealthV1Contract(
     name="service-health",
     header=HEADER,
@@ -492,4 +494,9 @@ SERVICE_HEALTH_V1 = ServiceHealthV1Contract(
     companion_path="01_azure_service_health_advisories_raw.jsonl",
 )
 
-__all__ = ["HEADER", "SERVICE_HEALTH_V1", "SERVICE_HEALTH_V1_HEADER", "ServiceHealthV1Contract"]
+__all__ = [
+    "HEADER",
+    "SERVICE_HEALTH_V1",
+    "SERVICE_HEALTH_V1_HEADER",
+    "ServiceHealthV1Contract",
+]

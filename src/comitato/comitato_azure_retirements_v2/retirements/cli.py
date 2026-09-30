@@ -7,11 +7,12 @@ import sys
 from collections.abc import Mapping
 from typing import Any, Sequence
 
+from .adapters.runtime_logging import RuntimeReporter
 from .application.replay import run_replay
 from .config import RUNTIME_LOG_ROOT, RuntimeConfig, parse_config
 from .domain.diagnostics import Diagnostic
 from .ports import RunObserver
-from .adapters.runtime_logging import RuntimeReporter
+
 
 def run_config(config: RuntimeConfig, reporter: RunObserver | None = None) -> Any:
     from .application.composition import build_application

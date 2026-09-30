@@ -1,6 +1,8 @@
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import ArmPageEnvelope
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+    ArmPageEnvelope,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.subscription_list import (
     acquire_subscription_list,
 )

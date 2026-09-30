@@ -1,14 +1,16 @@
 from pathlib import Path
 
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import ArmHttpClient
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
-    FilesystemAtomicPublicationStore,
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+    ArmHttpClient,
+)
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.resource_graph_api import (
+    ResourceGraphApiSource,
 )
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
     YamlPlatformCatalogSource,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.resource_graph_api import (
-    ResourceGraphApiSource,
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
+    FilesystemAtomicPublicationStore,
 )
 from src.comitato.comitato_azure_retirements_v2.retirements.application.composition import (
     build_application,

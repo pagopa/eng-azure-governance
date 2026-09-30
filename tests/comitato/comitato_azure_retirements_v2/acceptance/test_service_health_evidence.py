@@ -19,7 +19,9 @@ from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model im
 from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts import AGGREGATE_V1
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts import (
+    AGGREGATE_V1,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     ReportSelector,
     RunRequest,

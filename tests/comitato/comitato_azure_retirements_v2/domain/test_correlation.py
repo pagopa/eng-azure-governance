@@ -2,7 +2,9 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.correlation i
     CorrelationEdge,
     correlate_source_events,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.retirements import SourceEvent
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.retirements import (
+    SourceEvent,
+)
 
 
 def event(source: str, identity: str, recommendation_type: str = "") -> SourceEvent:

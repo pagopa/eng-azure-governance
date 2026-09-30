@@ -16,7 +16,9 @@ PROJECT_ROOT: Path = REPOSITORY_ROOT / "src/comitato/comitato_azure_retirements_
 RUNTIME_LOG_ROOT: Path = (
     REPOSITORY_ROOT / "tmp/comitato/comitato_azure_retirements_v2/exports"
 )
-_DEFAULT_CATALOG_PATH = REPOSITORY_ROOT / "src/_source_of_truth/eng-finops-platforms.yaml"
+_DEFAULT_CATALOG_PATH = (
+    REPOSITORY_ROOT / "src/_source_of_truth/eng-finops-platforms.yaml"
+)
 _DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "exports"
 _DEFAULT_COMMITTEE_YAML_PATH = PROJECT_ROOT / "data" / "comitato_editoriale.yaml"
 

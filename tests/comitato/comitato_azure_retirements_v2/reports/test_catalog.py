@@ -2,9 +2,16 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts import AGGREGATE_V1, SLIDES_V1
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import ReportSelector
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts import (
+    AGGREGATE_V1,
+    SLIDES_V1,
+)
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+    ReportSelector,
+)
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+    ADVISOR_REPORT,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
     ReportCatalog,

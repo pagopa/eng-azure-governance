@@ -9,22 +9,29 @@ from typing import Any
 
 from ...acquisition.evidence import ObservationAccounting
 from ...acquisition.model import SourceAcquisition
-from ...application.orchestration_errors import ApplicationError, ContractValidationError
+from ...application.orchestration_errors import (
+    ApplicationError,
+    ContractValidationError,
+)
 from ...contracts.model import Artifact
 from ...domain.diagnostics import Diagnostic, ValidationResult
 from ...domain.evidence import AdvisorEnrichments
 from ...domain.execution import ReportSelector, RunContext
-from .contract import ADVISOR_V1
 from ..model import PreparedRawReport, ReportDefinition
+from .contract import ADVISOR_V1
+
 
 def _mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
+
 def _canonical(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
 
+
 def _normalized_arm(value: str) -> str:
     return re.sub(r"/+", "/", value.strip()).casefold().rstrip("/")
+
 
 def _date_value(value: Any) -> tuple[str, str]:
     raw = "" if value is None else str(value)
@@ -35,6 +42,7 @@ def _date_value(value: Any) -> tuple[str, str]:
     except ValueError:
         return "", "invalid"
     return parsed.isoformat(), "exact"
+
 
 def _lookup(
     value: Mapping[str, Any], key: str
@@ -56,6 +64,7 @@ def _lookup(
             return None, True
     return None, False
 
+
 def _text(value: Any) -> str:
     if isinstance(value, str):
         return value.strip()
@@ -66,9 +75,11 @@ def _text(value: Any) -> str:
                 return candidate.strip()
     return ""
 
+
 def _nested_mapping(value: Mapping[str, Any], key: str) -> Mapping[str, Any]:
     candidate = value.get(key)
     return candidate if isinstance(candidate, Mapping) else {}
+
 
 def _metadata_value(metadata: Mapping[str, Any], key: str) -> tuple[Any, str]:
     if key in metadata and metadata[key] not in (None, ""):
@@ -78,6 +89,7 @@ def _metadata_value(metadata: Mapping[str, Any], key: str) -> tuple[Any, str]:
         return properties[key], f"metadata.properties.{key}"
     return None, ""
 
+
 def _metadata_resource_singular(metadata: Mapping[str, Any]) -> tuple[str, str]:
     resource_metadata, source = _metadata_value(metadata, "resourceMetadata")
     if isinstance(resource_metadata, Mapping):
@@ -85,6 +97,7 @@ def _metadata_resource_singular(metadata: Mapping[str, Any]) -> tuple[str, str]:
         if singular:
             return singular, f"{source}.singular"
     return "", ""
+
 
 def _recommendation_value(
     recommendation: Mapping[str, Any],
@@ -98,6 +111,7 @@ def _recommendation_value(
         if key in container and container[key] not in (None, ""):
             return container[key], source
     return None, ""
+
 
 RESOURCE_TYPE_LABELS = {
     "microsoft.cache/redis": "Redis Cache Server",
@@ -115,6 +129,7 @@ RESOURCE_TYPE_LABELS = {
     "microsoft.web/sites": "App service",
 }
 
+
 def _fallback_service_name(resource_type: str) -> str:
     normalized = resource_type.strip().casefold()
     if normalized in RESOURCE_TYPE_LABELS:
@@ -123,6 +138,7 @@ def _fallback_service_name(resource_type: str) -> str:
         provider = normalized.split("/", 1)[0].split(".", 1)[-1]
         return provider.replace("_", " ").title()
     return ""
+
 
 def _timestamp(value: Any) -> tuple[str, str]:
     raw = "" if value is None else str(value)
@@ -136,12 +152,14 @@ def _timestamp(value: Any) -> tuple[str, str]:
     except ValueError:
         return "", "invalid_last_updated"
 
+
 def _subscription_id(record: Mapping[str, Any], recommendation_id: str) -> str:
     direct = record.get("subscriptionId") or record.get("subscription_id")
     if direct:
         return str(direct)
     match = re.search(r"/subscriptions/([^/]+)", recommendation_id, re.IGNORECASE)
     return match.group(1) if match else ""
+
 
 def _resource_parts(resource_id: str) -> tuple[str, str, str]:
     segments = [part for part in resource_id.split("/") if part]
@@ -160,9 +178,11 @@ def _resource_parts(resource_id: str) -> tuple[str, str, str]:
             name = segments[index + 3] if index + 3 < len(segments) else ""
     return name, group, resource_type
 
+
 def _record_payload(record: Any) -> Mapping[str, Any]:
     payload = getattr(record, "payload", record)
     return _mapping(payload)
+
 
 def normalize_advisor(
     acquisition: SourceAcquisition,
@@ -715,6 +735,7 @@ def normalize_advisor(
     )
     return ValidationResult.valid(artifact)
 
+
 ADVISOR_REPORT = ReportDefinition(
     selector=ReportSelector.ADVISOR,
     name="advisor",
@@ -722,6 +743,7 @@ ADVISOR_REPORT = ReportDefinition(
     dependencies=(),
     contract=ADVISOR_V1,
 )
+
 
 def prepare_advisor_report(
     acquisition: SourceAcquisition,
@@ -795,5 +817,6 @@ def prepare_advisor_report(
         artifact=artifact,
         artifacts=(ADVISOR_V1.encode(artifact), ADVISOR_V1.encode_companion(artifact)),
     )
+
 
 __all__ = ["ADVISOR_REPORT", "normalize_advisor", "prepare_advisor_report"]

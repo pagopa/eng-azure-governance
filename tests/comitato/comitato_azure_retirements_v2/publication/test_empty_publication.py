@@ -31,7 +31,9 @@ from src.comitato.comitato_azure_retirements_v2.retirements.publication.model im
     PublicationCandidate,
     PublicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+    ADVISOR_REPORT,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )

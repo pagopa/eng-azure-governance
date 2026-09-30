@@ -6,6 +6,7 @@ from datetime import datetime
 from html.parser import HTMLParser
 from typing import Any
 
+
 class _ArticleParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
@@ -28,8 +29,10 @@ class _ArticleParser(HTMLParser):
     def handle_data(self, data: str) -> None:
         self.parts.append(data)
 
+
 def plain_article(value: Any) -> str:
     return plain_text(value)
+
 
 def recommended_action_section(value: Any) -> str:
     if not isinstance(value, str) or not value:
@@ -40,6 +43,7 @@ def recommended_action_section(value: Any) -> str:
         value,
     )
     return plain_text(section.group(1)) if section else ""
+
 
 def text_retirement_claim(
     properties: Mapping[str, Any], article: Mapping[str, Any]
@@ -92,6 +96,7 @@ def text_retirement_claim(
     source_paths = ",".join(sorted({source for _, source in claims}))
     return value, source_paths
 
+
 def plain_text(value: Any) -> str:
     if value is None:
         return ""
@@ -114,4 +119,10 @@ def plain_text(value: Any) -> str:
         text = "".join(parser.parts)
     return " ".join(text.split())
 
-__all__ = ["plain_article", "plain_text", "recommended_action_section", "text_retirement_claim"]
+
+__all__ = [
+    "plain_article",
+    "plain_text",
+    "recommended_action_section",
+    "text_retirement_claim",
+]

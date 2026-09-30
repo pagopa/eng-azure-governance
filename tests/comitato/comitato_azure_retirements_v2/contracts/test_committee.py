@@ -110,5 +110,3 @@ def test_merge_maps_every_date_meaning_and_drops_portal_links() -> None:
             "fonte": "Azure Service Health",
         },
     ]
-
-

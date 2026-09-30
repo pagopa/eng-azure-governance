@@ -9,20 +9,31 @@ from typing import Any
 
 from ...acquisition.evidence import ObservationAccounting
 from ...acquisition.model import SourceAcquisition
-from ...application.orchestration_errors import ApplicationError, ContractValidationError
+from ...application.orchestration_errors import (
+    ApplicationError,
+    ContractValidationError,
+)
 from ...contracts.model import Artifact
 from ...domain.diagnostics import Diagnostic, ValidationResult
 from ...domain.evidence import ServiceHealthSupplementalEvidence
 from ...domain.execution import ReportSelector, RunContext
-from .article_text import plain_article, plain_text, recommended_action_section, text_retirement_claim
-from .contract import SERVICE_HEALTH_V1
 from ..model import PreparedRawReport, ReportDefinition
+from .article_text import (
+    plain_article,
+    plain_text,
+    recommended_action_section,
+    text_retirement_claim,
+)
+from .contract import SERVICE_HEALTH_V1
+
 
 def _mapping(value: Any) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
+
 def _canonical(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
 
 def _timestamp(value: Any) -> tuple[str, str]:
     raw = "" if value is None else str(value)
@@ -36,6 +47,7 @@ def _timestamp(value: Any) -> tuple[str, str]:
     except ValueError:
         return "", "invalid_timestamp"
 
+
 def _date(raw: Any) -> tuple[str, str]:
     value = "" if raw is None else str(raw)
     if not value:
@@ -47,12 +59,14 @@ def _date(raw: Any) -> tuple[str, str]:
     except (TypeError, ValueError):
         return "", "invalid"
 
+
 def _items(value: Any) -> tuple[Any, ...]:
     if isinstance(value, Mapping):
         return (value,) if value else ()
     if isinstance(value, (list, tuple)):
         return tuple(value)
     return ()
+
 
 def _impact_service_regions(
     properties: Mapping[str, Any],
@@ -107,6 +121,7 @@ def _impact_service_regions(
                 service_regions.append((service_name, service_guid, region_name))
     return tuple(dict.fromkeys(service_regions))
 
+
 def _resource_parts(value: str) -> tuple[str, str, str]:
     segments = [part for part in value.split("/") if part]
     lowered = [part.casefold() for part in segments]
@@ -122,8 +137,10 @@ def _resource_parts(value: str) -> tuple[str, str, str]:
         name = segments[index + 3] if index + 3 < len(segments) else ""
     return name, group, resource_type
 
+
 def _payload(record: Any) -> Mapping[str, Any]:
     return _mapping(getattr(record, "payload", record))
+
 
 def _collection_subscription(record: Any, event: Mapping[str, Any]) -> str:
     return str(
@@ -132,6 +149,7 @@ def _collection_subscription(record: Any, event: Mapping[str, Any]) -> str:
         or getattr(record, "subscription_id", "")
         or ""
     )
+
 
 def _inventory_lookup(
     inventory: Mapping[str, Mapping[str, Any]] | tuple[object, ...], key: str
@@ -148,6 +166,7 @@ def _inventory_lookup(
         if len(matches) > 1:
             return {}, True
     return {}, False
+
 
 def normalize_service_health(
     acquisition: SourceAcquisition,
@@ -749,6 +768,7 @@ def normalize_service_health(
     )
     return ValidationResult.valid(artifact)
 
+
 SERVICE_HEALTH_REPORT = ReportDefinition(
     selector=ReportSelector.SERVICE_HEALTH,
     name="service-health",
@@ -756,6 +776,7 @@ SERVICE_HEALTH_REPORT = ReportDefinition(
     dependencies=(),
     contract=SERVICE_HEALTH_V1,
 )
+
 
 def prepare_service_health_report(
     acquisition: SourceAcquisition,
@@ -852,4 +873,9 @@ def prepare_service_health_report(
         ),
     )
 
-__all__ = ["SERVICE_HEALTH_REPORT", "normalize_service_health", "prepare_service_health_report"]
+
+__all__ = [
+    "SERVICE_HEALTH_REPORT",
+    "normalize_service_health",
+    "prepare_service_health_report",
+]

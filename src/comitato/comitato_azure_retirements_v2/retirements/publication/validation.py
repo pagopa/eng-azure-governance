@@ -3,11 +3,11 @@ from __future__ import annotations
 import re
 from pathlib import PurePosixPath
 
+from ..contracts.model import EncodedArtifact
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..domain.execution import ReportSelector, RunContext
-from .model import PublicationCandidate
 from ..reports.catalog import SelectedReportClosure
-from ..contracts.model import EncodedArtifact
+from .model import PublicationCandidate
 
 
 def validate_candidate_paths(candidate: PublicationCandidate) -> tuple[Diagnostic, ...]:

@@ -10,7 +10,9 @@ from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model im
 from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import Artifact
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import (
+    Artifact,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.domain.evidence import (
     AdvisorEnrichments,
 )

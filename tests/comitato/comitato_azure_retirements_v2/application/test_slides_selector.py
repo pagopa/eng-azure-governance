@@ -95,7 +95,9 @@ def test_application_without_committee_path_does_not_access_yaml(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem import committee_yaml
+    from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem import (
+        committee_yaml,
+    )
 
     def fail(*args, **kwargs):
         raise AssertionError("committee YAML should not be accessed")

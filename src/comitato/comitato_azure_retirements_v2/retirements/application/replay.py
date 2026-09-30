@@ -6,8 +6,6 @@ from datetime import date, datetime
 from hashlib import sha256
 from typing import Any
 
-from ..acquisition.evidence import ObservationAccounting
-from ..acquisition.model import AcquisitionReceipt, SourceAcquisition
 from ..config import RuntimeConfig
 from ..contracts.codecs import canonical_json
 from ..domain.execution import (

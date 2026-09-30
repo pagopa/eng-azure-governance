@@ -14,7 +14,9 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution imp
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+    ADVISOR_REPORT,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
 )

@@ -8,7 +8,9 @@ from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advis
     AdvisorMetadataApiSource,
     flatten_metadata_items,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import ArmPageEnvelope
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+    ArmPageEnvelope,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,

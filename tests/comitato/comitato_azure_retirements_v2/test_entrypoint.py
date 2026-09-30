@@ -116,11 +116,7 @@ def test_bash_entrypoint_help_is_bootstrap_free() -> None:
 
 def test_project_root_contains_only_entry_layout() -> None:
     assert SCRIPT.is_file()
-    entries = {
-        path.name
-        for path in PROJECT.iterdir()
-        if not path.name.startswith(".")
-    }
+    entries = {path.name for path in PROJECT.iterdir() if not path.name.startswith(".")}
     assert sorted(path.name for path in PROJECT.glob("*.py")) == [
         "comitato-azure-retirements-v2.py"
     ]

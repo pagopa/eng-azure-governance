@@ -4,7 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import ReportSelector
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+    ReportSelector,
+)
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
     load_scenario,
     run_scenario,

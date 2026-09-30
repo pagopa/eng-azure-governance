@@ -11,11 +11,11 @@ from ..adapters.azure.advisor_enrichment import AzureAdvisorEnrichmentSource
 from ..adapters.azure.advisor_metadata_api import AdvisorMetadataApiSource
 from ..adapters.azure.arm_http import ArmHttpClient
 from ..adapters.azure.azure_auth import AzureCliTokenProvider
-from ..adapters.filesystem.publication import FilesystemAtomicPublicationStore
-from ..adapters.filesystem.platform_catalog_yaml import YamlPlatformCatalogSource
 from ..adapters.azure.resource_graph_api import ResourceGraphApiSource
 from ..adapters.azure.resource_health_api import ResourceHealthApiSource
 from ..adapters.azure.subscription_api import SubscriptionApiSource
+from ..adapters.filesystem.platform_catalog_yaml import YamlPlatformCatalogSource
+from ..adapters.filesystem.publication import FilesystemAtomicPublicationStore
 from ..config import RuntimeConfig
 from ..ports import NullRunObserver, RunObserver
 from .orchestration import RetirementsApplication

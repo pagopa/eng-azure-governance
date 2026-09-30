@@ -7,11 +7,11 @@ from dataclasses import dataclass
 from datetime import date
 from hashlib import sha256
 
+from ..domain.dates import CommitteeWindow
+from ..domain.diagnostics import Diagnostic, ValidationResult
 from .aggregate_v1 import AGGREGATE_V1
 from .model import Artifact
 from .slides_v1 import SLIDES_V1, SlideRecord
-from ..domain.dates import CommitteeWindow
-from ..domain.diagnostics import Diagnostic, ValidationResult
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 

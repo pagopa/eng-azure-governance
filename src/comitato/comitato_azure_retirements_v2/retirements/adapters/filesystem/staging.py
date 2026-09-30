@@ -11,17 +11,17 @@ from typing import Any
 
 from ... import __version__
 from ...contracts.codecs import canonical_json
-from ...publication.validation import (
-    validate_candidate_paths,
-    validate_manifest,
-    validate_selected_set,
-)
 from ...contracts.model import EncodedArtifact
 from ...domain.diagnostics import Diagnostic, sort_diagnostics
 from ...publication.model import (
     PublicationCandidate,
     PublicationError,
     PublicationManifest,
+)
+from ...publication.validation import (
+    validate_candidate_paths,
+    validate_manifest,
+    validate_selected_set,
 )
 from ...reports.model import StagedDecodeFailure
 
