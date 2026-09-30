@@ -8,29 +8,29 @@ from io import StringIO
 from pathlib import Path
 from typing import Any
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.evidence import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.evidence import (
     ObservationAccounting,
     SourceRecord,
 )
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts import AGGREGATE_V1
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts import AGGREGATE_V1
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     ReportSelector,
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
     SubscriptionId,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
 )
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (

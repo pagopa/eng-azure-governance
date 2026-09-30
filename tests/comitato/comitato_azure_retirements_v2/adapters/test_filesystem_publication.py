@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,
 )
-from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
-from src.comitato.comitato_azure_retirements_v2.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
     PublicationError,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (

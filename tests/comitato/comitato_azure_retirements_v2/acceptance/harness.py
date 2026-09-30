@@ -10,28 +10,28 @@ from typing import Any
 
 import yaml
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.acquisition.paging import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.paging import (
     AcquisitionIntegrityError,
     ScriptedRequest,
     SourcePage,
     collect_complete_pages,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_publication import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
     YamlPlatformCatalogSource,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     ApplicationError,
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     ReportSelector,
     RunContext,

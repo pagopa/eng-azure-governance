@@ -3,10 +3,10 @@ from datetime import date
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
     AggregateRecord,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.dates import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.dates import (
     CommitteeWindow,
     SlideEligibility,
     add_calendar_months,

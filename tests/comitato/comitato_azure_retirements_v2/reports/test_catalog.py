@@ -2,19 +2,19 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.contracts import AGGREGATE_V1, SLIDES_V1
-from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector
-from src.comitato.comitato_azure_retirements_v2.reports.advisor import ADVISOR_REPORT
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts import AGGREGATE_V1, SLIDES_V1
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import ReportSelector
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import ADVISOR_REPORT
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
     ReportCatalog,
     SelectedReportClosure,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.model import (
     ReportDefinition,
     StagedDecodeFailure,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (

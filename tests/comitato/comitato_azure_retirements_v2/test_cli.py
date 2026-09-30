@@ -6,16 +6,17 @@ from typing import Any
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2 import cli
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.retirements import cli
+from src.comitato.comitato_azure_retirements_v2.retirements.application import replay
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.config import RuntimeConfig
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.config import RuntimeConfig
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     ReportSelector,
     RunRequest,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
 
@@ -379,7 +380,7 @@ def test_replay_rejects_bundle_without_replay_inputs(tmp_path) -> None:
     )
 
     with pytest.raises(ValueError, match="replay bundle"):
-        cli._run_replay(config, application)
+        replay.run_replay(config, application)
 
 
 def test_replay_rejects_bundle_without_saved_catalog_and_acquisitions(tmp_path) -> None:
@@ -431,7 +432,7 @@ def test_replay_rejects_bundle_without_saved_catalog_and_acquisitions(tmp_path) 
     )
 
     with pytest.raises(ValueError, match="replay bundle"):
-        cli._run_replay(config, application)
+        replay.run_replay(config, application)
 
 
 def test_replay_rejects_artifact_only_bundle(tmp_path) -> None:
@@ -463,7 +464,7 @@ def test_replay_rejects_artifact_only_bundle(tmp_path) -> None:
     )
 
     with pytest.raises(ValueError, match="replay bundle"):
-        cli._run_replay(config, application)
+        replay.run_replay(config, application)
 
 
 def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
@@ -562,7 +563,7 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
         replay_bundle_path=bundle,
     )
 
-    result = cli._run_replay(config, application)
+    result = replay.run_replay(config, application)
 
     assert result.exit_status == 0
     assert store.candidate.artifacts[0].data.startswith(b"schema_version\trun_id\t")
@@ -593,7 +594,7 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
         RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
         replay_bundle_path=bundle,
     )
-    result = cli._run_replay(config, _replay_application(store))
+    result = replay.run_replay(config, _replay_application(store))
 
     slide = next(
         item
@@ -622,7 +623,7 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
         RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
         replay_bundle_path=changed_bundle,
     )
-    cli._run_replay(changed_config, _replay_application(changed_store))
+    replay.run_replay(changed_config, _replay_application(changed_store))
     changed_slide = next(
         item
         for item in changed_store.candidate.artifacts
@@ -650,7 +651,7 @@ def test_schema_one_legacy_bundle_without_saved_inputs_is_a_documented_limitatio
     )
 
     with pytest.raises(ValueError, match="legacy schema-1 replay is unsupported"):
-        cli._run_replay(config, _replay_application(object()))
+        replay.run_replay(config, _replay_application(object()))
 
 
 def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(
@@ -682,7 +683,7 @@ def test_replay_ignores_legacy_sidecar_even_if_it_differs_from_saved_inputs(
             )()
 
     store = Store()
-    result = cli._run_replay(config, _replay_application(store))
+    result = replay.run_replay(config, _replay_application(store))
     assert result.exit_status == 0
     assert all(
         item.logical_path != "comitato_editoriale.yaml"

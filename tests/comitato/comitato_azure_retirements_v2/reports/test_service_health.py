@@ -3,19 +3,19 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.codecs import decode_tsv
-from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.codecs import decode_tsv
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import Artifact
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.evidence import (
     ServiceHealthSupplementalEvidence,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -23,7 +23,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.service_health import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
     normalize_service_health,
     prepare_service_health_report,

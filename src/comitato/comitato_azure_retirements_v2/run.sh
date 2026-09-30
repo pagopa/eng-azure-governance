@@ -53,7 +53,7 @@ log_error() {
 }
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-    PYTHONPATH="$ROOT_DIR" exec python3 -m src.comitato.comitato_azure_retirements_v2 --help
+    exec python3 "$PACKAGE_DIR/comitato-azure-retirements-v2.py" "$@"
 fi
 
 if [[ "$format_option_present" == false ]]; then
@@ -74,4 +74,4 @@ if [[ ! -x "$VENV_DIR/bin/python" ]]; then
 fi
 
 log_info "Azure Retirements v2: launching report run"
-PYTHONPATH="$ROOT_DIR" exec "$VENV_DIR/bin/python" -m src.comitato.comitato_azure_retirements_v2 "${arguments[@]}"
+exec "$VENV_DIR/bin/python" "$PACKAGE_DIR/comitato-azure-retirements-v2.py" "${arguments[@]}"

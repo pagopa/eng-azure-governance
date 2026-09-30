@@ -6,11 +6,11 @@ from typing import Any
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.advisor_enrichment import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advisor_enrichment import (
     AdvisorEnrichmentError,
     AzureAdvisorEnrichmentSource,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,

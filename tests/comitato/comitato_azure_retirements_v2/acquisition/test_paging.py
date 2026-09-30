@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.paging import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.paging import (
     AcquisitionIntegrityError,
     ScriptedRequest,
     SourcePage,

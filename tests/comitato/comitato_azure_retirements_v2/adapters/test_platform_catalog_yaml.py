@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.platform_catalog_yaml import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
     CatalogLoadError,
     YamlPlatformCatalogSource,
 )

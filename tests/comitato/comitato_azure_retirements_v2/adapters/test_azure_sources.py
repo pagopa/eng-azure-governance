@@ -4,20 +4,20 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.advisor_api import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advisor_api import (
     AdvisorApiSource,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.arm_http import ArmPageEnvelope
-from src.comitato.comitato_azure_retirements_v2.adapters.resource_graph_api import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import ArmPageEnvelope
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.resource_graph_api import (
     ResourceGraphApiSource,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.resource_health_api import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.resource_health_api import (
     ResourceHealthApiSource,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.subscription_api import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.subscription_api import (
     SubscriptionApiSource,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,

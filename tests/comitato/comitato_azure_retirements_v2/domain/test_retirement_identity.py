@@ -1,4 +1,4 @@
-from src.comitato.comitato_azure_retirements_v2.domain.retirements import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.retirements import (
     AggregateId,
     AggregateMembership,
     SourceEventKey,

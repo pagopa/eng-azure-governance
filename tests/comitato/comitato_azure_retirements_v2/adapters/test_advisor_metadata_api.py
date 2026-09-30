@@ -4,12 +4,12 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.advisor_metadata_api import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advisor_metadata_api import (
     AdvisorMetadataApiSource,
     flatten_metadata_items,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.arm_http import ArmPageEnvelope
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import ArmPageEnvelope
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,

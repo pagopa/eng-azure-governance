@@ -2,11 +2,11 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.domain.diagnostics import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.diagnostics import (
     Diagnostic,
     sort_diagnostics,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,

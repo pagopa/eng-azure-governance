@@ -3,12 +3,15 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.config import (
+import src.comitato.comitato_azure_retirements_v2.retirements.config as config
+from src.comitato.comitato_azure_retirements_v2.retirements.config import (
     RuntimeConfig,
     parse_config,
     parse_run_request,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import ReportSelector
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+    ReportSelector,
+)
 
 
 def test_defaults_to_all_and_uses_an_iso_as_of_date() -> None:
@@ -34,6 +37,18 @@ def test_defaults_to_repository_source_of_truth_paths() -> None:
         config.committee_yaml_path
         == repository_root
         / "src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.yaml"
+    )
+
+
+def test_runtime_paths_are_anchored_to_repository_root() -> None:
+    repository_root = Path(__file__).parents[3]
+
+    assert getattr(config, "REPOSITORY_ROOT", None) == repository_root
+    assert getattr(config, "PROJECT_ROOT", None) == (
+        repository_root / "src/comitato/comitato_azure_retirements_v2"
+    )
+    assert getattr(config, "RUNTIME_LOG_ROOT", None) == (
+        repository_root / "tmp/comitato/comitato_azure_retirements_v2/exports"
     )
 
 

@@ -3,34 +3,34 @@ from datetime import datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.adapters.advisor_enrichment import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advisor_enrichment import (
     AdvisorEnrichmentError,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.evidence import (
     AdvisorEnrichments,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     ReportSelector,
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.ports import RuntimeEvent
-from src.comitato.comitato_azure_retirements_v2.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
     PublicationCandidate,
     PublicationReceipt,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
 

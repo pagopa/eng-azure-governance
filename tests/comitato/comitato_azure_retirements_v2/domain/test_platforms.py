@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
     PlatformProjection,

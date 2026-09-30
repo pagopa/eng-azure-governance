@@ -1,15 +1,15 @@
 import json
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
     HEADER as AGGREGATE_HEADER,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.model import Artifact
-from src.comitato.comitato_azure_retirements_v2.contracts.slides_v1 import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import Artifact
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.slides_v1 import (
     HEADER,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -17,7 +17,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.slides import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.slides_projection import (
     project_slides,
     select_slides,
 )
@@ -96,7 +96,7 @@ def aggregate_row(
 
 
 def aggregate_artifact(*rows: dict[str, str]) -> Artifact:
-    from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
+    from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
         AggregateRecord,
     )
 

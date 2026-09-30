@@ -3,14 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.adapters.filesystem_staging import (
+from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.staging import (
     stage_candidate,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.codecs import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.codecs import (
     decode_tsv,
     encode_tsv,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
     PublicationError,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (

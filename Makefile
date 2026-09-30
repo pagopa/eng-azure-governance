@@ -1,4 +1,5 @@
 COMITATO_VENV_PYTHON := ./src/comitato/comitato_azure_retirements/.venv/bin/python
+COMITATO_V2_VENV_PYTHON := ./src/comitato/comitato_azure_retirements_v2/.venv/bin/python
 COMITATO_TEST_PATH := tests/comitato/comitato_azure_retirements
 GRAPHIFY_BIN ?= graphify
 
@@ -28,11 +29,11 @@ test: ## Run Python tests for comitato_azure_retirements
 	@echo "✅ Python tests passed"
 
 test-v2: ## Run Python tests for Azure Retirements v2
-	@if [ ! -x "$(COMITATO_VENV_PYTHON)" ]; then \
-		echo "❌ Missing Python virtual environment: $(COMITATO_VENV_PYTHON)"; \
+	@if [ ! -x "$(COMITATO_V2_VENV_PYTHON)" ]; then \
+		echo "❌ Missing Python virtual environment: $(COMITATO_V2_VENV_PYTHON)"; \
 		exit 1; \
 	fi
-	@PYTHONPATH=. $(COMITATO_VENV_PYTHON) -m pytest tests/comitato/comitato_azure_retirements_v2
+	@PYTHONPATH=. $(COMITATO_V2_VENV_PYTHON) -m pytest tests/comitato/comitato_azure_retirements_v2
 
 lock: ## Update provider lock file for multiple platforms
 	@echo "🔒 Updating provider lock file..."

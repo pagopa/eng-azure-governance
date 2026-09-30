@@ -5,6 +5,26 @@ monthly report bundle. The default selector is `all`; use `--report`
 with `advisor`, `service-health`, `aggregate`, or `slides` to publish one
 selected contract and its complete dependency closure.
 
+## Contents
+
+- [Package Layout](#package-layout)
+- [Advisor Enrichment](#advisor-enrichment)
+- [Operator Output And Logging](#operator-output-and-logging)
+- [Service Health Evidence](#service-health-evidence)
+
+## Package Layout
+
+Run `bash src/comitato/comitato_azure_retirements_v2/run.sh --help` to inspect
+the CLI before a live run. The component root keeps `data/` and `exports/`
+beside the canonical `retirements/` package; its sole Python entry script is
+`comitato-azure-retirements-v2.py`.
+
+Use the canonical import namespace
+`src.comitato.comitato_azure_retirements_v2.retirements`; do not import a
+top-level `retirements` package. Default output paths are unchanged: component
+`exports/YYYY/MM`, component `data/comitato_editoriale.yaml`, and repository
+`tmp/comitato/comitato_azure_retirements_v2/exports` for debug logs.
+
 Required access is read access to the selected subscription scope for Azure
 Advisor, Resource Health events, Resource Graph enrichment, and subscription
 scope resolution. Authentication uses `AZURE_BEARER_TOKEN` when supplied or
@@ -103,14 +123,14 @@ not truncated by this projection contract.
 
 ## Operator Output And Logging
 
-The launcher and direct module entry point have different defaults:
+The launcher and direct script entry point have different defaults:
 
 - `run.sh` appends `--output-format human` when no output format was supplied.
   It shows the human layout and bootstrap status lines only when stderr is an
   interactive TTY.
-- Direct `python -m src.comitato.comitato_azure_retirements_v2` execution
-  defaults to machine output. Successful runs write one JSON value and a
-  newline to stdout. Failures write sorted JSONL diagnostics to stderr.
+- Direct execution of `comitato-azure-retirements-v2.py` defaults to machine
+  output. Successful runs write one JSON value and a newline to stdout.
+  Failures write sorted JSONL diagnostics to stderr.
 - `--output-format json` always uses the machine contract, even in a TTY.
 - `--output-format human` uses Rich on stderr only in a TTY. In non-TTY
   execution it falls back to the machine JSON or JSONL contract.
@@ -228,7 +248,8 @@ For automation, select JSON explicitly and parse stdout while keeping stderr
 available for JSONL diagnostics:
 
 ```bash
-python3 -m src.comitato.comitato_azure_retirements_v2 \
+python3 \
+  src/comitato/comitato_azure_retirements_v2/comitato-azure-retirements-v2.py \
   --output-format json \
   --report aggregate \
   --subscriptions 00000000-0000-0000-0000-000000000000 \

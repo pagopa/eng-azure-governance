@@ -1,10 +1,10 @@
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.contracts.cross_artifact import (
+from src.comitato.comitato_azure_retirements_v2.retirements.publication.validation import (
     validate_selected_set,
 )
-from src.comitato.comitato_azure_retirements_v2.contracts.model import EncodedArtifact
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import EncodedArtifact
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -12,7 +12,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
 

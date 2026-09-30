@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from src.comitato.comitato_azure_retirements_v2.domain.coverage import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.coverage import (
     validate_platform_coverage,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
     PlatformCatalogSnapshot,
 )
 

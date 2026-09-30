@@ -6,23 +6,23 @@ from typing import Any
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.application import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application import (
     orchestration as orchestration_module,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.evidence import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.evidence import (
     ServiceHealthSupplementalEvidence,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -30,7 +30,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
     PublicationReceipt,
 )
 

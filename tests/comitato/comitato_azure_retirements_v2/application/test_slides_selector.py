@@ -2,17 +2,17 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     ReportSelector,
     RunRequest,
 )
-from src.comitato.comitato_azure_retirements_v2.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
     PublicationError,
 )
 from tests.comitato.comitato_azure_retirements_v2.application.test_aggregate_selectors import (
@@ -95,13 +95,13 @@ def test_application_without_committee_path_does_not_access_yaml(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from src.comitato.comitato_azure_retirements_v2.domain import committee
+    from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem import committee_yaml
 
     def fail(*args, **kwargs):
         raise AssertionError("committee YAML should not be accessed")
 
-    monkeypatch.setattr(committee, "load", fail)
-    monkeypatch.setattr(committee, "write", fail)
+    monkeypatch.setattr(committee_yaml, "load", fail)
+    monkeypatch.setattr(committee_yaml, "write", fail)
     _committee_app(None, PublishProbe(tmp_path / "unused.yaml")).run(
         RunRequest(ReportSelector.SLIDES, (SUBSCRIPTION,))
     )

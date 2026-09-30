@@ -1,10 +1,10 @@
 import json
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.contracts.aggregate_v1 import (
+from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
     build_aggregate,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -12,7 +12,7 @@ from src.comitato.comitato_azure_retirements_v2.domain.execution import (
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.domain.platforms import (
+from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
     PlatformCatalogSnapshot,
 )
 
