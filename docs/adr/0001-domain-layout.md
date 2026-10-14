@@ -17,14 +17,14 @@ The closed promotion test is applied to each candidate area below. `Yes` verdict
 
 | Signal | Verdict | Evidence |
 | --- | --- | --- |
-| Same word means different things inside and outside | Yes | `src/04_policy_assignments/` binds policies, while `.identity/02_identity_prod_auth.tf` assigns RBAC roles. |
-| Represented differently from neighbouring areas | Yes | `src/02_policy_api_management/`, `src/03_policy_set/`, `src/04_policy_assignments/` |
+| Same word means different things inside and outside | Yes | `src/azure-policy/04_policy_assignments/` binds policies, while `.identity/02_identity_prod_auth.tf` assigns RBAC roles. |
+| Represented differently from neighbouring areas | Yes | `src/azure-policy/02_policy_api_management/`, `src/azure-policy/03_policy_set/`, `src/azure-policy/04_policy_assignments/` |
 | Serves a different audience | Not evidenced | Repository ownership is shared and no separate audience contract is checked in. |
 | Uses a different tool set | No | Azure Governance and Identity both use Terraform and AzureRM. |
-| Lives in a separate code base, state file, or schema | Yes | `src/01_custom_roles/backend.ini`, `src/03_policy_set/backend.ini`, `src/04_policy_assignments/env/org/backend.tfvars` |
+| Lives in a separate code base, state file, or schema | Yes | `src/azure-policy/01_custom_roles/backend.ini`, `src/azure-policy/03_policy_set/backend.ini`, `src/azure-policy/04_policy_assignments/env/org/backend.tfvars` |
 | Follows a separate delivery process | Yes | `README.md`, `CONTRIBUTING.md`, `.github/workflows/terraform_drift.yml` |
 | Can be delivered independently | Yes | Numbered roots own separate wrappers and backend configuration. |
-| Another area depends on it directionally | Yes | `.identity/02_identity_prod_auth.tf` references roles defined in `src/01_custom_roles/`. |
+| Another area depends on it directionally | Yes | `.identity/02_identity_prod_auth.tf` references roles defined in `src/azure-policy/01_custom_roles/`. |
 
 Recorded count: 6.
 
@@ -32,7 +32,7 @@ Recorded count: 6.
 
 | Signal | Verdict | Evidence |
 | --- | --- | --- |
-| Same word means different things inside and outside | Yes | `.identity/02_identity_prod_auth.tf` assigns roles, while `src/04_policy_assignments/` assigns policies. |
+| Same word means different things inside and outside | Yes | `.identity/02_identity_prod_auth.tf` assigns roles, while `src/azure-policy/04_policy_assignments/` assigns policies. |
 | Represented differently from neighbouring areas | Yes | `.identity/02_identity_prod.tf`, `.identity/02_identity_prod_auth.tf` |
 | Serves a different audience | Not evidenced | No separate audience contract is checked in. |
 | Uses a different tool set | No | Identity and Azure Governance both use Terraform and AzureRM. |

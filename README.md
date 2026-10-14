@@ -31,10 +31,10 @@ No diagram is provided here because the repository-wide policy and workflow rela
 ## Project structure
 
 - `.identity` owns the separately managed production identity, repository federation, Azure role grants, and Terraform state.
-- `src/01_custom_roles` contains custom role definitions and is the first governance stage.
-- `src/02_policy_*` contains policy families, each with its own Terraform root and state configuration.
-- `src/03_policy_set` composes policy definitions into initiatives.
-- `src/04_policy_assignments` assigns policy definitions and initiatives to management groups or subscriptions.
+- `src/azure-policy/01_custom_roles` contains custom role definitions and is the first governance stage.
+- `src/azure-policy/02_policy_*` contains policy families, each with its own Terraform root and state configuration.
+- `src/azure-policy/03_policy_set` composes policy definitions into initiatives.
+- `src/azure-policy/04_policy_assignments` assigns policy definitions and initiatives to management groups or subscriptions.
 - `src/_source_of_truth` owns the canonical Eng FinOps platform catalog consumed by the retirement runtime.
 - `src/comitato/comitato_azure_retirements` collects and projects retirement evidence for committee review.
 - `src/scripts` contains the remediation and container-job operational scripts invoked by workflows.
@@ -46,7 +46,7 @@ Apply the numbered governance roots in `01` through `04` order. Each root owns a
 ### How to use it
 
 ```bash
-cd src/01_custom_roles
+cd src/azure-policy/01_custom_roles
 ./terraform.sh plan
 ```
 
@@ -114,10 +114,10 @@ terraform providers lock \
 Repository centrale per le Azure Policy d’organizzazione; definisce ruoli RBAC custom, policy singole e initiative e le assegna ai Management Group per imporre controlli di sicurezza/compliance su subscription e workload. Garantisce applicazione coerente dei guardrail e remediation automatica su larga scala.
 
 ### Cartelle
-- `src/01_custom_roles`: ruoli RBAC custom (JSON) per abilitare permessi minimi.
-- `src/02_policy_*`: set di policy per dominio (es. networking, db, storage) con definizioni e parametri.
-- `src/03_policy_set`: iniziative (PolicySet) che aggregano policy correlate con parametri predefiniti.
-- `src/04_policy_assignments`: assignment verso Management Group con scope e parametri di iniziative/policy.
+- `src/azure-policy/01_custom_roles`: ruoli RBAC custom (JSON) per abilitare permessi minimi.
+- `src/azure-policy/02_policy_*`: set di policy per dominio (es. networking, db, storage) con definizioni e parametri.
+- `src/azure-policy/03_policy_set`: iniziative (PolicySet) che aggregano policy correlate con parametri predefiniti.
+- `src/azure-policy/04_policy_assignments`: assignment verso Management Group con scope e parametri di iniziative/policy.
 - eventuali `modules/`: moduli Terraform per deployment e riuso delle definizioni.
 
 ### Script
