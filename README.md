@@ -65,14 +65,21 @@ Its outputs expose tenant, subscription, and identity metadata. Checked-in files
 
 ## Validation
 
-Use non-mutating checks before review:
+Run the local code validator with the parallel execution and reporting engine
+ported from AWS authorization v2 and the checks owned by this Azure repository:
 
 ```bash
-terraform fmt -check -recursive .identity
-terraform fmt -check -recursive src
-make test
-make test-v2
+./validate-code.sh
+./validate-code.sh --list
+./validate-code.sh --dry-run --compact
+./validate-code.sh python --group retirements-v2
+./validate-code.sh terraform --lane azure-policy
 ```
+
+See [Code Validation](tools/validate_code/README.md) for prerequisites, selectors,
+identity validation, parallelism, fail-fast, and JSON reports. These checks do not
+invoke Terraform plan or apply. Provider initialization uses disabled remote
+backends and read-only lockfiles. Existing failures are reported, not skipped.
 
 The repository pre-commit configuration adds Terraform validation with remote backends disabled, ShellCheck, actionlint, Python checks, and structured-data checks.
 
