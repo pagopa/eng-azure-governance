@@ -35,12 +35,13 @@ Statuses are `proposed`, `accepted`, `rejected`, `deprecated`, or `superseded by
 An accepted ADR body is immutable. A changed accepted decision requires a new
 numbered ADR.
 
-- Full supersession requires a link in both records and the old record's status
-	changed to `superseded by ADR-NNNN`.
-- Partial supersession keeps the old record's status `accepted`. The new ADR
-	must link to the old record and state which part it replaces and which parts
-	remain accepted. The index must identify the replaced part and link to the
-	successor without changing the old accepted body.
+Full supersession requires a link in both records and the old record's status
+changed to `superseded by ADR-NNNN`.
+
+Partial supersession keeps the old record's status `accepted`. The new ADR
+must link to the old record and state which part it replaces and which parts
+remain accepted. The index must identify the replaced part and link to the
+successor without changing the old accepted body.
 
 [ADR-0002](0002-glossary-file-names.md) partially supersedes only the file names
 in [ADR-0001](0001-domain-layout.md); the four-domain decision remains accepted.
