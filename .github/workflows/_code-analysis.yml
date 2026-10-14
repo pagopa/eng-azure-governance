@@ -35,10 +35,7 @@ jobs:
       - name: 🧭 Prepare ephemeral virtualenv paths
         run: |
           code_analysis_root="${RUNNER_TEMP}/repo-code-analysis"
-          {
-            echo "TEST_VENV=${code_analysis_root}/tests"
-            echo "V2_TEST_VENV=${code_analysis_root}/tests-v2"
-          } >> "${GITHUB_ENV}"
+          echo "V2_TEST_VENV=${code_analysis_root}/tests-v2" >> "${GITHUB_ENV}"
 
       - name: 🐍 Set up Python from .python-version
         # actions/setup-python@v6.2.0
@@ -49,22 +46,12 @@ jobs:
           cache: pip
           cache-dependency-path: |
             .python-version
-            src/comitato/comitato_azure_retirements/requirements.txt
             src/comitato/comitato_azure_retirements_v2/requirements.txt
 
       - name: 🔎 Show Python version
         run: |
           python --version
           python -m pip --version
-
-      - name: 📦 Validate Python requirements
-        run: |
-          rm -rf "${TEST_VENV}"
-          python -m venv "${TEST_VENV}"
-          "${TEST_VENV}/bin/python" -m pip install --upgrade pip
-          "${TEST_VENV}/bin/pip" install --require-hashes -r "src/comitato/comitato_azure_retirements/requirements.txt"
-          "${TEST_VENV}/bin/pip" install pytest==9.1.0
-          "${TEST_VENV}/bin/python" -m pip check
 
       - name: 🔥 Analyze Python sources and tests
         run: |
@@ -73,9 +60,7 @@ jobs:
               -type f -name '*.py' -not -path '*/.venv/*' -print | sort
           )
           test "${#python_files[@]}" -gt 0
-          "${TEST_VENV}/bin/python" -m py_compile "${python_files[@]}"
-          "${TEST_VENV}/bin/python" \
-            src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help
+          python -m py_compile "${python_files[@]}"
 
       - name: 🔥 Analyze Bash scripts
         run: |
@@ -87,11 +72,6 @@ jobs:
           for file in "${bash_files[@]}"; do
             bash -n "${file}"
           done
-
-      - name: ✅ Run pytest
-        run: |
-          "${TEST_VENV}/bin/python" -m pytest \
-            tests/comitato/comitato_azure_retirements -q
 
       - name: 📦 Validate v2 Python requirements
         run: |

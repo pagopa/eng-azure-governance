@@ -22,15 +22,15 @@ ${input:language:Match chat language for the chat reply only. Retained artifact 
 Use these standards-repository sources first for evidence discipline, planning posture, and challenge gating:
 
 - [AGENTS.md](../../AGENTS.md)
-- [.github/copilot-instructions.md](../copilot-instructions.md)
+- [AGENTS.local.md](../../AGENTS.local.md)
 - [.github/INVENTORY.md](../INVENTORY.md)
-- [.github/agents/internal-planning-leader.agent.md](../agents/internal-planning-leader.agent.md)
-- [.github/agents/internal-critical-master.agent.md](../agents/internal-critical-master.agent.md)
-- [.github/skills/internal-writing-plans/SKILL.md](../skills/internal-writing-plans/SKILL.md)
+- [Documentation index](../../docs/README.md)
+
+When installed, `internal-knowledge` provides the architecture owner contract. Its authorization and evidence boundaries take precedence over this reusable prompt's section suggestions.
 
 Then produce an evidence-based architecture contract for the target repository with the rules below.
 
-## 1. Mission
+## Instructions
 
 Create or refresh, for the target repository, one artifact:
 
@@ -54,16 +54,16 @@ Before writing the canonical artifact, confirm on disk:
 - Whether the repo is a **monorepo** (multiple independent roots, numbered prefixes such as `00-`, `10-`, per-service folders, multiple IaC roots, multiple language manifests at top level).
 - Existing ADRs, architecture notes, design docs, or standards files to align with and reference.
 
-If `docs/architecture.md` already exists, treat it as the prior canonical version: refresh it in place, preserve still-true claims, and downgrade unsupported claims to `Unknown / To verify` or remove them when evidence contradicts them.
+If `docs/architecture.md` already exists, refresh it in place and preserve still-true claims. Report contradictory evidence and defects to the human. Retain only decision-relevant open architecture questions, not a backlog of verification gaps.
 
 ## 4. Operating Rules
 
 1. Inspect the repository before writing.
 2. Prefer evidence from source code, configs, tests, workflows, package manifests, IaC files, scripts, and existing docs.
-3. Do not invent missing architecture. If unclear, mark `Unknown / To verify`.
+3. Do not invent missing architecture. Report verification gaps to the human; retain only open decisions that materially affect architecture understanding.
 4. Do not modify application code, IaC, tests, workflows, or scripts.
 5. Create or update only `docs/architecture.md`.
-6. Do not modify `AGENTS.md`, `.github/copilot-instructions.md`, `.github/instructions/*`, or `.github/prompts/*` unless the user explicitly asks. Suggest exact snippets instead.
+6. Do not modify `AGENTS.md`, `.github/copilot-instructions.md`, `.github/instructions/*`, or `.github/prompts/*` unless the user explicitly asks. Do not introduce execution routing into review-only instructions.
 7. Do not store the canonical contract under `.github/`. Keep `.github/` as the activation/instruction layer.
 8. Keep the canonical document concise; avoid full file trees and implementation trivia.
 9. Favor stable architectural rules over temporary details.
@@ -106,14 +106,14 @@ Keep the working analysis internal and use it only to:
 
 - decide what belongs in each canonical section;
 - decide which claims are `Documented`, `Evidenced`, `Inferred`, or `Unknown`;
-- identify the top risks and unknowns to surface in section 14 and in the final chat response;
-- apply the `internal-critical-master` consistency gate before finalizing the canonical document.
+- identify material risks and open decisions to surface in the document and report verification gaps in the final response;
+- check claims against the inspected evidence before finalizing the canonical document.
 
 Do not include private chain-of-thought in the chat. Surface only concise evidence-backed outcomes.
 
-## 8. Required Canonical Output
+## 8. Evidence-Based Output
 
-Create or refresh `<repo>/docs/architecture.md` with the following 14 sections. Keep section numbering and titles stable so AI agents can rely on them.
+Create or refresh `<repo>/docs/architecture.md` with only the sections needed for the reader's outcome. Preserve useful existing structure. The following is a menu of possible sections, not a required template. Do not create empty sections or verification timestamps.
 
 ```md
 # Architecture
@@ -164,25 +164,17 @@ Create or refresh `<repo>/docs/architecture.md` with the following 14 sections. 
 
 ## 12. AI-agent working rules
 
-## 13. Last verified
-
-- Date: YYYY-MM-DD
-- Agent/tool:
-- Files inspected: summary only
-- Commands considered/run:
-- Confidence: High / Medium / Low
-
-## 14. Unknown / To verify
+## Open architecture decisions
 ```
 
 Section content rules:
 
-- Section 2: 5-10 lines. Include an ASCII diagram only if it makes the architecture clearer.
+- Section 2: keep the orientation concise. Include a diagram only when it clarifies evidenced relationships.
 - Section 3: use `Intended architecture` only when explicitly documented; do not present technical debt as intentional design.
 - Section 5: include only important paths. No full trees.
 - Section 6: for important claims include `Status` and `Evidence`.
-- Section 7: if not enough evidence, write `Unknown / To verify`.
-- Section 8: include only flows supported by repository evidence. Skip subsections that have no evidence and call them out in section 14.
+- Section 7: state only evidenced dependency rules; report missing verification to the human.
+- Section 8: include only flows supported by repository evidence. Omit unsupported subsections.
 - Section 9: never expose secret values.
 - Section 11: format each item as:
   - Decision: ...
@@ -190,7 +182,7 @@ Section content rules:
     - Evidence: `path`
     - Trade-off: ...
     - Related ADR: `path`, if present
-- Section 12 baseline (adapt wording, keep intent):
+- Section 12, when useful (adapt wording, keep intent):
   - Read this file before structural, cross-file, or refactoring changes.
   - Prefer existing repository patterns over new abstractions.
   - Keep changes scoped to the user request.
@@ -207,38 +199,15 @@ If the pre-analysis control pass identified a monorepo:
 - Keep `docs/architecture.md` at the repository root, scoped to the monorepo-level architecture.
 - Section 5 must list each top-level service/component root and its responsibility.
 - Section 6 must describe inter-component boundaries, not internal per-service detail.
-- Section 14 must explicitly state whether per-service `docs/architecture.md` files are recommended.
+- State whether per-service `docs/architecture.md` files are warranted when that decision matters to the reader.
 - Do not create per-service files automatically.
 
-## 10. Activation Snippets to Suggest
+## 10. Activation Boundaries
 
-After creating the files, suggest these snippets only if the target file already exists or would clearly benefit from it. Do not edit those files.
-
-### Suggested `AGENTS.md` snippet
-
-```md
-Before structural, cross-file, or refactoring changes, read `docs/architecture.md` and treat it as the source of truth for repository boundaries, dependency direction, key flows, validation commands, and AI-agent working rules.
-
-If the requested change conflicts with `docs/architecture.md`, explain the conflict before editing. If the change intentionally updates the architecture, propose the required architecture document update explicitly.
-```
-
-### Suggested `.github/copilot-instructions.md` snippet
-
-```md
-For architectural, cross-file, or refactoring tasks, consult `docs/architecture.md` before editing. If the request conflicts with documented boundaries, dependency rules, key flows, or validation commands, explain the conflict first.
-```
-
-### Optional `.github/instructions/architecture.instructions.md` snippet
-
-```md
----
-applyTo: "**/*"
----
-
-For structural, cross-file, or refactoring changes, use `docs/architecture.md` as the repository architecture contract. Keep changes scoped, preserve documented boundaries, and update the architecture file when intentional architectural changes are made.
-```
-
-Suggest the optional file only if `.github/instructions/` already exists in the repo or path-specific Copilot instructions would clearly help.
+Architecture maintenance does not authorize policy or customization changes.
+Report a missing activation route separately when it blocks the reader's outcome.
+Keep execution guidance with the repository operating owner. Do not recommend
+execution snippets for this repository's review-only Copilot instructions.
 
 ## 11. Quality Bar
 
@@ -250,10 +219,10 @@ Suggest the optional file only if `.github/instructions/` already exists in the 
 - short enough to be referenced frequently;
 - specific enough to reduce AI-driven drift and unsafe refactors.
 
-Length targets:
+Length guidance:
 
-- Single-purpose repository: 150-250 lines.
-- Monorepo or unusually broad scope: may exceed 250 but must stay under a hard maximum of 400 lines.
+- Keep the document proportional to its scope. A short document can be complete.
+- Do not add inventory or flow boilerplate to meet a line-count target.
 - No secondary retained analysis artifact should be created unless explicitly requested by the user.
 
 Markdown hygiene (must pass markdownlint defaults):
@@ -261,14 +230,14 @@ Markdown hygiene (must pass markdownlint defaults):
 - Spaced table separators: `| --- | --- |`, never `|---|---|`.
 - Trailing newline at end of file (MD047).
 - One H1 per file.
-- No fabricated headings beyond the 14 canonical sections.
+- No empty sections, fabricated claims, or `Last verified` stamps.
 
-## 12. Final Consistency Gate (internal-critical-master)
+## 12. Final Consistency Check
 
-Before finalizing the canonical document, run a brief internal pressure-test using the `internal-critical-master` lens:
+Before finalizing the canonical document, check:
 
 - What in the candidate canonical document is most likely correct given on-disk evidence?
-- What may be overclaimed, contradictory, or hallucinated, and must be downgraded to `Unknown / To verify`?
+- What may be overclaimed, contradictory, or unsupported and must be corrected or reported?
 - Are any sections forcing structure where evidence does not exist (for example claiming a runtime flow on a pure IaC repo)?
 - Is the monorepo decision honest, or is a unified architecture being faked?
 - Does section 12 promise constraints the repo cannot actually enforce?
@@ -276,9 +245,9 @@ Before finalizing the canonical document, run a brief internal pressure-test usi
 Reconcile the answers before writing the final document:
 
 - Preserve the strongest supported claims with evidence.
-- Trim unsupported claims or move them to section 14 (`Unknown / To verify`).
-- Reflect any downgrade decisions directly in `docs/architecture.md`, especially in sections 3, 7, 8, 11, 13, and 14 as appropriate.
-- Do not route to another lane; this is an internal validation step inside this prompt.
+- Trim unsupported claims and report defects or verification gaps to the human.
+- Report intended behavior without an authoritative source as a conflict, not as an open architecture decision.
+- Preserve generated blocks byte-for-byte and keep authored prose before their owner marker.
 
 ## 13. Final Response Shape
 
@@ -286,10 +255,16 @@ After creating or updating the files, respond with:
 
 1. The created/updated file paths.
 2. A short summary of the architecture discovered.
-3. The top 3 risks or unknowns found.
-4. Whether `AGENTS.md` and `.github/copilot-instructions.md` already exist in the target repo.
-5. The suggested snippets to add to those files (only the ones that apply).
-6. Commands considered or run for validation.
-7. The Critical-Master gate outcome in one or two lines: what was kept, what was downgraded.
+3. Material risks, conflicts, or verification gaps, without padding the count.
+4. Evidence inspected and commands actually run, distinguished from checks only considered.
+5. The consistency-check outcome in one or two lines.
 
 Do not paste the full `docs/architecture.md` in the chat unless explicitly requested.
+
+## Validation
+
+Check local links, architecture evidence, accepted ADRs, and the owning documentation contract. Preserve generated blocks and omit unsupported sections rather than inventing claims.
+
+## Minimal example
+
+Refresh the current repository architecture for both retirement runtimes, preserving the four accepted domains and existing ADRs.

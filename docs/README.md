@@ -14,7 +14,7 @@ Linked documents hold the detail.
 | Strategic decisions | [ADR index](adr/README.md) | A change may affect an accepted strategic decision. |
 | Tactical decisions | [ADR index](adr/README.md) | A design change may conflict with or revise an accepted decision. |
 | Rules | [Domain rules](#domain-glossaries-and-rules) | Changing behavior governed by domain invariants. |
-| Standards | [Contribution conventions](../CONTRIBUTING.md#conventions) | Applying naming, commit, or Terraform conventions. |
+| Standards | [Repository conventions](standards/repository-conventions.md) | Applying naming, commit, or Terraform conventions. |
 | Structure | [Architecture](architecture.md) | Finding component ownership, boundaries, flows, or state. |
 
 ## Alignment contract

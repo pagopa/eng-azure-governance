@@ -120,7 +120,6 @@ platform, subscription, resource, environment, service, and region counts;
 and resource group. Cells longer than the Excel limit of 32,767 characters are
 not truncated by this projection contract.
 
-
 ## Operator Output And Logging
 
 The launcher and direct script entry point have different defaults:
@@ -151,61 +150,6 @@ does not redirect, replace, or otherwise alter the published artifact bundle.
 
 Use the logging flags as follows:
 
-## Service Health Evidence
-
-Service Health advisories are acquired from the Resource Health events endpoint
-at `subscriptions/{subscriptionId}/providers/Microsoft.ResourceHealth/events`
-with API version `2025-05-01`. The raw event and its original text remain in
-The JSONL companion. The TSV projection parses `properties.impact`, preserves
-Unicode, and renders readable HTML-derived title, summary, description, and
-recommended-action fields.
-
-The supplied PDF and any `9PN5-64G` investigation are reconciliation or
-evidence obligations only. They do not add API records, prove complete Azure
-coverage, or justify a target row count. MO-01 must record the authoritative
-Azure scope, filtering, paging, access, and collection evidence for `9PN5-64G`.
-MO-02 must classify every July presentation reference without treating its row
-count as a target. MO-03 is the human inspection of the final 19-column TSV
-and adjacent YAML, including Unicode, multiline text, actions, resources,
-editorial ownership, drafts, and sidecar retention.
-
-The supplemental Resource Graph adapter uses the scoped,
-paginated `Microsoft.ResourceGraph/resources?api-version=2024-04-01` endpoint
-for three purposes:
-
-1. Subscription names, with live inventory preferred over the governed platform
-  catalog fallback:
-
-  ```kusto
-  resourcecontainers
-  | where type =~ "microsoft.resources/subscriptions"
-  | project subscriptionId, subscriptionName=name
-  ```
-
-1. Service Health impacted-resource associations:
-
-  ```kusto
-  servicehealthresources
-  | where type =~ "microsoft.resourcehealth/events/impactedresources"
-  | project id, subscriptionId, properties
-  ```
-
-1. Verified metadata for target resource IDs already published by the Service
-  Health association query:
-
-  ```kusto
-  resources
-  | where tolower(id) in ("/subscriptions/.../providers/...")
-  | project id, name, type, location, resourceGroup, subscriptionId, tags, resourceId = tolower(id)
-  ```
-
-A completed impacted-resource query with no matching target is represented as
-`resource_evidence_status=not_published`; it does not infer an ARM resource
-from article text, service, region, or subscription data. Resource Graph
-transport, pagination, or response-shape failures block the run and leave the
-existing monthly bundle unchanged. Query labels and subscription-name source
-are retained in `provenance_json`.
-
 - `--output-format {human,json}` selects the process output contract.
 - `--verbose` includes additional non-failing runtime events in the human
   console and debug log.
@@ -230,7 +174,7 @@ bash src/comitato/comitato_azure_retirements_v2/run.sh \
   --report all \
   --subscriptions 00000000-0000-0000-0000-000000000000 \
   --as-of-date 2026-07-31 \
-  --catalog-path config/eng-finops-platforms.yaml \
+  --catalog-path src/_source_of_truth/eng-finops-platforms.yaml \
   --output-path src/comitato/comitato_azure_retirements_v2/exports
 ```
 
@@ -256,3 +200,36 @@ python3 \
   > result.json
 python3 -c 'import json, pathlib; print(json.loads(pathlib.Path("result.json").read_text())["status"])'
 ```
+
+## Service Health Evidence
+
+Service Health advisories are acquired from the Resource Health events endpoint
+at `subscriptions/{subscriptionId}/providers/Microsoft.ResourceHealth/events`
+with API version `2025-05-01`. The raw event and its original text remain in
+the JSONL companion. The TSV projection parses `properties.impact`, preserves
+Unicode, and renders readable HTML-derived title, summary, description, and
+recommended-action fields.
+
+Presentation material and external investigations are reconciliation evidence,
+not acquisition sources. They do not add API records, prove complete Azure
+coverage, or justify a target row count. Reconciliation must account for Azure
+scope, filtering, paging, access, collection evidence, and human inspection of
+the final TSV and committee YAML.
+
+The supplemental Resource Graph adapter uses the scoped,
+paginated `Microsoft.ResourceGraph/resources?api-version=2024-04-01` endpoint
+for three purposes:
+
+1. Resolve subscription names from the live `resourcecontainers` inventory,
+  with the governed platform catalog as fallback.
+2. Acquire impacted-resource associations from `servicehealthresources` for
+  `microsoft.resourcehealth/events/impactedresources`.
+3. Query verified metadata in `resources` only for target resource IDs already
+  published by those Service Health associations.
+
+A completed impacted-resource query with no matching target is represented as
+`resource_evidence_status=not_published`; it does not infer an ARM resource
+from article text, service, region, or subscription data. Resource Graph
+transport, pagination, or response-shape failures block the run and leave the
+existing monthly bundle unchanged. Query labels and subscription-name source
+are retained in `provenance_json`.

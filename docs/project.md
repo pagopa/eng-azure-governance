@@ -24,4 +24,4 @@ rules, and follow the [engineering principles](engineering-principles.md).
 
 Evidence: [repository README](../README.md),
 [architecture](architecture.md), [contribution guide](../CONTRIBUTING.md), and
-the [retirement exporter README](../src/comitato/comitato_azure_retirements/README.md).
+the [v2 retirement README](../src/comitato/comitato_azure_retirements_v2/README.md).

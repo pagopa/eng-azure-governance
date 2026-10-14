@@ -5,7 +5,7 @@
   ],
   "exclude": [
     "**/__pycache__",
-    "src/comitato/comitato_azure_retirements/.venv"
+    "src/comitato/comitato_azure_retirements_v2/.venv"
   ],
   "typeCheckingMode": "strict",
   "pythonVersion": "3.13",

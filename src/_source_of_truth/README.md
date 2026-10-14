@@ -18,18 +18,17 @@ No diagram is provided because this component has one material downstream relati
 - Active subscription names must be unique after trimming, lowercasing, and
   collapsing repeated whitespace.
 
-Both Azure retirements runtimes use only entries with `state: active`. The v1
-runtime maps normalized subscription names to platforms; the v2 runtime maps
+The Azure retirements runtime uses only entries with `state: active` and maps
 subscription IDs, as recorded in
 [ADR-0003](../../docs/adr/0003-catalog-matching-keys.md). Unsupported or
 malformed schemas stop processing with an explicit error.
 
 ## Consumers and validation
 
-`src/comitato/comitato_azure_retirements/libs/runtime_runner.py` resolves the canonical catalog path, and `platform_catalog.py` validates it before aggregate generation. The v2 runtime reads and validates the same catalog through `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`.
+The runtime reads and validates the catalog through `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`.
 
 Run the focused catalog tests after changing either the schema reader or the catalog:
 
 ```bash
-src/comitato/comitato_azure_retirements/.venv/bin/python -m pytest -q tests/comitato/comitato_azure_retirements/test_platform_catalog.py
+src/comitato/comitato_azure_retirements_v2/.venv/bin/python -m pytest -q tests/comitato/comitato_azure_retirements_v2/adapters/test_platform_catalog_yaml.py
 ```

@@ -1,9 +1,7 @@
-COMITATO_VENV_PYTHON := ./src/comitato/comitato_azure_retirements/.venv/bin/python
 COMITATO_V2_VENV_PYTHON := ./src/comitato/comitato_azure_retirements_v2/.venv/bin/python
-COMITATO_TEST_PATH := tests/comitato/comitato_azure_retirements
 GRAPHIFY_BIN ?= graphify
 
-.PHONY: help format lint test test-v2 graphify-build graphify-update graphify-watch graphify-hooks graphify-check-update
+.PHONY: help format lint test-v2 graphify-build graphify-update graphify-watch graphify-hooks graphify-check-update
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
@@ -17,16 +15,6 @@ lint: ## Run all linters
 	@echo "🔍 Running linters..."
 	@$(MAKE) format
 	@echo "✅ All checks passed"
-
-test: ## Run Python tests for comitato_azure_retirements
-	@if [ ! -x "$(COMITATO_VENV_PYTHON)" ]; then \
-		echo "❌ Missing Python virtual environment: $(COMITATO_VENV_PYTHON)"; \
-		echo "ℹ️  Run bash src/comitato/comitato_azure_retirements/run.sh --help to bootstrap dependencies"; \
-		exit 1; \
-	fi
-	@echo "🧪 Running Python tests via project virtual environment..."
-	@PYTHONPATH=. $(COMITATO_VENV_PYTHON) -m pytest $(COMITATO_TEST_PATH)
-	@echo "✅ Python tests passed"
 
 test-v2: ## Run Python tests for Azure Retirements v2
 	@if [ ! -x "$(COMITATO_V2_VENV_PYTHON)" ]; then \

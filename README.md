@@ -8,6 +8,7 @@ This repository manages PagoPA Azure governance controls, its production workloa
 
 ## Repository guide
 
+- Use the [documentation index](docs/README.md) to find purpose, principles, standards, domain rules, and accepted decisions.
 - Start with the [glossary map](GLOSSARY-MAP.md) for the repository vocabulary and domain boundaries.
 - Read the [architecture](docs/architecture.md) for component responsibilities, flows, and validation paths.
 - Read [Azure Governance](docs/domain/azure-governance/GLOSSARY.md) for policy vocabulary and [its rules](docs/domain/azure-governance/RULES.md).
@@ -27,6 +28,7 @@ No diagram is provided here because the repository-wide policy and workflow rela
 - [How to force to rerun policy evaluation](#how-to-force-to-rerun-policy-evaluation)
 - [Terraform lock.hcl](#terraform-lockhcl)
 - [Repository Structure & Details (Auto-generated)](#repository-structure--details-auto-generated)
+- [Graphify](#graphify)
 
 ## Project structure
 
@@ -36,7 +38,7 @@ No diagram is provided here because the repository-wide policy and workflow rela
 - `src/azure-policy/03_policy_set` composes policy definitions into initiatives.
 - `src/azure-policy/04_policy_assignments` assigns policy definitions and initiatives to management groups or subscriptions.
 - `src/_source_of_truth` owns the canonical Eng FinOps platform catalog consumed by the retirement runtime.
-- `src/comitato/comitato_azure_retirements` collects and projects retirement evidence for committee review.
+- `src/comitato/comitato_azure_retirements_v2` publishes validated monthly retirement bundles, committee sidecars, and replayable acquisition evidence; see its [README](src/comitato/comitato_azure_retirements_v2/README.md).
 - `src/scripts` contains the remediation and container-job operational scripts invoked by workflows.
 
 ## Terraform
@@ -69,6 +71,7 @@ Use non-mutating checks before review:
 terraform fmt -check -recursive .identity
 terraform fmt -check -recursive src
 make test
+make test-v2
 ```
 
 The repository pre-commit configuration adds Terraform validation with remote backends disabled, ShellCheck, actionlint, Python checks, and structured-data checks.
@@ -108,12 +111,15 @@ terraform providers lock \
 ```
 
 ---
+
 ## Repository Structure & Details (Auto-generated)
 
 ### Scopo
+
 Repository centrale per le Azure Policy d’organizzazione; definisce ruoli RBAC custom, policy singole e initiative e le assegna ai Management Group per imporre controlli di sicurezza/compliance su subscription e workload. Garantisce applicazione coerente dei guardrail e remediation automatica su larga scala.
 
 ### Cartelle
+
 - `src/azure-policy/01_custom_roles`: ruoli RBAC custom (JSON) per abilitare permessi minimi.
 - `src/azure-policy/02_policy_*`: set di policy per dominio (es. networking, db, storage) con definizioni e parametri.
 - `src/azure-policy/03_policy_set`: iniziative (PolicySet) che aggregano policy correlate con parametri predefiniti.
@@ -121,14 +127,17 @@ Repository centrale per le Azure Policy d’organizzazione; definisce ruoli RBAC
 - eventuali `modules/`: moduli Terraform per deployment e riuso delle definizioni.
 
 ### Script
-Nessuno; tutto è definizione Policy/Initiative/Assignment.
+
+Gli script operativi sono in `src/scripts/`: `policy_remediation.sh` crea remediation e `update_container_app_job_graph.sh` gestisce i Container Apps Job. Il runtime Python per le evidenze di retirement è in `src/comitato/comitato_azure_retirements_v2/`; il relativo README descrive contratti e utilizzo.
 
 ### Workflow
+
 - `terraform_drift.yml`: drift detection.
 - `policy_remediation.yml`: remediation.
 - `automation_scale_container_app_job.yml`: scaling automation.
 
 ### Note
+
 Stato Terraform su storage `tfinforg` (container `terraform-state`, chiavi es. `eng-azure-governance.policy_<module>.terraform.tfstate`).
 
 ## Graphify

@@ -20,7 +20,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: not enforced
-- Evidence: `README.md`, `.github/security-baseline.md`, `.github/instructions/internal-terraform.instructions.md`
+- Evidence: `README.md`, `SECURITY.md`, `.github/instructions/internal-terraform.instructions.md`
 - Remediation: Reduce permissions and target scope to the narrowest effective governance responsibility, or record an evidence-backed exception.
 - Rule: Custom RBAC roles must follow the least-privilege principle.
 
@@ -31,7 +31,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: not enforced
-- Evidence: `.github/PULL_REQUEST_TEMPLATE.md`, `.github/security-baseline.md`
+- Evidence: `.github/PULL_REQUEST_TEMPLATE.md`, `SECURITY.md`
 - Remediation: Add the affected scope, policy effect, blast radius, exemption impact, and rollback strategy to the change record.
 - Rule: Changes with high-impact policy effects must document their governance impact before merge.
 
