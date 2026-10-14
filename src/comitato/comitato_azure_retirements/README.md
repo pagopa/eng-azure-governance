@@ -12,20 +12,24 @@ This toolkit exports Azure retirement evidence for committee review.
 - [Modes](#modes)
 - [Scope Inputs](#scope-inputs)
 - [CLI](#cli)
+- [Workflow Selection](#workflow-selection)
 - [Runtime Output](#runtime-output)
 - [Runtime Configuration](#runtime-configuration)
 - [Environment Variables](#environment-variables)
 - [Output Path](#output-path)
 - [Service Health Raw Contract](#service-health-raw-contract)
+- [Committee TSV Contract](#committee-tsv-contract)
+- [Parallel Collection](#parallel-collection)
 - [Workbook Role](#workbook-role)
 - [Known Limitation](#known-limitation)
+- [Problem Determination](#problem-determination)
 - [Validation Workflow](#validation-workflow)
 
 ## Purpose
 
 This toolkit exports Azure retirements evidence for committee review.
 
-The [Azure Retirement Intelligence context](../../../docs/domain/azure-retirements/CONTEXT.md) defines the domain vocabulary and its [rules](../../../docs/domain/azure-retirements/RULES.md). The repository [architecture](../../../docs/architecture.md) records this component's boundaries and flows.
+The [Azure Retirement Intelligence glossary](../../../docs/domain/azure-retirements/GLOSSARY.md) defines the domain vocabulary and its [rules](../../../docs/domain/azure-retirements/RULES.md). The repository [architecture](../../../docs/architecture.md) records this component's boundaries and flows.
 
 No diagram is provided because the repository-wide runtime and workflow relationships are maintained in [docs/architecture.md](../../../docs/architecture.md).
 
@@ -114,6 +118,22 @@ bash src/comitato/comitato_azure_retirements/run.sh \
   --as-of-date 2026-06-18 \
   --health-query-start 2025-01-01
 ```
+
+## Workflow Selection
+
+Select stages with `--workflow` or `AZURE_RETIREMENTS_WORKFLOW`:
+
+- `raw`: produce the source Advisor and Service Health TSV files.
+- `aggregate`: merge and group source rows into the normalized aggregate contract.
+- `slide`: project aggregate rows into the committee-facing subset.
+- `full`: shorthand for `raw,aggregate,slide`.
+
+With `--mode schema-only`, the `raw` stage writes header-only artifacts without
+live or fixture rows. `aggregate` without `raw` reuses the existing raw files
+for the selected month, and `slide` without `aggregate` reuses the existing
+aggregate file. When the current raw filenames are absent, aggregate and slide
+runs still read the legacy `azure_advisor_retirements_aggregate.tsv` and
+`azure_service_health_advisories_aggregate.tsv` files.
 
 ## Runtime Output
 
@@ -276,6 +296,50 @@ Publication exclusions are reported in run diagnostics as
 `publication_advisor_not_current`, `publication_expired`,
 `publication_beyond_one_year`, and `publication_missing_or_invalid_date`.
 
+Service Health rows choose `date_for_window` in this order: an explicit
+retirement or deprecation deadline parsed from the advisory text,
+`impactMitigationTime`, `impactStartTime`, then `lastUpdateTime`. Impacted
+service and region values keep the source `impact` pairing; the runtime never
+builds combinations that the source event does not contain.
+
+## Committee TSV Contract
+
+The aggregate output starts with `impacted_platforms`,
+`impacted_subscriptions`, and `impacted_platforms_subscriptions_json`, followed
+by `technology_or_service` before `retiring_feature`.
+
+The slide output uses this exact ordered header:
+
+1. `technology_or_service`
+2. `retiring_feature`
+3. `platforms`
+4. `platforms_subscriptions_json`
+5. `priority_label`
+6. `advice_type`
+7. `action_required`
+8. `retirement_date`
+9. `source_links`
+
+Aggregate generation adds an error diagnostic for the known blank-core row
+shape: empty `retiring_feature`, `impacted_platforms`,
+`impacted_subscriptions`, and `source_links`. Slide generation backfills empty
+`source_links` from the aggregate `source_identifiers` and adds an error
+diagnostic only when links remain empty.
+
+## Parallel Collection
+
+`live` mode collects Advisor recommendations and Service Health events
+concurrently per subscription. The worker count comes from `--max-workers`,
+then `AZURE_RETIREMENTS_MAX_WORKERS`, and otherwise defaults to
+`min(16, number_of_resolved_subscriptions)`.
+
+In strict mode, one subscription failure fails the run. With
+`--allow-degraded`, subscription failures are recorded in diagnostics and
+collection continues. The run manifest sets `degraded_mode: true` whenever
+degraded evidence is present, including warning-level
+`advisor_subscription_failures`, `service_health_subscription_failures`, or
+`resource_graph_truncated` diagnostics.
+
 ## Workbook Role
 
 The workbook is implementation guidance only. Runtime collection and aggregation do not depend on workbook artifacts.
@@ -288,6 +352,17 @@ permissions and Resource Graph pagination. Rows with unavailable associations
 are explicit and must not be interpreted as evidence that Azure found no
 impacted resources.
 
+## Problem Determination
+
+1. Run the exporter in `schema-only`, `fixture`, or `live` mode.
+2. Check `azure_retirements_run_diagnostics.tsv` for failed checks and required actions.
+3. Filter the debug log by run ID and inspect the event timeline.
+4. Correlate diagnostic failures with debug events for the same subscription or collector.
+5. Tune the worker count if retries or throttling increase.
+
+The artifact events `advisor_report_written`, `service_health_report_written`,
+`diagnostics_written`, and `run_manifest_written` record each written path.
+
 ## Validation Workflow
 
 Minimum checks before considering data for executive review:
@@ -298,3 +373,4 @@ Minimum checks before considering data for executive review:
 4. `shellcheck -s bash src/comitato/comitato_azure_retirements/run.sh`
 5. `env PYTHON_BIN=src/comitato/comitato_azure_retirements/.venv/bin/python bash src/comitato/comitato_azure_retirements/run.sh --help`
 6. `src/comitato/comitato_azure_retirements/.venv/bin/python src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help`
+7. `bash src/comitato/comitato_azure_retirements/run.sh --mode schema-only --output-root tmp/comitato/review-schema-only-output`

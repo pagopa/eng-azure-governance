@@ -1,4 +1,4 @@
-# Azure Governance Context
+# Azure Governance
 
 This context names the repository concepts used to define, group, assign, and remediate Azure governance controls.
 

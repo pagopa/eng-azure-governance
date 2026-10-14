@@ -1,15 +1,17 @@
 # Architecture
 
+- Serves: PUR, PRI-03
+
 ## 1. Purpose
 
-`eng-azure-governance` contains Azure policy governance, workload identity, an Eng FinOps subscription catalog, and an Azure retirement evidence exporter. This document describes their current components, state and schema boundaries, dependencies, workflows, and validation paths.
+`eng-azure-governance` contains Azure policy governance, workload identity, an Eng FinOps subscription catalog, and two Azure retirement evidence runtimes. This document describes their current components, state and schema boundaries, dependencies, workflows, and validation paths.
 
 ## 2. System overview
 
 Azure Governance defines custom roles, policy definitions, policy sets, and assignments in numbered Terraform roots.
 Identity provisions the production user-assigned identity, GitHub environment federation, and Azure role grants in separate Terraform state.
-The Eng FinOps Platform Catalog maps subscription names to platforms under a versioned YAML schema.
-Azure Retirement Intelligence collects Azure evidence and consumes active platform mappings while producing review artifacts.
+The Eng FinOps Platform Catalog maps subscriptions to platforms under a versioned YAML schema.
+Azure Retirement Intelligence collects Azure evidence with the v1 and v2 runtimes and consumes active platform mappings while producing review artifacts.
 GitHub Actions validate source, detect drift, and invoke remediation or container-job operations.
 Checked-in files evidence two cross-domain dependencies but do not bind Identity outputs to GitHub secret values.
 
@@ -21,9 +23,9 @@ flowchart LR
     identity_root --> azure_identity["Azure identity and RBAC state"]
     governance_roots["Governance Terraform roots"] --> governance_workflows["Validation and operations workflows"]
     governance_workflows --> azure_policy["Azure policy state"]
-    platform_catalog["Eng FinOps platform catalog"] --> retirement_runtime["Retirement exporter"]
-    azure_sources["Azure Advisor and Service Health"] --> retirement_runtime["Retirement exporter"]
-    retirement_runtime --> retirement_artifacts["Review TSV and diagnostic artifacts"]
+    platform_catalog["Eng FinOps platform catalog"] --> retirement_runtime["Retirement runtimes v1 and v2"]
+    azure_sources["Azure Advisor and Service Health"] --> retirement_runtime
+    retirement_runtime --> retirement_artifacts["Review artifacts and diagnostics"]
 ```
 
 The diagram shows the two evidenced cross-domain edges: governance-defined role names are consumed by Identity grants, and active catalog mappings are consumed during retirement aggregation.
@@ -34,7 +36,7 @@ The diagram shows the two evidenced cross-domain edges: governance-defined role 
 | --- | --- | --- | --- | --- |
 | Azure Governance | Numbered Terraform roots define roles, policy families, policy sets, and assignments. | No separate intended architecture is documented; preserve the current stage separation. | Documented | `README.md`, `src/azure-policy/01_custom_roles/`, `src/azure-policy/02_policy_*`, `src/azure-policy/03_policy_set/`, `src/azure-policy/04_policy_assignments/` |
 | Identity | A hidden Terraform root provisions the production identity, GitHub environment federation, and Azure role grants in independent state. | No separate intended architecture is documented. | Evidenced | `.identity/00_main.tf`, `.identity/02_identity_prod.tf`, `.identity/02_identity_prod_auth.tf`, `.identity/env/prod/backend.tfvars` |
-| Eng FinOps Platform Catalog | A versioned YAML catalog maps Azure subscriptions to organizational platforms and is read by the retirement aggregate stage. | No separate intended architecture is documented. | Documented | `src/_source_of_truth/README.md`, `src/_source_of_truth/eng-finops-platforms.yaml`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py` |
+| Eng FinOps Platform Catalog | A versioned YAML catalog maps Azure subscriptions to organizational platforms and is read by both retirement runtimes: v1 by normalized name, v2 by subscription ID. | No separate intended architecture is documented. | Accepted | `src/_source_of_truth/README.md`, `src/_source_of_truth/eng-finops-platforms.yaml`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py`, `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`, [ADR-0003](adr/0003-catalog-matching-keys.md) |
 | Azure Retirement Intelligence | The v1 and v2 Python runtimes collect, normalize, and project retirement evidence. | No separate intended architecture is documented; preserve the runtime contracts and explicit diagnostics. | Documented | `src/comitato/comitato_azure_retirements/README.md`, `src/comitato/comitato_azure_retirements_v2/README.md` |
 
 ## 4. Technology stack
@@ -43,9 +45,10 @@ The diagram shows the two evidenced cross-domain edges: governance-defined role 
 | --- | --- | --- | --- |
 | Governance definitions | Terraform and AzureRM resources | Evidenced | `src/azure-policy/01_custom_roles/`, `src/azure-policy/02_policy_api_management/`, `src/azure-policy/03_policy_set/`, `src/azure-policy/04_policy_assignments/`, `.terraform-version` |
 | Workload identity | Terraform with AzureRM and AzureAD providers | Evidenced | `.identity/00_main.tf`, `.identity/.terraform.lock.hcl` |
-| Platform catalog | YAML schema with a Python reader | Evidenced | `src/_source_of_truth/eng-finops-platforms.yaml`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py` |
+| Platform catalog | YAML schema with Python readers in both runtimes | Evidenced | `src/_source_of_truth/eng-finops-platforms.yaml`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py`, `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py` |
 | Governance automation | Bash, Azure CLI, GitHub Actions | Evidenced | `src/scripts/*.sh`, `.github/workflows/` |
-| Retirement runtime | Python 3.13.9, `requests`, `urllib3`, `rich`, and `pandas` | Documented | `.python-version`, `src/comitato/comitato_azure_retirements/README.md`, `src/comitato/comitato_azure_retirements/requirements.txt` |
+| Retirement runtime v1 | Python 3.13.9, `requests`, `urllib3`, `rich`, and `pandas` | Documented | `.python-version`, `src/comitato/comitato_azure_retirements/README.md`, `src/comitato/comitato_azure_retirements/requirements.txt` |
+| Retirement runtime v2 | Python 3.13.9 CLI with a `retirements/` package | Documented | `src/comitato/comitato_azure_retirements_v2/README.md`, `src/comitato/comitato_azure_retirements_v2/requirements.txt` |
 | Validation | pre-commit, Terraform validation, Ruff, ShellCheck, Python compile checks, pytest | Evidenced | `.pre-commit-config.yaml`, `.github/workflows/_pre-commit.yml`, `.github/workflows/_code-analysis.yml` |
 
 ## 5. Repository map
@@ -57,18 +60,19 @@ The diagram shows the two evidenced cross-domain edges: governance-defined role 
 | `src/azure-policy/02_policy_*/` | Defines service- or concern-specific Azure Policy families. | Each family has its own Terraform wrapper and state configuration. |
 | `src/azure-policy/03_policy_set/` | Groups policy definitions into initiatives. | Reads the governance hierarchy and composes policy sets. |
 | `src/azure-policy/04_policy_assignments/` | Assigns policy controls to governance scopes. | Final numbered governance stage. |
-| `src/_source_of_truth/` | Owns the canonical Eng FinOps platform catalog. | Consumed by retirement aggregation. |
+| `src/_source_of_truth/` | Owns the canonical Eng FinOps platform catalog. | Consumed by both retirement runtimes. |
 | `src/scripts/` | Runs remediation and container job scaling operations. | Invoked by dedicated workflows. |
-| `src/comitato/comitato_azure_retirements/` | Collects and publishes retirement evidence. | Python CLI and Bash launcher with its own requirements and tests. |
-| `tests/comitato/comitato_azure_retirements/` | Tests the retirement runtime. | Executed by the code-analysis workflow. |
+| `src/comitato/comitato_azure_retirements/` | v1 runtime: collects and publishes retirement evidence. | Python CLI and Bash launcher with its own requirements and tests. |
+| `tests/comitato/comitato_azure_retirements/` | Tests the v1 runtime. | Executed by the code-analysis workflow. |
 | `.github/workflows/` | Validates, releases, detects drift, remediates, and runs automation. | Workflows use pinned action revisions. |
-| `docs/domain/` | Defines the four repository vocabularies and evidenced rules. | Selected through `CONTEXT-MAP.md`. |
+| `docs/domain/` | Defines the four repository vocabularies, the cross-context glossary, and evidenced rules. | Selected through `GLOSSARY-MAP.md`. |
 | `.pre-commit-config.yaml` | Defines local and CI validation hooks. | Terraform, Python, Bash, YAML, JSON, and action checks. |
 
 The v2 runtime is a Python CLI with one entry script and a canonical
 `retirements/` package. Its source, dependency manifests, and acceptance tests
 are in `src/comitato/comitato_azure_retirements_v2/` and
-`tests/comitato/comitato_azure_retirements_v2/`.
+`tests/comitato/comitato_azure_retirements_v2/`. The code-analysis workflow
+runs the v2 tests in their own hash-locked environment.
 
 ## 6. Architectural boundaries
 
@@ -76,16 +80,16 @@ are in `src/comitato/comitato_azure_retirements_v2/` and
 - **Azure Governance to Identity - downstream:** Identity grants reference the governance-defined `PagoPA Policy Reader` and `PagoPA Policy Remediator` roles by stable name. Evidence: `src/azure-policy/01_custom_roles/01_policy_reader.tf`, `src/azure-policy/01_custom_roles/01_policy_remediator.tf`, `.identity/02_identity_prod_auth.tf`.
 - **Identity root to Azure identity state - downstream:** the root provisions a user-assigned identity, repository federation, and role grants through its own backend. Evidence: `.identity/00_main.tf`, `.identity/02_identity_prod.tf`, `.identity/02_identity_prod_auth.tf`, `.identity/env/prod/backend.tfvars`.
 - **Governance workflows to Azure - downstream:** drift detection and remediation authenticate with Azure and operate on policy state. Evidence: `.github/workflows/terraform_drift.yml`, `.github/workflows/policy_remediation.yml`, `src/scripts/policy_remediation.sh`.
-- **Eng FinOps Platform Catalog to retirement runtime - downstream:** aggregate generation loads active subscription-to-platform mappings from the canonical catalog. Evidence: `src/_source_of_truth/eng-finops-platforms.yaml`, `src/comitato/comitato_azure_retirements/libs/runtime_runner.py`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py`.
+- **Eng FinOps Platform Catalog to retirement runtimes - downstream:** both runtimes load active subscription-to-platform mappings from the canonical catalog, each with the matching key recorded in ADR-0003. Evidence: `src/_source_of_truth/eng-finops-platforms.yaml`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py`, `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`.
 - **Azure sources to retirement runtime - upstream:** Advisor and Service Health APIs provide source evidence to the retirement exporter. Evidence: `src/comitato/comitato_azure_retirements/libs/advisor.py`, `src/comitato/comitato_azure_retirements/libs/service_health.py`, `src/comitato/comitato_azure_retirements/libs/runtime_live.py`.
-- **Retirement runtime to review artifacts - downstream:** the runtime writes TSV, diagnostics, manifest, and debug-log artifacts. Evidence: `docs/comitato-azure-retirements-runtime.md`, `src/comitato/comitato_azure_retirements/libs/runtime_runner.py`.
+- **Retirement runtimes to review artifacts - downstream:** v1 writes TSV, diagnostics, manifest, and debug-log artifacts; v2 publishes a validated monthly bundle. Evidence: `src/comitato/comitato_azure_retirements/README.md`, `src/comitato/comitato_azure_retirements/libs/runtime_runner.py`, `src/comitato/comitato_azure_retirements_v2/README.md`.
 - **Azure Retirement v2 internal boundaries:** the entry script delegates to
     `retirements/`. Azure and filesystem adapters feed application orchestration;
     contracts, domain rules, and report normalizers shape artifacts; publication
     validates and writes them. Evidence:
     `src/comitato/comitato_azure_retirements_v2/README.md` and
     `src/comitato/comitato_azure_retirements_v2/retirements/`.
-- **Other domain pairs - free:** no other domain-to-domain data or control dependency is evidenced. In particular, repository files do not map `.identity` outputs to GitHub environment secret values. Evidence: `CONTEXT-MAP.md`, `.identity/99_outputs.tf`, `.github/workflows/`.
+- **Other domain pairs - free:** no other domain-to-domain data or control dependency is evidenced. In particular, repository files do not map `.identity` outputs to GitHub environment secret values. Evidence: `GLOSSARY-MAP.md`, `.identity/99_outputs.tf`, `.github/workflows/`.
 
 ## 7. Dependency rules
 
@@ -99,13 +103,13 @@ are in `src/comitato/comitato_azure_retirements_v2/` and
 ### Avoid / forbidden
 
 - Keep Identity grants in `.identity` and custom role definitions in `src/azure-policy/01_custom_roles/`; changing that boundary requires a new architectural decision. Evidence: `README.md`, `docs/adr/0001-domain-layout.md`.
-- Do not use catalog subscription IDs as runtime matching keys or expose disabled and deleted entries as active mappings. Evidence: `src/_source_of_truth/README.md`, `docs/domain/eng-finops-platform-catalog/RULES.md`.
+- In the v1 runtime, do not use catalog subscription IDs as matching keys; the v2 runtime matches by subscription ID. Never expose disabled or deleted entries as active mappings. Evidence: [ADR-0003](adr/0003-catalog-matching-keys.md), `docs/domain/eng-finops-platform-catalog/RULES.md`.
 - Do not infer Service Health resource impact from names, regions, or labels. Evidence: `src/comitato/comitato_azure_retirements/README.md`.
 - Do not validate Terraform against a remote backend in the local pre-commit path. Evidence: `.github/workflows/_pre-commit.yml`, `.pre-commit-config.yaml`.
 
 ## 8. Key flows
 
-### Runtime flow
+### v1 runtime flow
 
 1. `run.sh` resolves Python, dependencies, mode, and scope.
 2. The Python entrypoint builds a runtime route for `raw`, `aggregate`, `slide`, or `full`.
@@ -118,12 +122,12 @@ are in `src/comitato/comitato_azure_retirements_v2/` and
 
 1. The pre-commit workflow runs repository hooks, including Terraform formatting and validation, actionlint, ShellCheck, Python checks, and Terraform linting.
 2. The code-analysis workflow creates an ephemeral Python environment from the repository version and locked requirements.
-3. It compiles Python, checks the CLI help path, parses Bash scripts, and runs the retirement pytest suite.
+3. It compiles Python, checks the CLI help path, parses Bash scripts, and runs the v1 and v2 retirement pytest suites in separate environments.
 
 ### Deployment/operations flow
 
 1. Terraform roots are operated through their local `terraform.sh` wrappers; no checked-in workflow applies the numbered roots or `.identity`.
-2. Terraform drift detection loops through every immediate directory under `src/` and `src/azure-policy/` except `scripts/` and `azure-policy/`, and invokes `./terraform.sh plan`.
+2. Terraform drift detection loops through the immediate directories under `src/` and `src/azure-policy/` that own a `terraform.sh` wrapper and invokes `./terraform.sh plan`.
 3. The policy remediation workflow authenticates to Azure and creates remediation tasks for non-compliant definitions in selected policy sets.
 4. The container app job workflow queries Azure Resource Graph and scales matching self-hosted-runner jobs to zero minimum executions.
 5. Failure notifications are sent through the configured Slack action in the operational workflows.
@@ -143,11 +147,12 @@ are in `src/comitato/comitato_azure_retirements_v2/` and
 
 | Change type | Suggested validation | Evidence |
 | --- | --- | --- |
-| Identity Terraform | `terraform fmt -check -recursive .identity`; targeted pre-commit validation with the backend disabled. | `.identity/`, `.pre-commit-config.yaml`, `.github/workflows/_pre-commit.yml` |
-| Governance Terraform or policy definition | `terraform fmt -check -recursive src`; targeted pre-commit validation with the backend disabled; a wrapper plan where Azure access is available. | `.pre-commit-config.yaml`, `.github/workflows/_pre-commit.yml`, `.github/PULL_REQUEST_TEMPLATE.md` |
-| Platform catalog | Focused platform-catalog pytest, followed by the retirement suite when consumer behavior changes. | `tests/comitato/comitato_azure_retirements/test_platform_catalog.py`, `Makefile` |
-| Bash workflow or operational script | `bash -n <script>` and ShellCheck; actionlint for workflow changes. | `.pre-commit-config.yaml`, `.github/workflows/_code-analysis.yml` |
-| Retirement runtime | Python compile check, retirement pytest suite, launcher `--help`, and schema-only run when dependencies are available. | `.github/workflows/_code-analysis.yml`, `src/comitato/comitato_azure_retirements/README.md` |
+| Identity Terraform | Terraform format check and backend-disabled pre-commit validation. | `.identity/`, `.pre-commit-config.yaml`, `.github/workflows/_pre-commit.yml` |
+| Governance Terraform or policy definition | Terraform format check, backend-disabled pre-commit validation, and a wrapper plan where Azure access is available. | `.pre-commit-config.yaml`, `.github/workflows/_pre-commit.yml`, `.github/PULL_REQUEST_TEMPLATE.md` |
+| Platform catalog | Focused platform-catalog tests, followed by the retirement suites when consumer behavior changes. | `tests/comitato/comitato_azure_retirements/test_platform_catalog.py`, `Makefile` |
+| Bash workflow or operational script | Bash syntax check and ShellCheck; actionlint for workflow changes. | `.pre-commit-config.yaml`, `.github/workflows/_code-analysis.yml` |
+| Retirement runtime v1 | Python compile check, v1 test suite, launcher help, and a schema-only run when dependencies are available. | `.github/workflows/_code-analysis.yml`, `src/comitato/comitato_azure_retirements/README.md` |
+| Retirement runtime v2 | v2 test suite. | `.github/workflows/_code-analysis.yml`, `tests/comitato/comitato_azure_retirements_v2/`, `src/comitato/comitato_azure_retirements_v2/README.md` |
 | Documentation | Markdown syntax plus local link and anchor checks, then pre-commit on the selected paths. | `.github/instructions/internal-markdown.instructions.md`, `.pre-commit-config.yaml` |
 
 ## 11. Architectural decisions visible in the repo
@@ -156,32 +161,16 @@ are in `src/comitato/comitato_azure_retirements_v2/` and
 | --- | --- | --- | --- | --- |
 | Separate governance controls into numbered role, policy, policy-set, and assignment roots. | Evidenced | `README.md`, `src/azure-policy/01_custom_roles/`, `src/azure-policy/02_policy_*`, `src/azure-policy/03_policy_set/`, `src/azure-policy/04_policy_assignments/` | Clear apply boundaries at the cost of many Terraform roots. | None |
 | Provision the production workload identity and grants in an independent Terraform root. | Evidenced | `.identity/` | Isolates identity state at the cost of a separate execution path. | None |
-| Keep the platform catalog versioned and expose only active name mappings to the runtime. | Documented | `src/_source_of_truth/README.md`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py` | Preserves lifecycle history while excluding inactive entries from current reporting. | None |
-| Keep retirement collection and projection as a Python CLI with raw, aggregate, and slide stages. | Evidenced | `src/comitato/comitato_azure_retirements/README.md`, `docs/comitato-azure-retirements-runtime.md` | Preserves traceability at the cost of multiple intermediate artifacts. | None |
-| Use a four-domain context map for repository knowledge. | Accepted | `CONTEXT-MAP.md`, `docs/domain/` | Preserves distinct vocabularies and boundaries at the cost of additional navigation. | [ADR-0001](adr/0001-domain-layout.md) |
+| Keep the platform catalog versioned and expose only active mappings to the runtimes, keyed per runtime. | Accepted | `src/_source_of_truth/README.md`, `src/comitato/comitato_azure_retirements/libs/platform_catalog.py`, `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py` | Preserves lifecycle history while excluding inactive entries from current reporting. | [ADR-0003](adr/0003-catalog-matching-keys.md) |
+| Keep v1 retirement collection and projection as a Python CLI with raw, aggregate, and slide stages. | Evidenced | `src/comitato/comitato_azure_retirements/README.md` | Preserves traceability at the cost of multiple intermediate artifacts. | None |
+| Publish v2 retirement artifacts as one validated monthly bundle. | Documented | `src/comitato/comitato_azure_retirements_v2/README.md` | A failed run never alters the current bundle; a new run replaces the month whole. | None |
+| Use a four-domain glossary map for repository knowledge. | Accepted | `GLOSSARY-MAP.md`, `docs/domain/` | Preserves distinct vocabularies and boundaries at the cost of additional navigation. | [ADR-0001](adr/0001-domain-layout.md), [ADR-0002](adr/0002-glossary-file-names.md) |
 
 ## 12. AI-agent working rules
 
-- Read this document, `CONTEXT-MAP.md`, and the applicable domain context before making structural changes.
+- Read this document, `GLOSSARY-MAP.md`, and the applicable domain glossary and rules before making structural changes.
 - Preserve existing repository patterns and boundaries; keep changes scoped to the owning domain or component.
 - Prefer existing repository patterns over new abstractions.
 - Do not introduce new frameworks or cross-cutting refactors without explicit approval.
 - Update this document when an intentional architectural change alters a boundary, flow, dependency, or state lifecycle.
-- Report evidence conflicts before editing and downgrade unresolved claims to the unknowns below.
-
-## 13. Last verified
-
-- Verification date: 2026-09-01.
-- Agent or tool: GitHub Copilot using the internal-knowledge bootstrap workflow and the existing graphify repository graph.
-- Files inspected: repository instructions, root and component READMEs, Terraform roots and backend shapes, workflows, pre-commit configuration, catalog reader and tests, retirement runtime entrypoints and tests, and existing knowledge documents.
-- Commands considered or run: `git status --short`; the existing-graph query for knowledge domains, significant components, architecture boundaries, source-of-truth flows, validation entrypoints, and repository documentation; targeted repository searches; Markdown, link, anchor, scope, and repository checks.
-- Confidence: high for checked-in boundaries, schema contracts, and dependency direction; medium for live Azure identity and scope bindings because they are not executed or exposed by repository evidence.
-
-## 14. Unknown / To verify
-
-- The complete per-family ownership and state model for all `src/azure-policy/02_policy_*` roots.
-- The exact Azure tenant, subscription, management-group, and managed-identity topology used by production workflows.
-- Whether `.identity` outputs populate the `AZ_*` GitHub environment secrets; checked-in names alone do not prove that binding.
-- The drift workflow invokes `./terraform.sh` in every immediate `src/` directory except `scripts/` and `azure-policy/`, and in each `src/azure-policy/` root, but `_source_of_truth/` and `comitato/` do not own that wrapper. The scheduled path needs operational verification.
-- `docs/comitato-azure-retirements-runtime.md` still describes the debug log as JSON Lines, while the implementation, tests, and component README use human-readable text.
-- Whether every runtime contract is covered by a dedicated automated test; the workflow proves only the tests it runs.
+- Report evidence conflicts to the repository owner before editing; do not record them as warnings or open questions in this document.

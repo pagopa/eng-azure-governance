@@ -1,4 +1,4 @@
-# Azure Retirement Intelligence Context
+# Azure Retirement Intelligence
 
 This context names the repository concepts used to collect, normalize, aggregate, and publish Azure retirement evidence for committee review.
 
@@ -31,3 +31,12 @@ _Avoid_: name matching, inferred impact
 **Degraded mode**:
 An explicitly enabled run mode that retains bounded evidence and diagnostics when permitted subscription or query failures occur.
 _Avoid_: successful run, silent fallback
+
+**Monthly bundle**:
+The validated set of retirement artifacts published for one month; a later publication for the same month replaces it whole.
+
+**Committee sidecar**:
+The committee-maintained editorial values that are merged into the slide artifact and kept outside the published monthly bundle.
+
+**Replay**:
+A republication of a monthly bundle from its saved acquisition inputs, without a new Azure acquisition.

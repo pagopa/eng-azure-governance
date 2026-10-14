@@ -3,7 +3,7 @@
 * Status: accepted
 * Date: 2026-09-01
 * Deciders: User through delegated bootstrap approval
-* Related: [Context map](../../CONTEXT-MAP.md), [architecture](../architecture.md), [domain documentation](../agents/domain.md)
+* Related: [Context map](../../GLOSSARY-MAP.md), [architecture](../architecture.md), [domain documentation](../agents/domain.md)
 
 ## Context and Problem Statement
 

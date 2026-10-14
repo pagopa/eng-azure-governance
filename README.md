@@ -8,12 +8,12 @@ This repository manages PagoPA Azure governance controls, its production workloa
 
 ## Repository guide
 
-- Start with the [context map](CONTEXT-MAP.md) for the repository vocabulary and domain boundaries.
+- Start with the [glossary map](GLOSSARY-MAP.md) for the repository vocabulary and domain boundaries.
 - Read the [architecture](docs/architecture.md) for component responsibilities, flows, and validation paths.
-- Read [Azure Governance](docs/domain/azure-governance/CONTEXT.md) for policy vocabulary and [its rules](docs/domain/azure-governance/RULES.md).
-- Read [Identity](docs/domain/identity/CONTEXT.md) before changing the production workload identity or its grants.
-- Read the [Eng FinOps Platform Catalog](docs/domain/eng-finops-platform-catalog/CONTEXT.md) before changing the canonical subscription map and follow [its rules](docs/domain/eng-finops-platform-catalog/RULES.md).
-- Read [Azure Retirement Intelligence](docs/domain/azure-retirements/CONTEXT.md) for retirement-export vocabulary and [its rules](docs/domain/azure-retirements/RULES.md).
+- Read [Azure Governance](docs/domain/azure-governance/GLOSSARY.md) for policy vocabulary and [its rules](docs/domain/azure-governance/RULES.md).
+- Read [Identity](docs/domain/identity/GLOSSARY.md) before changing the production workload identity or its grants.
+- Read the [Eng FinOps Platform Catalog](docs/domain/eng-finops-platform-catalog/GLOSSARY.md) before changing the canonical subscription map and follow [its rules](docs/domain/eng-finops-platform-catalog/RULES.md).
+- Read [Azure Retirement Intelligence](docs/domain/azure-retirements/GLOSSARY.md) for retirement-export vocabulary and [its rules](docs/domain/azure-retirements/RULES.md).
 
 No diagram is provided here because the repository-wide policy and workflow relationships are maintained in [docs/architecture.md](docs/architecture.md).
 

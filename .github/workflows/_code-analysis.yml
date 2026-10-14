@@ -37,6 +37,7 @@ jobs:
           code_analysis_root="${RUNNER_TEMP}/repo-code-analysis"
           {
             echo "TEST_VENV=${code_analysis_root}/tests"
+            echo "V2_TEST_VENV=${code_analysis_root}/tests-v2"
           } >> "${GITHUB_ENV}"
 
       - name: 🐍 Set up Python from .python-version
@@ -49,6 +50,7 @@ jobs:
           cache-dependency-path: |
             .python-version
             src/comitato/comitato_azure_retirements/requirements.txt
+            src/comitato/comitato_azure_retirements_v2/requirements.txt
 
       - name: 🔎 Show Python version
         run: |
@@ -90,3 +92,17 @@ jobs:
         run: |
           "${TEST_VENV}/bin/python" -m pytest \
             tests/comitato/comitato_azure_retirements -q
+
+      - name: 📦 Validate v2 Python requirements
+        run: |
+          rm -rf "${V2_TEST_VENV}"
+          python -m venv "${V2_TEST_VENV}"
+          "${V2_TEST_VENV}/bin/python" -m pip install --upgrade pip
+          "${V2_TEST_VENV}/bin/pip" install --require-hashes -r "src/comitato/comitato_azure_retirements_v2/requirements.txt"
+          "${V2_TEST_VENV}/bin/pip" install pytest==9.1.0
+          "${V2_TEST_VENV}/bin/python" -m pip check
+
+      - name: ✅ Run v2 pytest
+        run: |
+          "${V2_TEST_VENV}/bin/python" -m pytest \
+            tests/comitato/comitato_azure_retirements_v2 -q

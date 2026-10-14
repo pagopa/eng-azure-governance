@@ -5,6 +5,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 ## GOV-001 - Preserve apply order
 
 - Rule ID: GOV-001
+- Serves: PUR
 - Owner: Azure Governance
 - Severity: warning
 - Enforcement owner: not enforced
@@ -15,6 +16,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 ## GOV-002 - Scope custom roles narrowly
 
 - Rule ID: GOV-002
+- Serves: PRI-01
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: not enforced
@@ -25,6 +27,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 ## GOV-003 - Document high-impact policy effects
 
 - Rule ID: GOV-003
+- Serves: PUR
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: not enforced
@@ -35,6 +38,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 ## GOV-004 - Keep validation non-mutating
 
 - Rule ID: GOV-004
+- Serves: PRI-05
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: `.github/workflows/_pre-commit.yml`

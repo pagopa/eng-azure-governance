@@ -13,7 +13,13 @@ No diagram is provided because this index records decisions rather than a compon
 
 ## ADR index
 
-- [ADR-0001: Use a four-domain repository context map](0001-domain-layout.md) - accepted 2026-09-01.
+`Level` and `Serves` are index metadata; accepted ADR bodies are not edited.
+
+| ADR | Status | Level | Serves |
+| --- | --- | --- | --- |
+| [ADR-0001: Use a four-domain repository context map](0001-domain-layout.md) | accepted 2026-09-01; file names superseded by ADR-0002 | strategic | PUR |
+| [ADR-0002: Use glossary file names for domain vocabulary](0002-glossary-file-names.md) | accepted 2026-10-14 | tactical | PUR |
+| [ADR-0003: Match catalog entries by runtime-specific keys](0003-catalog-matching-keys.md) | accepted 2026-10-14 | tactical | PRI-03 |
 
 ## Local format
 

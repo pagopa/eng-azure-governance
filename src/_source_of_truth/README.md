@@ -3,7 +3,7 @@
 `eng-finops-platforms.yaml` is the canonical mapping of Eng FinOps platforms
 to Azure subscriptions.
 
-The [domain context](../../docs/domain/eng-finops-platform-catalog/CONTEXT.md) defines the catalog vocabulary and its [rules](../../docs/domain/eng-finops-platform-catalog/RULES.md). The repository [architecture](../../docs/architecture.md) records the catalog-to-runtime dependency.
+The [domain glossary](../../docs/domain/eng-finops-platform-catalog/GLOSSARY.md) defines the catalog vocabulary and its [rules](../../docs/domain/eng-finops-platform-catalog/RULES.md). The repository [architecture](../../docs/architecture.md) records the catalog-to-runtime dependency.
 
 No diagram is provided because this component has one material downstream relationship, already shown in the repository architecture.
 
@@ -18,14 +18,15 @@ No diagram is provided because this component has one material downstream relati
 - Active subscription names must be unique after trimming, lowercasing, and
   collapsing repeated whitespace.
 
-The Azure retirements runtime maps subscription names to platforms using only
-entries with `state: active`. Subscription IDs are validated metadata and are
-not matching keys. Unsupported or malformed schemas stop processing with an
-explicit error.
+Both Azure retirements runtimes use only entries with `state: active`. The v1
+runtime maps normalized subscription names to platforms; the v2 runtime maps
+subscription IDs, as recorded in
+[ADR-0003](../../docs/adr/0003-catalog-matching-keys.md). Unsupported or
+malformed schemas stop processing with an explicit error.
 
 ## Consumers and validation
 
-`src/comitato/comitato_azure_retirements/libs/runtime_runner.py` resolves the canonical catalog path, and `platform_catalog.py` validates it before aggregate generation. No other checked-in consumer is evidenced.
+`src/comitato/comitato_azure_retirements/libs/runtime_runner.py` resolves the canonical catalog path, and `platform_catalog.py` validates it before aggregate generation. The v2 runtime reads and validates the same catalog through `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`.
 
 Run the focused catalog tests after changing either the schema reader or the catalog:
 

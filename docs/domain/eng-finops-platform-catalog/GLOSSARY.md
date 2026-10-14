@@ -1,4 +1,4 @@
-# Eng FinOps Platform Catalog Context
+# Eng FinOps Platform Catalog
 
 This context names the repository concepts used to map Azure subscriptions to Eng FinOps platforms.
 
@@ -17,8 +17,8 @@ The catalog lifecycle marker `active`, `disabled`, or `deleted` attached to a su
 _Avoid_: Azure resource state, runtime status
 
 **Active platform mapping**:
-The normalized subscription-name-to-platform relationship made available to catalog consumers for active entries only.
-_Avoid_: subscription ID lookup, inferred platform
+The subscription-to-platform relationship made available to catalog consumers for active entries only.
+_Avoid_: inferred platform
 
 **Catalog schema version**:
 The integer contract that identifies the supported shape of the canonical catalog.

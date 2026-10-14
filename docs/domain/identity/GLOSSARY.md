@@ -1,4 +1,4 @@
-# Identity Context
+# Identity
 
 This context names the repository concepts used to establish its production workload identity and Azure access grants.
 
