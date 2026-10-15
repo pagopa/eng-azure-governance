@@ -381,8 +381,20 @@ def _render_ci(report: RunReport, payload: Mapping[str, Any]) -> str:
                 f"validation unit={result['unit_id']} status={result['status']} "
                 f"exit_code={result['exit_code']}"
             )
+    for result in payload["units"]:
+        for command in result.get("commands", []):
+            if command["exit_code"] == 0:
+                continue
+            lines.append(f"Failed command [{result['unit_id']}]: {command['command']}")
+            for field in ("stdout", "stderr"):
+                if command[field].strip():
+                    lines.extend([f"{field}:", command[field]])
+    failed = bool(payload["problems"]) or any(
+        result["exit_code"] != 0 or result["status"] in {"failed", "incomplete"}
+        for result in payload["units"]
+    )
     lines.append(
-        f"validation phase=final status={'passed' if not payload['problems'] else 'failed'} "
+        f"validation phase=final status={'failed' if failed else 'passed'} "
         f"wall_clock_seconds={payload['wall_clock_seconds']:.6f} "
         f"serial_equivalent_seconds={payload['serial_equivalent_seconds']:.6f}"
     )

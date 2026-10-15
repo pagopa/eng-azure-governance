@@ -16,6 +16,7 @@ from tools.validation_core import (
     ValidationUnit,
 )
 from tools.validation_core.reporting import render_report, render_run
+from tools.validation_core.events import EventSink
 
 
 def _report(tmp_path: Path) -> RunReport:
@@ -89,6 +90,39 @@ def test_render_run_has_explicit_machine_and_human_projections(
         assert "skipped" in rendered
         assert "cancelled" in rendered
         assert "incomplete" in rendered
+
+
+def test_ci_keeps_failed_command_diagnostics_after_truncated_events(
+    tmp_path: Path,
+) -> None:
+    unit = ValidationUnit("python:retirements-v2", "Retirements", lambda _context: 1)
+    output = "." * 600 + "\nFAILED tests/test_entrypoint.py::test_tty\ntoken=ci-secret"
+    sink = EventSink()
+    sink.emit(
+        phase="command-complete",
+        unit_id=unit.unit_id,
+        status="failed",
+        detail=output,
+    )
+    report = RunReport(
+        results=(
+            UnitResult(
+                unit,
+                1,
+                0.1,
+                status="failed",
+                commands=(CommandEvidence("pytest -q", 1, stdout=output),),
+            ),
+        ),
+        events=tuple(sink.events),
+        context=RunContext(tmp_path, tmp_path / "tmp", False, False),
+    )
+
+    rendered = render_run(report, "ci")
+
+    assert "FAILED tests/test_entrypoint.py::test_tty" in rendered
+    assert "ci-secret" not in rendered
+    assert "phase=final status=failed" in rendered
 
 
 def test_render_run_json_keeps_unit_order_and_timing_labels_distinct(

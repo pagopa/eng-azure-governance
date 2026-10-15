@@ -97,6 +97,18 @@ Machine output stays on stdout; lifecycle updates use stderr. JSON uses the
 queue time, command evidence, and every selected unit, including unstarted units
 after fail-fast. Any failed or incomplete unit returns a nonzero status.
 
+The `code-analysis` GitHub Actions job publishes a final workflow summary even
+when a validation category fails. It shows category results, failed steps,
+individual job durations, and direct links to job logs. If the job-details API
+is unavailable, the summary falls back to category results. The required gate
+still requires every category to succeed.
+
+Each matrix job uploads `validation-*` artifacts containing `result.json` and
+per-unit logs for seven days. No artifact is expected when setup fails before
+validation starts. Failed command diagnostics also appear in the CI log,
+separately from abbreviated lifecycle events. Job durations include setup and
+must not be added together to estimate parallel workflow duration.
+
 Dry-run records simulated commands without running validation subprocesses.
 It may create temporary unit directories and explicitly requested reports.
 Compare actual timings for equivalent selections and environments before

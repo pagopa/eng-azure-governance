@@ -71,7 +71,19 @@ jobs:
       - name: 🔎 Run static validation
         env:
           VALIDATION_LEAF: ${{ matrix.leaf }}
-        run: ./validate-code.sh static --leaf "${VALIDATION_LEAF}" --format ci
+        run: >-
+          ./validate-code.sh static --leaf "${VALIDATION_LEAF}" --format ci
+          --result-path tmp/ci-validation/result.json
+          --artifact-dir tmp/ci-validation/logs
+
+      - name: 📎 Save validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+        with:
+          name: validation-static-${{ matrix.leaf }}-${{ github.run_attempt }}
+          path: tmp/ci-validation/
+          if-no-files-found: ignore
+          retention-days: 7
 
   python:
     name: 🧪 python / ${{ matrix.group }}
@@ -111,10 +123,21 @@ jobs:
           VALIDATION_GROUP: ${{ matrix.group }}
         run: |
           if [[ "${VALIDATION_GROUP}" == "integrity" ]]; then
-            ./validate-code.sh python --integrity-only --format ci
+            ./validate-code.sh python --integrity-only --format ci \
+              --result-path tmp/ci-validation/result.json --artifact-dir tmp/ci-validation/logs
           else
-            ./validate-code.sh python --group "${VALIDATION_GROUP}" --format ci
+            ./validate-code.sh python --group "${VALIDATION_GROUP}" --format ci \
+              --result-path tmp/ci-validation/result.json --artifact-dir tmp/ci-validation/logs
           fi
+
+      - name: 📎 Save validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+        with:
+          name: validation-python-${{ matrix.group }}-${{ github.run_attempt }}
+          path: tmp/ci-validation/
+          if-no-files-found: ignore
+          retention-days: 7
 
   terraform:
     name: 🏗️ terraform / ${{ matrix.lane }}
@@ -152,7 +175,19 @@ jobs:
       - name: 🏗️ Run Terraform validation
         env:
           VALIDATION_LANE: ${{ matrix.lane }}
-        run: ./validate-code.sh terraform --lane "${VALIDATION_LANE}" --max-parallel 2 --format ci
+        run: >-
+          ./validate-code.sh terraform --lane "${VALIDATION_LANE}" --max-parallel 2 --format ci
+          --result-path tmp/ci-validation/result.json
+          --artifact-dir tmp/ci-validation/logs
+
+      - name: 📎 Save validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+        with:
+          name: validation-terraform-${{ matrix.lane }}-${{ github.run_attempt }}
+          path: tmp/ci-validation/
+          if-no-files-found: ignore
+          retention-days: 7
 
   code-analysis:
     name: code-analysis
@@ -160,8 +195,29 @@ jobs:
     needs: [static, python, terraform]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
     steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: 📊 Publish validation summary
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VALIDATION_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          jobs_file="${RUNNER_TEMP}/validation-jobs.json"
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs?per_page=100" \
+            > "${jobs_file}" || printf '[]\n' > "${jobs_file}"
+          python3 -m tools.validate_code.ci_summary --jobs "${jobs_file}" >> "${GITHUB_STEP_SUMMARY}"
+
       - name: 🛡️ Require every validation category to succeed
+        if: ${{ always() }}
         env:
           VALIDATION_RESULTS: ${{ toJSON(needs) }}
         run: |

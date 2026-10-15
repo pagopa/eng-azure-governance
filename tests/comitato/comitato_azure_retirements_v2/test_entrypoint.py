@@ -64,8 +64,20 @@ class FakeV2Launcher:
                 shlex.quote(str(stdout_path)),
             ]
         )
+        script_arguments = (
+            [
+                "script",
+                "-q",
+                "-e",
+                "-c",
+                shlex.join(["bash", "-c", command]),
+                "/dev/null",
+            ]
+            if sys.platform == "linux"
+            else ["script", "-q", "/dev/null", "bash", "-c", command]
+        )
         completed = subprocess.run(
-            ["script", "-q", "/dev/null", "bash", "-c", command],
+            script_arguments,
             cwd=self.root,
             env=self._environment(),
             capture_output=True,
