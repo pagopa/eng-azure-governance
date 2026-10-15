@@ -15,8 +15,8 @@ from tools.validation_core import (
     UnitResult,
     ValidationUnit,
 )
-from tools.validation_core.reporting import render_report, render_run
 from tools.validation_core.events import EventSink
+from tools.validation_core.reporting import render_report, render_run
 
 
 def _report(tmp_path: Path) -> RunReport:
