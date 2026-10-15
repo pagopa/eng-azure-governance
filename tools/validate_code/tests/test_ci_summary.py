@@ -80,7 +80,10 @@ def test_summary_escapes_job_names_and_orders_checks() -> None:
 
 def test_summary_uses_consistent_category_icons_without_success_tips() -> None:
     rendered = render_summary(
-        {category: {"result": "success"} for category in ("static", "python", "terraform")},
+        {
+            category: {"result": "success"}
+            for category in ("static", "python", "terraform")
+        },
         [_job("terraform / identity", "success")],
         "https://github.com/org/repo/actions/runs/1",
     )

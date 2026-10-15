@@ -16,6 +16,18 @@ def _text(value: object) -> str:
     return html.escape(str(value)).replace("|", "&#124;").replace("\n", " ")
 
 
+def _status(value: str) -> str:
+    icon = {
+        "success": "✅",
+        "failure": "❌",
+        "cancelled": "🚫",
+        "skipped": "⏭️",
+        "in_progress": "⏳",
+        "queued": "⏳",
+    }.get(value, "⚠️")
+    return f"{icon} {_text(value)}"
+
+
 def render_summary(
     needs: dict[str, Any], jobs: list[dict[str, Any]], run_url: str
 ) -> str:
@@ -27,9 +39,9 @@ def render_summary(
     lines = [
         "# Code analysis",
         "",
-        "**PASS - All validation categories succeeded.**"
+        "**✅ PASS - All validation categories succeeded.**"
         if success
-        else "**NOT PASSED - Validation requires attention.**",
+        else "**⚠️ NOT PASSED - Validation requires attention.**",
         "",
         "Static analysis, Python tests and integrity, Terraform validation and tests.",
         "",
@@ -37,7 +49,7 @@ def render_summary(
     ]
     failures = [job for job in checks if job.get("conclusion") != "success"]
     if failures:
-        lines.extend(["", "## Attention required", ""])
+        lines.extend(["", "## ⚠️ Attention required", ""])
         for job in failures:
             steps = [
                 step["name"]
@@ -52,17 +64,31 @@ def render_summary(
                     else _text(job.get("conclusion") or "incomplete")
                 )
             )
+        lines.extend(
+            [
+                "",
+                "> 💡 Open the failed job and start with the step listed above."
+                if any(job.get("conclusion") == "failure" for job in failures)
+                else "> 💡 Open the job logs to check why validation did not complete.",
+            ]
+        )
     lines.extend(
         [
             "",
-            "## Categories",
+            "## 🗂️ Categories",
             "",
             "| Category | Result |",
             "| --- | --- |",
         ]
     )
+    category_labels = {
+        "static": "🔎 Static analysis",
+        "python": "🧪 Python tests & integrity",
+        "terraform": "🏗️ Terraform",
+    }
     for category, result in needs.items():
-        lines.append(f"| {_text(category)} | **{_text(result['result'])}** |")
+        label = category_labels.get(category, category)
+        lines.append(f"| {_text(label)} | **{_status(result['result'])}** |")
     if not checks:
         lines.extend(
             [
@@ -75,7 +101,7 @@ def render_summary(
     lines.extend(
         [
             "",
-            "## Checks",
+            "## 🔬 Checks",
             "",
             f"{len(checks)} checks: {counts['success']} passed, "
             f"{counts['failure']} failed, {counts['cancelled']} cancelled, "
@@ -104,14 +130,14 @@ def render_summary(
             duration = f"{seconds // 60}m {seconds % 60:02d}s"
         status = job.get("conclusion") or job.get("status") or "incomplete"
         lines.append(
-            f"| {_text(job['name'])} | **{_text(status)}** | {duration} | "
+            f"| {_text(job['name'])} | **{_status(status)}** | {duration} | "
             f"[Open job]({job['html_url']}) |"
         )
     lines.extend(
         [
             "",
             "<details>",
-            "<summary>Evidence and local reproduction</summary>",
+            "<summary>📎 Evidence and local reproduction</summary>",
             "",
             "Artifacts named `validation-*` contain `result.json` and per-unit logs.",
             "If setup failed before validation started, inspect the failed step instead.",
