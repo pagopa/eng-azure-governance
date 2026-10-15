@@ -38,7 +38,3 @@ User-installed skills and agents are separate capabilities, not local copies.
 ## Agents
 
 No repository-local custom agents are installed.
-
-## Prompts
-
-- `.github/prompts/internal-architecture-md-creator.prompt.md`

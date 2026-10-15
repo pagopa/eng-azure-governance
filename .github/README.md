@@ -1,7 +1,7 @@
 # .github Configuration
 
-This folder contains repository Copilot review instructions, the architecture
-prompt, the local retirement skill, and GitHub workflows.
+This folder contains repository Copilot review instructions, the local
+retirement skill, and GitHub workflows.
 The operating baseline is [AGENTS.md](../AGENTS.md), refined by
 [AGENTS.local.md](../AGENTS.local.md). The [inventory](INVENTORY.md) lists the
 assets actually installed in this checkout.

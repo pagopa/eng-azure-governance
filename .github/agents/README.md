@@ -13,7 +13,6 @@ agents.
 
 ## Task routing
 
-- Use the [architecture prompt](../prompts/internal-architecture-md-creator.prompt.md) to refresh the evidence-based architecture document.
 - Use the [documentation index](../../docs/README.md) to resolve domain owners.
 
 The editor's active agent executes authorized changes. A prompt name is not
