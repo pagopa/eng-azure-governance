@@ -2,64 +2,21 @@ metadata_category_name = "Custom PagoPA"
 policy_type            = "Custom"
 location               = "westeurope"
 
-subscriptions_by_env = {
-  dev = [
-    "DEV-CSTAR",
-    "DEV-FATTURAZIONE",
-    "DEV-IO",
-    "DEV-SelfCare",
-    "DEV-pagoPA",
-    "DevOpsLab",
-    "DEV-Assistenza",
-    "DEV-P4PA",
-    "DEV-ARC",
-    "DEV-GRC",
-    "DEV-ICT",
-    "DEV-CRM",
-    "DEV-DEVEX",
-    "DEV-PLATFORM-SM",
-    "DEV-PAY-MONITORING",
-    "DEV-QATM",
-    "DEV-PS",
-    "DEV-ENGINEERING",
-  ]
-  uat = [
-    "UAT-CSTAR",
-    "UAT-Esercenti",
-    "UAT-SelfCare",
-    "UAT-pagoPA",
-    "UAT-P4PA",
-    "UAT-ARC",
-    "UAT-FATTURAZIONE",
-    "UAT-CRM",
-    "UAT-PAY-MONITORING",
-    "UAT-DEVEX",
-  ]
-  prod = [
-    "PROD-CSTAR",
-    "PROD-Esercenti",
-    "PROD-FATTURAZIONE",
-    "PROD-IO",
-    "Prod-Sec",
-    "PROD-SITECORP",
-    "PROD-SelfCare",
-    "PROD-pagoPA",
-    "PROD-P4PA",
-    "PROD-TRIAL",
-    "PROD-ARC",
-    "PROD-GRC",
-    "PROD-PDA-BACKUP",
-    "PROD-ICT",
-    "PROD-CRM",
-    "ORG",
-    "Common",
-    "DevOpsAutomation",
-    "PROD-DEVEX",
-    "PROD-PLATFORM-SM",
-    "GitHub",
-    "PROD-PAY-MONITORING",
-    "PROD-QATM",
-    "PROD-CED",
-    "PDA-Migration-PostgreSQL",
-  ]
+subscription_blacklist = [
+  "Microsoft Azure Enterprise",
+  "MDASH-Evaluation",
+  "COPILOT-IO-APP",
+  "COPILOT-IO-CARABINIERI",
+  "COPILOT-IO-WALLET",
+  "COPILOT-IO-CGN",
+  "COPILOT-TECHNOLOGY-CLOUD-STRATEGY",
+]
+
+subscription_environment_overrides = {
+  DevOpsLab                = "dev"
+  ORG                      = "prod"
+  Common                   = "prod"
+  DevOpsAutomation         = "prod"
+  GitHub                   = "prod"
+  PDA-Migration-PostgreSQL = "prod"
 }

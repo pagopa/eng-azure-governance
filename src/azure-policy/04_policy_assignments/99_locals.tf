@@ -59,10 +59,40 @@ locals {
 }
 
 locals {
+  subscription_blacklist = toset([
+    for entry in var.subscription_blacklist : lower(trimspace(entry))
+  ])
+
+  subscription_environment_overrides = {
+    for subscription, environment in var.subscription_environment_overrides :
+    lower(trimspace(subscription)) => environment
+  }
+
   active_subscriptions_by_name = {
-    for s in data.azurerm_subscriptions.available.subscriptions :
-    s.display_name => s...
-    if s.state == "Enabled"
+    for subscription in data.azurerm_subscriptions.available.subscriptions :
+    subscription.display_name => subscription...
+    if subscription.state == "Enabled" &&
+    !contains(local.subscription_blacklist, lower(subscription.subscription_id)) &&
+    !contains(local.subscription_blacklist, lower(subscription.display_name))
+  }
+
+  subscription_environments = {
+    for name, subscriptions in local.active_subscriptions_by_name : name => lookup(
+      local.subscription_environment_overrides,
+      lower(subscriptions[0].subscription_id),
+      lookup(
+        local.subscription_environment_overrides,
+        lower(name),
+        try(regex("^(dev|uat|prod)-", lower(name))[0], null)
+      )
+    )
+  }
+
+  subscriptions_by_environment = {
+    for environment in ["dev", "uat", "prod"] : environment => {
+      for name, subscriptions in local.active_subscriptions_by_name : name => subscriptions[0]
+      if local.subscription_environments[name] == environment
+    }
   }
 
   policy_set_names = [

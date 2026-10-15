@@ -1,9 +1,9 @@
 module "uat_assignments" {
   source = "./modules/uat"
 
-  for_each = toset(var.subscriptions_by_env.uat)
+  for_each = local.subscriptions_by_environment.uat
 
-  subscription   = [for s in lookup(local.active_subscriptions_by_name, each.value, []) : s if length(lookup(local.active_subscriptions_by_name, each.value, [])) == 1][0]
+  subscription   = each.value
   policy_set_ids = local.policy_set_ids
 }
 
