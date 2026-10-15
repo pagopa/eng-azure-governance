@@ -4,15 +4,15 @@ This Terraform root assigns Azure Policy controls to governance scopes.
 
 ## Purpose
 
-Use this directory for the final governance stage. The root reads policy-set IDs through `terraform_remote_state`, applies direct management-group assignments and exemptions, and delegates environment-specific subscription assignments to the existing `modules/dev`, `modules/prod`, and `modules/uat` roots. Start with the root `01_*.tf` files or the environment module that owns the assignment being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+Use this directory for the final governance stage. The root resolves policy-set IDs through `azurerm_policy_set_definition` data sources at the `pagopa` management group, applies direct management-group assignments and exemptions, and delegates environment-specific subscription assignments to the existing `modules/dev`, `modules/prod`, and `modules/uat` roots. Start with the root `01_*.tf` files or the environment module that owns the assignment being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
 
-The assignment flow is from policy-set state through this root and its environment modules to subscription and management-group scopes:
+The assignment flow is from policy-set definitions through this root and its environment modules to subscription and management-group scopes:
 
 ```mermaid
 flowchart LR
     accTitle: Policy assignment flow
-    accDescr: The assignment root reads policy-set IDs, delegates environment modules, and applies controls to Azure scopes.
-    policy_set_state["Policy-set remote state"] --> assignment_root["Policy assignments root"]
+    accDescr: The assignment root resolves policy-set IDs from the pagopa management group, delegates environment modules, and applies controls to Azure scopes.
+    policy_set_definitions["Policy-set definitions at pagopa MG"] --> assignment_root["Policy assignments root"]
     assignment_root --> environment_modules["dev, prod, and uat modules"]
     environment_modules --> subscription_scopes["Azure subscription scopes"]
     assignment_root --> management_group_scope["pagopa management group"]
@@ -42,7 +42,6 @@ terraform validate -no-color
 | Name | Version |
 |------|---------|
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.63.0 |
-| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
@@ -64,8 +63,8 @@ terraform validate -no-color
 | [azurerm_resource_policy_exemption.pagopa_dns_pagopa_it_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_policy_exemption) | resource |
 | [azurerm_resource_policy_exemption.pictresourcelock_ip_waiver](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_policy_exemption) | resource |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
+| [azurerm_policy_set_definition.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/policy_set_definition) | data source |
 | [azurerm_subscriptions.available](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscriptions) | data source |
-| [terraform_remote_state.policy_set](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
 
 ## Inputs
 

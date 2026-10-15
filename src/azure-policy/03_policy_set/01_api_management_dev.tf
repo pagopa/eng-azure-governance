@@ -32,12 +32,12 @@ resource "azurerm_policy_set_definition" "api_management_dev" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_api_management.outputs.api_management_allowed_versions_id
+    policy_definition_id = data.azurerm_policy_definition.this["api_management_allowed_versions"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_api_management.outputs.api_management_require_vnet_id
+    policy_definition_id = data.azurerm_policy_definition.this["api_management_require_vnet"].id
     parameter_values     = jsonencode({})
   }
 }

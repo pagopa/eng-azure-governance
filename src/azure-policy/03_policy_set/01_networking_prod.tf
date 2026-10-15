@@ -31,7 +31,7 @@ resource "azurerm_policy_set_definition" "networking_prod" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_networking.outputs.deny_zonal_publicip_id
+    policy_definition_id = data.azurerm_policy_definition.this["deny_zonal_publicip"].id
     parameter_values     = jsonencode({})
   }
 

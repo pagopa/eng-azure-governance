@@ -17,7 +17,7 @@ resource "azurerm_policy_set_definition" "dns" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_dns.outputs.dns_required_caa_record_id
+    policy_definition_id = data.azurerm_policy_definition.this["dns_required_caa_record"].id
     parameter_values     = jsonencode({})
   }
 

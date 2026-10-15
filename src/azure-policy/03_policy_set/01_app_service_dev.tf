@@ -26,17 +26,17 @@ resource "azurerm_policy_set_definition" "app_service_dev" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_allowed_linuxfxversion_id
+    policy_definition_id = data.azurerm_policy_definition.this["app_service_allowed_linuxfxversion"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.function_app_allowed_linuxfxversion_id
+    policy_definition_id = data.azurerm_policy_definition.this["function_app_allowed_linuxfxversion"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_app_service.outputs.app_service_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["app_service_allowed_sku"].id
     reference_id         = local.app_service.listofallowedsku.reference_id
     parameter_values = jsonencode({
       listOfAllowedSku = {

@@ -3,8 +3,8 @@ module "uat_assignments" {
 
   for_each = toset(var.subscriptions_by_env.uat)
 
-  subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
-  policy_set_ids = data.terraform_remote_state.policy_set.outputs
+  subscription   = [for s in lookup(local.active_subscriptions_by_name, each.value, []) : s if length(lookup(local.active_subscriptions_by_name, each.value, [])) == 1][0]
+  policy_set_ids = local.policy_set_ids
 }
 
 # data "azurerm_management_group" "uat" {

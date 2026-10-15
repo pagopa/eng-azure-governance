@@ -11,17 +11,17 @@ resource "azurerm_policy_set_definition" "application_gateway_prod" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["application_gateway_allowed_sku"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_allowed_ciphersuites_id
+    policy_definition_id = data.azurerm_policy_definition.this["application_gateway_allowed_ciphersuites"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_application_gateway.outputs.application_gateway_required_zones_id
+    policy_definition_id = data.azurerm_policy_definition.this["application_gateway_required_zones"].id
     parameter_values     = jsonencode({})
   }
 
