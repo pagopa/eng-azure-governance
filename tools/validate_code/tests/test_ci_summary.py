@@ -28,7 +28,10 @@ def test_summary_shows_failed_setup_job_and_keeps_gate_separate() -> None:
     assert "NOT PASSED" in rendered
     assert "1 checks: 0 passed, 1 failed" in rendered
     assert "Install dependencies" in rendered
-    assert rendered.index("Attention required") < rendered.index("## Categories")
+    assert rendered.index("Attention required") < rendered.index("Categories")
+    assert "💡 Open the failed job and start with the step listed above." in rendered
+    assert "| 🧪 Python tests &amp; integrity | **❌ failure** |" in rendered
+    assert "| python / retirements-v2 | **❌ failure** |" in rendered
     assert "1m 17s" in rendered
     assert "Open job" in rendered
     assert "validation-*" in rendered
@@ -46,6 +49,9 @@ def test_summary_does_not_count_skipped_cancelled_or_running_jobs_as_passed() ->
     assert (
         "3 checks: 0 passed, 0 failed, 1 cancelled, 2 other/not completed" in rendered
     )
+    assert "**⏭️ skipped**" in rendered
+    assert "**🚫 cancelled**" in rendered
+    assert "**⏳ in_progress**" in rendered
 
 
 def test_summary_keeps_category_results_when_api_details_are_unavailable() -> None:
@@ -57,7 +63,7 @@ def test_summary_keeps_category_results_when_api_details_are_unavailable() -> No
 
     assert "PASS - All validation categories succeeded" in rendered
     assert "Job details are unavailable" in rendered
-    assert "| static | **success** |" in rendered
+    assert "| 🔎 Static analysis | **✅ success** |" in rendered
 
 
 def test_summary_escapes_job_names_and_orders_checks() -> None:
@@ -70,6 +76,21 @@ def test_summary_escapes_job_names_and_orders_checks() -> None:
     assert "2 checks: 2 passed" in rendered
     assert "z &#124; &lt;script&gt;" in rendered
     assert rendered.index("| a |") < rendered.index("| z &#124;")
+
+
+def test_summary_uses_consistent_category_icons_without_success_tips() -> None:
+    rendered = render_summary(
+        {category: {"result": "success"} for category in ("static", "python", "terraform")},
+        [_job("terraform / identity", "success")],
+        "https://github.com/org/repo/actions/runs/1",
+    )
+
+    assert "✅ PASS" in rendered
+    assert "## 🗂️ Categories" in rendered
+    assert "## 🔬 Checks" in rendered
+    assert "| 🏗️ Terraform | **✅ success** |" in rendered
+    assert "📎 Evidence and local reproduction" in rendered
+    assert "💡" not in rendered
 
 
 def test_summary_cli_preserves_results_when_jobs_file_is_unavailable(
