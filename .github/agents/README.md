@@ -1,37 +1,29 @@
 # Agents Catalog
 
-This folder contains optional custom agents for focused tasks.
+This checkout has no repository-local `*.agent.md` files. This directory is
+reserved for optional custom agents; it does not install editor or user-level
+agents.
 
 ## Resolution order
-1. Apply repository non-negotiables from `copilot-instructions.md`.
-2. Apply explicit user request and selected agent behavior (agent-first).
-3. Apply matching `instructions/*.instructions.md` (`applyTo` by path).
-4. Apply prompt and referenced skill details.
 
-## Recommended routing
-- Read-only: `Planner`, `Reviewer`, `SecurityReviewer`, `WorkflowSupplyChain`, `TerraformGuardrails`, `IAMLeastPrivilege`.
-- PR-focused: `PRWriter`.
-- Write-capable: `Implementer`.
+1. Apply the current request within the repository's safety and authority boundaries.
+2. Apply [AGENTS.md](../../AGENTS.md) and its [local policy](../../AGENTS.local.md).
+3. Apply matching [path-specific review instructions](../INVENTORY.md#instructions).
+4. Apply the selected prompt or available skill within its declared scope.
 
-## Why generic core agents
-- `Planner`, `Implementer`, and `Reviewer` are workflow roles, not language roles.
-- Technology is resolved from file paths and prompt inputs (for example, `**/*.py` -> Python instructions).
-- Avoid creating per-language triplets unless repeated failures justify a dedicated specialist.
+## Task routing
 
-## Selection guide
-1. Use `Planner` at design stage.
-2. Use `Implementer` for execution after requirements are stable.
-3. Use `Reviewer` for non-security quality gates.
-4. Use `TerraformGuardrails` and `IAMLeastPrivilege` on policy/infrastructure changes.
-5. Use `WorkflowSupplyChain` on workflow changes.
-6. Use `PRWriter` to create or update PR title/body from template and diff.
-7. Use `SecurityReviewer` as final security gate.
+- Use the [documentation index](../../docs/README.md) to resolve domain owners.
+
+The editor's active agent executes authorized changes. A prompt name is not
+an installed agent, and a user-installed skill is not a file in this directory.
 
 ## Validation
 
-Keep the catalog entries aligned with the agent files in this directory and
-run the parent `.github` customization validator in strict root mode.
+If custom agents are added, register their exact paths in the
+[inventory](../INVENTORY.md#agents) and run the native inventory check described
+in the [configuration guide](../README.md#validation).
 
 No diagram is provided because this README is a flat routing catalog; the
-resolution order and selection guide above describe its relationships more
+resolution order and task links above describe its relationships more
 precisely than a separate diagram.

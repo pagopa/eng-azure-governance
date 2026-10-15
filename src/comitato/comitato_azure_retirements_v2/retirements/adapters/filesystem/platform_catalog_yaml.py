@@ -90,7 +90,7 @@ class YamlPlatformCatalogSource:
                     )
                 seen_ids.add(canonical.value)
                 if state == "active":
-                    folded_name = name.strip().casefold()
+                    folded_name = " ".join(name.split()).casefold()
                     if folded_name in names:
                         raise CatalogLoadError(
                             "platform catalog contains duplicate active names"

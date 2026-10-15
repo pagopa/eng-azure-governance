@@ -3,7 +3,7 @@
 * Status: accepted
 * Date: 2026-09-01
 * Deciders: User through delegated bootstrap approval
-* Related: [Context map](../../CONTEXT-MAP.md), [architecture](../architecture.md), [domain documentation](../agents/domain.md)
+* Related: [Context map](../../GLOSSARY-MAP.md), [architecture](../architecture.md), [domain documentation](../agents/domain.md)
 
 ## Context and Problem Statement
 
@@ -17,14 +17,14 @@ The closed promotion test is applied to each candidate area below. `Yes` verdict
 
 | Signal | Verdict | Evidence |
 | --- | --- | --- |
-| Same word means different things inside and outside | Yes | `src/04_policy_assignments/` binds policies, while `.identity/02_identity_prod_auth.tf` assigns RBAC roles. |
-| Represented differently from neighbouring areas | Yes | `src/02_policy_api_management/`, `src/03_policy_set/`, `src/04_policy_assignments/` |
+| Same word means different things inside and outside | Yes | `src/azure-policy/04_policy_assignments/` binds policies, while `.identity/02_identity_prod_auth.tf` assigns RBAC roles. |
+| Represented differently from neighbouring areas | Yes | `src/azure-policy/02_policy_api_management/`, `src/azure-policy/03_policy_set/`, `src/azure-policy/04_policy_assignments/` |
 | Serves a different audience | Not evidenced | Repository ownership is shared and no separate audience contract is checked in. |
 | Uses a different tool set | No | Azure Governance and Identity both use Terraform and AzureRM. |
-| Lives in a separate code base, state file, or schema | Yes | `src/01_custom_roles/backend.ini`, `src/03_policy_set/backend.ini`, `src/04_policy_assignments/env/org/backend.tfvars` |
+| Lives in a separate code base, state file, or schema | Yes | `src/azure-policy/01_custom_roles/backend.ini`, `src/azure-policy/03_policy_set/backend.ini`, `src/azure-policy/04_policy_assignments/env/org/backend.tfvars` |
 | Follows a separate delivery process | Yes | `README.md`, `CONTRIBUTING.md`, `.github/workflows/terraform_drift.yml` |
 | Can be delivered independently | Yes | Numbered roots own separate wrappers and backend configuration. |
-| Another area depends on it directionally | Yes | `.identity/02_identity_prod_auth.tf` references roles defined in `src/01_custom_roles/`. |
+| Another area depends on it directionally | Yes | `.identity/02_identity_prod_auth.tf` references roles defined in `src/azure-policy/01_custom_roles/`. |
 
 Recorded count: 6.
 
@@ -32,7 +32,7 @@ Recorded count: 6.
 
 | Signal | Verdict | Evidence |
 | --- | --- | --- |
-| Same word means different things inside and outside | Yes | `.identity/02_identity_prod_auth.tf` assigns roles, while `src/04_policy_assignments/` assigns policies. |
+| Same word means different things inside and outside | Yes | `.identity/02_identity_prod_auth.tf` assigns roles, while `src/azure-policy/04_policy_assignments/` assigns policies. |
 | Represented differently from neighbouring areas | Yes | `.identity/02_identity_prod.tf`, `.identity/02_identity_prod_auth.tf` |
 | Serves a different audience | Not evidenced | No separate audience contract is checked in. |
 | Uses a different tool set | No | Identity and Azure Governance both use Terraform and AzureRM. |
@@ -50,11 +50,11 @@ Recorded count: 6.
 | Same word means different things inside and outside | Yes | `state` is a subscription lifecycle field in `src/_source_of_truth/eng-finops-platforms.yaml`, not Terraform backend state. |
 | Represented differently from neighbouring areas | Yes | `src/_source_of_truth/eng-finops-platforms.yaml` is a versioned mapping rather than Terraform or runtime output. |
 | Serves a different audience | Not evidenced | The catalog names Eng FinOps platforms, but no separate maintainer audience is declared. |
-| Uses a different tool set | Yes | YAML source plus `src/comitato/comitato_azure_retirements/libs/platform_catalog.py` |
+| Uses a different tool set | Yes | YAML source plus `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py` |
 | Lives in a separate code base, state file, or schema | Yes | `src/_source_of_truth/README.md` defines schema version 1. |
 | Follows a separate delivery process | Not evidenced | The catalog uses repository validation and has no dedicated delivery workflow. |
-| Can be delivered independently | Yes | `tests/comitato/comitato_azure_retirements/test_platform_catalog.py` validates catalog-only changes. |
-| Another area depends on it directionally | Yes | `src/comitato/comitato_azure_retirements/libs/runtime_runner.py` loads it during aggregation. |
+| Can be delivered independently | Yes | `tests/comitato/comitato_azure_retirements_v2/adapters/test_platform_catalog_yaml.py` validates catalog-only changes. |
+| Another area depends on it directionally | Yes | `src/comitato/comitato_azure_retirements_v2/retirements/application/orchestration.py` loads it during aggregation. |
 
 Recorded count: 6.
 
@@ -63,12 +63,12 @@ Recorded count: 6.
 | Signal | Verdict | Evidence |
 | --- | --- | --- |
 | Same word means different things inside and outside | Yes | Runtime scope selects subscriptions for collection, while governance scope binds policy assignments. |
-| Represented differently from neighbouring areas | Yes | `src/comitato/comitato_azure_retirements/libs/`, `docs/comitato-azure-retirements-runtime.md` |
-| Serves a different audience | Yes | `src/comitato/comitato_azure_retirements/README.md` defines committee review as the outcome. |
-| Uses a different tool set | Yes | `.python-version`, `src/comitato/comitato_azure_retirements/requirements.txt` |
+| Represented differently from neighbouring areas | Yes | `src/comitato/comitato_azure_retirements_v2/retirements/` |
+| Serves a different audience | Yes | `src/comitato/comitato_azure_retirements_v2/README.md` defines committee review as the outcome. |
+| Uses a different tool set | Yes | `.python-version`, `src/comitato/comitato_azure_retirements_v2/requirements.txt` |
 | Lives in a separate code base, state file, or schema | Yes | The runtime owns Python modules and ordered TSV schemas. |
 | Follows a separate delivery process | Yes | `.github/workflows/_code-analysis.yml` and the focused pytest suite own its checks. |
-| Can be delivered independently | Yes | `src/comitato/comitato_azure_retirements/run.sh` is a standalone CLI launcher. |
+| Can be delivered independently | Yes | `src/comitato/comitato_azure_retirements_v2/run.sh` is a standalone CLI launcher. |
 | Another area depends on it directionally | Yes | It consumes the platform catalog and Azure source APIs, then writes review artifacts. |
 
 Recorded count: 8.

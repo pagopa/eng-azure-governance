@@ -13,7 +13,7 @@ Define a predictable process for deprecating Copilot customization assets (`inst
 ## Required process
 
 1. Mark the asset as deprecated in its file header or first section.
-2. Record the change in `.github/CHANGELOG.md` with migration guidance.
+2. Record the change and migration guidance in the pull request. This checkout has no customization changelog.
 3. Keep a minimum deprecation window of one release cycle (or 30 days if no release cycle exists).
 4. Provide a replacement asset when possible.
 5. Remove only after the window ends and no blocking consumers remain.
@@ -26,9 +26,12 @@ Define a predictable process for deprecating Copilot customization assets (`inst
 
 ## Emergency exception
 
-Immediate removal is allowed only for security or compliance issues. The removal reason must be documented in `.github/CHANGELOG.md`.
+Immediate removal is allowed only for security or compliance issues. Document the removal reason in the pull request.
 
 ## Current deprecations
+
+These records describe earlier migrations. Replacement names are historical and
+may no longer be installed. Use the [inventory](INVENTORY.md) for the current catalog.
 
 - `.github/workflows/_terraform-pre-commit.yml`: **Removed**. Replaced by `.github/workflows/_pre-commit.yml` after consolidating duplicate pre-commit workflows into one canonical entrypoint.
 - `.github/workflows/terraform-pre-commit.yml`: **Removed**. Replaced by `.github/workflows/_pre-commit.yml` so the source baseline ships a single pre-commit workflow.

@@ -1,0 +1,1 @@
+"""Azure Governance code validation."""

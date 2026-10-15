@@ -71,15 +71,20 @@ def test_yaml_catalog_rejects_duplicate_uuid_across_states(tmp_path: Path) -> No
         YamlPlatformCatalogSource(path).load()
 
 
-def test_yaml_catalog_rejects_duplicate_active_names_after_unicode_casefold(
+@pytest.mark.parametrize(
+    "duplicate_name", ["alpha beta", " alpha  beta ", "alpha\tbeta"]
+)
+def test_yaml_catalog_rejects_duplicate_active_names_after_normalization(
     tmp_path: Path,
+    duplicate_name: str,
 ) -> None:
     path = tmp_path / "catalog.yaml"
     path.write_text(
         "schema_version: 1\nplatforms:\n  Alpha:\n    subscriptions:\n"
-        f"      - name:  Name \n        id: {SUB_A}\n        state: active\n"
+        f"      - name: Alpha Beta\n        id: {SUB_A}\n        state: active\n"
         "  Beta:\n    subscriptions:\n"
-        "      - name: name\n        id: 22222222-2222-2222-2222-222222222222\n        state: active\n",
+        f'      - name: "{duplicate_name}"\n'
+        "        id: 22222222-2222-2222-2222-222222222222\n        state: active\n",
         encoding="utf-8",
     )
     with pytest.raises(CatalogLoadError, match="duplicate"):

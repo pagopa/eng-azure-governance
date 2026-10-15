@@ -53,13 +53,20 @@ jobs:
           ARM_USE_OIDC: 'true'
         run: |
           cd "$DIR"
+          root="$PWD"
 
-          # Loop through each folder under /src dynamically
-          for folder in */; do
+          # Loop through each folder under /src and /src/azure-policy dynamically
+          for folder in */ azure-policy/*/; do
             [ -d "$folder" ] || continue
 
-            if [ "$folder" == "scripts/" ]; then
+            if [ "$folder" == "scripts/" ] || [ "$folder" == "azure-policy/" ]; then
               echo "Skipping $folder"
+              continue
+            fi
+
+            # Only Terraform roots own a terraform.sh wrapper.
+            if [ ! -x "${folder}terraform.sh" ]; then
+              echo "Skipping $folder (no terraform.sh)"
               continue
             fi
 
@@ -83,7 +90,7 @@ jobs:
               echo "Other error in $folder."
               exit 1  # This will cause the job to fail immediately on drift detection
             fi
-            cd ..
+            cd "$root"
           done
 
       - name: Notify Slack on Failure

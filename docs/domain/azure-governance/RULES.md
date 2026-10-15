@@ -5,6 +5,7 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 ## GOV-001 - Preserve apply order
 
 - Rule ID: GOV-001
+- Serves: PUR
 - Owner: Azure Governance
 - Severity: warning
 - Enforcement owner: not enforced
@@ -15,26 +16,29 @@ These rules govern changes to the policy, role, initiative, assignment, and reme
 ## GOV-002 - Scope custom roles narrowly
 
 - Rule ID: GOV-002
+- Serves: PRI-01
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: not enforced
-- Evidence: `README.md`, `.github/security-baseline.md`, `.github/instructions/internal-terraform.instructions.md`
+- Evidence: `README.md`, `SECURITY.md`, `.github/instructions/internal-terraform.instructions.md`
 - Remediation: Reduce permissions and target scope to the narrowest effective governance responsibility, or record an evidence-backed exception.
 - Rule: Custom RBAC roles must follow the least-privilege principle.
 
 ## GOV-003 - Document high-impact policy effects
 
 - Rule ID: GOV-003
+- Serves: PUR
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: not enforced
-- Evidence: `.github/PULL_REQUEST_TEMPLATE.md`, `.github/security-baseline.md`
+- Evidence: `.github/PULL_REQUEST_TEMPLATE.md`, `SECURITY.md`
 - Remediation: Add the affected scope, policy effect, blast radius, exemption impact, and rollback strategy to the change record.
 - Rule: Changes with high-impact policy effects must document their governance impact before merge.
 
 ## GOV-004 - Keep validation non-mutating
 
 - Rule ID: GOV-004
+- Serves: PRI-05
 - Owner: Azure Governance
 - Severity: blocking
 - Enforcement owner: `.github/workflows/_pre-commit.yml`

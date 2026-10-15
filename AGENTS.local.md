@@ -15,4 +15,4 @@ Use the default canonical triage labels for local issues. See `docs/agents/triag
 ### Domain docs
 
 This repository uses the four-domain multi-context layout recorded in
-`CONTEXT-MAP.md`. See `docs/agents/domain.md`.
+`GLOSSARY-MAP.md`. See `docs/agents/domain.md`.

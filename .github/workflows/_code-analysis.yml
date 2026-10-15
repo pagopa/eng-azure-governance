@@ -14,79 +14,211 @@ concurrency:
   group: code-analysis-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  code-analysis:
-    name: code-analysis
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    defaults:
-      run:
-        shell: bash
-    env:
-      PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      PIP_NO_PYTHON_VERSION_WARNING: "1"
+defaults:
+  run:
+    shell: bash
 
+env:
+  PYTHON_BIN: python3
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_PYTHON_VERSION_WARNING: "1"
+
+jobs:
+  static:
+    name: 🔎 static / ${{ matrix.leaf }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        leaf:
+          - actionlint
+          - shell-static-analysis
+          - python-dependencies
+          - python-static-analysis
+          - python-lint
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
         with:
           persist-credentials: false
 
-      - name: 🧭 Prepare ephemeral virtualenv paths
-        run: |
-          code_analysis_root="${RUNNER_TEMP}/repo-code-analysis"
-          {
-            echo "TEST_VENV=${code_analysis_root}/tests"
-          } >> "${GITHUB_ENV}"
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0 https://github.com/actions/setup-python/releases/tag/v6.2.0
+        with:
+          python-version-file: .python-version
 
-      - name: 🐍 Set up Python from .python-version
-        # actions/setup-python@v6.2.0
-        # https://github.com/actions/setup-python/releases/tag/v6.2.0
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+      - name: 📦 Install actionlint
+        if: matrix.leaf == 'actionlint'
+        run: |
+          GOBIN="${RUNNER_TEMP}/actionlint" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          echo "${RUNNER_TEMP}/actionlint" >> "${GITHUB_PATH}"
+
+      - name: 📦 Install ShellCheck
+        if: matrix.leaf == 'shell-static-analysis'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y shellcheck
+
+      - name: 📦 Install locked Python dependencies
+        if: matrix.leaf == 'python-dependencies'
+        run: python3 -m pip install --require-hashes -r src/comitato/comitato_azure_retirements_v2/requirements.txt
+
+      - name: 📦 Install Ruff
+        if: matrix.leaf == 'python-lint'
+        run: python3 -m pip install ruff==0.15.11
+
+      - name: 🔎 Run static validation
+        env:
+          VALIDATION_LEAF: ${{ matrix.leaf }}
+        run: >-
+          ./validate-code.sh static --leaf "${VALIDATION_LEAF}" --format ci
+          --result-path tmp/ci-validation/result.json
+          --artifact-dir tmp/ci-validation/logs
+
+      - name: 📎 Save validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+        with:
+          name: validation-static-${{ matrix.leaf }}-${{ github.run_attempt }}
+          path: tmp/ci-validation/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  python:
+    name: 🧪 python / ${{ matrix.group }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        group:
+          - integrity
+          - retirements-v2
+          - governance-contracts
+          - validation-tools
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0 https://github.com/actions/setup-python/releases/tag/v6.2.0
         with:
           python-version-file: .python-version
           cache: pip
           cache-dependency-path: |
             .python-version
-            src/comitato/comitato_azure_retirements/requirements.txt
+            src/comitato/comitato_azure_retirements_v2/requirements.txt
 
-      - name: 🔎 Show Python version
+      - name: 📦 Install locked runtime and test dependencies
         run: |
-          python --version
-          python -m pip --version
+          python3 -m pip install --require-hashes -r src/comitato/comitato_azure_retirements_v2/requirements.txt
+          python3 -m pip install pytest==9.1.0
+          python3 -m pip check
 
-      - name: 📦 Validate Python requirements
+      - name: 🧪 Run Python validation
+        env:
+          VALIDATION_GROUP: ${{ matrix.group }}
         run: |
-          rm -rf "${TEST_VENV}"
-          python -m venv "${TEST_VENV}"
-          "${TEST_VENV}/bin/python" -m pip install --upgrade pip
-          "${TEST_VENV}/bin/pip" install --require-hashes -r "src/comitato/comitato_azure_retirements/requirements.txt"
-          "${TEST_VENV}/bin/pip" install pytest==9.1.0
-          "${TEST_VENV}/bin/python" -m pip check
+          if [[ "${VALIDATION_GROUP}" == "integrity" ]]; then
+            ./validate-code.sh python --integrity-only --format ci \
+              --result-path tmp/ci-validation/result.json --artifact-dir tmp/ci-validation/logs
+          else
+            ./validate-code.sh python --group "${VALIDATION_GROUP}" --format ci \
+              --result-path tmp/ci-validation/result.json --artifact-dir tmp/ci-validation/logs
+          fi
 
-      - name: 🔥 Analyze Python sources and tests
-        run: |
-          mapfile -t python_files < <(
-            find src/comitato tests \
-              -type f -name '*.py' -not -path '*/.venv/*' -print | sort
-          )
-          test "${#python_files[@]}" -gt 0
-          "${TEST_VENV}/bin/python" -m py_compile "${python_files[@]}"
-          "${TEST_VENV}/bin/python" \
-            src/comitato/comitato_azure_retirements/comitato-azure-retirements.py --help
+      - name: 📎 Save validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+        with:
+          name: validation-python-${{ matrix.group }}-${{ github.run_attempt }}
+          path: tmp/ci-validation/
+          if-no-files-found: ignore
+          retention-days: 7
 
-      - name: 🔥 Analyze Bash scripts
-        run: |
-          mapfile -t bash_files < <(
-            find scripts src \
-              -type f -name '*.sh' -not -path '*/.venv/*' -print | sort
-          )
-          test "${#bash_files[@]}" -gt 0
-          for file in "${bash_files[@]}"; do
-            bash -n "${file}"
-          done
+  terraform:
+    name: 🏗️ terraform / ${{ matrix.lane }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      TF_IN_AUTOMATION: "true"
+    strategy:
+      fail-fast: false
+      matrix:
+        lane:
+          - azure-policy
+          - identity
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
+        with:
+          persist-credentials: false
 
-      - name: ✅ Run pytest
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0 https://github.com/actions/setup-python/releases/tag/v6.2.0
+        with:
+          python-version-file: .python-version
+
+      - name: 📋 Read Terraform version
+        id: terraform-version
+        run: echo "version=$(cat .terraform-version)" >> "${GITHUB_OUTPUT}"
+
+      - name: 🏗️ Set up Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2 https://github.com/hashicorp/setup-terraform/releases/tag/v3.1.2
+        with:
+          terraform_version: ${{ steps.terraform-version.outputs.version }}
+          terraform_wrapper: false
+
+      - name: 🏗️ Run Terraform validation
+        env:
+          VALIDATION_LANE: ${{ matrix.lane }}
+        run: >-
+          ./validate-code.sh terraform --lane "${VALIDATION_LANE}" --max-parallel 2 --format ci
+          --result-path tmp/ci-validation/result.json
+          --artifact-dir tmp/ci-validation/logs
+
+      - name: 📎 Save validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2 https://github.com/actions/upload-artifact/releases/tag/v7.0.2
+        with:
+          name: validation-terraform-${{ matrix.lane }}-${{ github.run_attempt }}
+          path: tmp/ci-validation/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  code-analysis:
+    name: code-analysis
+    if: ${{ always() }}
+    needs: [static, python, terraform]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: 📊 Publish validation summary
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VALIDATION_RESULTS: ${{ toJSON(needs) }}
         run: |
-          "${TEST_VENV}/bin/python" -m pytest \
-            tests/comitato/comitato_azure_retirements -q
+          jobs_file="${RUNNER_TEMP}/validation-jobs.json"
+          gh api --paginate --slurp \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs?per_page=100" \
+            > "${jobs_file}" || printf '[]\n' > "${jobs_file}"
+          python3 -m tools.validate_code.ci_summary --jobs "${jobs_file}" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: 🛡️ Require every validation category to succeed
+        if: ${{ always() }}
+        env:
+          VALIDATION_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          jq -e 'all(.[]; .result == "success")' <<< "${VALIDATION_RESULTS}"
