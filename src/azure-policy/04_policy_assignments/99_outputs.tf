@@ -3,8 +3,10 @@ output "subscriptions_by_environment" {
   value       = { for environment, subscriptions in local.subscriptions_by_environment : environment => sort(keys(subscriptions)) }
 
   precondition {
-    condition     = alltrue([for subscriptions in values(local.active_subscriptions_by_name) : length(subscriptions) == 1])
-    error_message = "Enabled subscriptions outside subscription_blacklist must have unique display names to preserve Terraform module identities."
+    condition = alltrue([for subscriptions in values(local.active_subscriptions_by_name) : length(subscriptions) == 1])
+    error_message = format("Enabled subscriptions outside subscription_blacklist must have unique display names to preserve Terraform module identities: %s.", join(", ", [
+      for name, subscriptions in local.active_subscriptions_by_name : name if length(subscriptions) > 1
+    ]))
   }
 
   precondition {

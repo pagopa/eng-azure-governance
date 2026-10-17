@@ -51,7 +51,7 @@ within the same family. Discovery includes every `.tf` root under `src` and
 
 Each root runs `fmt -check -diff`, `init -backend=false -input=false
 -lockfile=readonly`, and `validate`. `terraform test` runs only when native test
-files exist. There are currently no native Terraform tests in this repository.
+files exist.
 Initialization may download providers or modules, but it uses isolated
 `TF_DATA_DIR` directories under `tmp/` and does not update lockfiles. The runner
 never invokes plan, apply, or the operational `terraform.sh` wrappers. Future
