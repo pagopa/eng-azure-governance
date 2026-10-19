@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 
@@ -47,10 +48,24 @@ def cli(tmp_path: Path):
         "    if state.get('list_error') or (state.get('verify_error') and state.get('deleted')):\n"
         "        print('AuthorizationFailed: cannot read locks', file=sys.stderr)\n"
         "        sys.exit(1)\n"
-        "    print(json.dumps(state.get('payload', state['locks'])))\n"
+        "    payload = state.get('payload', state['locks'])\n"
+        "    if state.get('deleted'):\n"
+        "        payload = state.get('after_locks', payload)\n"
+        "    print(json.dumps(payload))\n"
         "elif args[:2] == ['lock', 'delete']:\n"
+        "    if state.get('interrupt_signal'):\n"
+        "        os.kill(os.getppid(), state['interrupt_signal'])\n"
+        "        sys.exit(1)\n"
+        "    if state.get('consume_stdin'):\n"
+        "        sys.stdin.read()\n"
         "    target = args[args.index('--ids') + 1]\n"
         "    if target == state.get('fail_id'):\n"
+        "        if state.get('fail_after_delete'):\n"
+        "            state['deleted'] = True\n"
+        "            state['locks'] = [item for item in state['locks'] if item['id'] != target]\n"
+        "            state_path.write_text(json.dumps(state))\n"
+        "            print('Timeout: response lost after deletion', file=sys.stderr)\n"
+        "            sys.exit(1)\n"
         "        print('AuthorizationFailed: cannot delete lock', file=sys.stderr)\n"
         "        sys.exit(1)\n"
         "    state['deleted'] = True\n"
@@ -139,6 +154,12 @@ def test_default_run_offers_apply_after_plan_and_yes_deletes(cli):
     assert "Removed: 4" in result.stdout
     assert result.stdout.index("📋 PREVIEW") < result.stdout.index("[yes/no]")
     assert result.stdout.index("[yes/no]") < result.stdout.index("🔄 REMOVAL")
+    for args in calls:
+        assert args[2:] == (
+            ["--ids", args[3]] if args[:2] == ["lock", "delete"] else []
+        ) + ["--subscription", SUBSCRIPTION] + (
+            [] if args[:2] == ["lock", "delete"] else ["--output", "json"]
+        ) + ["--only-show-errors"]
 
 
 @pytest.mark.parametrize("confirmation", ["", "\n", "no\n"])
@@ -174,7 +195,7 @@ def test_confirmed_apply_deletes_only_direct_allowlisted_locks(cli):
 )
 def test_apply_refuses_missing_or_wrong_confirmation(cli, confirmation):
     result, calls, _ = cli("--apply", confirmation=confirmation)
-    assert result.returncode != 0
+    assert result.returncode == 3
     assert not deletions(calls)
     assert "CANCELLED" in result.stdout
 
@@ -189,10 +210,11 @@ def test_partial_delete_failure_continues_and_reports_error(cli):
     assert len(deletions(calls)) == 4
     assert state["locks"] == [lock(RESOURCES[0])]
     assert "AuthorizationFailed" in result.stdout + result.stderr
-    assert "Removed: 3" in result.stdout
-    assert "Failed: 1" in result.stdout
+    assert "Planned: 4 | Removed: 3 | Still present: 1" in result.stdout
+    assert "Request errors: 1" in result.stdout
     assert "✅ REMOVED AND VERIFIED" in result.stdout
-    assert "❌ FAILED REMOVALS" in result.stdout
+    assert "⚠️ REQUEST ERRORS" in result.stdout
+    assert "FAILED REMOVALS" not in result.stdout
     assert "PARTIALLY COMPLETED" in result.stdout
     preview = result.stdout.index("📋 PREVIEW")
     removal = result.stdout.index("🔄 REMOVAL")
@@ -206,9 +228,70 @@ def test_partial_delete_failure_continues_and_reports_error(cli):
 def test_reappearing_locks_are_not_reported_removed(cli):
     result, _, _ = cli("--apply", confirmation="yes\n", reappear=True)
     assert result.returncode == 1
-    assert "Removed: 0" in result.stdout
-    assert "Failed: 4" in result.stdout
+    assert "Planned: 4 | Removed: 0 | Still present: 4" in result.stdout
+    assert "Request errors: 0" in result.stdout
     assert "STILL PRESENT" in result.stdout
+
+
+def test_failed_request_with_lock_verified_absent_is_counted_removed(cli):
+    result, calls, state = cli(
+        confirmation="yes\n",
+        fail_id=lock(RESOURCES[0])["id"],
+        fail_after_delete=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert len(deletions(calls)) == 4
+    assert state["locks"] == []
+    assert "Planned: 4 | Removed: 4 | Still present: 0" in result.stdout
+    assert "Request errors: 1" in result.stdout
+    assert "Timeout: response lost after deletion" in result.stdout
+    assert "COMPLETED WITH REQUEST WARNINGS" in result.stdout
+    assert "PARTIALLY COMPLETED" not in result.stdout
+
+
+def test_new_lock_after_plan_is_reported_separately_without_deletion(cli):
+    new_lock = lock(RESOURCES[0], "new-policy-lock")
+    result, calls, _ = cli(confirmation="yes\n", after_locks=[new_lock])
+    assert result.returncode == 1
+    assert new_lock["id"] not in deletions(calls)
+    assert len(deletions(calls)) == 4
+    assert "Planned: 4 | Removed: 4 | Still present: 0" in result.stdout
+    assert "New/unplanned locks: 1" in result.stdout
+    assert "NEW / UNPLANNED LOCKS" in result.stdout
+    assert "new-policy-lock" in result.stdout
+
+
+def test_azure_command_cannot_consume_remaining_planned_lock_ids(cli):
+    result, calls, state = cli(confirmation="yes\n", consume_stdin=True)
+    assert result.returncode == 0, result.stderr
+    assert len(deletions(calls)) == 4
+    assert state["locks"] == []
+    assert "Planned: 4 | Removed: 4 | Still present: 0" in result.stdout
+
+
+@pytest.mark.parametrize("level", ["NotSpecified", "FutureLevel", None])
+def test_unrelated_lock_level_does_not_block_target_removals(cli, level):
+    unrelated = dict(lock(f"{ROOT}/resourceGroups/unrelated-rg"), level=level)
+    result, calls, state = cli(
+        confirmation="yes\n", locks=[lock(item) for item in RESOURCES] + [unrelated]
+    )
+    assert result.returncode == 0, result.stderr
+    assert len(deletions(calls)) == 4
+    assert unrelated["id"] not in deletions(calls)
+    assert state["locks"] == [unrelated]
+
+
+@pytest.mark.parametrize(
+    "scope", [RESOURCES[0], ROOT, f"{ROOT}/resourceGroups/sec-p-sentinel"]
+)
+def test_unknown_level_on_target_or_inherited_lock_prevents_mutation(cli, scope):
+    unsupported = dict(lock(scope), level="NotSpecified")
+    result, calls, _ = cli(
+        confirmation="yes\n", locks=[lock(item) for item in RESOURCES] + [unsupported]
+    )
+    assert result.returncode == 1
+    assert not deletions(calls)
+    assert "Malformed Azure lock response" in result.stderr
 
 
 def test_no_locks_is_safe_to_rerun_without_confirmation(cli):
@@ -223,14 +306,31 @@ def test_no_locks_is_safe_to_rerun_without_confirmation(cli):
 )
 def test_failed_or_malformed_discovery_prevents_mutation(cli, updates):
     result, calls, _ = cli("--apply", confirmation="yes\n", **updates)
-    assert result.returncode != 0
+    assert result.returncode == 1
     assert not deletions(calls)
+    assert "FAILED [DISCOVERY]" in result.stderr
 
 
 def test_wrong_account_is_rejected(cli):
     result, calls, _ = cli("--apply", account_id="another-subscription")
-    assert result.returncode != 0
+    assert result.returncode == 1
     assert not deletions(calls)
+    assert "FAILED [PREFLIGHT]" in result.stderr
+
+
+@pytest.mark.parametrize(
+    ("interrupt_signal", "expected_code"), [(signal.SIGINT, 130), (signal.SIGTERM, 143)]
+)
+def test_interruption_stops_deletion_and_cleans_temporary_files(
+    cli, tmp_path, interrupt_signal, expected_code
+):
+    result, calls, state = cli(confirmation="yes\n", interrupt_signal=interrupt_signal)
+    assert result.returncode == expected_code
+    assert len(deletions(calls)) == 1
+    assert len(state["locks"]) == 4
+    assert "INTERRUPTED" in result.stdout + result.stderr
+    assert "All planned removals verified" not in result.stdout
+    assert not any(item.is_dir() for item in tmp_path.iterdir())
 
 
 def test_verification_failure_reports_unknown_outcome(cli):

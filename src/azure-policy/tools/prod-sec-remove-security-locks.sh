@@ -13,9 +13,11 @@
 # authorizes deletion; Enter, EOF and any other answer cancel without changes.
 # --dry-run never prompts or deletes. --apply also requires yes/no confirmation.
 # Errors are collected while other locks continue; the final report verifies
-# removals and lists failures separately from the preview.
-# Exit codes: 0 = completed; 1 = failure or remaining/inherited locks;
+# all planned locks and lists request errors separately from verified state.
+# Exit codes: 0 = completed (possibly with request warnings);
+#             1 = failure or remaining/new/inherited locks;
 #             2 = invalid arguments; 3 = confirmation cancelled.
+#             130/143 = interrupted; verify current state before retrying.
 #
 # Resource group/subscription locks, policies and RBAC assignments are not changed.
 # Active policies may recreate locks. Restore protection after maintenance.
@@ -52,9 +54,12 @@ usage() {
     'Active policies may recreate locks after this temporary removal.' \
     'Requires az login and Microsoft.Authorization/locks/read and /delete access.' \
     'No account switching, credential setup or automatic retries are performed.' \
+    'Final counts reconcile planned locks; request errors and new locks are separate.' \
+    'Request errors are warnings if all planned locks are verified absent.' \
     '' \
     'Exit codes: 0 = preview completed or removal verified; 1 = failure or' \
-    'remaining/inherited locks; 2 = usage error; 3 = confirmation cancelled.'
+    'remaining/new/inherited locks; 2 = usage error; 3 = confirmation cancelled.' \
+    '130/143 = interrupted; verify current state before retrying.'
 }
 
 heading() {
@@ -62,7 +67,7 @@ heading() {
 }
 
 event() {
-  local state="$1" marker='ℹ️'
+  local state="$1" category="$2" marker='ℹ️'
   shift 2
   case "$state" in
     STARTED) marker='▶️' ;;
@@ -79,7 +84,7 @@ event() {
     'DRY RUN') marker='👁️' ;;
     RESULT) marker='📊' ;;
   esac
-  printf '%s %s: %s\n' "$marker" "$state" "$*"
+  printf '%s %s [%s]: %s\n' "$marker" "$state" "$category" "$*"
 }
 
 cleanup() {
@@ -105,13 +110,16 @@ fetch_locks() {
     diagnostic >&2
     return 1
   fi
-  if ! jq -e '
+  if ! jq -e --argjson targets "$TARGETS" '
     type == "array" and all(.[];
       (.id | type == "string") and
       (.id | test("^/subscriptions/[^/]+(/[^/]+)*/providers/Microsoft.Authorization/locks/[^/]+$"; "i")) and
       (.id | test("[[:cntrl:]]") | not) and
       (.name | type == "string") and
-      (.level == "CanNotDelete" or .level == "ReadOnly")
+      ((.id | ascii_downcase | sub("/providers/microsoft.authorization/locks/[^/]+$"; "")) as $owner |
+        if any($targets[]; (ascii_downcase | . == $owner or startswith($owner + "/")))
+        then (.level == "CanNotDelete" or .level == "ReadOnly")
+        else true end)
     )' "$destination" > /dev/null 2>&1; then
     event FAILED DISCOVERY 'Malformed Azure lock response; no further changes will be attempted.' >&2
     return 1
@@ -146,24 +154,24 @@ show_ids() {
   done < "$1"
 }
 
-record_failure() {
-  jq -cn --arg id "$1" --arg reason "$2" '{id: $id, reason: $reason}' >> "$WORK_DIR/failures"
+record_request_error() {
+  jq -cn --arg id "$1" --arg reason "$2" '{id: $id, reason: $reason}' >> "$WORK_DIR/request-errors"
 }
 
-show_failures() {
-  if [[ -s "$WORK_DIR/failures" ]]; then
-    heading '❌ FAILED REMOVALS'
+show_request_errors() {
+  if [[ -s "$WORK_DIR/request-errors" ]]; then
+    heading '⚠️ REQUEST ERRORS | Final lock state is reported separately'
     jq -r '(.id | split("/")) as $parts |
       "  " + $parts[-5] + " / " + $parts[-1] +
       "\n    Resource group: " + $parts[4] +
       "\n    Reason: " + (.reason | gsub("\n"; "\n    ")) +
-      "\n    Lock ID: " + .id' "$WORK_DIR/failures"
+      "\n    Lock ID: " + .id' "$WORK_DIR/request-errors"
   fi
 }
 
 main() {
   local apply=true mode='' no_color=false argument dependency account target count position=0
-  local planned=0 absent=0 inherited=0 failed=0 removed=0 remaining=0 lock_id confirmation
+  local planned=0 absent=0 inherited=0 request_errors=0 removed=0 remaining=0 new_locks=0 lock_id confirmation
   local resource resource_type resource_group lock_description label reason
   for argument in "$@"; do
     case "$argument" in
@@ -211,11 +219,11 @@ main() {
   printf 'Azure display name: %s\n' "$(printf '%s' "$account" | jq -r '[.name] | @tsv')"
   fetch_locks "$WORK_DIR/before.json" || return 1
   : > "$WORK_DIR/planned"
-  : > "$WORK_DIR/accepted"
   : > "$WORK_DIR/removed"
   : > "$WORK_DIR/remaining"
+  : > "$WORK_DIR/new"
   : > "$WORK_DIR/absent"
-  : > "$WORK_DIR/failures"
+  : > "$WORK_DIR/request-errors"
 
   heading '📋 PREVIEW | No changes made'
   printf '  %-16s %-17s %-20s %s\n' 'Resource' 'Type' 'Resource group' 'Lock'
@@ -253,7 +261,7 @@ main() {
   fi
   if [[ "$planned" -eq 0 ]]; then
     heading '📊 REMOVAL RESULTS | PROD-SEC'
-    printf 'Removed: 0 | Failed: 0 | Absent at start (resources): %s | Inherited locks: %s\n' "$absent" "$inherited"
+    printf 'Planned: 0 | Removed: 0 | Still present: 0\nAbsent at start (resources): %s | Inherited locks: %s\n' "$absent" "$inherited"
     printf '%s\n' 'No direct locks to remove. No changes made. Resource existence is not checked.'
     [[ "$inherited" -eq 0 ]]
     return
@@ -271,44 +279,45 @@ main() {
     label=$(jq -nr --arg id "$lock_id" '$id | split("/") | .[-5] + " / " + .[-1]')
     printf '[%s/%s] %s: ' "$position" "$planned" "$label"
     if az lock delete --ids "$lock_id" --subscription "$SUBSCRIPTION" --only-show-errors \
-      > /dev/null 2> "$WORK_DIR/error"; then
-      printf '%s\n' "$lock_id" >> "$WORK_DIR/accepted"
+      < /dev/null > /dev/null 2> "$WORK_DIR/error"; then
       printf '%s\n' '📤 Request accepted; verification pending.'
     else
-      failed=$((failed + 1))
+      request_errors=$((request_errors + 1))
       printf '%s\n' '❌ Request failed; details in the final report.'
       reason=$(head -c 2000 "$WORK_DIR/error")
       if [[ $(wc -c < "$WORK_DIR/error") -gt 2000 ]]; then
         reason="$reason [Diagnostic truncated to 2000 bytes.]"
       fi
-      record_failure "$lock_id" "${reason:-Azure CLI returned an error without diagnostic text.}"
+      record_request_error "$lock_id" "${reason:-Azure CLI returned an error without diagnostic text.}"
     fi
   done < "$WORK_DIR/planned"
 
   heading '🔎 Checking current state in Azure...'
   if ! fetch_locks "$WORK_DIR/after.json"; then
     heading '📊 REMOVAL RESULTS | PROD-SEC'
-    event UNVERIFIED SUMMARY "Verified removals: unknown | Failed requests: $failed"
-    show_failures
+    event UNVERIFIED SUMMARY "Verified removals: unknown | Request errors: $request_errors"
+    show_request_errors
     printf '%s\n' 'Changes may be partial. Run with --dry-run before retrying.'
     return 1
   fi
   while IFS= read -r lock_id; do
     if jq -e --arg expected "$lock_id" \
       'any(.[]; (.id | ascii_downcase) == ($expected | ascii_downcase))' "$WORK_DIR/after.json" > /dev/null; then
-      failed=$((failed + 1))
-      record_failure "$lock_id" 'Delete request was accepted, but the lock is still present or was recreated.'
+      remaining=$((remaining + 1))
+      printf '%s\n' "$lock_id" >> "$WORK_DIR/remaining"
     else
       removed=$((removed + 1))
       printf '%s\n' "$lock_id" >> "$WORK_DIR/removed"
     fi
-  done < "$WORK_DIR/accepted"
+  done < "$WORK_DIR/planned"
   for target in "${RESOURCES[@]}"; do
     direct_locks "$target" "$WORK_DIR/after.json" > "$WORK_DIR/direct.json"
-    count=$(jq 'length' "$WORK_DIR/direct.json")
-    remaining=$((remaining + count))
-    jq -r '.[].id' "$WORK_DIR/direct.json" >> "$WORK_DIR/remaining"
+    jq -r --rawfile planned "$WORK_DIR/planned" '
+      ($planned | split("\n") | map(ascii_downcase)) as $ids |
+      .[] | .id as $id | select(($ids | index($id | ascii_downcase)) == null) |
+      $id' "$WORK_DIR/direct.json" >> "$WORK_DIR/new"
   done
+  new_locks=$(( $(wc -l < "$WORK_DIR/new") ))
   inherited_locks "$WORK_DIR/after.json" > "$WORK_DIR/inherited.json"
   inherited=$(jq 'length' "$WORK_DIR/inherited.json")
   heading '📊 REMOVAL RESULTS | PROD-SEC'
@@ -316,11 +325,15 @@ main() {
     heading '✅ REMOVED AND VERIFIED'
     show_ids "$WORK_DIR/removed"
   fi
-  show_failures
   if [[ "$remaining" -gt 0 ]]; then
     heading '🔒 STILL PRESENT'
     show_ids "$WORK_DIR/remaining"
   fi
+  if [[ "$new_locks" -gt 0 ]]; then
+    heading '🔒 NEW / UNPLANNED LOCKS | Not deleted'
+    show_ids "$WORK_DIR/new"
+  fi
+  show_request_errors
   if [[ "$absent" -gt 0 ]]; then
     heading '⏭️ NO DIRECT LOCKS AT START'
     while IFS= read -r resource; do printf '  %s\n' "$resource"; done < "$WORK_DIR/absent"
@@ -329,15 +342,20 @@ main() {
     heading '⚠️ INHERITED LOCKS | Not modified'
     show_inherited
   fi
-  printf '\nRemoved: %s | Failed: %s | Still present: %s\n' "$removed" "$failed" "$remaining"
+  printf '\nPlanned: %s | Removed: %s | Still present: %s\n' "$planned" "$removed" "$remaining"
+  printf 'New/unplanned locks: %s | Request errors: %s\n' "$new_locks" "$request_errors"
   printf 'Absent at start (resources): %s | Inherited locks: %s\n' "$absent" "$inherited"
   event WARNING POLICY 'This is the current snapshot. Active policies may recreate locks later.'
-  if [[ "$failed" -gt 0 || "$remaining" -gt 0 || "$inherited" -gt 0 ]]; then
-    event WARNING SUMMARY 'PARTIALLY COMPLETED: inspect the reported failures and remaining/inherited locks.'
+  if [[ "$remaining" -gt 0 || "$new_locks" -gt 0 || "$inherited" -gt 0 ]]; then
+    event WARNING SUMMARY 'PARTIALLY COMPLETED: inspect remaining, new or inherited locks and any request errors.'
     printf '%s\n' 'Successful removals were not rolled back. Run with --dry-run before retrying.'
     return 1
   fi
-  event PASSED SUMMARY 'All planned removals verified.'
+  if [[ "$request_errors" -gt 0 ]]; then
+    event WARNING SUMMARY 'COMPLETED WITH REQUEST WARNINGS: all planned locks are verified absent despite request errors.'
+  else
+    event PASSED SUMMARY 'All planned removals verified.'
+  fi
   event INFO NEXT 'Restore resource protection after the maintenance window.'
 }
 
