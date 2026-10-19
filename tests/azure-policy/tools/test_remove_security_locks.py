@@ -7,7 +7,13 @@ from pathlib import Path
 
 import pytest
 
-SCRIPT = Path(__file__).resolve().parents[1] / "prod-sec-remove-security-locks.sh"
+SCRIPT = (
+    Path(__file__).resolve().parents[3]
+    / "src"
+    / "azure-policy"
+    / "tools"
+    / "prod-sec-remove-security-locks.sh"
+)
 SUBSCRIPTION = "0da48c97-355f-4050-a520-f11a18b8be90"
 ROOT = f"/subscriptions/{SUBSCRIPTION}"
 RESOURCES = [

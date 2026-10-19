@@ -212,7 +212,7 @@ def test_extract_diagnostics_handles_repeated_slash_prefix_without_backtracking(
     try:
         completed = subprocess.run(
             [sys.executable, "-c", script],
-            cwd=Path(__file__).resolve().parents[3],
+            cwd=Path(__file__).resolve().parents[2],
             capture_output=True,
             check=False,
             text=True,

@@ -187,11 +187,18 @@ PYTHON_SHARDS = OrderedDict(
         ),
         (
             "governance-contracts",
-            PythonShard("governance-contracts", ("tests/test_*.py", "tests/github")),
+            PythonShard("governance-contracts", ("tests/github", "tests/graphify")),
         ),
         (
             "validation-tools",
-            PythonShard("validation-tools", ("tools/**/tests", "scripts/tests")),
+            PythonShard(
+                "validation-tools",
+                (
+                    "tests/validate_code",
+                    "tests/validation_core",
+                    "tests/azure-policy/tools",
+                ),
+            ),
         ),
     )
 )

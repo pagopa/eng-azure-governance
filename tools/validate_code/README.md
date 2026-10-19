@@ -117,7 +117,7 @@ claiming a speedup; bounded parallelism alone is not a measured benchmark.
 ## Validation
 
 ```bash
-python3 -m pytest -q tools/validate_code/tests tools/validation_core/tests
+python3 -m pytest -q tests/validate_code tests/validation_core
 bash -n validate-code.sh scripts/validate-code.sh
 shellcheck validate-code.sh scripts/validate-code.sh
 ruff check tools/validate_code tools/validation_core
