@@ -166,3 +166,95 @@ def test_python_shards_reject_gaps_and_duplicate_nodes(tmp_path, monkeypatch):
     collections = iter([("first", "second"), ("first",), ("first",)])
     with pytest.raises(ValueError, match="belongs to"):
         runner.validate_python_shards(tmp_path)
+
+
+def write_gator_repository(root, version="3.23.1\n", suites=("required_pdb",)):
+    if version is not None:
+        (root / ".gator-version").write_text(version, encoding="utf-8")
+    for name in suites:
+        directory = (
+            root / "src/azure-policy/02_policy_kubernetes/policy_rules/tests" / name
+        )
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / "suite.yaml").write_text(
+            "apiVersion: test.gatekeeper.sh/v1alpha1\nkind: Suite\n",
+            encoding="utf-8",
+        )
+    return root
+
+
+def gator_context(root):
+    return RunContext(root, root / "scratch", False, True)
+
+
+def record_gator_commands(monkeypatch, status=0):
+    commands = []
+
+    def execute(context, arguments, **kwargs):
+        commands.append((list(arguments), kwargs))
+        return status
+
+    monkeypatch.setattr(runner, "run_command", execute)
+    return commands
+
+
+def test_gatekeeper_leaf_is_registered_as_static_check():
+    assert "gatekeeper-policy-tests" in runner.STATIC_CHECKS
+
+
+def test_gatekeeper_leaf_fails_when_gator_is_missing(tmp_path, monkeypatch):
+    write_gator_repository(tmp_path)
+    monkeypatch.setattr(runner.shutil, "which", lambda name: None)
+    commands = record_gator_commands(monkeypatch)
+    assert runner._gatekeeper_policy_tests(gator_context(tmp_path)) != 0
+    assert commands == []
+
+
+def test_gatekeeper_leaf_fails_on_version_mismatch_before_verify(tmp_path, monkeypatch):
+    write_gator_repository(tmp_path)
+    monkeypatch.setattr(runner.shutil, "which", lambda name: "/fake/gator")
+    monkeypatch.setattr(runner, "_gator_version", lambda gator: "3.22.0")
+    commands = record_gator_commands(monkeypatch)
+    assert runner._gatekeeper_policy_tests(gator_context(tmp_path)) != 0
+    assert commands == []
+
+
+@pytest.mark.parametrize("version", [None, "\n"])
+def test_gatekeeper_leaf_fails_without_a_pinned_version(tmp_path, monkeypatch, version):
+    write_gator_repository(tmp_path, version=version)
+    monkeypatch.setattr(runner.shutil, "which", lambda name: "/fake/gator")
+    monkeypatch.setattr(runner, "_gator_version", lambda gator: "3.23.1")
+    commands = record_gator_commands(monkeypatch)
+    assert runner._gatekeeper_policy_tests(gator_context(tmp_path)) != 0
+    assert commands == []
+
+
+def test_gatekeeper_leaf_fails_when_no_suite_is_found(tmp_path, monkeypatch):
+    write_gator_repository(tmp_path, suites=())
+    monkeypatch.setattr(runner.shutil, "which", lambda name: "/fake/gator")
+    monkeypatch.setattr(runner, "_gator_version", lambda gator: "3.23.1")
+    commands = record_gator_commands(monkeypatch)
+    assert runner._gatekeeper_policy_tests(gator_context(tmp_path)) != 0
+    assert commands == []
+
+
+def test_gatekeeper_leaf_verifies_each_suite_in_stable_order(tmp_path, monkeypatch):
+    write_gator_repository(tmp_path, suites=("statefulset_b", "deployment_a"))
+    monkeypatch.setattr(runner.shutil, "which", lambda name: "/fake/gator")
+    monkeypatch.setattr(runner, "_gator_version", lambda gator: "3.23.1")
+    commands = record_gator_commands(monkeypatch)
+    assert runner._gatekeeper_policy_tests(gator_context(tmp_path)) == 0
+    assert [arguments for arguments, _ in commands] == [
+        ["/fake/gator", "verify", "suite.yaml"],
+        ["/fake/gator", "verify", "suite.yaml"],
+    ]
+    directories = [kwargs["cwd"].name for _, kwargs in commands]
+    assert directories == ["deployment_a", "statefulset_b"]
+
+
+def test_gatekeeper_leaf_fails_when_a_suite_fails(tmp_path, monkeypatch):
+    write_gator_repository(tmp_path)
+    monkeypatch.setattr(runner.shutil, "which", lambda name: "/fake/gator")
+    monkeypatch.setattr(runner, "_gator_version", lambda gator: "3.23.1")
+    record_gator_commands(monkeypatch, status=1)
+    assert runner._gatekeeper_policy_tests(gator_context(tmp_path)) != 0
