@@ -6,6 +6,26 @@ from tools.validate_code import validate_code as runner
 from tools.validation_core import RunContext
 
 
+@pytest.mark.parametrize(
+    ("selector", "value"),
+    [
+        ("leaf", "python-lint"),
+        ("group", "validation-tools"),
+        ("vertical", "identity"),
+        ("lane", "azure-policy"),
+        ("terraform-root", "src/azure-policy"),
+    ],
+)
+@pytest.mark.parametrize("equals_syntax", [False, True])
+def test_single_selectors_preserve_requested_value(selector, value, equals_syntax):
+    option = f"--{selector}"
+    arguments = [f"{option}={value}"] if equals_syntax else [option, value]
+
+    parsed = runner._parser().parse_args(arguments)
+
+    assert getattr(parsed, selector.replace("-", "_")) == value
+
+
 def write_configuration(root, relative):
     directory = root / relative
     directory.mkdir(parents=True)

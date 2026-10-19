@@ -65,6 +65,18 @@ Types: `feat`, `fix`, `chore`, `docs`, `ci`, `refactor`
 5. Wait for CI checks and review
 6. Merge after approval
 
+`make lint` runs the canonical `./validate-code.sh` validation gate. It checks
+static rules, Python tests and Terraform validation; it does not run
+`make format`. Use `make format` separately when formatting changes are intended.
+The validation prerequisites and focused commands are documented in
+[Code Validation](tools/validate_code/README.md).
+
+Repository test placement and discovery are defined in
+[Tests](tests/README.md). Default Pytest and VS Code discovery select root
+`tests/`; use an environment with Pytest and the retirement runtime's hash-locked
+requirements installed. `make test-v2` remains scoped to Azure Retirements v2
+and requires its component venv.
+
 ## Getting Help
 
 Contact the Cloud Engineering team for assistance.

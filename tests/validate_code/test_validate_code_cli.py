@@ -3,6 +3,8 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -56,6 +58,41 @@ def test_rejects_aws_lane_and_invalid_parallelism():
     ):
         result = invoke(*arguments)
         assert result.returncode == 2
+
+
+@pytest.mark.parametrize(
+    "selector", ["--leaf", "--group", "--vertical", "--lane", "--terraform-root"]
+)
+@pytest.mark.parametrize("second_value", ["first", "second"])
+@pytest.mark.parametrize("syntax", ["separate", "equals", "mixed"])
+def test_rejects_repeated_single_value_selectors_before_listing(
+    selector, second_value, syntax, tmp_path
+):
+    if syntax == "separate":
+        arguments = (selector, "first", selector, second_value)
+    elif syntax == "equals":
+        arguments = (f"{selector}=first", f"{selector}={second_value}")
+    else:
+        arguments = (selector, "first", f"{selector}={second_value}")
+    scratch = tmp_path / "scratch"
+
+    result = invoke("--list", "--tmp-dir", str(scratch), *arguments)
+
+    assert result.returncode == 2, (result.stdout, result.stderr)
+    assert selector in result.stderr
+    assert "only once" in result.stderr
+    assert result.stdout == ""
+    assert not scratch.exists()
+
+
+@pytest.mark.parametrize(
+    "selector", ["--leaf", "--group", "--vertical", "--lane", "--terraform-root"]
+)
+def test_single_value_selectors_still_allow_listing(selector):
+    result = invoke("--list", selector, "first")
+
+    assert result.returncode == 0, result.stderr
+    assert "azure-policy" in result.stdout
 
 
 def test_azure_dry_run_reports_commands_without_running_them(tmp_path):

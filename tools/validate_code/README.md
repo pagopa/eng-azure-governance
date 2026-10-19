@@ -15,7 +15,9 @@ runner; no sibling repository is required at runtime.
 - [../validation_core](../validation_core) owns bounded parallel execution,
   lifecycle events, redaction, timings, fail-fast, and reports. Its Python
   sources and tests were imported without changes from AWS v2.
-- [tests](tests) owns adapter and direct-launcher regression tests.
+- [../../tests/validate_code](../../tests/validate_code) owns adapter and
+  direct-launcher regression tests. [../../tests/README.md](../../tests/README.md)
+  defines repository test placement and discovery.
 
 ## Prerequisites
 
@@ -80,6 +82,14 @@ From the repository root:
 
 `--terraform-root` must select a repository path under `src` or `.identity`.
 It runs that root and its nested configuration roots serially.
+
+`--leaf`, `--group`, `--vertical`, `--lane`, and `--terraform-root` each accept
+one occurrence per invocation. Repeating one returns exit code 2 before checks
+or reports, even with equal values or `--option=value` syntax. A repetition does
+not select multiple units. Run separate invocations to select different values.
+
+`make lint` invokes the same unscoped `./validate-code.sh` gate and does not
+invoke `make format`. Formatting is a separate, explicit operation.
 
 ## Reports And Timing
 
