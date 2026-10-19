@@ -24,7 +24,7 @@ resource "azurerm_policy_set_definition" "container_apps_dev" {
 
   # Container Apps Jobs must have min execution equal to 0
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_container_apps.outputs.min_execution_id
+    policy_definition_id = data.azurerm_policy_definition.this["min_execution"].id
     reference_id         = local.container_apps_dev.min_execution.reference_id
     parameter_values = jsonencode({
       effect = {

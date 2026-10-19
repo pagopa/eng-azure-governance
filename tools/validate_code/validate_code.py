@@ -187,11 +187,18 @@ PYTHON_SHARDS = OrderedDict(
         ),
         (
             "governance-contracts",
-            PythonShard("governance-contracts", ("tests/test_*.py", "tests/github")),
+            PythonShard("governance-contracts", ("tests/github", "tests/graphify")),
         ),
         (
             "validation-tools",
-            PythonShard("validation-tools", ("tools/**/tests", "scripts/tests")),
+            PythonShard(
+                "validation-tools",
+                (
+                    "tests/validate_code",
+                    "tests/validation_core",
+                    "tests/azure-policy/tools",
+                ),
+            ),
         ),
     )
 )
@@ -620,14 +627,24 @@ def _finish(report: RunReport, output_format: str, result_path: Path | None) -> 
     return validation_exit
 
 
+class _SingleValueSelector(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[str] | None,
+        option_string: str | None = None,
+    ) -> None:
+        if getattr(namespace, self.dest, None) is not None:
+            raise argparse.ArgumentError(self, "may be specified only once")
+        setattr(namespace, self.dest, values)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("stream", nargs="?", choices=("static", "python", "terraform"))
-    parser.add_argument("--leaf")
-    parser.add_argument("--group")
-    parser.add_argument("--vertical")
-    parser.add_argument("--lane")
-    parser.add_argument("--terraform-root")
+    for selector in ("--leaf", "--group", "--vertical", "--lane", "--terraform-root"):
+        parser.add_argument(selector, action=_SingleValueSelector)
     parser.add_argument("--serial", action="store_true")
     parser.add_argument("--max-parallel", type=int, default=DEFAULT_MAX_PARALLEL)
     parser.add_argument("--fail-fast", action="store_true")

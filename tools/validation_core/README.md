@@ -72,12 +72,12 @@ source of truth.
 ## Dependencies
 
 - Python standard library only.
-- Native tests under `tools/validation_core/tests` and the repository Pytest
+- Native tests under `tests/validation_core` and the repository Pytest
   surface.
 
 ## Validation
 
 ```bash
-python3 -m pytest -q tools/validation_core/tests
+python3 -m pytest -q tests/validation_core
 python3 -m compileall -q tools/validation_core
 ```

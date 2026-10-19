@@ -11,17 +11,17 @@ resource "azurerm_policy_set_definition" "event_hub_prod" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_event_hub.outputs.eventhub_required_network_id
+    policy_definition_id = data.azurerm_policy_definition.this["eventhub_required_network"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_event_hub.outputs.eventhub_allowed_tls_id
+    policy_definition_id = data.azurerm_policy_definition.this["eventhub_allowed_tls"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_event_hub.outputs.eventhub_required_zone_redundant_id
+    policy_definition_id = data.azurerm_policy_definition.this["eventhub_required_zone_redundant"].id
     parameter_values     = jsonencode({})
   }
 

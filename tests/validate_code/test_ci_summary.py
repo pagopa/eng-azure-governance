@@ -115,7 +115,7 @@ def test_summary_cli_preserves_results_when_jobs_file_is_unavailable(
             str(tmp_path / "missing.json"),
         ],
         env=environment,
-        cwd=Path(__file__).resolve().parents[3],
+        cwd=Path(__file__).resolve().parents[2],
         capture_output=True,
         text=True,
         timeout=10,

@@ -67,7 +67,7 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_image_sha256_id
+    policy_definition_id = data.azurerm_policy_definition.this["kubernetes_required_image_sha256"].id
     parameter_values     = jsonencode({})
   }
 
@@ -97,13 +97,13 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_kubernetes_version_id
+    policy_definition_id = data.azurerm_policy_definition.this["kubernetes_allowed_kubernetes_version"].id
     parameter_values     = jsonencode({})
   }
 
   # Kubernetes cluster should have 'Standard' SKU
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["kubernetes_allowed_sku"].id
     parameter_values     = jsonencode({})
   }
 
@@ -120,7 +120,7 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
 
   # Azure Policy Add-on for Kubernetes service (AKS) should be installed and enabled on your clusters
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_policy_addon_id
+    policy_definition_id = data.azurerm_policy_definition.this["kubernetes_required_policy_addon"].id
     reference_id         = local.kubernetes_prod.enable_azure_policy_addon.reference_id
     parameter_values = jsonencode({
       effect = {
@@ -131,7 +131,7 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
 
   # Azure Kubernetes Service clusters should have Defender profile enabled
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_kubernetes.outputs.kubernetes_required_defender_profile_id
+    policy_definition_id = data.azurerm_policy_definition.this["kubernetes_required_defender_profile"].id
     reference_id         = local.kubernetes_prod.enable_defender_profile.reference_id
     parameter_values = jsonencode({
       effect = {

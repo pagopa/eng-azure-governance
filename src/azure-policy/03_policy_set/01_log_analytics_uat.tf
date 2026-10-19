@@ -11,7 +11,7 @@ resource "azurerm_policy_set_definition" "log_analytics_uat" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_log_analytics.outputs.log_analytics_bound_daily_quota_id
+    policy_definition_id = data.azurerm_policy_definition.this["log_analytics_bound_daily_quota"].id
     parameter_values     = jsonencode({})
   }
 
@@ -22,7 +22,7 @@ resource "azurerm_policy_set_definition" "log_analytics_uat" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_log_analytics.outputs.log_analytics_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["log_analytics_allowed_sku"].id
     parameter_values     = jsonencode({})
   }
 }

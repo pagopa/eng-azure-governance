@@ -4,16 +4,16 @@ This Terraform root composes the repository's policy families into Azure Policy 
 
 ## Purpose
 
-Use this directory for the policy-set stage after policy definitions are available. The `01_*.tf` files define environment- and concern-specific `azurerm_policy_set_definition` resources, read policy IDs through `terraform_remote_state`, resolve the `pagopa` management group, and expose the initiative IDs listed in the generated Terraform reference below. Start with the policy-set file for the environment or concern being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
+Use this directory for the policy-set stage after policy definitions are available. The `01_*.tf` files define environment- and concern-specific `azurerm_policy_set_definition` resources, resolve policy definition IDs by name at the `pagopa` management group through `data "azurerm_policy_definition"`, and expose the initiative IDs listed in the generated Terraform reference below. Start with the policy-set file for the environment or concern being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
 
-The composition flow is from the numbered policy-family roots through Terraform remote state to policy-set definitions scoped to the `pagopa` management group:
+The composition flow is from the policy definitions published at the `pagopa` management group through name-based data sources to policy-set definitions scoped to the same management group:
 
 ```mermaid
 flowchart LR
     accTitle: Policy set composition
-    accDescr: Policy set Terraform reads service policy IDs from remote state and publishes initiatives for the pagopa management group.
-    policy_roots["Service policy roots"] --> remote_state["Terraform remote state"]
-    remote_state --> policy_sets["Azure policy set definitions"]
+    accDescr: Policy set Terraform looks up policy definitions by name at the pagopa management group and publishes initiatives for the same management group.
+    policy_defs["Policy definitions at pagopa"] --> name_lookup["Terraform data sources by name"]
+    name_lookup --> policy_sets["Azure policy set definitions"]
     policy_sets --> governance_scope["pagopa management group"]
 ```
 
@@ -39,7 +39,6 @@ terraform init -backend=false -lockfile=readonly
 | Name | Version |
 |------|---------|
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 4.63.0 |
-| <a name="provider_terraform"></a> [terraform](#provider\_terraform) | n/a |
 
 ## Modules
 
@@ -57,7 +56,6 @@ No modules.
 | [azurerm_policy_set_definition.app_service_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.application_gateway_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.audit_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.audit_logs_pci](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.container_apps_dev](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.container_apps_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.container_apps_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
@@ -72,7 +70,6 @@ No modules.
 | [azurerm_policy_set_definition.log_analytics_dev](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.log_analytics_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.log_analytics_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
-| [azurerm_policy_set_definition.metrics_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.networking_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.postgresql_dev](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.postgresql_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
@@ -90,25 +87,8 @@ No modules.
 | [azurerm_policy_set_definition.virtual_machine_scale_set_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.virtual_machine_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_management_group.pagopa](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/management_group) | data source |
-| [terraform_remote_state.policy_api_management](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_app_service](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_application_gateway](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_audit_logs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_container_apps](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_cosmosdb](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_data_sovereignty](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_dns](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_event_hub](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_kubernetes](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_log_analytics](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_metrics_logs](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_networking](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_postgresql](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_redis](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_resource_lock](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_tags](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_virtual_machine](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
-| [terraform_remote_state.policy_virtual_machine_scale_set](https://registry.terraform.io/providers/hashicorp/terraform/latest/docs/data-sources/remote_state) | data source |
+| [azurerm_policy_definition.resource_lock](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/policy_definition) | data source |
+| [azurerm_policy_definition.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/policy_definition) | data source |
 
 ## Inputs
 
@@ -124,14 +104,10 @@ No modules.
 | <a name="input_app_service_dev"></a> [app\_service\_dev](#input\_app\_service\_dev) | List of app service policy set parameters | <pre>object({<br/>    listofallowedsku  = list(string)<br/>    listofallowedkind = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedkind": [<br/>    "elastic",<br/>    "linux",<br/>    "functionapp"<br/>  ],<br/>  "listofallowedsku": [<br/>    "Y1",<br/>    "WS1",<br/>    "B1",<br/>    "B2",<br/>    "B3"<br/>  ]<br/>}</pre> | no |
 | <a name="input_app_service_prod"></a> [app\_service\_prod](#input\_app\_service\_prod) | List of app service policy set parameters | <pre>object({<br/>    listofallowedsku  = list(string)<br/>    listofallowedkind = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedkind": [<br/>    "elastic",<br/>    "linux"<br/>  ],<br/>  "listofallowedsku": [<br/>    "WS1",<br/>    "P0v3",<br/>    "P1v3"<br/>  ]<br/>}</pre> | no |
 | <a name="input_app_service_uat"></a> [app\_service\_uat](#input\_app\_service\_uat) | List of app service policy set parameters | <pre>object({<br/>    listofallowedsku  = list(string)<br/>    listofallowedkind = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedkind": [<br/>    "elastic",<br/>    "linux",<br/>    "functionapp"<br/>  ],<br/>  "listofallowedsku": [<br/>    "Y1",<br/>    "WS1",<br/>    "B1",<br/>    "B2",<br/>    "B3"<br/>  ]<br/>}</pre> | no |
-| <a name="input_audit_logs_pci_storage_primary_region"></a> [audit\_logs\_pci\_storage\_primary\_region](#input\_audit\_logs\_pci\_storage\_primary\_region) | description | <pre>object({<br/>    storage_id = string,<br/>    location   = string,<br/>  })</pre> | <pre>{<br/>  "location": "westeurope",<br/>  "storage_id": "/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"<br/>}</pre> | no |
-| <a name="input_audit_logs_pci_storage_secondary_region"></a> [audit\_logs\_pci\_storage\_secondary\_region](#input\_audit\_logs\_pci\_storage\_secondary\_region) | description | <pre>object({<br/>    storage_id = string,<br/>    location   = string,<br/>  })</pre> | <pre>{<br/>  "location": "northeurope",<br/>  "storage_id": "novalue"<br/>}</pre> | no |
-| <a name="input_audit_logs_pci_workspace_id"></a> [audit\_logs\_pci\_workspace\_id](#input\_audit\_logs\_pci\_workspace\_id) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"` | no |
 | <a name="input_audit_logs_storage_id_italynorth"></a> [audit\_logs\_storage\_id\_italynorth](#input\_audit\_logs\_storage\_id\_italynorth) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-nit/providers/Microsoft.Storage/storageAccounts/ppseclogsitn"` | no |
 | <a name="input_audit_logs_storage_id_northeurope"></a> [audit\_logs\_storage\_id\_northeurope](#input\_audit\_logs\_storage\_id\_northeurope) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-rg-neu/providers/Microsoft.Storage/storageAccounts/ppseclogsneu"` | no |
 | <a name="input_audit_logs_storage_id_westeurope"></a> [audit\_logs\_storage\_id\_westeurope](#input\_audit\_logs\_storage\_id\_westeurope) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourceGroups/sec-p-sentinel/providers/Microsoft.Storage/storageAccounts/ppseclogs"` | no |
 | <a name="input_audit_logs_workspace_id"></a> [audit\_logs\_workspace\_id](#input\_audit\_logs\_workspace\_id) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"` | no |
-| <a name="input_metrics_logs_pci_workspace_id"></a> [metrics\_logs\_pci\_workspace\_id](#input\_metrics\_logs\_pci\_workspace\_id) | description | `string` | `"/subscriptions/0da48c97-355f-4050-a520-f11a18b8be90/resourcegroups/sec-p-sentinel/providers/microsoft.operationalinsights/workspaces/sec-p-law"` | no |
 | <a name="input_postgresql_dev"></a> [postgresql\_dev](#input\_postgresql\_dev) | List of PostgreSQL policy set parameters | <pre>object({<br/>    listofallowedskuname         = list(string)<br/>    listofallowedflexibleskuname = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedflexibleskuname": [<br/>    "Standard_B1ms",<br/>    "Standard_B2s",<br/>    "Standard_B2ms"<br/>  ],<br/>  "listofallowedskuname": [<br/>    "B_Gen5_1",<br/>    "B_Gen5_2",<br/>    "GP_Gen5_2"<br/>  ]<br/>}</pre> | no |
 | <a name="input_postgresql_prod"></a> [postgresql\_prod](#input\_postgresql\_prod) | List of PostgreSQL policy set parameters | <pre>object({<br/>    listofallowedflexibleskuname = list(string)<br/>    listofallowedskuname         = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedflexibleskuname": [<br/>    "Standard_D2ds_v4",<br/>    "Standard_D4ds_v4",<br/>    "Standard_D8ds_v4",<br/>    "Standard_D2ds_v5",<br/>    "Standard_D4ds_v5",<br/>    "Standard_D8ds_v5"<br/>  ],<br/>  "listofallowedskuname": [<br/>    "GP_Gen5_2",<br/>    "GP_Gen5_4",<br/>    "GP_Gen5_8"<br/>  ]<br/>}</pre> | no |
 | <a name="input_postgresql_uat"></a> [postgresql\_uat](#input\_postgresql\_uat) | List of PostgreSQL policy set parameters | <pre>object({<br/>    listofallowedskuname         = list(string)<br/>    listofallowedflexibleskuname = list(string)<br/>  })</pre> | <pre>{<br/>  "listofallowedflexibleskuname": [<br/>    "Standard_B1ms",<br/>    "Standard_B2s",<br/>    "Standard_B2ms"<br/>  ],<br/>  "listofallowedskuname": [<br/>    "GP_Gen5_2"<br/>  ]<br/>}</pre> | no |
@@ -157,10 +133,6 @@ No modules.
 | <a name="output_app_service_uat_id"></a> [app\_service\_uat\_id](#output\_app\_service\_uat\_id) | n/a |
 | <a name="output_application_gateway_prod_id"></a> [application\_gateway\_prod\_id](#output\_application\_gateway\_prod\_id) | n/a |
 | <a name="output_audit_logs_id"></a> [audit\_logs\_id](#output\_audit\_logs\_id) | n/a |
-| <a name="output_audit_logs_pci_id"></a> [audit\_logs\_pci\_id](#output\_audit\_logs\_pci\_id) | n/a |
-| <a name="output_audit_logs_pci_storage_primary_region"></a> [audit\_logs\_pci\_storage\_primary\_region](#output\_audit\_logs\_pci\_storage\_primary\_region) | n/a |
-| <a name="output_audit_logs_pci_storage_secondary_region"></a> [audit\_logs\_pci\_storage\_secondary\_region](#output\_audit\_logs\_pci\_storage\_secondary\_region) | n/a |
-| <a name="output_audit_logs_pci_workspace_id"></a> [audit\_logs\_pci\_workspace\_id](#output\_audit\_logs\_pci\_workspace\_id) | n/a |
 | <a name="output_audit_logs_storage_id_italynorth"></a> [audit\_logs\_storage\_id\_italynorth](#output\_audit\_logs\_storage\_id\_italynorth) | n/a |
 | <a name="output_audit_logs_storage_id_northeurope"></a> [audit\_logs\_storage\_id\_northeurope](#output\_audit\_logs\_storage\_id\_northeurope) | n/a |
 | <a name="output_audit_logs_storage_id_westeurope"></a> [audit\_logs\_storage\_id\_westeurope](#output\_audit\_logs\_storage\_id\_westeurope) | n/a |
@@ -179,7 +151,6 @@ No modules.
 | <a name="output_log_analytics_dev_id"></a> [log\_analytics\_dev\_id](#output\_log\_analytics\_dev\_id) | n/a |
 | <a name="output_log_analytics_prod_id"></a> [log\_analytics\_prod\_id](#output\_log\_analytics\_prod\_id) | n/a |
 | <a name="output_log_analytics_uat_id"></a> [log\_analytics\_uat\_id](#output\_log\_analytics\_uat\_id) | n/a |
-| <a name="output_metrics_logs_id"></a> [metrics\_logs\_id](#output\_metrics\_logs\_id) | n/a |
 | <a name="output_networking_prod_id"></a> [networking\_prod\_id](#output\_networking\_prod\_id) | n/a |
 | <a name="output_postgresql_dev_id"></a> [postgresql\_dev\_id](#output\_postgresql\_dev\_id) | n/a |
 | <a name="output_postgresql_prod_id"></a> [postgresql\_prod\_id](#output\_postgresql\_prod\_id) | n/a |

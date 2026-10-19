@@ -33,7 +33,7 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_flexible_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["postgresql_allowed_flexible_sku"].id
     reference_id         = local.postgresql.listofallowedflexiblesku
     parameter_values = jsonencode({
       listOfAllowedSKU = {
@@ -43,7 +43,7 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["postgresql_allowed_sku"].id
     reference_id         = local.postgresql.listofallowedsku
     parameter_values = jsonencode({
       listOfAllowedSKU = {
@@ -53,7 +53,7 @@ resource "azurerm_policy_set_definition" "postgresql_dev" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_postgresql.outputs.postgresql_required_engine_version_id
+    policy_definition_id = data.azurerm_policy_definition.this["postgresql_required_engine_version"].id
     parameter_values     = jsonencode({})
   }
 }

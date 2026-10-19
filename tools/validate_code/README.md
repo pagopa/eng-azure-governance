@@ -15,7 +15,9 @@ runner; no sibling repository is required at runtime.
 - [../validation_core](../validation_core) owns bounded parallel execution,
   lifecycle events, redaction, timings, fail-fast, and reports. Its Python
   sources and tests were imported without changes from AWS v2.
-- [tests](tests) owns adapter and direct-launcher regression tests.
+- [../../tests/validate_code](../../tests/validate_code) owns adapter and
+  direct-launcher regression tests. [../../tests/README.md](../../tests/README.md)
+  defines repository test placement and discovery.
 
 ## Prerequisites
 
@@ -51,7 +53,7 @@ within the same family. Discovery includes every `.tf` root under `src` and
 
 Each root runs `fmt -check -diff`, `init -backend=false -input=false
 -lockfile=readonly`, and `validate`. `terraform test` runs only when native test
-files exist. There are currently no native Terraform tests in this repository.
+files exist.
 Initialization may download providers or modules, but it uses isolated
 `TF_DATA_DIR` directories under `tmp/` and does not update lockfiles. The runner
 never invokes plan, apply, or the operational `terraform.sh` wrappers. Future
@@ -80,6 +82,14 @@ From the repository root:
 
 `--terraform-root` must select a repository path under `src` or `.identity`.
 It runs that root and its nested configuration roots serially.
+
+`--leaf`, `--group`, `--vertical`, `--lane`, and `--terraform-root` each accept
+one occurrence per invocation. Repeating one returns exit code 2 before checks
+or reports, even with equal values or `--option=value` syntax. A repetition does
+not select multiple units. Run separate invocations to select different values.
+
+`make lint` invokes the same unscoped `./validate-code.sh` gate and does not
+invoke `make format`. Formatting is a separate, explicit operation.
 
 ## Reports And Timing
 
@@ -117,7 +127,7 @@ claiming a speedup; bounded parallelism alone is not a measured benchmark.
 ## Validation
 
 ```bash
-python3 -m pytest -q tools/validate_code/tests tools/validation_core/tests
+python3 -m pytest -q tests/validate_code tests/validation_core
 bash -n validate-code.sh scripts/validate-code.sh
 shellcheck validate-code.sh scripts/validate-code.sh
 ruff check tools/validate_code tools/validation_core

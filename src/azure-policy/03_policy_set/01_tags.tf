@@ -62,7 +62,7 @@ resource "azurerm_policy_set_definition" "tags" {
     for_each = [for name, tag in local.tags : name if tag.required]
 
     content {
-      policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_id
+      policy_definition_id = data.azurerm_policy_definition.this["tags_require_tag"].id
       policy_group_names   = [policy_definition_reference.value]
       parameter_values = jsonencode({
         tagName = {
@@ -76,7 +76,7 @@ resource "azurerm_policy_set_definition" "tags" {
     for_each = [for name, tag in local.tags : name if length(tag.allowed_values) > 0]
 
     content {
-      policy_definition_id = data.terraform_remote_state.policy_tags.outputs.tags_require_tag_values_id
+      policy_definition_id = data.azurerm_policy_definition.this["tags_require_tag_values"].id
       policy_group_names   = [policy_definition_reference.value]
       parameter_values = jsonencode({
         tagName = {

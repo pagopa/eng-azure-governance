@@ -40,7 +40,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Key vault
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_keyvault_log_analytics"].id
     reference_id         = local.audit_logs.keyvault_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -50,7 +50,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_keyvault_storage_account"].id
     reference_id         = local.audit_logs.keyvault_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -63,7 +63,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_keyvault_storage_account"].id
     reference_id         = local.audit_logs.keyvault_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -76,7 +76,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_keyvault_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_keyvault_storage_account"].id
     reference_id         = local.audit_logs.keyvault_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -91,7 +91,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Application Gateway
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_application_gateway_log_analytics"].id
     reference_id         = local.audit_logs.application_gateway_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -101,7 +101,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_application_gateway_storage_account"].id
     reference_id         = local.audit_logs.application_gateway_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -114,7 +114,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_application_gateway_storage_account"].id
     reference_id         = local.audit_logs.application_gateway_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -127,7 +127,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_application_gateway_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_application_gateway_storage_account"].id
     reference_id         = local.audit_logs.application_gateway_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -142,7 +142,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Container Registry
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_registry_log_analytics"].id
     reference_id         = local.audit_logs.container_registry_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -152,7 +152,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_registry_storage_account"].id
     reference_id         = local.audit_logs.container_registry_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -165,7 +165,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_registry_storage_account"].id
     reference_id         = local.audit_logs.container_registry_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -178,7 +178,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_registry_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_registry_storage_account"].id
     reference_id         = local.audit_logs.container_registry_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -193,7 +193,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Container App
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_app_log_analytics"].id
     reference_id         = local.audit_logs.container_app_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -203,7 +203,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_app_storage_account"].id
     reference_id         = local.audit_logs.container_app_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -216,7 +216,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_app_storage_account"].id
     reference_id         = local.audit_logs.container_app_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -229,7 +229,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_container_app_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_container_app_storage_account"].id
     reference_id         = local.audit_logs.container_app_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -244,7 +244,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Api Management
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_api_management_log_analytics"].id
     reference_id         = local.audit_logs.api_management_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -254,7 +254,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_api_management_storage_account"].id
     reference_id         = local.audit_logs.api_management_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -267,7 +267,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_api_management_storage_account"].id
     reference_id         = local.audit_logs.api_management_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -280,7 +280,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_api_management_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_api_management_storage_account"].id
     reference_id         = local.audit_logs.api_management_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -295,7 +295,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Postgresql Flexible
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_flexible_log_analytics"].id
     reference_id         = local.audit_logs.postgresql_flexible_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -305,7 +305,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_flexible_storage_account"].id
     reference_id         = local.audit_logs.postgresql_flexible_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -318,7 +318,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_flexible_storage_account"].id
     reference_id         = local.audit_logs.postgresql_flexible_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -331,7 +331,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_flexible_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_flexible_storage_account"].id
     reference_id         = local.audit_logs.postgresql_flexible_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -346,7 +346,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Postgresql Single Server
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_single_server_log_analytics"].id
     reference_id         = local.audit_logs.postgresql_single_server_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -356,7 +356,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_single_server_storage_account"].id
     reference_id         = local.audit_logs.postgresql_single_server_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -369,7 +369,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_single_server_storage_account"].id
     reference_id         = local.audit_logs.postgresql_single_server_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -382,7 +382,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_postgresql_single_server_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_postgresql_single_server_storage_account"].id
     reference_id         = local.audit_logs.postgresql_single_server_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -397,7 +397,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Log Analytics Workspace
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_log_analytics_log_analytics"].id
     reference_id         = local.audit_logs.log_analytics_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -407,7 +407,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_log_analytics_storage_account"].id
     reference_id         = local.audit_logs.log_analytics_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -420,7 +420,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_log_analytics_storage_account"].id
     reference_id         = local.audit_logs.log_analytics_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -433,7 +433,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_log_analytics_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_log_analytics_storage_account"].id
     reference_id         = local.audit_logs.log_analytics_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -448,7 +448,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Cosmos DB
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_cosmos_db_log_analytics"].id
     reference_id         = local.audit_logs.cosmos_db_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -458,7 +458,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_cosmos_db_storage_account"].id
     reference_id         = local.audit_logs.cosmos_db_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -471,7 +471,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_cosmos_db_storage_account"].id
     reference_id         = local.audit_logs.cosmos_db_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -484,7 +484,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_cosmos_db_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_cosmos_db_storage_account"].id
     reference_id         = local.audit_logs.cosmos_db_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -499,7 +499,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## App Service
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_app_service_log_analytics"].id
     reference_id         = local.audit_logs.app_service_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -509,7 +509,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_app_service_storage_account"].id
     reference_id         = local.audit_logs.app_service_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -522,7 +522,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_app_service_storage_account"].id
     reference_id         = local.audit_logs.app_service_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -535,7 +535,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_app_service_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_app_service_storage_account"].id
     reference_id         = local.audit_logs.app_service_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -550,7 +550,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Event Hub
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_event_hub_log_analytics"].id
     reference_id         = local.audit_logs.event_hub_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -560,7 +560,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_event_hub_storage_account"].id
     reference_id         = local.audit_logs.event_hub_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -573,7 +573,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_event_hub_storage_account"].id
     reference_id         = local.audit_logs.event_hub_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -586,7 +586,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_event_hub_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_event_hub_storage_account"].id
     reference_id         = local.audit_logs.event_hub_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -601,7 +601,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Public IP
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_public_ip_log_analytics"].id
     reference_id         = local.audit_logs.public_ip_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -611,7 +611,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_public_ip_storage_account"].id
     reference_id         = local.audit_logs.public_ip_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -624,7 +624,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_public_ip_storage_account"].id
     reference_id         = local.audit_logs.public_ip_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -637,7 +637,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_public_ip_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_public_ip_storage_account"].id
     reference_id         = local.audit_logs.public_ip_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -652,7 +652,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Virtual Network Gateway
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_virtual_network_gateway_log_analytics"].id
     reference_id         = local.audit_logs.virtual_network_gateway_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -662,7 +662,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_virtual_network_gateway_storage_account"].id
     reference_id         = local.audit_logs.virtual_network_gateway_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -675,7 +675,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_virtual_network_gateway_storage_account"].id
     reference_id         = local.audit_logs.virtual_network_gateway_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -688,7 +688,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_virtual_network_gateway_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_virtual_network_gateway_storage_account"].id
     reference_id         = local.audit_logs.virtual_network_gateway_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -703,7 +703,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Grafana
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_grafana_log_analytics"].id
     reference_id         = local.audit_logs.grafana_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -713,7 +713,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_grafana_storage_account"].id
     reference_id         = local.audit_logs.grafana_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -726,7 +726,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_grafana_storage_account"].id
     reference_id         = local.audit_logs.grafana_storageid_northeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -739,7 +739,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_grafana_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_grafana_storage_account"].id
     reference_id         = local.audit_logs.grafana_storageid_italynorth.reference_id
     parameter_values = jsonencode({
       storageAccount = {
@@ -754,7 +754,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   ## Subscription
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_log_analytics_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_subscription_log_analytics"].id
     reference_id         = local.audit_logs.subscription_workspaceid.reference_id
     parameter_values = jsonencode({
       logAnalytics = {
@@ -764,7 +764,7 @@ resource "azurerm_policy_set_definition" "audit_logs" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_audit_logs.outputs.audit_logs_subscription_storage_account_id
+    policy_definition_id = data.azurerm_policy_definition.this["audit_logs_subscription_storage_account"].id
     reference_id         = local.audit_logs.subscription_storageid_westeurope.reference_id
     parameter_values = jsonencode({
       storageAccount = {

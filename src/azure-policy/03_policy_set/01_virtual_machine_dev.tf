@@ -25,7 +25,7 @@ resource "azurerm_policy_set_definition" "virtual_machine_dev" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_virtual_machine.outputs.virtual_machine_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["virtual_machine_allowed_sku"].id
     reference_id         = local.virtual_machine.listofallowedsku
     parameter_values = jsonencode({
       listOfAllowedSKU = {

@@ -11,10 +11,8 @@ format: ## Format Terraform files
 	@terraform fmt -recursive src/
 	@echo "✅ Terraform files formatted"
 
-lint: ## Run all linters
-	@echo "🔍 Running linters..."
-	@$(MAKE) format
-	@echo "✅ All checks passed"
+lint: ## Run the canonical validation gate without formatting
+	@./validate-code.sh
 
 test-v2: ## Run Python tests for Azure Retirements v2
 	@if [ ! -x "$(COMITATO_V2_VENV_PYTHON)" ]; then \

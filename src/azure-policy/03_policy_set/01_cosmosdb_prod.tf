@@ -11,42 +11,42 @@ resource "azurerm_policy_set_definition" "cosmosdb_prod" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_required_network_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_required_network"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_allowed_tls_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_allowed_tls"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_required_backup_policy_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_required_backup_policy"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_required_primary_zone_redundancy_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_required_primary_zone_redundancy"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_forbidden_secondary_zone_redundancy_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_forbidden_secondary_zone_redundancy"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_dynamic_scaling_enabled_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_dynamic_scaling_enabled"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_automatic_failover_enabled_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_automatic_failover_enabled"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_cosmosdb.outputs.cosmosdb_allowed_capacity_mode_id
+    policy_definition_id = data.azurerm_policy_definition.this["cosmosdb_allowed_capacity_mode"].id
     parameter_values     = jsonencode({})
   }
 

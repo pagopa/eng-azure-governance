@@ -23,22 +23,22 @@ resource "azurerm_policy_set_definition" "redis_prod" {
   })
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_versions_id
+    policy_definition_id = data.azurerm_policy_definition.this["redis_allowed_versions"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_tls_id
+    policy_definition_id = data.azurerm_policy_definition.this["redis_allowed_tls"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_disable_nosslport_id
+    policy_definition_id = data.azurerm_policy_definition.this["redis_disable_nosslport"].id
     parameter_values     = jsonencode({})
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_allowed_sku_id
+    policy_definition_id = data.azurerm_policy_definition.this["redis_allowed_sku"].id
     reference_id         = local.redis.listofallowedsku
     parameter_values = jsonencode({
       listOfAllowedSkuName = {
@@ -63,7 +63,7 @@ resource "azurerm_policy_set_definition" "redis_prod" {
   }
 
   policy_definition_reference {
-    policy_definition_id = data.terraform_remote_state.policy_redis.outputs.redis_required_zone_redundant_id
+    policy_definition_id = data.azurerm_policy_definition.this["redis_required_zone_redundant"].id
     parameter_values     = jsonencode({})
   }
 

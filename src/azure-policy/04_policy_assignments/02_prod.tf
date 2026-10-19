@@ -1,11 +1,11 @@
 module "prod_assignments" {
   source = "./modules/prod"
 
-  for_each = toset(var.subscriptions_by_env.prod)
+  for_each = local.subscriptions_by_environment.prod
 
-  subscription   = [for s in data.azurerm_subscriptions.available.subscriptions : s if s.display_name == each.value][0]
+  subscription   = each.value
   location       = var.location
-  policy_set_ids = data.terraform_remote_state.policy_set.outputs
+  policy_set_ids = local.policy_set_ids
 }
 
 resource "azurerm_resource_policy_exemption" "pictresourcelock_ip_waiver" {

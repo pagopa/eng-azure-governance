@@ -2,211 +2,90 @@ data "azurerm_management_group" "pagopa" {
   name = "pagopa"
 }
 
-data "terraform_remote_state" "policy_resource_lock" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_resource_lock.terraform.tfstate"
+locals {
+  custom_policy_definition_names = {
+    allowed_locations                                   = "allowed_locations"
+    allowed_locations_resource_group                    = "allowed_locations_resource_group"
+    api_management_allowed_versions                     = "api_management_allowed_versions"
+    api_management_require_vnet                         = "api_management_require_vnet"
+    app_service_allowed_linuxfxversion                  = "app_service_allowed_linuxfxversion"
+    app_service_allowed_sku                             = "app_service_allowed_sku"
+    application_gateway_allowed_ciphersuites            = "application_gateway_allowed_ciphersuites"
+    application_gateway_allowed_sku                     = "application_gateway_allowed_sku"
+    application_gateway_required_zones                  = "application_gateway_required_zones"
+    audit_logs_api_management_log_analytics             = "audit_logs_api_management_log_analytics"
+    audit_logs_api_management_storage_account           = "audit_logs_api_management_storage_account"
+    audit_logs_app_service_log_analytics                = "audit_logs_app_service_log_analytics"
+    audit_logs_app_service_storage_account              = "audit_logs_app_service_storage_account"
+    audit_logs_application_gateway_log_analytics        = "audit_logs_application_gateway_log_analytics"
+    audit_logs_application_gateway_storage_account      = "audit_logs_application_gateway_storage_account"
+    audit_logs_container_app_log_analytics              = "audit_logs_container_app_log_analytics"
+    audit_logs_container_app_storage_account            = "audit_logs_container_app_storage_account"
+    audit_logs_container_registry_log_analytics         = "audit_logs_container_registry_log_analytics"
+    audit_logs_container_registry_storage_account       = "audit_logs_container_registry_storage_account"
+    audit_logs_cosmos_db_log_analytics                  = "audit_logs_cosmos_db_log_analytics"
+    audit_logs_cosmos_db_storage_account                = "audit_logs_cosmos_db_storage_account"
+    audit_logs_event_hub_log_analytics                  = "audit_logs_event_hub_log_analytics"
+    audit_logs_event_hub_storage_account                = "audit_logs_event_hub_storage_account"
+    audit_logs_grafana_log_analytics                    = "audit_logs_grafana_log_analytics"
+    audit_logs_grafana_storage_account                  = "audit_logs_grafana_storage_account"
+    audit_logs_keyvault_log_analytics                   = "audit_logs_keyvault_log_analytics"
+    audit_logs_keyvault_storage_account                 = "audit_logs_keyvault_storage_account"
+    audit_logs_log_analytics_log_analytics              = "audit_logs_log_analytics_log_analytics"
+    audit_logs_log_analytics_storage_account            = "audit_logs_log_analytics_storage_account"
+    audit_logs_postgresql_flexible_log_analytics        = "audit_logs_postgresql_flexible_log_analytics"
+    audit_logs_postgresql_flexible_storage_account      = "audit_logs_postgresql_flexible_storage_account"
+    audit_logs_postgresql_single_server_log_analytics   = "audit_logs_postgresql_single_server_log_analytics"
+    audit_logs_postgresql_single_server_storage_account = "audit_logs_postgresql_single_server_storage_account"
+    audit_logs_public_ip_log_analytics                  = "audit_logs_public_ip_log_analytics"
+    audit_logs_public_ip_storage_account                = "audit_logs_public_ip_storage_account"
+    audit_logs_subscription_log_analytics               = "audit_logs_subscription_log_analytics"
+    audit_logs_subscription_storage_account             = "audit_logs_subscription_storage_account"
+    audit_logs_virtual_network_gateway_log_analytics    = "audit_logs_virtual_network_gateway_log_analytics"
+    audit_logs_virtual_network_gateway_storage_account  = "audit_logs_virtual_network_gateway_storage_account"
+    cosmosdb_allowed_capacity_mode                      = "cosmosdb_allowed_capacity_mode"
+    cosmosdb_allowed_tls                                = "cosmosdb_allowed_tls"
+    cosmosdb_automatic_failover_enabled                 = "cosmosdb_automatic_failover_enabled"
+    cosmosdb_dynamic_scaling_enabled                    = "cosmosdb_dynamic_scaling_enabled"
+    cosmosdb_forbidden_secondary_zone_redundancy        = "cosmosdb_forbidden_secondary_zone_redundancy"
+    cosmosdb_required_backup_policy                     = "cosmosdb_required_backup_policy"
+    cosmosdb_required_network                           = "cosmosdb_required_network"
+    cosmosdb_required_primary_zone_redundancy           = "cosmosdb_required_primary_zone_redundancy"
+    deny_zonal_publicip                                 = "deny_zonal_publicip"
+    dns_required_caa_record                             = "dns_required_caa_record"
+    enforce_multiaz                                     = "enforce_multiaz"
+    eventhub_allowed_tls                                = "eventhub_allowed_tls"
+    eventhub_required_network                           = "eventhub_required_network"
+    eventhub_required_zone_redundant                    = "eventhub_required_zone_redundant"
+    function_app_allowed_linuxfxversion                 = "function_app_allowed_linuxfxversion"
+    kubernetes_allowed_kubernetes_version               = "kubernetes_allowed_kubernetes_version"
+    kubernetes_allowed_sku                              = "kubernetes_cluster_allowed_sku"
+    kubernetes_required_defender_profile                = "kubernetes_required_defender_profile"
+    kubernetes_required_image_sha256                    = "kubernetes_required_image_sha256"
+    kubernetes_required_policy_addon                    = "kubernetes_required_policy_addon"
+    log_analytics_allowed_sku                           = "log_analytics_allowed_sku"
+    log_analytics_bound_daily_quota                     = "log_analytics_bound_daily_quota"
+    log_analytics_unbound_daily_quota                   = "log_analytics_unbound_daily_quota"
+    min_execution                                       = "min_execution"
+    postgresql_allowed_flexible_sku                     = "postgresql_allowed_flexible_sku"
+    postgresql_allowed_sku                              = "postgresql_allowed_sku"
+    postgresql_required_engine_version                  = "postgresql_required_engine_version"
+    postgresql_required_flexible_georedundancy          = "postgresql_required_flexible_georedundancy"
+    redis_allowed_sku                                   = "redis_allowed_sku"
+    redis_allowed_tls                                   = "redis_allowed_tls"
+    redis_allowed_versions                              = "redis_allowed_versions"
+    redis_disable_nosslport                             = "redis_disable_nosslport"
+    redis_required_zone_redundant                       = "redis_required_zone_redundant"
+    tags_require_tag                                    = "require_tag"
+    tags_require_tag_values                             = "require_tag_values"
+    virtual_machine_allowed_sku                         = "virtual_machine_allowed_sku"
+    virtual_machine_scale_set_allowed_sku               = "virtual_machine_scale_set_allowed_sku"
   }
 }
 
-data "terraform_remote_state" "policy_metrics_logs" {
-  backend = "azurerm"
+data "azurerm_policy_definition" "this" {
+  for_each = local.custom_policy_definition_names
 
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_metrics_logs.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_tags" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_tags.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_audit_logs" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_audit_logs.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_application_gateway" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_application_gateway.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_event_hub" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_event_hub.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_dns" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_dns.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_app_service" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_app_service.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_redis" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_redis.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_kubernetes" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_kubernetes.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_cosmosdb" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_cosmosdb.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_data_sovereignty" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_data_sovereignty.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_virtual_machine" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_virtual_machine.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_log_analytics" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_log_analytics.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_virtual_machine_scale_set" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_virtual_machine_scale_set.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_postgresql" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_postgresql.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_networking" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_networking.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_api_management" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_api_management.terraform.tfstate"
-  }
-}
-
-data "terraform_remote_state" "policy_container_apps" {
-  backend = "azurerm"
-
-  config = {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfinforg"
-    container_name       = "terraform-state"
-    key                  = "eng-azure-governance.policy_container_apps.terraform.tfstate"
-  }
+  name                  = each.value
+  management_group_name = data.azurerm_management_group.pagopa.name
 }
