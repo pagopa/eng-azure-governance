@@ -34,6 +34,17 @@ locals {
       reference_id = "enforce_apparmor_profile_reference_id"
       effect       = "Deny"
     }
+    accurate_pdb = {
+      reference_id        = "accurate_pdb_reference_id"
+      effect              = "Audit"
+      excluded_namespaces = ["kube-system", "gatekeeper-system", "azure-arc", "azure-extensions-usage-system", "elastic-system"]
+    }
+    required_pdb = {
+      reference_id        = "required_pdb_reference_id"
+      effect              = "Audit"
+      excluded_namespaces = ["kube-system", "gatekeeper-system", "azure-arc", "azure-extensions-usage-system", "elastic-system"]
+      min_replicas        = 3
+    }
   }
 }
 
@@ -162,6 +173,35 @@ resource "azurerm_policy_set_definition" "kubernetes_prod" {
     })
   }
 
+  # Depends on the accurate PDB inventory sync; the custom definition does not install its own sync.
+  policy_definition_reference {
+    policy_definition_id = "/providers/Microsoft.Authorization/policyDefinitions/d9e8f2c1-4c5a-4f5c-8b5a-2abf1e9f7b4d"
+    reference_id         = local.kubernetes_prod.accurate_pdb.reference_id
+    parameter_values = jsonencode({
+      effect = {
+        value = local.kubernetes_prod.accurate_pdb.effect
+      }
+      excludedNamespaces = {
+        value = local.kubernetes_prod.accurate_pdb.excluded_namespaces
+      }
+    })
+  }
+
+  policy_definition_reference {
+    policy_definition_id = data.azurerm_policy_definition.this["kubernetes_required_pdb"].id
+    reference_id         = local.kubernetes_prod.required_pdb.reference_id
+    parameter_values = jsonencode({
+      effect = {
+        value = local.kubernetes_prod.required_pdb.effect
+      }
+      excludedNamespaces = {
+        value = local.kubernetes_prod.required_pdb.excluded_namespaces
+      }
+      minReplicas = {
+        value = local.kubernetes_prod.required_pdb.min_replicas
+      }
+    })
+  }
 }
 
 output "kubernetes_prod_id" {

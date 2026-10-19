@@ -26,6 +26,24 @@ terraform fmt -check .
 terraform init -backend=false -lockfile=readonly
 ```
 
+## Kubernetes policy sets
+
+The Kubernetes sets live in `01_kubernetes_dev.tf`, `01_kubernetes_uat.tf`, and `01_kubernetes_prod.tf`.
+
+- `kubernetes_dev` and `kubernetes_uat` each contain three explicit Audit references: privileged containers, privilege escalation, and approved user groups. Each reference uses the same excluded namespaces. Neither set contains a PDB control.
+- `kubernetes_prod` adds the accurate PDB built-in and the custom `kubernetes_required_pdb` control, both as Audit. The 11 existing PROD references are unchanged.
+
+The DEV and UAT references may report existing workloads, including non-root defaults. Expect noise at first and review it before any change of effect.
+
+## Rollout runbook
+
+Apply the Kubernetes roots in this order: 02, then 03, then 04.
+
+- Applying 03 activates the PROD set. The new PROD references take effect before any environment assignment in 04.
+- Each apply is a human gate. This README does not authorize Azure changes.
+- Before treating PDB results as current, check the compliance timestamp. Compliance can lag by up to 15 minutes and reports stop at 500 non-compliant records per policy per cluster. See [the required PDB control](../02_policy_kubernetes/README.md#required-poddisruptionbudget-control) for the full limits.
+- Rollback for the PDB control is the `required_pdb` effect set to `Disabled` in `01_kubernetes_prod.tf`, followed by an apply of this root.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -66,7 +84,9 @@ No modules.
 | [azurerm_policy_set_definition.dns](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.event_hub_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.key_vault_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.kubernetes_dev](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.kubernetes_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
+| [azurerm_policy_set_definition.kubernetes_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.log_analytics_dev](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.log_analytics_prod](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |
 | [azurerm_policy_set_definition.log_analytics_uat](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/policy_set_definition) | resource |

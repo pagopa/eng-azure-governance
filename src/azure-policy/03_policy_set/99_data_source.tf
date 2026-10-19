@@ -62,6 +62,7 @@ locals {
     kubernetes_allowed_sku                              = "kubernetes_cluster_allowed_sku"
     kubernetes_required_defender_profile                = "kubernetes_required_defender_profile"
     kubernetes_required_image_sha256                    = "kubernetes_required_image_sha256"
+    kubernetes_required_pdb                             = "kubernetes_required_pdb"
     kubernetes_required_policy_addon                    = "kubernetes_required_policy_addon"
     log_analytics_allowed_sku                           = "log_analytics_allowed_sku"
     log_analytics_bound_daily_quota                     = "log_analytics_bound_daily_quota"
