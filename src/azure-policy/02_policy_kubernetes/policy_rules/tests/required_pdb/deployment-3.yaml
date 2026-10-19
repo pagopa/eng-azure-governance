@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-3
+  namespace: app-ns
+  labels:
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: backend
+    spec:
+      containers:
+        - name: web
+          image: nginx@sha256:0000000000000000000000000000000000000000000000000000000000000000

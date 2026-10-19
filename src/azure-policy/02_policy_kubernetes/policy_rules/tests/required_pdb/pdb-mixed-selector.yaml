@@ -1,0 +1,13 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-mixed-selector
+  namespace: app-ns
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: web
+    matchExpressions:
+      - key: app
+        operator: Exists

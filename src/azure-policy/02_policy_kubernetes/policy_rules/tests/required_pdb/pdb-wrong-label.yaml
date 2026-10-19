@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-wrong-label
+  namespace: app-ns
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      tier: frontend

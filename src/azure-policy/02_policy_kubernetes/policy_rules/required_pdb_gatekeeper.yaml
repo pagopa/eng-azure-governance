@@ -1,0 +1,51 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredpdb
+  annotations:
+    description: Requires a PodDisruptionBudget for Deployments and StatefulSets with at least minReplicas replicas.
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredPdb
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          type: object
+          properties:
+            minReplicas:
+              type: integer
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredpdb
+
+        violation[{"msg": msg, "details": {}}] {
+          obj := input.review.object
+          meta := object.get(obj, "metadata", {})
+          replicas := object.get(object.get(obj, "spec", {}), "replicas", 1)
+          replicas >= input.parameters.minReplicas
+          ns := object.get(meta, "namespace", object.get(input.review, "namespace", ""))
+          not covered_by_pdb(ns, obj)
+          msg := sprintf("%v %v/%v has %v replicas and no PodDisruptionBudget with matchLabels covering its pod template labels", [obj.kind, ns, object.get(meta, "name", "<unnamed>"), replicas])
+        }
+
+        covered_by_pdb(ns, obj) {
+          pdb := data.inventory.namespace[ns]["policy/v1"]["PodDisruptionBudget"][_]
+          selector := pdb.spec.selector
+          count(selector.matchLabels) > 0
+          not selector.matchExpressions
+          not label_mismatch(selector.matchLabels, pod_template_labels(obj))
+        }
+
+        pod_template_labels(obj) := labels {
+          template := object.get(object.get(obj, "spec", {}), "template", {})
+          labels := object.get(object.get(template, "metadata", {}), "labels", {})
+        }
+
+        label_mismatch(want, labels) {
+          some k
+          v := want[k]
+          v != object.get(labels, k, null)
+        }

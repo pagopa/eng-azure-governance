@@ -1,0 +1,153 @@
+apiVersion: test.gatekeeper.sh/v1alpha1
+kind: Suite
+metadata:
+  name: required-pdb
+tests:
+  - name: required-pdb
+    template: ../../required_pdb_gatekeeper.yaml
+    constraint: constraint.yaml
+    cases:
+      - name: deployment-2-without-pdb
+        object: deployment-2.yaml
+        assertions:
+          - violations: 0
+      - name: deployment-2-with-matching-pdb
+        object: deployment-2.yaml
+        inventory:
+          - pdb-matching.yaml
+        assertions:
+          - violations: 0
+      - name: deployment-default-without-pdb
+        object: deployment-default.yaml
+        assertions:
+          - violations: 0
+      - name: deployment-default-with-matching-pdb
+        object: deployment-default.yaml
+        inventory:
+          - pdb-matching.yaml
+        assertions:
+          - violations: 0
+      - name: deployment-3-without-pdb
+        object: deployment-3.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-matching-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-matching.yaml
+        assertions:
+          - violations: 0
+      - name: deployment-3-with-empty-selector-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-empty-selector.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-expressions-only-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-expressions-only.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-mixed-selector-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-mixed-selector.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-empty-expressions-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-empty-expressions.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-pdb-in-other-namespace
+        object: deployment-3.yaml
+        inventory:
+          - pdb-other-namespace.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-wrong-label-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-wrong-label.yaml
+        assertions:
+          - violations: 1
+      - name: deployment-3-with-partial-label-pdb
+        object: deployment-3.yaml
+        inventory:
+          - pdb-partial-mismatch.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-2-without-pdb
+        object: statefulset-2.yaml
+        assertions:
+          - violations: 0
+      - name: statefulset-2-with-matching-pdb
+        object: statefulset-2.yaml
+        inventory:
+          - pdb-matching.yaml
+        assertions:
+          - violations: 0
+      - name: statefulset-default-without-pdb
+        object: statefulset-default.yaml
+        assertions:
+          - violations: 0
+      - name: statefulset-default-with-matching-pdb
+        object: statefulset-default.yaml
+        inventory:
+          - pdb-matching.yaml
+        assertions:
+          - violations: 0
+      - name: statefulset-3-without-pdb
+        object: statefulset-3.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-matching-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-matching.yaml
+        assertions:
+          - violations: 0
+      - name: statefulset-3-with-empty-selector-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-empty-selector.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-expressions-only-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-expressions-only.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-mixed-selector-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-mixed-selector.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-empty-expressions-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-empty-expressions.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-pdb-in-other-namespace
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-other-namespace.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-wrong-label-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-wrong-label.yaml
+        assertions:
+          - violations: 1
+      - name: statefulset-3-with-partial-label-pdb
+        object: statefulset-3.yaml
+        inventory:
+          - pdb-partial-mismatch.yaml
+        assertions:
+          - violations: 1

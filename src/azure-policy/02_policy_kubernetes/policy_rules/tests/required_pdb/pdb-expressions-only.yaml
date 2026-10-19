@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-expressions-only
+  namespace: app-ns
+spec:
+  minAvailable: 2
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: ["web"]

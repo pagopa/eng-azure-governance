@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: web-matching
+  namespace: app-ns
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: web

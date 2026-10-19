@@ -1,0 +1,51 @@
+{
+  "effect": {
+    "type": "String",
+    "metadata": {
+      "displayName": "Effect",
+      "description": "'Audit' flags a non-compliant resource but allows its creation or update. 'Deny' blocks the non-compliant resource creation or update. 'Disabled' turns off the policy."
+    },
+    "allowedValues": [
+      "Audit",
+      "Deny",
+      "Disabled"
+    ],
+    "defaultValue": "Audit"
+  },
+  "excludedNamespaces": {
+    "type": "Array",
+    "metadata": {
+      "displayName": "Namespace exclusions",
+      "description": "List of Kubernetes namespaces to exclude from policy evaluation."
+    },
+    "defaultValue": [
+      "kube-system",
+      "gatekeeper-system",
+      "azure-arc"
+    ]
+  },
+  "namespaces": {
+    "type": "Array",
+    "metadata": {
+      "displayName": "Namespace inclusions",
+      "description": "List of Kubernetes namespaces to only include in policy evaluation. An empty list means the policy is applied to all resources in all namespaces."
+    },
+    "defaultValue": []
+  },
+  "labelSelector": {
+    "type": "Object",
+    "metadata": {
+      "displayName": "Kubernetes label selector",
+      "description": "Label query to select Kubernetes resources for policy evaluation. An empty label selector matches all Kubernetes resources."
+    },
+    "defaultValue": {}
+  },
+  "minReplicas": {
+    "type": "Integer",
+    "metadata": {
+      "displayName": "Minimum replicas",
+      "description": "Workloads with at least this number of replicas must be covered by a PodDisruptionBudget whose matchLabels select the pod template labels."
+    },
+    "defaultValue": 3
+  }
+}

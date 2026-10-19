@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db-default
+  namespace: app-ns
+  labels:
+    tier: frontend
+spec:
+  serviceName: db
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: backend
+    spec:
+      containers:
+        - name: db
+          image: nginx@sha256:0000000000000000000000000000000000000000000000000000000000000000
