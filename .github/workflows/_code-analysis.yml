@@ -37,6 +37,7 @@ jobs:
           - python-dependencies
           - python-static-analysis
           - python-lint
+          - gatekeeper-policy-tests
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0 https://github.com/actions/checkout/releases/tag/v7.0.0
@@ -53,6 +54,25 @@ jobs:
         run: |
           GOBIN="${RUNNER_TEMP}/actionlint" go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
           echo "${RUNNER_TEMP}/actionlint" >> "${GITHUB_PATH}"
+
+      - name: 📦 Install gator
+        if: matrix.leaf == 'gatekeeper-policy-tests'
+        env:
+          GATOR_VERSION: 3.23.1
+          GATOR_LINUX_AMD64_SHA256: c268d7b809c9fe59a110ab0bf7c296ab00b0b6c894c209cd15e94194590291bb
+        run: |
+          pinned="$(tr -d '[:space:]' < .gator-version)"
+          if [[ "${pinned}" != "${GATOR_VERSION}" ]]; then
+            echo ".gator-version pins ${pinned}; this step installs ${GATOR_VERSION}" >&2
+            exit 1
+          fi
+          archive="${RUNNER_TEMP}/gator-v${GATOR_VERSION}-linux-amd64.tar.gz"
+          curl --proto '=https' --tlsv1.2 -fsSL -o "${archive}" \
+            "https://github.com/open-policy-agent/gatekeeper/releases/download/v${GATOR_VERSION}/gator-v${GATOR_VERSION}-linux-amd64.tar.gz"
+          echo "${GATOR_LINUX_AMD64_SHA256}  ${archive}" | sha256sum --check --strict -
+          mkdir -p "${RUNNER_TEMP}/gator"
+          tar -xzf "${archive}" -C "${RUNNER_TEMP}/gator" gator
+          echo "${RUNNER_TEMP}/gator" >> "${GITHUB_PATH}"
 
       - name: 📦 Install ShellCheck
         if: matrix.leaf == 'shell-static-analysis'
