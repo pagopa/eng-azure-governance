@@ -4,7 +4,7 @@ This Terraform module assigns the development policy sets to an Azure subscripti
 
 ## Purpose
 
-Use this module for the development subscription assignments covering API Management, App Service, Cosmos DB, Log Analytics, Redis, virtual machines, and virtual-machine scale sets. The generated Terraform reference below lists the module's inputs and assignments.
+Use this module for the development subscription assignments covering API Management, App Service, Cosmos DB, Kubernetes, Log Analytics, Redis, virtual machines, and virtual-machine scale sets. The generated Terraform reference below lists the module's inputs and assignments.
 
 ## Validation
 
@@ -43,6 +43,7 @@ No modules.
 | [azurerm_subscription_policy_assignment.api_management](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_subscription_policy_assignment.app_service](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_subscription_policy_assignment.cosmosdb](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
+| [azurerm_subscription_policy_assignment.kubernetes](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_subscription_policy_assignment.log_analytics](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_subscription_policy_assignment.redis](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |
 | [azurerm_subscription_policy_assignment.virtual_machine](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subscription_policy_assignment) | resource |

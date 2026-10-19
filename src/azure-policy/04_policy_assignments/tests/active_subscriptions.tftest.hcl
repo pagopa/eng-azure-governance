@@ -87,6 +87,48 @@ run "active_subscriptions_are_discovered_and_classified" {
     )
     error_message = "Discover all Enabled subscriptions, classify names case-insensitively, and preserve existing module keys."
   }
+
+  assert {
+    condition = (
+      length(keys(data.azurerm_policy_set_definition.this)) == 36 &&
+      contains(keys(data.azurerm_policy_set_definition.this), "kubernetes_dev") &&
+      contains(keys(data.azurerm_policy_set_definition.this), "kubernetes_uat") &&
+      contains(keys(data.azurerm_policy_set_definition.this), "kubernetes_prod") &&
+      contains(keys(data.azurerm_policy_set_definition.this), "redis_dev") &&
+      contains(keys(data.azurerm_policy_set_definition.this), "redis_uat")
+    )
+    error_message = "The policy set lookup must keep all existing names and add exactly kubernetes_dev and kubernetes_uat."
+  }
+}
+
+run "kubernetes_policy_set_lookups_stay_separate_for_dev_and_uat" {
+  command = plan
+
+  override_data {
+    target = data.azurerm_policy_set_definition.this["kubernetes_dev"]
+    values = {
+      id   = "/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/kubernetes_dev_test"
+      name = "kubernetes_dev"
+    }
+  }
+
+  override_data {
+    target = data.azurerm_policy_set_definition.this["kubernetes_uat"]
+    values = {
+      id   = "/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/kubernetes_uat_test"
+      name = "kubernetes_uat"
+    }
+  }
+
+  assert {
+    condition = (
+      length(module.dev_assignments) == 3 &&
+      length(module.uat_assignments) == 3 &&
+      data.azurerm_policy_set_definition.this["kubernetes_dev"].id == "/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/kubernetes_dev_test" &&
+      data.azurerm_policy_set_definition.this["kubernetes_uat"].id == "/providers/Microsoft.Management/managementGroups/pagopa/providers/Microsoft.Authorization/policySetDefinitions/kubernetes_uat_test"
+    )
+    error_message = "The DEV and UAT Kubernetes lookups must resolve to their own policy sets, and the DEV and UAT module counts must stay at three."
+  }
 }
 
 run "blacklist_excludes_names_and_subscription_ids" {
