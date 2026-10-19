@@ -18,6 +18,7 @@ terraform validate -no-color
 
 No diagram is provided because this directory is a single policy root and the generated reference below enumerates its definitions, inputs, and outputs precisely.
 
+<!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 

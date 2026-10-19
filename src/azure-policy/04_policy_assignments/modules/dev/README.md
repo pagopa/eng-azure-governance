@@ -18,6 +18,7 @@ terraform validate -no-color
 
 No diagram is provided because this module is a single subscription-assignment boundary and the generated reference below enumerates its inputs and resources precisely.
 
+<!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 

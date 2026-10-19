@@ -44,6 +44,7 @@ Apply the Kubernetes roots in this order: 02, then 03, then 04.
 - Before treating PDB results as current, check the compliance timestamp. Compliance can lag by up to 15 minutes and reports stop at 500 non-compliant records per policy per cluster. See [the required PDB control](../02_policy_kubernetes/README.md#required-poddisruptionbudget-control) for the full limits.
 - Rollback for the PDB control is the `required_pdb` effect set to `Disabled` in `01_kubernetes_prod.tf`, followed by an apply of this root.
 
+<!-- markdownlint-disable -->
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
