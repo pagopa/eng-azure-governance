@@ -1,12 +1,11 @@
 import json
 import os
-from pathlib import Path
 import signal
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
-
 
 SCRIPT = Path(__file__).resolve().parents[1] / "prod-sec-remove-security-locks.sh"
 SUBSCRIPTION = "0da48c97-355f-4050-a520-f11a18b8be90"
