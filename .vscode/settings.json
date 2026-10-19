@@ -4,6 +4,7 @@
   ],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
   "chat.permissions.default": "default",
   "chat.tools.global.autoApprove": false,
   "chat.tools.terminal.autoReplyToPrompts": false,
@@ -12,5 +13,5 @@
   "chat.instructionsFilesLocations": {
     ".github/instructions": false
   },
-  "python-envs.defaultEnvManager": "ms-python.python:system"
+  "python-envs.defaultEnvManager": "ms-python.python:venv"
 }
