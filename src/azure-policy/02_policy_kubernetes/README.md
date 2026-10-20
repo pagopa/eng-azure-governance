@@ -6,6 +6,31 @@ This Terraform root defines custom Azure Policy controls for Azure Kubernetes Se
 
 Use this directory for Kubernetes policy controls covering allowed cluster versions and SKUs, Defender profile, image SHA-256 references, the required policy add-on, and required PodDisruptionBudget coverage. The root resolves the `pagopa` management group and exposes the policy IDs shown in the generated Terraform reference below.
 
+## Layout
+
+- `00_data.tf` resolves the management group.
+- `01_*.tf` defines the Kubernetes policies.
+- `99_providers.tf` configures Terraform, the provider, and the partial backend.
+- `99_variables.tf` and `99_outputs.tf` declare the root interface.
+- `env/org/` contains the subscription selection, backend settings, and inputs.
+- `policy_rules/` contains policy parameters, rules, and Gatekeeper templates.
+- `tests/` contains native Terraform tests.
+- `terraform.sh` links to the shared repository runner.
+
+## Usage
+
+From this directory, use the shared runner with the `org` environment:
+
+```bash
+./terraform.sh init org
+./terraform.sh plan org
+```
+
+Review the plan before running `./terraform.sh apply org`. The backend settings
+in `env/org/backend.tfvars` retain the existing storage account, container, and
+state key. This layout change requires no resource moves or state migration.
+The former `./terraform.sh <action>` invocation now requires `org`.
+
 ## Validation
 
 From this directory, run non-remote Terraform validation:
@@ -14,7 +39,11 @@ From this directory, run non-remote Terraform validation:
 terraform fmt -check .
 terraform init -backend=false -lockfile=readonly
 terraform validate -no-color
+terraform test -filter=tests/required_pdb.tftest.hcl -no-color
 ```
+
+Native tests require Terraform 1.7 or later and use a mocked Azure provider.
+They do not access Azure or create real resources.
 
 ## Offline policy tests
 
