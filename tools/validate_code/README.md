@@ -27,18 +27,29 @@ launcher uses `PYTHON_BIN` when set, otherwise the existing retirement v2 venv,
 otherwise `python3`. It works from outside the repository. It does not install
 dependencies or create an environment automatically.
 
-Terraform, actionlint, ShellCheck, and Ruff must be available for their selected
-checks. Missing tools fail their units; they are not silently skipped.
-`TERRAFORM_BIN` may select an alternative Terraform executable.
+Terraform, actionlint, ShellCheck, Ruff, and Gatekeeper gator must be available
+for their selected checks. Missing tools fail their units; they are not silently
+skipped. `TERRAFORM_BIN` may select an alternative Terraform executable.
 
 ## Checks
 
 Static leaves are `actionlint`, `shell-static-analysis`, `python-dependencies`,
-`python-static-analysis`, and `python-lint`. They use Azure's workflow syntax,
-Bash syntax and ShellCheck warning checks, selected-environment `pip check`,
-Python compilation, and the non-mutating Ruff checks corresponding to the
-repository pre-commit rules. Discovery excludes virtual environments, generated
-Terraform directories, dependency trees, and skill bundles.
+`python-static-analysis`, `python-lint`, and `gatekeeper-policy-tests`. They use
+Azure's workflow syntax, Bash syntax and ShellCheck warning checks,
+selected-environment `pip check`, Python compilation, the non-mutating Ruff checks
+corresponding to the repository pre-commit rules, and offline Gatekeeper gator
+suites. Discovery excludes virtual environments, generated Terraform directories,
+dependency trees, and skill bundles.
+
+`gatekeeper-policy-tests` requires `gator` on `PATH`. Its version must equal the
+pinned value in the repository root `.gator-version` (currently `3.23.1`); a
+mismatch fails before any suite runs. The leaf runs `gator verify` once for each
+`suite.yaml` under `src/azure-policy/**/policy_rules/tests/`, in sorted order, and
+fails when no suite is found. It installs nothing. Example:
+
+```bash
+./validate-code.sh static --leaf gatekeeper-policy-tests
+```
 
 Python groups are `retirements-v2`, `governance-contracts`, and
 `validation-tools`. All-stream and unscoped Python runs first verify that the

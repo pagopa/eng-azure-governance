@@ -1,7 +1,3 @@
-data "azurerm_management_group" "pagopa" {
-  name = "pagopa"
-}
-
 locals {
   custom_policy_definition_names = {
     allowed_locations                                   = "allowed_locations"
@@ -62,6 +58,7 @@ locals {
     kubernetes_allowed_sku                              = "kubernetes_cluster_allowed_sku"
     kubernetes_required_defender_profile                = "kubernetes_required_defender_profile"
     kubernetes_required_image_sha256                    = "kubernetes_required_image_sha256"
+    kubernetes_required_pdb                             = "kubernetes_required_pdb"
     kubernetes_required_policy_addon                    = "kubernetes_required_policy_addon"
     log_analytics_allowed_sku                           = "log_analytics_allowed_sku"
     log_analytics_bound_daily_quota                     = "log_analytics_bound_daily_quota"
@@ -81,11 +78,4 @@ locals {
     virtual_machine_allowed_sku                         = "virtual_machine_allowed_sku"
     virtual_machine_scale_set_allowed_sku               = "virtual_machine_scale_set_allowed_sku"
   }
-}
-
-data "azurerm_policy_definition" "this" {
-  for_each = local.custom_policy_definition_names
-
-  name                  = each.value
-  management_group_name = data.azurerm_management_group.pagopa.name
 }

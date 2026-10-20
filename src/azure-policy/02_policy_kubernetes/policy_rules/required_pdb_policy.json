@@ -1,0 +1,28 @@
+{
+  "if": {
+    "field": "type",
+    "equals": "Microsoft.ContainerService/managedClusters"
+  },
+  "then": {
+    "effect": "[parameters('effect')]",
+    "details": {
+      "templateInfo": {
+        "sourceType": "Base64Encoded",
+        "content": "${templateInfoContent}"
+      },
+      "apiGroups": [
+        "apps"
+      ],
+      "kinds": [
+        "Deployment",
+        "StatefulSet"
+      ],
+      "namespaces": "[parameters('namespaces')]",
+      "excludedNamespaces": "[parameters('excludedNamespaces')]",
+      "labelSelector": "[parameters('labelSelector')]",
+      "values": {
+        "minReplicas": "[parameters('minReplicas')]"
+      }
+    }
+  }
+}

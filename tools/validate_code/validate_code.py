@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -85,6 +86,49 @@ def _actionlint(context: RunContext) -> int:
     )
     actionlint = shutil.which("actionlint") or "actionlint"
     return run_command(context, [actionlint, *workflows])
+
+
+GATOR_VERSION_FILE = ".gator-version"
+GATOR_SUITE_GLOB = "src/azure-policy/**/policy_rules/tests/**/suite.yaml"
+GATOR_VERSION_PATTERN = re.compile(r"^gator version v?(\d+\.\d+\.\d+)", re.MULTILINE)
+
+
+def _gator_version(gator: str) -> str | None:
+    completed = subprocess.run(
+        [gator, "--version"], capture_output=True, text=True, check=False
+    )
+    match = GATOR_VERSION_PATTERN.search(completed.stdout + completed.stderr)
+    return match.group(1) if match else None
+
+
+def _gatekeeper_policy_tests(context: RunContext) -> int:
+    pinned_file = context.root / GATOR_VERSION_FILE
+    pinned = ""
+    if pinned_file.is_file():
+        pinned = pinned_file.read_text(encoding="utf-8").strip()
+    if not pinned:
+        print(f"{GATOR_VERSION_FILE} is missing or empty", file=sys.stderr)
+        return 1
+    gator = shutil.which("gator")
+    if gator is None:
+        print(f"gator is not installed; expected {pinned}", file=sys.stderr)
+        return 1
+    reported = _gator_version(gator)
+    if reported != pinned:
+        print(
+            f"gator reports {reported}; {GATOR_VERSION_FILE} pins {pinned}",
+            file=sys.stderr,
+        )
+        return 1
+    suites = sorted(context.root.glob(GATOR_SUITE_GLOB))
+    if not suites:
+        print(f"no gator suites match {GATOR_SUITE_GLOB}", file=sys.stderr)
+        return 1
+    failed = False
+    for suite in suites:
+        if run_command(context, [gator, "verify", suite.name], cwd=suite.parent):
+            failed = True
+    return 1 if failed else 0
 
 
 EXCLUDED_PARTS = {".git", ".venv", "venv", ".terraform", "__pycache__", "node_modules"}
@@ -174,6 +218,10 @@ STATIC_CHECKS = OrderedDict(
             StaticCheck("python-static-analysis", _python_compile),
         ),
         ("python-lint", StaticCheck("python-lint", _python_lint)),
+        (
+            "gatekeeper-policy-tests",
+            StaticCheck("gatekeeper-policy-tests", _gatekeeper_policy_tests),
+        ),
     )
 )
 

@@ -6,6 +6,8 @@ This Terraform root assigns Azure Policy controls to governance scopes.
 
 Use this directory for the final governance stage. The root resolves policy-set IDs through `azurerm_policy_set_definition` data sources at the `pagopa` management group, applies direct management-group assignments and exemptions, and delegates environment-specific subscription assignments to the existing `modules/dev`, `modules/prod`, and `modules/uat` roots. Start with the root `01_*.tf` files or the environment module that owns the assignment being changed, then use the local `terraform.sh` wrapper for the supported Terraform lifecycle actions.
 
+The Kubernetes assignments are created in the environment modules from the `kubernetes_dev`, `kubernetes_uat`, and `kubernetes_prod` policy sets.
+
 The assignment flow is from policy-set definitions through this root and its environment modules to subscription and management-group scopes:
 
 ```mermaid
