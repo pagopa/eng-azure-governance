@@ -17,6 +17,34 @@ flowchart LR
     policy_sets --> governance_scope["pagopa management group"]
 ```
 
+## Layout
+
+- `00_data.tf` resolves the management group and policy definitions.
+- `01_*.tf` defines policy sets and their concern-specific locals and outputs.
+- `99_locals.tf` maps custom policy keys to definition names.
+- `99_providers.tf` configures Terraform, the provider, and the partial backend.
+- `99_variables.tf` declares the root inputs.
+- `env/org/` contains the subscription selection, backend settings, and inputs.
+- `tests/` contains native Terraform tests.
+- `terraform.sh` links to the shared repository runner.
+
+## Usage
+
+From this directory, use the shared runner with the `org` environment:
+
+```bash
+./terraform.sh init org
+./terraform.sh plan org
+```
+
+Review the plan before running `./terraform.sh apply org`. The backend settings
+in `env/org/backend.tfvars` retain the existing storage account, container, and
+state key. This layout change requires no resource moves or state migration.
+The former `./terraform.sh <action>` invocation now requires `org`.
+
+The `env/org/terraform.tfvars` file contains no assignments. The shared runner
+sets the only input, `subscription_id`, from `env/org/backend.ini`.
+
 ## Validation
 
 From this directory, run non-remote Terraform validation:
@@ -24,7 +52,12 @@ From this directory, run non-remote Terraform validation:
 ```bash
 terraform fmt -check .
 terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
+terraform test -filter=tests/kubernetes.tftest.hcl -no-color
 ```
+
+Native tests require Terraform 1.7 or later and use a mocked Azure provider.
+They do not access Azure or create real resources.
 
 ## Kubernetes policy sets
 

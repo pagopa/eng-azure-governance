@@ -1,7 +1,3 @@
-data "azurerm_management_group" "pagopa" {
-  name = "pagopa"
-}
-
 locals {
   custom_policy_definition_names = {
     allowed_locations                                   = "allowed_locations"
@@ -82,11 +78,4 @@ locals {
     virtual_machine_allowed_sku                         = "virtual_machine_allowed_sku"
     virtual_machine_scale_set_allowed_sku               = "virtual_machine_scale_set_allowed_sku"
   }
-}
-
-data "azurerm_policy_definition" "this" {
-  for_each = local.custom_policy_definition_names
-
-  name                  = each.value
-  management_group_name = data.azurerm_management_group.pagopa.name
 }
