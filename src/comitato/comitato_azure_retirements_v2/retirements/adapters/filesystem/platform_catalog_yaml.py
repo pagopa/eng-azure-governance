@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 from pathlib import Path
+from uuid import UUID
 
 import yaml
 
@@ -29,14 +30,27 @@ class YamlPlatformCatalogSource:
             payload = yaml.safe_load(raw.decode("utf-8"))
         except (UnicodeError, yaml.YAMLError) as exc:
             raise CatalogLoadError("platform catalog YAML is invalid") from exc
+        required_keys = {"schema_version", "platforms"}
+        allowed_keys = required_keys | {"tenant_id"}
         if (
             not isinstance(payload, dict)
-            or set(payload) != {"schema_version", "platforms"}
+            or not required_keys.issubset(payload)
+            or not set(payload).issubset(allowed_keys)
             or type(payload["schema_version"]) is not int
             or payload["schema_version"] != 1
             or not isinstance(payload["platforms"], dict)
         ):
             raise CatalogLoadError("platform catalog shape is not schema version 1")
+        if "tenant_id" in payload:
+            tenant_id = payload["tenant_id"]
+            if not isinstance(tenant_id, str):
+                raise CatalogLoadError("platform catalog tenant id is not a UUID")
+            try:
+                UUID(tenant_id)
+            except ValueError as exc:
+                raise CatalogLoadError(
+                    "platform catalog tenant id is not a UUID"
+                ) from exc
         assignments: list[PlatformAssignment] = []
         names: set[str] = set()
         seen_ids: set[str] = set()
