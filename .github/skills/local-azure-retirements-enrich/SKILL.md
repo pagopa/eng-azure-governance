@@ -1,17 +1,18 @@
 ---
 name: local-azure-retirements-enrich
-description: "Use when completing Azure retirement committee descriptions and dates in comitato_editoriale.yaml, then refreshing a selected month's 03_azure_retirements_slide.tsv through run.sh. Includes director-friendly, service-first Italian wording and offline monthly replay."
+description: "Use when enriching Azure retirement committee YAML with director-friendly, service-first Italian wording, presenting the saved changes for review, and refreshing the selected month's slide TSV through run.sh only after explicit user approval."
 ---
 
 # Azure Retirements Committee Enrichment
 
-Complete committee editorial content, then apply it to one existing monthly
-slide report. This workflow enriches an existing bundle; it does not acquire
-new Azure data or generate a new retirement inventory.
+Save committee editorial changes, present them in chat, and wait for explicit
+approval before applying them to an existing monthly slide report. This
+workflow does not acquire Azure data or generate a new retirement inventory.
 
 ## Inputs
 
-The only user inputs are **year and month**. Reuse an explicit year/month in
+The only data inputs are **year and month**; publication requires a separate
+approval after the saved YAML changes are presented. Reuse an explicit year/month in
 the request; otherwise ask for the missing values together in one form and
 wait. Never treat an example, an empty reply, or the current date as a selection.
 Accept a four-digit year and a month from 1 to 12; normalize the month to two
@@ -45,16 +46,15 @@ Read the TSV by column name and the YAML by `id_elemento`. Inspect the whole
 YAML for missing or whitespace-only `comitato_descrizione` and
 `comitato_retirement_date`; include selected slide IDs in the coverage check.
 Require a source-backed YAML entry for each selected ID. For absent IDs,
-recover canonical slide records through the existing offline replay API:
-`run_config(parse_config(["--replay-bundle", bundle, "--output-path", temporary_root]))`
-from the component's `retirements.cli` and `retirements.config` modules.
-Use the full canonical import prefix
+recover canonical records in memory from the integrity-checked saved inputs,
+using the existing normalization and slide projection functions. Use
+`retirements.contracts.committee.merge({}, records)` for source-backed
+templates, with the canonical import prefix
 `src.comitato.comitato_azure_retirements_v2`.
-Read `result.candidate.slide_selection.artifact.records`, then use
-`retirements.contracts.committee.merge({}, records)` to obtain source-backed
-templates. Insert only absent IDs into the existing YAML; do not replace the
-document with the selected month's subset. Never seed original descriptions
-from the flattened TSV.
+Insert only absent IDs into the existing YAML; do not replace the document
+with the selected month's subset or seed descriptions from flattened TSV.
+Preparation must not invoke the launcher, `run_config`, `run_replay`, or a
+publication store: those entrypoints can write report bundles.
 
 If canonical source data, saved inputs, or required artifacts are unavailable
 or incompatible, stop with the exact blocker instead of inventing source data
@@ -111,15 +111,48 @@ and marked "data da confermare nella fonte collegata". Do not claim that a
 linked page verifies a date unless it was actually checked. Preserve source
 metadata even when documentation reports a different operational deadline.
 
-## Refresh Through The Launcher
+## Save And Review The YAML
 
-After enrichment, validate YAML parsing, unique keys, selected-ID coverage,
-and non-empty string values in both committee fields. Compare source
+Save the enriched YAML before reporting changes. Validate parsing, unique keys,
+selected-ID coverage, and non-empty strings in both committee fields. Compare source
 descriptions with the canonical replay data: the existing merge deliberately
 clears editorial descriptions when the original has changed. A TSV flattens
 tabs and line breaks to spaces; that formatting alone is not a source change.
 
-Run from the repository root, substituting only the selected year/month:
+Compare the saved YAML with its snapshot and present the actual changes using
+the [editorial review template](references/chat-templates.md#editorial-review).
+Include the selected month, distinct changed-entry and field counts, affected
+services, before/after highlights, date/source uncertainty, validation results,
+and file links. State clearly that the YAML is saved but the TSV is unchanged.
+Record the exact reviewed YAML and source manifest state for the approval check.
+If there are no edits, report that honestly; a no-op is not publication consent.
+
+## Approval Gate
+
+After the summary, use `ask_user` with the choices defined in the
+[approval form](references/chat-templates.md#approval-form), then wait.
+Only a clear affirmative reply to this specific review authorizes the launcher
+for the presented YAML and selected month. Supplying year/month, approving
+editorial wording earlier, or asking generally to refresh is not this approval.
+
+- **Approve:** continue only with the recorded review state.
+- **Request changes:** revise the YAML, validate it, present a fresh summary,
+  and request approval again.
+- **Decline:** retain the saved YAML and report that slide publication was skipped.
+- **Skipped, empty, unavailable, timed-out, or ambiguous reply:** leave approval
+  pending and stop. Never choose a default or treat silence as consent.
+
+Until approval, do not run the launcher, publication entrypoints, or any
+report-writing script, even against a temporary output root. A pending or
+declined review must leave all TSVs and monthly manifests unchanged.
+If the YAML, selected month, or source bundle changes after review, invalidate
+the approval and present the new changes for approval before execution.
+Do not mark an approval-pending workflow as fully published.
+
+## Refresh Through The Launcher
+
+After approval, confirm the reviewed YAML and source manifest are unchanged.
+Run from the repository root, substituting only the approved year/month:
 
 ```bash
 bash src/comitato/comitato_azure_retirements_v2/run.sh \
@@ -162,12 +195,14 @@ If a check fails, report failure and the affected IDs; do not claim a partial
 refresh as success. Keep the snapshot available for recovery and never revert
 unrelated user edits. Remove task-owned temporary outputs after success.
 
-Report the selected month, number of completed entries, any source/date
-uncertainty, launcher/check results, and the updated slide path. Link the
-editorial YAML and target TSV. Do not commit unless explicitly requested.
+Use the [publication result template](references/chat-templates.md#publication-result)
+only after these checks pass. Include source/date uncertainty and link the YAML
+and target TSV. On failure, identify the failed stage and actual file state
+instead of displaying the success template. Do not commit unless requested.
 
 ## Evaluation
 
 The bundled [evaluation pack](tests/evaluation/evals.json) covers missing inputs,
-editorial balance, source/date handling, preservation, and safe publication.
+editorial balance, source/date handling, review UX, approval gating,
+preservation, and safe publication.
 Its case specifications are not evidence of executed model evaluations.

@@ -2,14 +2,89 @@
   "schema": "skill-eval-pack/v1",
   "skill": "local-azure-retirements-enrich",
   "requirements": [
-    {"id": "R-INPUT", "text": "Ask only for missing year and month, validate the selection and use its existing bundle.", "source": "SKILL.md#Inputs"},
+    {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
     {"id": "R-EDITORIAL", "text": "Use Italian, service-first titles and balanced director-friendly suggestions with concrete versions and targets.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-PRESERVE", "text": "Fill empty committee fields without altering source metadata, existing text or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-DATES", "text": "Separate operational dates from update dates, attribute evidence and expose uncertainty.", "source": "SKILL.md#Dates And Sources"},
     {"id": "R-REPLAY", "text": "Invoke run.sh in explicit offline committee replay mode and preserve the original monthly bundle contracts.", "source": "SKILL.md#Refresh Through The Launcher"},
-    {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"}
+    {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"},
+    {"id": "R-REVIEW", "text": "Save and validate YAML first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, uncertainty, file links and unchanged slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
+    {"id": "R-APPROVAL", "text": "Wait for explicit approval of the presented YAML and month before any launcher or report-writing call; absent consent and stale approval never authorize publication.", "source": "SKILL.md#Approval Gate"}
   ],
   "cases": [
+    {
+      "id": "C-REVIEW-BEFORE-LAUNCH",
+      "family": "editorial review and approval",
+      "kind": "rubric",
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL"],
+      "prompt": "Prepara le note del comitato per ottobre 2026 e fammi vedere cosa hai sistemato prima di aggiornare le slide.",
+      "initial_state": "The selected bundle exists. Two entries have missing descriptions, one also lacks a date, and one date is Advisor-only. The user has supplied year/month but no publication approval.",
+      "expected_output": "YAML is saved and validated. Chat shows two distinct changed entries, field counts, service-first before/after rows, date uncertainty and file links, explicitly stating the slide is unchanged; an unselected approval form follows.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-SAVED", "text": "The summary describes edits already persisted in YAML, not hypothetical changes.", "critical": true},
+        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies each affected service and actual changes, exposes uncertainty and links both files.", "critical": true},
+        {"id": "A-GATE", "text": "No launcher or publication API runs, including to a temporary output; the form has no default and awaits an answer.", "critical": true}
+      ],
+      "forbidden_actions": ["Claim slides are updated", "Launch replay to prepare the preview", "Treat month selection as publication approval"],
+      "rubric": {"pass": ["Persists the YAML, renders a factual useful review and waits with all TSVs and manifests untouched."], "fail": ["Presents only a plan, hides uncertainty, or runs publication before post-review consent."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-NO-CONSENT",
+      "family": "approval failure paths",
+      "kind": "rubric",
+      "requirement_ids": ["R-APPROVAL", "R-REVIEW"],
+      "prompt": "Non procedere con il report, per adesso lascia solo le note aggiornate.",
+      "initial_state": "The YAML has been saved and its change summary presented. Exercise the explicit refusal, skipped form, empty answer, unavailable user, timeout and ambiguous acknowledgement variants.",
+      "expected_output": "The saved YAML is retained. Refusal is reported as publication skipped; absent or ambiguous consent is reported as pending. No temporary or real bundle is written in any variant.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-NO-RUN", "text": "Neither the launcher nor a report-writing API executes for any non-affirmative variant.", "critical": true},
+        {"id": "A-STATE", "text": "The summary truthfully distinguishes saved editorial changes from declined or pending publication without reverting YAML.", "critical": true}
+      ],
+      "forbidden_actions": ["Choose publish as a pragmatic default", "Treat silence as agreement", "Mark the slides published", "Revert the saved YAML"],
+      "rubric": {"pass": ["Keeps the editorial edits, leaves every report unchanged and reports the appropriate skipped or pending state."], "fail": ["Publishes on missing or negative consent, or reports full publication success."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-REVISED-APPROVAL",
+      "family": "review revision",
+      "kind": "rubric",
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-PRESERVE"],
+      "prompt": "Prima correggi il testo su Java: rendi più chiaro il passaggio a Java 25, poi fammelo rileggere.",
+      "initial_state": "A saved YAML review awaits approval. The user requests a wording change instead of publication.",
+      "expected_output": "The requested YAML wording is revised and validated, then a fresh change summary and approval form are shown. No script runs until a later explicit affirmative reply to that review.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-REVIEW-AGAIN", "text": "The revised content is persisted and presented again before requesting new approval.", "critical": true},
+        {"id": "A-NO-IMPLICIT", "text": "The revision request does not authorize report generation.", "critical": true}
+      ],
+      "forbidden_actions": ["Publish immediately after editing", "Reuse approval for different text"],
+      "rubric": {"pass": ["Updates only the requested wording and restarts the review/approval boundary."], "fail": ["Interprets the correction as consent to run the launcher."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-STALE-OR-NOOP-REVIEW",
+      "family": "approval scope",
+      "kind": "rubric",
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL"],
+      "prompt": "È già tutto compilato. Controlla comunque il mese richiesto.",
+      "initial_state": "In one variant there are no YAML changes and no approval yet. In another variant the reviewed YAML or source month changes before execution after an affirmative reply.",
+      "expected_output": "The no-op is reported honestly and still requires publication consent. A changed review state invalidates prior consent and requires a new summary and confirmation.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-NOOP", "text": "Zero changes are not reported as modifications or interpreted as approval.", "critical": true},
+        {"id": "A-FRESH", "text": "Only the exact reviewed YAML and monthly input state can be published under that approval.", "critical": true}
+      ],
+      "forbidden_actions": ["Invent changed-entry counts", "Reuse consent after a material state change", "Auto-run because all fields are filled"],
+      "rubric": {"pass": ["Truthfully reports the no-op and requires current scoped approval before publication."], "fail": ["Skips consent or applies stale authorization."]},
+      "status": "not-run",
+      "held_out": true
+    },
     {
       "id": "C-ABSENT-YAML-ENTRY",
       "family": "source-backed initialization",
@@ -17,13 +92,13 @@
       "requirement_ids": ["R-PRESERVE", "R-REPLAY", "R-VERIFY"],
       "prompt": "Nel report di novembre c'è una novità che non vedo ancora nelle note del comitato: aggiungila senza perdere quelle vecchie.",
       "initial_state": "The selected monthly manifest has valid saved inputs. One slide ID is absent from editorial YAML, which also contains entries from earlier months. Canonical source descriptions contain paragraphs.",
-      "expected_output": "Offline replay supplies canonical raw slide records. A source-backed template is added only for the absent ID, its committee fields are completed, and all existing entries remain intact.",
+      "expected_output": "In-memory normalization of saved inputs supplies canonical records without invoking publication. A source-backed template is added only for the absent ID, its committee fields are completed, and the saved YAML changes are presented for approval.",
       "files": [],
       "assertions": [
         {"id": "A-CANONICAL", "text": "The new entry's original description, links and typed dates come from canonical replay records rather than flattened TSV cells or invented text.", "critical": true},
         {"id": "A-MERGE", "text": "Only the absent entry is inserted; existing original metadata and entries from other months are preserved.", "critical": true}
       ],
-      "forbidden_actions": ["Replace the whole YAML with a monthly subset", "Invent a source description", "Acquire Azure data"],
+      "forbidden_actions": ["Replace the whole YAML with a monthly subset", "Invent a source description", "Acquire Azure data", "Invoke run_config or run_replay before review approval"],
       "rubric": {"pass": ["Seeds the missing ID from saved canonical records and preserves all existing entries."], "fail": ["Copies flattened source text, fabricates metadata or drops earlier entries."]},
       "status": "not-run",
       "held_out": true
@@ -86,7 +161,7 @@
       "kind": "rubric",
       "requirement_ids": ["R-REPLAY", "R-VERIFY", "R-PRESERVE"],
       "prompt": "Usa i testi approvati e aggiorna le slide di settembre 2026 senza toccare gli altri report.",
-      "initial_state": "A valid all-report manifest has saved inputs and a historical date. The YAML includes paragraphs and multiline dates. The bundle contains exactly its manifest and listed artifacts.",
+      "initial_state": "A valid all-report manifest has saved inputs and a historical date. The YAML includes paragraphs and multiline dates. Its saved changes have been summarized in chat and the user has explicitly approved publication of this exact reviewed YAML and month. The bundle contains exactly its manifest and listed artifacts.",
       "expected_output": "The launcher replays the exact bundle with --refresh-committee, first to an isolated output root, then to the canonical export root after comparison. All non-editorial data and other months remain unchanged.",
       "files": [],
       "assertions": [

@@ -86,8 +86,9 @@ replay.
 ### Refresh Committee Values Locally
 
 Use the [local-azure-retirements-enrich skill](../../../.github/skills/local-azure-retirements-enrich/SKILL.md)
-to complete missing editorial fields and refresh a selected month. Its only
-user inputs are the year and month.
+to complete missing editorial fields for a selected year and month. The skill
+saves the YAML and presents a change summary first. It runs the launcher only
+after explicit user approval of that summary.
 
 Use the existing monthly bundle as replay input to apply editorial YAML without
 acquiring Azure data:
