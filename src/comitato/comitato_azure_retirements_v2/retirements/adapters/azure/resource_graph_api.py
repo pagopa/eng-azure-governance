@@ -107,15 +107,20 @@ class ResourceGraphApiSource:
         if not normalized_ids:
             return ()
         results: list[dict[str, Any]] = []
-        for offset in range(0, len(normalized_ids), 100):
-            batch = normalized_ids[offset : offset + 100]
+        batch_size = 100
+        batch_total = (len(normalized_ids) + batch_size - 1) // batch_size
+        for batch_number, offset in enumerate(
+            range(0, len(normalized_ids), batch_size), start=1
+        ):
+            batch = normalized_ids[offset : offset + batch_size]
             quoted = ", ".join(json_quote(resource_id) for resource_id in batch)
-            results.extend(
-                self.query(
-                    context,
-                    f"resources | where tolower(id) in ({quoted}) | project id, name, type, location, resourceGroup, subscriptionId, tags, resourceId = tolower(id)",
+            with download_scope(batch_number=batch_number, batch_total=batch_total):
+                results.extend(
+                    self.query(
+                        context,
+                        f"resources | where tolower(id) in ({quoted}) | project id, name, type, location, resourceGroup, subscriptionId, tags, resourceId = tolower(id)",
+                    )
                 )
-            )
         return tuple(results)
 
 

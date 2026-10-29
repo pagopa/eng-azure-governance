@@ -322,6 +322,12 @@ class ArmHttpClient:
         )
         if isinstance(number, int) and isinstance(total, int):
             identity.append(f"{number}/{total} subscriptions")
+        batch_number, batch_total = (
+            context.get("batch_number"),
+            context.get("batch_total"),
+        )
+        if isinstance(batch_number, int) and isinstance(batch_total, int):
+            identity.append(f"batch {batch_number}/{batch_total}")
         page = context.get("page", 1)
         identity.append(f"page {page}")
         details = [action]
@@ -334,9 +340,15 @@ class ArmHttpClient:
                 or payload.get("$skipToken")
                 or payload.get("skipToken")
             )
-            details.append(
-                "more pages pending (total unknown)" if has_next else "last page"
-            )
+            if has_next:
+                details.append("more pages pending (total unknown)")
+            elif isinstance(batch_number, int) and isinstance(batch_total, int):
+                details.append("last page of batch")
+                remaining_batches = batch_total - batch_number
+                context["remaining_batches"] = remaining_batches
+                details.append(f"remaining batches {remaining_batches}")
+            else:
+                details.append("last page")
             if isinstance(number, int) and isinstance(total, int):
                 completed = number - int(has_next)
                 remaining = total - completed

@@ -27,8 +27,12 @@ from src.comitato.comitato_azure_retirements_v2.retirements.config import (
     RuntimeConfig,
 )
 from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+    CatalogIdentity,
+    DependencyPlan,
     ReportSelector,
+    RunContext,
     RunRequest,
+    Scope,
 )
 from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
     PlatformAssignment,
@@ -173,6 +177,67 @@ def test_corrupt_cache_fails_explicitly_and_removal_triggers_download(
 
     entries[0].unlink()
     assert restarted.advisor_source.http.get_json(URL) == {"value": [{"id": "fresh"}]}
+
+
+@pytest.mark.parametrize("source", ["advisor", "service-health"])
+def test_resource_inventory_logs_distinct_batches_and_continuation_pages(
+    application_factory, source
+):
+    observer = Observer()
+    application, session = application_factory(
+        [
+            {"data": [{"id": "one"}], "$skipToken": "next-page"},
+            {"data": [{"id": "two"}]},
+            {"data": [{"id": "three"}]},
+            {"data": [{"id": "four"}]},
+        ],
+        observer,
+    )
+    now = application.clock.now()
+    context = RunContext(
+        run_id="batch-run",
+        as_of_date=now.date(),
+        created_at=now,
+        request=RunRequest(ReportSelector.ALL, ("sub-a",)),
+        scope=Scope(("sub-a",)),
+        catalog_identity=CatalogIdentity(1, "a" * 64),
+        dependency_plan=DependencyPlan(("advisor", "service-health")),
+    )
+    resource_ids = tuple(
+        f"/subscriptions/sub-a/resources/resource-{i}" for i in range(250)
+    )
+    resource_ids += resource_ids[:100]
+    with download_scope(source=source, stage="2/2 enrichment"):
+        rows = application.resource_graph_source.lookup_resources(context, resource_ids)
+        cached_rows = application.resource_graph_source.lookup_resources(
+            context, resource_ids
+        )
+
+    assert rows == ({"id": "one"}, {"id": "two"}, {"id": "three"}, {"id": "four"})
+    assert cached_rows == rows
+    assert len(session.calls) == 4
+    for event_name in ("http_cache_saved", "http_cache_hit"):
+        events = [event for event in observer.events if event.event == event_name]
+        assert [
+            (
+                event.context.get("batch_number"),
+                event.context.get("batch_total"),
+                event.context["page"],
+            )
+            for event in events
+        ] == [(1, 3, 1), (1, 3, 2), (2, 3, 1), (3, 3, 1)]
+        for event, batch in zip(events, [1, 1, 2, 3], strict=True):
+            assert f"batch {batch}/3" in event.message
+            assert event.context["source"] == source
+        assert "more pages pending" in events[0].message
+        assert [event.context.get("remaining_batches") for event in events] == [
+            None,
+            2,
+            1,
+            0,
+        ]
+        assert all("last page of batch" in event.message for event in events[1:])
+    assert download_context() == {}
 
 
 def test_scope_resolution_is_not_cached(application_factory):
