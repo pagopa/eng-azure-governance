@@ -73,10 +73,18 @@ becomes current. Save a copy elsewhere before replacing a bundle that may need
 to be replayed later. New publication and replay use the hashed `saved_inputs`
 in `publication-manifest.json`. A live slide run merges committee values from
 `comitato_editoriale.yaml` into the slide before encoding and writes the YAML
-only after publication succeeds. A changed original description clears only
-`comitato_descrizione`; `comitato_retirement_date` is retained, and entries not
-present in the run are dropped. Pass `--committee-yaml PATH` to select another
-file. In the YAML, descriptions longer than 100 characters use folded style,
+only after publication succeeds. A changed original description clears
+`comitato_descrizione` and its editorial references in `comitato_fonti`;
+`comitato_retirement_date` is retained, and entries not present in the run are
+dropped. Unchanged source descriptions retain both editorial fields. New and
+legacy entries without editorial references default to `comitato_fonti: []`.
+Pass `--committee-yaml PATH` to select another file.
+In the YAML, `comitato_descrizione` contains only a plain-text, service-first
+description and a plain `Suggerimento:` paragraph, without Markdown formatting
+or source links. `comitato_fonti` holds editorial references as a list of
+`{titolo: str, url: str}` mappings, separate from the original `link_fonti`.
+Editorial references stay in the YAML; they do not add a TSV column.
+Descriptions longer than 100 characters use folded style,
 `link_fonti` omits Azure portal links (`app.azure.com`, `portal.azure.com`,
 `aka.ms/AzureServiceHealthAdvisories`), and `retirement_date` is a list of
 `{data, tipo, fonte}` entries. Schema-1 historical bundles without `saved_inputs` cannot be replayed

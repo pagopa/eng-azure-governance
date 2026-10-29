@@ -13,19 +13,22 @@ the selected month. Summarize wording in the table rather than pasting long
 descriptions. Show an actual before/after excerpt for material wording changes;
 use `vuoto` for a previously empty field. Keep all date conflicts and
 unverified deadlines visible.
+Count changes to `comitato_fonti` separately and summarize the reference titles
+and URLs retained there. Do not append them to `comitato_descrizione`; Markdown
+in this chat presentation does not authorize Markdown in editorial YAML text.
 
 ```markdown
 ## Comitato Azure · <YYYY/MM>
 
 **✅ YAML salvato · ⏸ Slide non aggiornate**
 
-**<N> voci modificate** · <D> descrizioni · <S> scadenze · <I> nuove voci
+**<N> voci modificate** · <D> descrizioni · <S> scadenze · <F> fonti editoriali · <I> nuove voci
 
 ### Cosa è cambiato
 
 | Servizio / tecnologia | Modifica | Prima → Dopo | Scadenza / fonte |
 |---|---|---|---|
-| <servizio e versione> | <descrizione, data o nuova voce> | <sintesi del cambiamento reale> | <data, fonte e stato di verifica> |
+| <servizio e versione> | <descrizione, data, fonti editoriali o nuova voce> | <sintesi del cambiamento reale> | <data, fonte e stato di verifica> |
 
 ### Da tenere presente
 
@@ -35,6 +38,7 @@ unverified deadlines visible.
 
 - <esito effettivo della validazione YAML e della completezza>
 - <esito del confronto: dati originali e testi già approvati preservati>
+- <esito del controllo: descrizioni senza Markdown e riferimenti in comitato_fonti>
 - TSV e manifest mensile non modificati.
 
 **File:** [YAML editoriale](<absolute-yaml-path>) · [Slide da aggiornare](<absolute-tsv-path>)

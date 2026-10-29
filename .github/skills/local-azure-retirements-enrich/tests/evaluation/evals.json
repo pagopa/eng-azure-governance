@@ -3,8 +3,8 @@
   "skill": "local-azure-retirements-enrich",
   "requirements": [
     {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
-    {"id": "R-EDITORIAL", "text": "Use Italian, service-first titles and balanced director-friendly suggestions with concrete versions and targets.", "source": "SKILL.md#Editorial Rules"},
-    {"id": "R-PRESERVE", "text": "Fill empty committee fields without altering source metadata, existing text or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
+    {"id": "R-EDITORIAL", "text": "Use Italian, plain-text service-first titles and balanced director-friendly Suggerimento paragraphs with concrete versions and targets. Keep only description and suggestion in comitato_descrizione; store every editorial reference title and URL in a separate comitato_fonti list of {titolo, url} mappings, without adding TSV columns.", "source": "SKILL.md#Editorial Rules"},
+    {"id": "R-PRESERVE", "text": "Fill only empty committee text fields and missing or empty comitato_fonti lists without altering source metadata, existing text, meaningful date labels, non-empty editorial references or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-DATES", "text": "Separate operational dates from update dates, attribute evidence and expose uncertainty.", "source": "SKILL.md#Dates And Sources"},
     {"id": "R-REPLAY", "text": "Invoke run.sh in explicit offline committee replay mode and preserve the original monthly bundle contracts.", "source": "SKILL.md#Refresh Through The Launcher"},
     {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"},
@@ -124,16 +124,17 @@
       "kind": "rubric",
       "requirement_ids": ["R-INPUT", "R-EDITORIAL", "R-PRESERVE"],
       "prompt": "Sistema le voci vuote per ottobre 2026: devono capirle i direttori, ma non togliere i nomi e le versioni.",
-      "initial_state": "The selected bundle exists. Functions .NET 8 has empty committee fields and a .NET 10 migration recommendation. Another entry already has approved wording; an entry from July is also present.",
-      "expected_output": "Italian Functions/.NET 8-first title, concise .NET 10 migration suggestion and source link. Existing approved text and all original metadata remain unchanged.",
+      "initial_state": "The selected bundle exists. Functions .NET 8 has empty committee fields and a .NET 10 migration recommendation. Its editorial reference has a title and an official URL different from link_fonti. Another entry already has approved wording and non-empty comitato_fonti; an entry from July is also present.",
+      "expected_output": "Plain-text Italian Functions/.NET 8-first title and concise Suggerimento: paragraph naming .NET 10 in comitato_descrizione. The editorial reference title and URL are stored in comitato_fonti as a {titolo, url} mapping. Existing approved text, editorial references and all original metadata remain unchanged.",
       "files": [],
       "assertions": [
         {"id": "A-SUBJECT", "text": "The title identifies the affected service and version before the event.", "critical": true},
         {"id": "A-BALANCE", "text": "The suggestion gives a concrete migration target and impact without commands or implementation instructions.", "critical": true},
-        {"id": "A-KEEP", "text": "Populated committee fields, original descriptions, source links, typed dates and unrelated entries remain unchanged.", "critical": true}
+        {"id": "A-PLAIN", "text": "comitato_descrizione contains only description and suggestion, with no Markdown formatting or source links; all editorial titles and URLs are retained in comitato_fonti, even when link_fonti differs.", "critical": true},
+        {"id": "A-KEEP", "text": "Populated committee text fields, non-empty comitato_fonti, original descriptions, source links, typed dates, meaningful date labels and unrelated entries remain unchanged.", "critical": true}
       ],
-      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures"],
-      "rubric": {"pass": ["Retains Functions, .NET 8 and .NET 10, with a brief operational suggestion and unchanged existing values."], "fail": ["Omits the concrete subject, becomes a technical runbook, or rewrites populated fields."]},
+      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures", "Embed Markdown or links in comitato_descrizione", "Discard editorial reference titles or URLs", "Add TSV columns for comitato_fonti"],
+      "rubric": {"pass": ["Retains Functions, .NET 8 and .NET 10 in plain editorial text, separates references into comitato_fonti and preserves existing values and the TSV schema."], "fail": ["Omits the concrete subject, embeds Markdown or references in the description, drops reference metadata, becomes a technical runbook, or rewrites populated fields."]},
       "status": "not-run",
       "held_out": false
     },

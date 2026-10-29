@@ -65,21 +65,28 @@ or silently selecting another month.
 Write the committee content in **Italian** for directors who need enough
 technical context to recognize the affected service. Use this middle ground:
 
-1. Start with a bold title: **service - affected component/version: change**.
+1. Start with a plain-text title: service - affected component/version: change.
    Name the actual Azure service or technology before describing the event.
-2. Add one short **Suggerimento:** paragraph with the migration or action,
+2. Add one short plain `Suggerimento:` paragraph with the migration or action,
    its concrete target when known, and the main operational impact.
-3. Keep the relevant source links in Markdown after the suggestion.
+3. Keep only the description and suggestion in `comitato_descrizione`, without
+   Markdown formatting, inline source links, or reference sections. Store
+   editorial references separately in `comitato_fonti`, a list of mappings
+   with plain-text `titolo` and `url` strings. Preserve every reference title
+   and URL, including links that differ from the original `link_fonti`.
 
 Example:
 
-```text
-**Azure Functions - .NET 8: fine del supporto**
+```yaml
+comitato_descrizione: >-
+  Azure Functions - .NET 8: fine del supporto
 
-**Suggerimento:** pianificare la migrazione delle app a .NET 10 per mantenere
-il supporto, verificando la compatibilità prima della scadenza.
 
-[Aggiornare Azure Functions | Microsoft Learn](https://learn.microsoft.com/azure/azure-functions/update-language-versions)
+  Suggerimento: pianificare la migrazione delle app a .NET 10 per mantenere
+  il supporto, verificando la compatibilità prima della scadenza.
+comitato_fonti:
+- titolo: Aggiornare Azure Functions | Microsoft Learn
+  url: https://learn.microsoft.com/azure/azure-functions/update-language-versions
 ```
 
 Keep product names, relevant versions, and migration destinations. Explain
@@ -88,9 +95,13 @@ commands, metric identifiers, package inventories, and configuration recipes.
 Avoid vague replacements such as "aggiornare la piattaforma" without naming
 what changes. Distinguish a retirement from a performance recommendation.
 
-Fill only empty committee fields. Preserve existing non-empty wording and
-dates unless the user explicitly requests their revision. Preserve entry IDs,
-`descrizione_originale_completa`, `link_fonti`, `retirement_date`, and entries
+Fill only empty committee fields, including missing or empty `comitato_fonti`
+lists. Preserve existing non-empty wording, dates, and editorial references
+unless the user explicitly requests their revision. New source-backed templates
+start with `comitato_fonti: []`; do not overwrite existing references with an
+empty template. Preserve meaningful `[SCADUTA]` and `[IMMINENTE]` labels.
+Preserve entry IDs, `descrizione_originale_completa`, `link_fonti`,
+`retirement_date`, and entries
 outside the selected month. Keep folded YAML descriptions and existing layout.
 
 ## Dates And Sources
@@ -114,10 +125,13 @@ metadata even when documentation reports a different operational deadline.
 ## Save And Review The YAML
 
 Save the enriched YAML before reporting changes. Validate parsing, unique keys,
-selected-ID coverage, and non-empty strings in both committee fields. Compare source
-descriptions with the canonical replay data: the existing merge deliberately
-clears editorial descriptions when the original has changed. A TSV flattens
-tabs and line breaks to spaces; that formatting alone is not a source change.
+selected-ID coverage, and non-empty strings in both committee text fields.
+Validate plain-text editorial wording and the separate `comitato_fonti` list
+of `{titolo, url}` mappings; do not add TSV columns for these references.
+Compare source descriptions with the canonical replay data: the existing merge
+deliberately clears editorial descriptions and their references when the original
+has changed. A TSV flattens tabs and line breaks to spaces; that formatting alone
+is not a source change.
 
 Compare the saved YAML with its snapshot and present the actual changes using
 the [editorial review template](references/chat-templates.md#editorial-review).
