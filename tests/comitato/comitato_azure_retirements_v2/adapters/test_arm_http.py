@@ -75,12 +75,55 @@ def test_passes_central_timeout_and_translates_transport_errors() -> None:
 
     with pytest.raises(ArmHttpError) as caught:
         ArmHttpClient(
-            Token(), timeout_seconds=4, session=session, sleep=lambda _: None
+            Token(),
+            timeout_seconds=4,
+            retry_attempts=0,
+            session=session,
+            sleep=lambda _: None,
         ).get_json("https://management.azure.com/x")
 
     assert "timeout" in str(caught.value).casefold()
     assert "secret-token" not in str(caught.value)
     assert session.calls[0][2]["timeout"] == 4
+
+
+@pytest.mark.parametrize("timeout", [requests.ReadTimeout, requests.ConnectTimeout])
+def test_recovers_from_transient_timeout_within_retry_budget(timeout) -> None:
+    observer = RecordingRunObserver([])
+    session = Session([timeout("secret-token"), Response(200, {"value": []})])
+    delays = []
+    client = ArmHttpClient(
+        Token(),
+        retry_attempts=1,
+        backoff_seconds=2,
+        session=session,
+        sleep=delays.append,
+        observer=observer,
+    )
+
+    assert client.get_json(
+        "https://management.azure.com/x?token=secret-token", run_id="run-1"
+    ) == {"value": []}
+    assert len(session.calls) == 2
+    assert delays == [2]
+    assert observer.events[0].event == "http_retry"
+    assert observer.events[0].run_id == "run-1"
+    assert "secret-token" not in str(observer.events)
+
+
+def test_timeout_exhaustion_stays_bounded_and_redacted() -> None:
+    session = Session([requests.Timeout("secret-token")] * 3)
+    delays = []
+    client = ArmHttpClient(
+        Token(), retry_attempts=2, session=session, sleep=delays.append
+    )
+
+    with pytest.raises(ArmHttpError, match="timeout") as caught:
+        client.get_json("https://management.azure.com/x?token=secret-token")
+
+    assert len(session.calls) == 3
+    assert delays == [1, 2]
+    assert "secret-token" not in str(caught.value)
 
 
 def test_retries_throttling_with_a_bounded_policy() -> None:

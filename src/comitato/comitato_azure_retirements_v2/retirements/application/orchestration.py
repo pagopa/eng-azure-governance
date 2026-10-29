@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -165,19 +166,12 @@ class RetirementsApplication:
                 "committee_window_months": request.committee_window_months,
             },
         }
+        source_acquisitions = self._acquire_sources(context, report_closure)
         if report_closure.requires(ReportSelector.ADVISOR):
-            self._emit(
-                "INFO",
-                "acquisition_started",
-                "Starting Advisor acquisition",
-                context.run_id,
-                source="advisor",
-            )
-            advisor_acquisition = self.advisor_source.acquire(context)
+            advisor_acquisition = source_acquisitions[ReportSelector.ADVISOR]
             saved_inputs["source_acquisitions"]["advisor"] = saved_acquisition(
                 advisor_acquisition
             )
-            self._emit_acquisition_completed(context.run_id, advisor_acquisition)
             advisor_enrichments = AdvisorEnrichments()
             if self.advisor_enrichment_source is not None:
                 try:
@@ -194,18 +188,12 @@ class RetirementsApplication:
                 advisor_acquisition, context, advisor_enrichments
             )
         if report_closure.requires(ReportSelector.SERVICE_HEALTH):
-            self._emit(
-                "INFO",
-                "acquisition_started",
-                "Starting Service Health acquisition",
-                context.run_id,
-                source="service-health",
-            )
-            service_health_acquisition = self.service_health_source.acquire(context)
+            service_health_acquisition = source_acquisitions[
+                ReportSelector.SERVICE_HEALTH
+            ]
             saved_inputs["source_acquisitions"]["service-health"] = saved_acquisition(
                 service_health_acquisition
             )
-            self._emit_acquisition_completed(context.run_id, service_health_acquisition)
             service_health_evidence = self._collect_service_health_evidence(
                 context, service_health_acquisition, catalog
             )
@@ -478,6 +466,37 @@ class RetirementsApplication:
             raise ApplicationError(
                 "service-health supplemental evidence acquisition failed"
             ) from exc
+
+    def _acquire_sources(
+        self, context: RunContext, closure: SelectedReportClosure
+    ) -> dict[ReportSelector, SourceAcquisition]:
+        sources = {
+            selector: source
+            for selector, source in (
+                (ReportSelector.ADVISOR, self.advisor_source),
+                (ReportSelector.SERVICE_HEALTH, self.service_health_source),
+            )
+            if closure.requires(selector)
+        }
+        with ThreadPoolExecutor(
+            max_workers=2, thread_name_prefix="azure-acquisition"
+        ) as pool:
+            futures: dict[ReportSelector, Future[SourceAcquisition]] = {}
+            for selector, source in sources.items():
+                self._emit(
+                    "INFO",
+                    "acquisition_started",
+                    f"Starting {selector.value} acquisition",
+                    context.run_id,
+                    source=selector.value,
+                )
+                futures[selector] = pool.submit(source.acquire, context)
+            acquisitions: dict[ReportSelector, SourceAcquisition] = {}
+            for selector, future in futures.items():
+                acquisition = future.result()
+                self._emit_acquisition_completed(context.run_id, acquisition)
+                acquisitions[selector] = acquisition
+        return acquisitions
 
     def _emit(
         self,

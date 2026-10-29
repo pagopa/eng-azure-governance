@@ -30,6 +30,7 @@ class ResourceGraphApiSource:
             payload = self.http.post_json(
                 f"https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version={self.api_version}",
                 body,
+                run_id=context.run_id,
             )
             data = payload.get("data")
             if not isinstance(data, list) or any(

@@ -56,7 +56,7 @@ class Http:
             )
         return (ArmPageEnvelope(url, ({"id": "sub-a", "displayName": "A"},)),)
 
-    def post_json(self, url, payload):
+    def post_json(self, url, payload, *, run_id=""):
         self.post_calls.append((url, payload))
         return {
             "data": [
@@ -72,7 +72,7 @@ class HttpWithResponses:
         self.responses = list(responses)
         self.post_calls = []
 
-    def post_json(self, url, payload):
+    def post_json(self, url, payload, *, run_id=""):
         self.post_calls.append((url, payload))
         if not self.responses:
             raise AssertionError("unexpected Resource Graph request")
@@ -80,7 +80,7 @@ class HttpWithResponses:
 
 
 class QueryHttp(Http):
-    def post_json(self, url, payload):
+    def post_json(self, url, payload, *, run_id=""):
         self.post_calls.append((url, payload))
         query = payload["query"]
         if "resourcecontainers" in query:
@@ -115,7 +115,7 @@ class QueryHttp(Http):
 
 
 class RepeatingTokenHttp(Http):
-    def post_json(self, url, payload):
+    def post_json(self, url, payload, *, run_id=""):
         self.post_calls.append((url, payload))
         return {"data": [], "$skipToken": "same-token"}
 

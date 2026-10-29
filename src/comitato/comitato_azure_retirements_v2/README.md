@@ -1,6 +1,6 @@
 # Azure Retirements v2
 
-This command performs a live Azure acquisition and publishes one validated
+This command acquires or reuses saved Azure responses and publishes one validated
 monthly report bundle. The default selector is `all`; use `--report`
 with `advisor`, `service-health`, `aggregate`, or `slides` to publish one
 selected contract and its complete dependency closure.
@@ -9,6 +9,8 @@ selected contract and its complete dependency closure.
 
 - [Package Layout](#package-layout)
 - [Advisor Enrichment](#advisor-enrichment)
+- [Download Reuse And Timeouts](#download-reuse-and-timeouts)
+- [Published Artifacts](#published-artifacts)
 - [Operator Output And Logging](#operator-output-and-logging)
 - [Service Health Evidence](#service-health-evidence)
 
@@ -33,7 +35,7 @@ diagnostics, manifests, or artifacts.
 
 ## Advisor Enrichment
 
-Advisor raw recommendations are enriched from three live sources: the
+Advisor raw recommendations are enriched from three Azure sources: the
 `Microsoft.Advisor/metadata` endpoint, Resource Graph resource inventory, and
 Resource Graph subscription inventory. Resource inventory is queried by
 normalized ARM resource ID, while subscription names come only from the
@@ -80,6 +82,55 @@ file. In the YAML, descriptions longer than 100 characters use folded style,
 `{data, tipo, fonte}` entries. Schema-1 historical bundles without `saved_inputs` cannot be replayed
 because they do not preserve the acquisition inputs needed for deterministic
 replay.
+
+## Download Reuse And Timeouts
+
+Advisor and Service Health main acquisitions run concurrently with at most two
+workers. Each worker uses its own HTTP session. Subscription traversal and
+pagination within each source remain ordered. Normalization, enrichment, and
+publication keep their existing dependency order.
+
+Successful Azure response objects are saved atomically under
+`<output-path>/.acquisition-cache/` (by default
+`src/comitato/comitato_azure_retirements_v2/exports/.acquisition-cache/`).
+The cache includes Advisor recommendations, Service Health events, Advisor
+metadata, and Resource Graph enrichment responses. It is independent of monthly
+publication and survives failed runs and replacement of a monthly bundle.
+Subscription scope resolution remains live unless subscriptions are explicit.
+
+Cache entries have **no expiry**, including across report months. A later run
+reuses existing entries and downloads only missing requests. Request identity
+includes the method, full URL, API version, query parameters, and POST body,
+so different subscriptions, queries, and continuation pages remain distinct.
+The cache is per response, not per report: completed pages survive a timeout on
+a later page. An incomplete acquisition still blocks publication.
+
+This is a saved snapshot, not an automatic refresh. New Azure notices and
+updates are invisible until the relevant cache entries are removed. A cache-hit
+event shows the original download timestamp on the human console and in the
+debug log. To refresh, stop active runs and delete
+`<output-path>/.acquisition-cache/`, or delete individual JSON entries to
+download only those requests again. Changing `--as-of-date` alone does not
+refresh Azure data. A resumed run can combine older completed responses with
+newly downloaded ones; clear the cache for a wholly fresh acquisition.
+
+Cache files contain Azure response data and must be treated like raw exports.
+They are excluded from Git, use private temporary files, and never store
+authentication headers or bearer tokens. Checksums detect damaged payloads.
+A corrupt or unreadable entry fails explicitly rather than silently triggering
+a new download; remove the indicated entry to recover. Disk-write failures also
+fail explicitly and do not leave a partial cache entry.
+
+`--timeout-seconds` controls the timeout for each HTTP attempt (default: 60).
+`--retry-attempts` controls additional attempts (default: 3). Read and connection
+timeouts now use the same bounded retry/backoff policy as retryable HTTP
+responses (408, 429, 500, 502, 503, 504). The default allows at most four attempts;
+a persistently slow endpoint can therefore still fail after exhausting its
+budget. Use a larger timeout, for example `./run.sh --timeout-seconds 120`, when
+the endpoint consistently needs more than 60 seconds. A failed run leaves the
+previous monthly bundle unchanged and keeps completed cached responses.
+
+## Published Artifacts
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.

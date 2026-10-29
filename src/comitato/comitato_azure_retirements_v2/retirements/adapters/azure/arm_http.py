@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from threading import local
 from time import sleep as default_sleep
 from typing import Any, Callable, Mapping
 
@@ -11,6 +12,7 @@ from requests import Session
 from requests.exceptions import RequestException, Timeout
 
 from ...ports import NullRunObserver, RunObserver, RuntimeEvent
+from ..filesystem.arm_cache import ArmResponseCache, ResponseCacheError
 from .azure_auth import AccessTokenProvider
 
 RETRYABLE_STATUS_CODES = frozenset({408, 429, 500, 502, 503, 504})
@@ -47,6 +49,7 @@ class ArmHttpClient:
         sleep: Callable[[float], None] = default_sleep,
         user_agent: str = "eng-azure-governance/comitato-azure-retirements-v2",
         observer: RunObserver | None = None,
+        cache: ArmResponseCache | None = None,
     ) -> None:
         if timeout_seconds <= 0 or retry_attempts < 0 or backoff_seconds < 0:
             raise ValueError("invalid ARM HTTP policy")
@@ -54,10 +57,12 @@ class ArmHttpClient:
         self._timeout_seconds = timeout_seconds
         self._retry_attempts = retry_attempts
         self._backoff_seconds = backoff_seconds
-        self._session = session or requests.Session()
+        self._session = session
+        self._thread_sessions = local()
         self._sleep = sleep
         self._user_agent = user_agent
         self._observer = observer or NullRunObserver()
+        self._cache = cache
 
     def get_json(
         self,
@@ -129,6 +134,52 @@ class ArmHttpClient:
         json_payload: Mapping[str, Any] | None = None,
         run_id: str = "",
     ) -> Any:
+        if self._cache is None:
+            return self._request_live(
+                method, url, params=params, json_payload=json_payload, run_id=run_id
+            )
+        path = self._cache.path_for(method, url, params, json_payload)
+        try:
+            cached = self._cache.read(path)
+            if cached is not None:
+                payload, downloaded_at = cached
+                self._observer.emit(
+                    RuntimeEvent(
+                        "INFO",
+                        "http_cache_hit",
+                        f"Reusing Azure response downloaded at {downloaded_at}",
+                        run_id,
+                        {"url": _safe_url(url), "downloaded_at": downloaded_at},
+                    )
+                )
+                return payload
+            payload = self._request_live(
+                method, url, params=params, json_payload=json_payload, run_id=run_id
+            )
+            if isinstance(payload, dict):
+                downloaded_at = self._cache.write(path, payload)
+                self._observer.emit(
+                    RuntimeEvent(
+                        "INFO",
+                        "http_cache_saved",
+                        f"Saved Azure response downloaded at {downloaded_at}",
+                        run_id,
+                        {"url": _safe_url(url), "downloaded_at": downloaded_at},
+                    )
+                )
+            return payload
+        except ResponseCacheError as exc:
+            raise ArmHttpError(str(exc)) from exc
+
+    def _request_live(
+        self,
+        method: str,
+        url: str,
+        *,
+        params: Mapping[str, str] | None = None,
+        json_payload: Mapping[str, Any] | None = None,
+        run_id: str = "",
+    ) -> Any:
         token = self._token_provider.get_token()
         headers = {
             "Authorization": f"Bearer {token}",
@@ -137,7 +188,7 @@ class ArmHttpClient:
         }
         for attempt in range(self._retry_attempts + 1):
             try:
-                response = self._session.request(
+                response = self._get_session().request(
                     method,
                     url,
                     params=params,
@@ -146,6 +197,9 @@ class ArmHttpClient:
                     timeout=self._timeout_seconds,
                 )
             except Timeout as exc:
+                if attempt < self._retry_attempts:
+                    self._wait_before_retry(method, url, run_id, attempt, "timeout")
+                    continue
                 raise ArmHttpError(f"ARM request timeout for {_safe_url(url)}") from exc
             except RequestException as exc:
                 raise ArmHttpError(
@@ -153,22 +207,7 @@ class ArmHttpClient:
                 ) from exc
             status = int(getattr(response, "status_code", 0))
             if status in RETRYABLE_STATUS_CODES and attempt < self._retry_attempts:
-                self._observer.emit(
-                    RuntimeEvent(
-                        "WARNING",
-                        "http_retry",
-                        "Retrying ARM request",
-                        run_id,
-                        {
-                            "method": method,
-                            "url": _safe_url(url),
-                            "status": status,
-                            "attempt": attempt + 1,
-                            "retry_budget": self._retry_attempts,
-                        },
-                    )
-                )
-                self._sleep(self._backoff_seconds * (attempt + 1))
+                self._wait_before_retry(method, url, run_id, attempt, status)
                 continue
             if status < 200 or status >= 300:
                 if status in RETRYABLE_STATUS_CODES:
@@ -185,6 +224,33 @@ class ArmHttpClient:
                     f"malformed JSON response from {_safe_url(url)}"
                 ) from exc
         raise ArmHttpError("ARM request retry budget exhausted")
+
+    def _get_session(self) -> Session:
+        if self._session is not None:
+            return self._session
+        if not hasattr(self._thread_sessions, "session"):
+            self._thread_sessions.session = requests.Session()
+        return self._thread_sessions.session
+
+    def _wait_before_retry(
+        self, method: str, url: str, run_id: str, attempt: int, status: int | str
+    ) -> None:
+        self._observer.emit(
+            RuntimeEvent(
+                "WARNING",
+                "http_retry",
+                "Retrying ARM request",
+                run_id,
+                {
+                    "method": method,
+                    "url": _safe_url(url),
+                    "status": status,
+                    "attempt": attempt + 1,
+                    "retry_budget": self._retry_attempts,
+                },
+            )
+        )
+        self._sleep(self._backoff_seconds * (attempt + 1))
 
 
 __all__ = [
