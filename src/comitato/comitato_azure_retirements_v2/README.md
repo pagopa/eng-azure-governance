@@ -100,7 +100,7 @@ For example:
 
 ```text
 [Service Health | events | 1/2 main acquisition | subscription sub-example | 2/10 subscriptions | page 1] Downloaded and cached; 12 records; last page; remaining subscriptions 8; estimated remaining 24.0s (main acquisition only); elapsed 3.0s; downloaded at ...
-[Advisor | Resource Graph resource inventory | 2/2 enrichment | page 1] Reused cache; 50 records; last page; elapsed 0.0s; downloaded at ...
+[Advisor | Resource Graph resource inventory | 2/2 enrichment | batch 1/3 | page 1] Reused cache; 50 records; last page of batch; remaining batches 2; elapsed 0.0s; downloaded at ...
 ```
 
 The remaining-time estimate uses the observed mean time per completed
@@ -111,6 +111,10 @@ count: logs say `more pages pending (total unknown)` until the last page rather
 than inventing a page percentage or a report-wide ETA. Each completed pipeline
 reports the finished/total and remaining source counts. Retries identify their
 source and page, next attempt/maximum attempts, and backoff delay.
+Resource inventory lookups show `batch X/Y` for groups of up to 100 unique
+resource IDs. Page numbering restarts within each batch. `last page of batch`
+and the remaining batch count distinguish the end of one query from the end of
+the whole lookup, including when responses come from cache.
 
 Successful Azure response objects are saved atomically under
 `<output-path>/.acquisition-cache/` (by default
