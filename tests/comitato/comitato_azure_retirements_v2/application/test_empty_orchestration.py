@@ -330,6 +330,55 @@ def test_source_failure_waits_for_other_download_and_blocks_publication() -> Non
     assert publication.published == []
 
 
+def test_advisor_enrichment_runs_while_service_health_download_is_in_progress() -> None:
+    barrier = Barrier(2)
+    log = EventLog()
+    publication = FakePublicationStore()
+    observer = RecordingRunObserver()
+    application = build_application(log, publication, observer=observer)
+
+    class RendezvousEnrichment:
+        def enrich(self, context, recommendations):
+            try:
+                barrier.wait(timeout=2)
+            except BrokenBarrierError:
+                pytest.fail("Advisor enrichment waited for Service Health download")
+            return AdvisorEnrichments()
+
+    class RendezvousServiceHealth(FakeSource):
+        def acquire(self, context):
+            barrier.wait(timeout=2)
+            return super().acquire(context)
+
+    application.advisor_enrichment_source = RendezvousEnrichment()
+    application.service_health_source = RendezvousServiceHealth("service-health", log)
+    assert application.run(RunRequest(ReportSelector.ALL)).exit_status == 0
+    completed = [
+        event for event in observer.events if event.event == "source_completed"
+    ]
+    assert [event.context["completed_sources"] for event in completed] == [1, 2]
+    assert [event.context["remaining_sources"] for event in completed] == [1, 0]
+    assert {event.context["source"] for event in completed} == {
+        "advisor",
+        "service-health",
+    }
+
+
+def test_parallel_failures_keep_advisor_first_error_precedence() -> None:
+    application = build_application(EventLog(), FakePublicationStore())
+
+    class FailedSource(FakeSource):
+        def acquire(self, context):
+            if self.name == "advisor":
+                sleep(0.02)
+            raise ApplicationError(f"{self.name} failed")
+
+    application.advisor_source = FailedSource("advisor", EventLog())
+    application.service_health_source = FailedSource("service-health", EventLog())
+    with pytest.raises(ApplicationError, match="advisor failed"):
+        application.run(RunRequest(ReportSelector.ALL))
+
+
 def test_incomplete_receipt_blocks_staging() -> None:
     log = EventLog()
     publication = FakePublicationStore()

@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from ..acquisition.model import SourceAcquisition
+from ..acquisition.progress import download_scope, source_label
 from ..adapters.azure.advisor_enrichment import AdvisorEnrichmentError
 from ..adapters.filesystem import committee_yaml
 from ..contracts import (
@@ -157,7 +158,6 @@ class RetirementsApplication:
             dependency_plan=plan,
         )
 
-        prepared_by_selector: dict[ReportSelector, PreparedRawReport] = {}
         saved_inputs: dict[str, Any] = {
             "schema_version": 1,
             "source_acquisitions": {},
@@ -166,47 +166,10 @@ class RetirementsApplication:
                 "committee_window_months": request.committee_window_months,
             },
         }
-        source_acquisitions = self._acquire_sources(context, report_closure)
-        if report_closure.requires(ReportSelector.ADVISOR):
-            advisor_acquisition = source_acquisitions[ReportSelector.ADVISOR]
-            saved_inputs["source_acquisitions"]["advisor"] = saved_acquisition(
-                advisor_acquisition
-            )
-            advisor_enrichments = AdvisorEnrichments()
-            if self.advisor_enrichment_source is not None:
-                try:
-                    advisor_enrichments = self.advisor_enrichment_source.enrich(
-                        context,
-                        advisor_acquisition.records,
-                    )
-                except AdvisorEnrichmentError as exc:
-                    raise ApplicationError(
-                        "advisor enrichment failed; existing monthly bundle was not changed"
-                    ) from exc
-            saved_inputs["advisor_enrichments"] = json_safe(advisor_enrichments)
-            prepared_by_selector[ReportSelector.ADVISOR] = prepare_advisor_report(
-                advisor_acquisition, context, advisor_enrichments
-            )
-        if report_closure.requires(ReportSelector.SERVICE_HEALTH):
-            service_health_acquisition = source_acquisitions[
-                ReportSelector.SERVICE_HEALTH
-            ]
-            saved_inputs["source_acquisitions"]["service-health"] = saved_acquisition(
-                service_health_acquisition
-            )
-            service_health_evidence = self._collect_service_health_evidence(
-                context, service_health_acquisition, catalog
-            )
-            saved_inputs["service_health_evidence"] = saved_service_health_evidence(
-                service_health_evidence
-            )
-            prepared_by_selector[ReportSelector.SERVICE_HEALTH] = (
-                prepare_service_health_report(
-                    service_health_acquisition,
-                    context,
-                    service_health_evidence,
-                )
-            )
+        prepared_by_selector, source_inputs = self._prepare_sources(
+            context, report_closure, catalog
+        )
+        saved_inputs.update(source_inputs)
         acquisitions = [
             prepared_by_selector[selector].acquisition
             for selector in (ReportSelector.ADVISOR, ReportSelector.SERVICE_HEALTH)
@@ -467,36 +430,121 @@ class RetirementsApplication:
                 "service-health supplemental evidence acquisition failed"
             ) from exc
 
-    def _acquire_sources(
-        self, context: RunContext, closure: SelectedReportClosure
-    ) -> dict[ReportSelector, SourceAcquisition]:
-        sources = {
-            selector: source
-            for selector, source in (
-                (ReportSelector.ADVISOR, self.advisor_source),
-                (ReportSelector.SERVICE_HEALTH, self.service_health_source),
-            )
+    def _prepare_sources(
+        self, context: RunContext, closure: SelectedReportClosure, catalog: Any
+    ) -> tuple[dict[ReportSelector, PreparedRawReport], dict[str, Any]]:
+        selectors = [
+            selector
+            for selector in (ReportSelector.ADVISOR, ReportSelector.SERVICE_HEALTH)
             if closure.requires(selector)
-        }
+        ]
         with ThreadPoolExecutor(
             max_workers=2, thread_name_prefix="azure-acquisition"
         ) as pool:
-            futures: dict[ReportSelector, Future[SourceAcquisition]] = {}
-            for selector, source in sources.items():
+            futures: dict[
+                Future[tuple[PreparedRawReport, dict[str, Any]]], ReportSelector
+            ] = {}
+            for selector in selectors:
                 self._emit(
                     "INFO",
                     "acquisition_started",
-                    f"Starting {selector.value} acquisition",
+                    f"[{source_label(selector.value)}] Stage 1/2: starting main acquisition",
                     context.run_id,
                     source=selector.value,
                 )
-                futures[selector] = pool.submit(source.acquire, context)
-            acquisitions: dict[ReportSelector, SourceAcquisition] = {}
-            for selector, future in futures.items():
-                acquisition = future.result()
-                self._emit_acquisition_completed(context.run_id, acquisition)
-                acquisitions[selector] = acquisition
-        return acquisitions
+                futures[
+                    pool.submit(self._prepare_source, selector, context, catalog)
+                ] = selector
+            prepared: dict[ReportSelector, PreparedRawReport] = {}
+            saved_inputs: dict[str, Any] = {"source_acquisitions": {}}
+            failures = 0
+            for finished, future in enumerate(as_completed(futures), start=1):
+                selector = futures[future]
+                if future.exception() is not None:
+                    failures += 1
+                    self._emit(
+                        "ERROR",
+                        "source_failed",
+                        f"[{source_label(selector.value)}] Download or enrichment failed; "
+                        f"sources finished {finished}/{len(selectors)}; "
+                        f"remaining sources {len(selectors) - finished}; publication blocked",
+                        context.run_id,
+                        source=selector.value,
+                        completed_sources=finished,
+                        remaining_sources=len(selectors) - finished,
+                        failed_sources=failures,
+                    )
+                    continue
+                report, inputs = future.result()
+                prepared[selector] = report
+                for key, value in inputs.items():
+                    if key == "source_acquisitions":
+                        saved_inputs[key].update(value)
+                    else:
+                        saved_inputs[key] = value
+                self._emit(
+                    "INFO",
+                    "source_completed",
+                    f"[{source_label(selector.value)}] Download and enrichment completed; "
+                    f"sources finished {finished}/{len(selectors)}; "
+                    f"remaining sources {len(selectors) - finished}; failed sources {failures}",
+                    context.run_id,
+                    source=selector.value,
+                    completed_sources=finished,
+                    remaining_sources=len(selectors) - finished,
+                    failed_sources=failures,
+                )
+            # Keep deterministic error precedence while reporting progress as tasks finish.
+            for future in futures:
+                future.result()
+        return prepared, saved_inputs
+
+    def _prepare_source(
+        self, selector: ReportSelector, context: RunContext, catalog: Any
+    ) -> tuple[PreparedRawReport, dict[str, Any]]:
+        source = (
+            self.advisor_source
+            if selector is ReportSelector.ADVISOR
+            else self.service_health_source
+        )
+        with download_scope(source=selector.value, stage="1/2 main acquisition"):
+            acquisition = source.acquire(context)
+            self._emit_acquisition_completed(context.run_id, acquisition)
+        saved_inputs: dict[str, Any] = {
+            "source_acquisitions": {selector.value: saved_acquisition(acquisition)}
+        }
+        with download_scope(source=selector.value, stage="2/2 enrichment"):
+            self._emit(
+                "INFO",
+                "enrichment_started",
+                f"[{source_label(selector.value)}] Stage 2/2: downloading enrichment evidence",
+                context.run_id,
+                source=selector.value,
+            )
+            if selector is ReportSelector.ADVISOR:
+                enrichments = AdvisorEnrichments()
+                if self.advisor_enrichment_source is not None:
+                    try:
+                        enrichments = self.advisor_enrichment_source.enrich(
+                            context, acquisition.records
+                        )
+                    except AdvisorEnrichmentError as exc:
+                        raise ApplicationError(
+                            "advisor enrichment failed; existing monthly bundle was not changed"
+                        ) from exc
+                saved_inputs["advisor_enrichments"] = json_safe(enrichments)
+                return prepare_advisor_report(
+                    acquisition, context, enrichments
+                ), saved_inputs
+            evidence = self._collect_service_health_evidence(
+                context, acquisition, catalog
+            )
+            saved_inputs["service_health_evidence"] = saved_service_health_evidence(
+                evidence
+            )
+            return prepare_service_health_report(
+                acquisition, context, evidence
+            ), saved_inputs
 
     def _emit(
         self,

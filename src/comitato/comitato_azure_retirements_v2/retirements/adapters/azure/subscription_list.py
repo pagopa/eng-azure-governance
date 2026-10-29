@@ -1,9 +1,11 @@
 from collections.abc import Callable, Mapping
+from time import perf_counter
 from typing import Any
 
 from ...acquisition.evidence import SourcePage
 from ...acquisition.model import AcquisitionReceipt, SourceAcquisition
 from ...acquisition.paging import ScriptedRequest, collect_complete_pages
+from ...acquisition.progress import download_scope
 from ...domain.execution import RunContext
 from .arm_http import ArmHttpClient
 
@@ -21,12 +23,23 @@ def acquire_subscription_list(
 ) -> SourceAcquisition:
     requests: list[ScriptedRequest] = []
     response_context: list[dict[str, Any]] = []
-    for subscription_id in context.scope.subscription_ids:
-        pages = http.list_pages(
-            url_for(subscription_id),
-            params=dict(params),
-            run_id=context.run_id,
-        )
+    started = perf_counter()
+    for number, subscription_id in enumerate(context.scope.subscription_ids, start=1):
+        with download_scope(
+            source=source,
+            operation={"advisor": "recommendations", "service-health": "events"}.get(
+                source, response_name
+            ),
+            subscription_id=subscription_id,
+            subscription_number=number,
+            subscription_total=len(context.scope.subscription_ids),
+            acquisition_started=started,
+        ):
+            pages = http.list_pages(
+                url_for(subscription_id),
+                params=dict(params),
+                run_id=context.run_id,
+            )
         requests.append(
             ScriptedRequest(
                 subscription_id,

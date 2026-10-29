@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Sequence
 
+from ...acquisition.progress import download_scope
 from ...domain.execution import RunContext
 from .arm_http import ArmHttpClient
 
@@ -26,12 +27,21 @@ class ResourceGraphApiSource:
         }
         results: list[dict[str, Any]] = []
         seen_tokens: set[str] = set()
+        page = 0
+        table = query.split("|", 1)[0].strip().casefold()
+        operation = {
+            "resources": "Resource Graph resource inventory",
+            "resourcecontainers": "Resource Graph subscription inventory",
+            "servicehealthresources": "Resource Graph impacted resources",
+        }.get(table, "Resource Graph query")
         while True:
-            payload = self.http.post_json(
-                f"https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version={self.api_version}",
-                body,
-                run_id=context.run_id,
-            )
+            page += 1
+            with download_scope(operation=operation, page=page):
+                payload = self.http.post_json(
+                    f"https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version={self.api_version}",
+                    body,
+                    run_id=context.run_id,
+                )
             data = payload.get("data")
             if not isinstance(data, list) or any(
                 not isinstance(item, Mapping) for item in data

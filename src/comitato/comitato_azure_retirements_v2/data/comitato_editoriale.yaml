@@ -28,31 +28,6 @@ azure-retirement:v2:0089cddc8ed93a6ece34b9683b0a1c64a6a1d451b029f48b9b3950f12748
   - data: '2027-02-27'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:049dfc9ab3fd06e4c190f8e911e5f66a035c3e45e32ba9a969b5bcb4df207912:
-  comitato_descrizione: >-
-    **Azure Cosmos DB per MongoDB: upgrade alla versione 4.2**
-
-
-    **Suggerimento:** verificare la compatibilità e pianificare un test di upgrade; la guida non indica
-    una scadenza di ritiro.
-
-
-    [Aggiornare la versione MongoDB | Microsoft Learn](https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/upgrade-version)
-  comitato_retirement_date: Nessuna scadenza di ritiro indicata dalla guida collegata.
-  descrizione_originale_completa: >-
-    Advisor: Upgrade your Azure Cosmos DB API for MongoDB account to v4.2 to save on query/storage costs
-    and utilize new features
-
-
-    Your Azure Cosmos DB API for MongoDB account is eligible to upgrade to version 4.2. Upgrading to v4.2
-    can reduce your storage costs by up to 55% and your query costs by up to 45% by leveraging a new storage
-    format. Numerous additional features such as multi-document transactions are also included in v4.2.
-  link_fonti:
-  - https://docs.microsoft.com/azure/cosmos-db/mongodb-version-upgrade
-  retirement_date:
-  - data: '2026-04-23'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
 azure-retirement:v2:04ac569d8e9372c200ec5dfdde5da134d7ee6a3129bb194d130e6a7b68709b91:
   comitato_descrizione: >-
     **IP pubblici Azure Basic: ritiro della SKU**
@@ -110,10 +85,10 @@ azure-retirement:v2:0dda532f9277a67d20d5882550f858d605002e5611be1bb62c261b6e25a8
   - https://docs.microsoft.com/azure/cosmos-db/nosql/sdk-dotnet-v3
   - https://docs.microsoft.com/azure/cosmos-db/nosql/sdk-java-v4
   retirement_date:
-  - data: '2026-05-13'
+  - data: '2026-10-19'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-09-30'
+  - data: '2026-10-27'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:194d85400e8dee189beccb5882d05b8d85806b15ebe7d824e38cd0837eb2ae7f:
@@ -178,11 +153,17 @@ azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d2398
   - data: '2026-09-22'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-09-29'
+  - data: '2026-10-16'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
   - data: '2027-03-01'
     fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
+  - data: '2027-03-31'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
+  - data: '2027-03-31'
+    fonte: Azure Advisor (metadati)
     tipo: ritiro
 azure-retirement:v2:3b670db69306eabb869bd4cb4b5a5de0e6e230faee1932cff194a922ab735cdc:
   comitato_descrizione: >-
@@ -216,6 +197,42 @@ azure-retirement:v2:3b670db69306eabb869bd4cb4b5a5de0e6e230faee1932cff194a922ab73
   - data: '2026-08-21'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
+azure-retirement:v2:49eb67e4f9deba19056157a19c44ee7dd201f4f204bb63fa2ddecbb94d074b64:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Advisor: AKS Pod name dimension within kube_pod_status_phase and kube_pod_status_ready platform metrics
+    is retiring. To continue using the pod name dimension switch to Azure Monitor Managed Prometheus.
+
+
+    Transition AKS pod name dimension to use Azure Monitor Managed Prometheus.
+  link_fonti:
+  - https://learn.microsoft.com/azure/azure-monitor/metrics/prometheus-metrics-overview
+  retirement_date:
+  - data: '2026-10-21'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2027-09-30'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
+azure-retirement:v2:59ced2da515de40b75bfeab0c46921c7045f23c27c09316c3cd8ecd18fbb39bb:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Advisor: Azure Functions support for .NET 8 is ending. Running function apps on unsupported runtime
+    or language version may lead to issues and degraded performance. Upgrade your apps to .NET 10.
+
+
+    Migrate to .NET 10 from .NET 8 for Azure Functions
+  link_fonti:
+  - https://learn.microsoft.com/azure/azure-functions/update-language-versions?tabs=azure-portal%2Cwindows&pivots=programming-language-csharp
+  retirement_date:
+  - data: '2026-10-25'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2026-11-10'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
 azure-retirement:v2:5c49ee8a23eb422df6c10e9d1cc50dd3b0437a68b8d8b50f8a109f26dd256a38:
   comitato_descrizione: >-
     **Storage account GPv1: ritiro e migrazione automatica**
@@ -275,7 +292,7 @@ azure-retirement:v2:71b5a8485939b6fe2cf31e7d3e985b015093b80b02819b6a4f699b89d2cb
   - data: '2026-05-22'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-08-01'
+  - data: '2026-10-27'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:7212de1ba3c64dc372630196d2ed51ba344e4e465247bfa430bf3f3bcc899002:
@@ -363,7 +380,7 @@ azure-retirement:v2:72b9ef0d1abdf4f11ff115ddc0676135169df16a59ca39b52885f8e85a39
   - data: '2026-04-16'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-08-27'
+  - data: '2026-10-27'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:87efceb5d18bd4d08a13e37b0db211edfcc3ca75a86566ce01084f8e0337fd13:
@@ -389,7 +406,7 @@ azure-retirement:v2:87efceb5d18bd4d08a13e37b0db211edfcc3ca75a86566ce01084f8e0337
   - data: '2026-04-16'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-08-28'
+  - data: '2026-10-27'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:914d8a5b4a90d8ebb7be9b891aff11a1005ce1b20a62249de752f8c75f36ad94:
@@ -475,6 +492,24 @@ azure-retirement:v2:95ffbdf8b76ff7ac6b9f5dd0ee7b77c74b22907ee064e6fc7d813a20dd61
   - data: '2027-08-01'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
+azure-retirement:v2:9e799bfca2d5f2e6b3b27a610bb5a56e57025c2f8aeef2e79e5e9c7ca3bce933:
+  comitato_descrizione: ''
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Advisor: Azure App Service support for Java 8, 11, and 17 is ending. Security updates will no longer
+    be available, and we’ll no longer provide customer support. Upgrade to Java 25.
+
+
+    Upgrade App Service apps from Java 8, 11 and 17 to Java 25
+  link_fonti:
+  - https://aka.ms/appservicejava81117
+  retirement_date:
+  - data: '2026-10-15'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2027-09-01'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
 azure-retirement:v2:a3e9f8083bd392c8f56048687f0f91191c3282e90f862cf14f98dc3f8a185e02:
   comitato_descrizione: >-
     **Azure Cosmos DB: verificare e aggiornare l’SDK obsoleto**
@@ -503,7 +538,7 @@ azure-retirement:v2:a3e9f8083bd392c8f56048687f0f91191c3282e90f862cf14f98dc3f8a18
   - data: '2024-10-01'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-  - data: '2026-05-11'
+  - data: '2026-10-25'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07b274:
@@ -533,38 +568,6 @@ azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07
   - data: '2027-05-31'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:ae2318058b0970e85a60699e2d9286a252d71c07f24167e3ab658cda7d9aa448:
-  comitato_descrizione: ''
-  comitato_retirement_date: ''
-  descrizione_originale_completa: >-
-    Service Health: You're receiving this notification because you're associated with one or more Azure
-    subscriptions that use Azure Monitor Action Groups. Azure Monitor Action Groups has officially rolled
-    out the new OTP feature to all regions in the Public cloud. New email addresses added to new or existing
-    action groups must be verified using a one-time passcode (OTP) before they can receive notifications.
-    This change is aimed at improving overall security. No immediate action is required for email addresses
-    that are already configured in existing action groups. These addresses will continue to receive notifications.
-    These addresses will be marked as "Legacy Allowed" after the rollout. However, adding a legacy-allowed
-    email address to a new action group will require OTP verification. All new email addresses must complete
-    a one-time verification within the same tenant before receiving notifications. An OTP email will be
-    sent when the action group is saved, and the passcode will expire after 30 minutes. If needed, a new
-    verification email can be requested from the Azure Portal Action Group blade. As part of this change,
-    users will also be required to save and verify an email address before they are able to send test
-    email notifications. Help and support If you have questions, get answers from community experts in
-    Microsoft Q&A (https://aka.ms/azureqa). If you have a support plan and need technical help, create
-    a support request. (https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request)
-  link_fonti:
-  - https://aka.ms/azureqa
-  - https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request
-  retirement_date:
-  - data: '2026-09-02'
-    fonte: Azure Service Health
-    tipo: avviso_inizio
-  - data: '2026-09-29'
-    fonte: Azure Service Health
-    tipo: ultimo_aggiornamento
-  - data: '2026-10-07'
-    fonte: Azure Service Health
-    tipo: avviso_fine
 azure-retirement:v2:af57e9232ec93e0ad205c79a07a1b6475ce60752502d510d56aa0b08245a9f28:
   comitato_descrizione: >-
     **Azure Synapse: fine supporto per Apache Spark 3.4**
@@ -612,10 +615,10 @@ azure-retirement:v2:b2a19387c78607b7c48cdb2390b4865448806965282b0261d1766cea6363
   link_fonti:
   - https://aka.ms/DeprecatedImagesFAQ
   retirement_date:
-  - data: '2026-07-16'
+  - data: '2026-10-27'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
-  - data: '2027-01-12'
+  - data: '2027-01-15'
     fonte: Azure Advisor
     tipo: rimozione_immagine
 azure-retirement:v2:ba6214607cd8293bcb2a02b8685550bdd9e626491ff2abd81fef6dbfa1839f5f:
@@ -646,7 +649,7 @@ azure-retirement:v2:ba6214607cd8293bcb2a02b8685550bdd9e626491ff2abd81fef6dbfa183
   - data: '2026-04-16'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-04-25'
+  - data: '2026-10-15'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:bd402fdf56128f709d3f49aa4a376d29f3b5fb3c5fc0303c3326578c13473910:
@@ -679,6 +682,9 @@ azure-retirement:v2:bd402fdf56128f709d3f49aa4a376d29f3b5fb3c5fc0303c3326578c1347
     tipo: ultimo_aggiornamento
   - data: '2026-09-30'
     fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
+  - data: '2028-09-30'
+    fonte: Azure Advisor (metadati)
     tipo: ritiro
 azure-retirement:v2:e505206ada85e3679d8b5a971c35d0904498361c7d88d0aa54c7fa0f4d85619c:
   comitato_descrizione: >-
@@ -743,33 +749,24 @@ azure-retirement:v2:ec4229f9a6745cfa8690af126ea8150fc9dd643b1915c79a80f68863365c
   - data: '2026-11-30'
     fonte: Azure Advisor (metadati)
     tipo: ritiro
-azure-retirement:v2:f73c9057ca3e07c308401793d6dc4159dade245b61cfac9a676888db6589f61b:
+azure-retirement:v2:f4641c02fc1a2f9e58145433a27555d236b4d59522a196d574b801080a715d15:
   comitato_descrizione: ''
   comitato_retirement_date: ''
   descrizione_originale_completa: >-
-    Service Health: You're receiving this notification because you are associated with one or more Azure
-    subscriptions that use Azure Monitor container insights. On 30 September 2026, we'll retire the ContainerLog
-    table in Azure Monitor and you'll need to transition to the ContainerLogV2 table. The ContainerLogV2
-    table offers all the functionality of ContainerLog, plus: Compatibility with the basic logs pricing
-    tier. Additional pod and container metadata for easier querying. Support for multiline log entries.
-    Recommended action To ensure your alerts and dashboards continue to work as expected, transition (https://aka.ms/containerlogmigration)
-    to ContainerLogV2 by 30 September 2026. Help and support If you have questions, get answers from community
-    experts in Microsoft Q&A (https://aka.ms/ContainerLogQA). If you have a support plan and need technical
-    help, open the Azure portal (https://portal.azure.com/#blade/Microsoft_Azure_Support/HelpAndSupportBlade/overview)
-    and select the question mark icon at the top of the page.
+    Advisor: HTTP Data Collector API support is ending. Migrate to the Logs ingestion API which provides
+    more processing power and flexibility in ingesting logs and managing tables.
+
+
+    Migrate from the HTTP Data Collector API to the Logs ingestion API
   link_fonti:
-  - https://aka.ms/containerlogmigration
-  - https://aka.ms/ContainerLogQA
+  - https://learn.microsoft.com/azure/azure-monitor/logs/custom-logs-migrate
   retirement_date:
-  - data: '2026-01-23'
-    fonte: Azure Service Health
-    tipo: avviso_inizio
-  - data: '2026-09-29'
-    fonte: Azure Service Health
-    tipo: ultimo_aggiornamento
-  - data: '2026-09-30'
-    fonte: Azure Service Health
-    tipo: avviso_fine
-  - data: '2026-09-30'
-    fonte: Azure Service Health
+  - data: '2026-09-14'
+    fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
+  - data: '2026-10-14'
+    fonte: Azure Advisor
+    tipo: aggiornamento_meno_recente
+  - data: '2026-10-21'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento

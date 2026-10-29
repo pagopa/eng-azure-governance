@@ -3,11 +3,16 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from threading import Barrier, get_ident
+from time import perf_counter
 from types import SimpleNamespace
 
 import pytest
 import requests
 
+from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.progress import (
+    download_context,
+    download_scope,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
     ArmHttpError,
 )
@@ -291,3 +296,92 @@ def test_full_report_reuses_main_downloads_metadata_and_enrichment(
     ] == [
         (artifact.logical_path, artifact.data) for artifact in cold.candidate.artifacts
     ]
+
+
+def test_download_messages_identify_source_subscription_page_and_remaining_work(
+    application_factory,
+):
+    observer = Observer()
+    application, _ = application_factory(
+        [
+            {"value": [{"id": "one"}], "nextLink": URL + "?page=2"},
+            {"value": [{"id": "two"}]},
+        ],
+        observer,
+    )
+    http = application.service_health_source.http
+    http.list_pages(URL, run_id="run-1")
+    saved = [event for event in observer.events if event.event == "http_cache_saved"]
+    assert len(saved) == 2
+    assert all("Service Health" in event.message for event in saved)
+    assert all("sub-a" in event.message for event in saved)
+    assert "page 1" in saved[0].message
+    assert "page 2" in saved[1].message
+    assert "more pages" in saved[0].message
+    assert "last page" in saved[1].message
+    assert all("elapsed" in event.message for event in saved)
+    assert any(event.event == "http_request_started" for event in observer.events)
+    assert all("page=2" not in event.message for event in observer.events)
+
+    http.list_pages(URL, run_id="run-1")
+    hits = [event for event in observer.events if event.event == "http_cache_hit"]
+    assert all(
+        "Service Health" in event.message and "sub-a" in event.message for event in hits
+    )
+    assert all("downloaded at" in event.message for event in hits)
+
+
+def test_remaining_subscriptions_and_eta_are_scoped_to_main_acquisition(
+    application_factory,
+):
+    observer = Observer()
+    application, _ = application_factory([{"value": []}], observer)
+    with download_scope(
+        source="service-health",
+        stage="1/2 main acquisition",
+        subscription_number=1,
+        subscription_total=3,
+        acquisition_started=perf_counter() - 2,
+    ):
+        application.service_health_source.http.list_pages(URL)
+
+    completed = next(
+        event for event in observer.events if event.event == "http_cache_saved"
+    )
+    assert completed.context["remaining_subscriptions"] == 2
+    assert "remaining subscriptions 2" in completed.message
+    assert "estimated remaining" in completed.message
+    assert "(main acquisition only)" in completed.message
+    assert "1/3 subscriptions" in completed.message
+    assert download_context() == {}
+
+
+def test_concurrent_download_identities_do_not_leak_between_sources(
+    application_factory,
+):
+    observer = Observer()
+    application, _ = application_factory([{"value": []}, {"value": []}], observer)
+    barrier = Barrier(2)
+
+    def download(source):
+        with download_scope(
+            source=source, operation="Resource Graph resource inventory"
+        ):
+            barrier.wait(timeout=2)
+            application.advisor_source.http.get_json(URL + f"?source={source}")
+        return download_context()
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [
+            pool.submit(download, source) for source in ("advisor", "service-health")
+        ]
+        assert [future.result() for future in futures] == [{}, {}]
+    saved = [event for event in observer.events if event.event == "http_cache_saved"]
+    assert {event.context["source"] for event in saved} == {"advisor", "service-health"}
+    for event in saved:
+        expected = (
+            "Advisor" if event.context["source"] == "advisor" else "Service Health"
+        )
+        assert event.message.startswith(
+            f"[{expected} | Resource Graph resource inventory"
+        )

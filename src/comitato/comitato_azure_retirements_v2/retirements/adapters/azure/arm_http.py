@@ -4,13 +4,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from threading import local
+from time import perf_counter
 from time import sleep as default_sleep
 from typing import Any, Callable, Mapping
+from urllib.parse import urlsplit
 
 import requests
 from requests import Session
 from requests.exceptions import RequestException, Timeout
 
+from ...acquisition.progress import download_context, download_scope, source_label
 from ...ports import NullRunObserver, RunObserver, RuntimeEvent
 from ..filesystem.arm_cache import ArmResponseCache, ResponseCacheError
 from .azure_auth import AccessTokenProvider
@@ -105,7 +108,8 @@ class ArmHttpClient:
             if marker in visited:
                 raise RepeatedContinuationError("repeated continuation link")
             visited.add(marker)
-            payload = self.get_json(current_url, current_params, run_id=run_id)
+            with download_scope(page=len(pages) + 1):
+                payload = self.get_json(current_url, current_params, run_id=run_id)
             current_params = None
             raw_items = payload.get(items_key, [])
             if not isinstance(raw_items, list) or any(
@@ -134,38 +138,56 @@ class ArmHttpClient:
         json_payload: Mapping[str, Any] | None = None,
         run_id: str = "",
     ) -> Any:
-        if self._cache is None:
-            return self._request_live(
-                method, url, params=params, json_payload=json_payload, run_id=run_id
-            )
-        path = self._cache.path_for(method, url, params, json_payload)
+        started = perf_counter()
+        path = (
+            self._cache.path_for(method, url, params, json_payload)
+            if self._cache is not None
+            else None
+        )
         try:
-            cached = self._cache.read(path)
+            cached = (
+                self._cache.read(path)
+                if self._cache is not None and path is not None
+                else None
+            )
             if cached is not None:
                 payload, downloaded_at = cached
-                self._observer.emit(
-                    RuntimeEvent(
-                        "INFO",
-                        "http_cache_hit",
-                        f"Reusing Azure response downloaded at {downloaded_at}",
-                        run_id,
-                        {"url": _safe_url(url), "downloaded_at": downloaded_at},
-                    )
+                self._download_event(
+                    "http_cache_hit",
+                    "Reused cache",
+                    url,
+                    run_id,
+                    payload=payload,
+                    downloaded_at=downloaded_at,
+                    elapsed_seconds=perf_counter() - started,
                 )
                 return payload
             payload = self._request_live(
                 method, url, params=params, json_payload=json_payload, run_id=run_id
             )
-            if isinstance(payload, dict):
+            if (
+                isinstance(payload, dict)
+                and self._cache is not None
+                and path is not None
+            ):
                 downloaded_at = self._cache.write(path, payload)
-                self._observer.emit(
-                    RuntimeEvent(
-                        "INFO",
-                        "http_cache_saved",
-                        f"Saved Azure response downloaded at {downloaded_at}",
-                        run_id,
-                        {"url": _safe_url(url), "downloaded_at": downloaded_at},
-                    )
+                self._download_event(
+                    "http_cache_saved",
+                    "Downloaded and cached",
+                    url,
+                    run_id,
+                    payload=payload,
+                    downloaded_at=downloaded_at,
+                    elapsed_seconds=perf_counter() - started,
+                )
+            elif isinstance(payload, dict):
+                self._download_event(
+                    "http_request_completed",
+                    "Downloaded",
+                    url,
+                    run_id,
+                    payload=payload,
+                    elapsed_seconds=perf_counter() - started,
                 )
             return payload
         except ResponseCacheError as exc:
@@ -180,6 +202,13 @@ class ArmHttpClient:
         json_payload: Mapping[str, Any] | None = None,
         run_id: str = "",
     ) -> Any:
+        self._download_event(
+            "http_request_started",
+            f"Downloading; timeout {self._timeout_seconds:g}s per attempt; "
+            f"up to {self._retry_attempts + 1} attempts; remaining pages unknown",
+            url,
+            run_id,
+        )
         token = self._token_provider.get_token()
         headers = {
             "Authorization": f"Bearer {token}",
@@ -235,22 +264,118 @@ class ArmHttpClient:
     def _wait_before_retry(
         self, method: str, url: str, run_id: str, attempt: int, status: int | str
     ) -> None:
+        self._download_event(
+            "http_retry",
+            f"Retrying after {status}; next attempt {attempt + 2}/{self._retry_attempts + 1}; "
+            f"backoff {self._backoff_seconds * (attempt + 1):g}s",
+            url,
+            run_id,
+            level="WARNING",
+            method=method,
+            status=status,
+            attempt=attempt + 1,
+            retry_budget=self._retry_attempts,
+        )
+        self._sleep(self._backoff_seconds * (attempt + 1))
+
+    def _download_event(
+        self,
+        event: str,
+        action: str,
+        url: str,
+        run_id: str,
+        *,
+        payload: Mapping[str, Any] | None = None,
+        downloaded_at: str = "",
+        elapsed_seconds: float = 0,
+        level: str = "INFO",
+        **extra: object,
+    ) -> None:
+        context = dict(download_context())
+        segments = urlsplit(url).path.strip("/").split("/")
+        lowered = [part.casefold() for part in segments]
+        source = str(
+            context.get("source")
+            or (
+                "advisor"
+                if "microsoft.advisor" in lowered
+                else "service-health"
+                if "microsoft.resourcehealth" in lowered
+                else "azure"
+            )
+        )
+        label = source_label(source)
+        operation = str(context.get("operation") or segments[-1])
+        subscription_id = str(context.get("subscription_id", ""))
+        if not subscription_id and "subscriptions" in lowered:
+            index = lowered.index("subscriptions") + 1
+            if index < len(segments):
+                subscription_id = segments[index]
+        identity = [label, operation]
+        if context.get("stage"):
+            identity.append(str(context["stage"]))
+        if subscription_id:
+            identity.append(f"subscription {subscription_id}")
+        number, total = (
+            context.get("subscription_number"),
+            context.get("subscription_total"),
+        )
+        if isinstance(number, int) and isinstance(total, int):
+            identity.append(f"{number}/{total} subscriptions")
+        page = context.get("page", 1)
+        identity.append(f"page {page}")
+        details = [action]
+        if payload is not None:
+            items = payload.get("value", payload.get("data"))
+            if isinstance(items, list):
+                details.append(f"{len(items)} records")
+            has_next = bool(
+                payload.get("nextLink")
+                or payload.get("$skipToken")
+                or payload.get("skipToken")
+            )
+            details.append(
+                "more pages pending (total unknown)" if has_next else "last page"
+            )
+            if isinstance(number, int) and isinstance(total, int):
+                completed = number - int(has_next)
+                remaining = total - completed
+                context["remaining_subscriptions"] = remaining
+                details.append(f"remaining subscriptions {remaining}")
+                acquisition_started = context.get("acquisition_started")
+                if (
+                    not has_next
+                    and completed > 0
+                    and remaining > 0
+                    and isinstance(acquisition_started, float)
+                ):
+                    eta = (perf_counter() - acquisition_started) / completed * remaining
+                    details.append(
+                        f"estimated remaining {eta:.1f}s (main acquisition only)"
+                    )
+                    context["estimated_remaining_seconds"] = eta
+            details.append(f"elapsed {elapsed_seconds:.1f}s")
+        if downloaded_at:
+            details.append(f"downloaded at {downloaded_at}")
         self._observer.emit(
             RuntimeEvent(
-                "WARNING",
-                "http_retry",
-                "Retrying ARM request",
+                level,
+                event,
+                f"[{' | '.join(identity)}] {'; '.join(details)}",
                 run_id,
                 {
-                    "method": method,
+                    **context,
+                    "source": source,
+                    "operation": operation,
+                    "subscription_id": subscription_id,
+                    "page": page,
                     "url": _safe_url(url),
-                    "status": status,
-                    "attempt": attempt + 1,
-                    "retry_budget": self._retry_attempts,
+                    "elapsed_seconds": elapsed_seconds,
+                    "downloaded_at": downloaded_at,
+                    **extra,
                 },
             )
         )
-        self._sleep(self._backoff_seconds * (attempt + 1))
 
 
 __all__ = [

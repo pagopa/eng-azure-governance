@@ -106,8 +106,9 @@ def test_recovers_from_transient_timeout_within_retry_budget(timeout) -> None:
     ) == {"value": []}
     assert len(session.calls) == 2
     assert delays == [2]
-    assert observer.events[0].event == "http_retry"
-    assert observer.events[0].run_id == "run-1"
+    retries = [event for event in observer.events if event.event == "http_retry"]
+    assert len(retries) == 1
+    assert retries[0].run_id == "run-1"
     assert "secret-token" not in str(observer.events)
 
 
@@ -154,7 +155,7 @@ def test_retry_emits_safe_event_without_query_or_credentials() -> None:
         run_id="run-1",
     ) == {"value": []}
 
-    event = observer.events[0]
+    event = next(event for event in observer.events if event.event == "http_retry")
     assert event.event == "http_retry"
     assert event.run_id == "run-1"
     assert "api-version" not in str(event.context)

@@ -85,10 +85,32 @@ replay.
 
 ## Download Reuse And Timeouts
 
-Advisor and Service Health main acquisitions run concurrently with at most two
-workers. Each worker uses its own HTTP session. Subscription traversal and
-pagination within each source remain ordered. Normalization, enrichment, and
-publication keep their existing dependency order.
+The Advisor and Service Health pipelines run concurrently with at most two
+workers, including each source's enrichment downloads. Each worker uses its own
+HTTP session. Each source first acquires its main data (stage 1/2), then its
+enrichment evidence (stage 2/2). Subscription traversal and pagination within
+each source remain ordered. Aggregation and publication wait for both pipelines
+to finish successfully.
+
+Download logs identify the owning source, operation, stage, subscription ID,
+current subscription/total, and page. They distinguish a live request from a
+download saved to cache and a cache hit. Completion messages include the record
+count, elapsed time, original download timestamp, and whether more pages remain.
+For example:
+
+```text
+[Service Health | events | 1/2 main acquisition | subscription sub-example | 2/10 subscriptions | page 1] Downloaded and cached; 12 records; last page; remaining subscriptions 8; estimated remaining 24.0s (main acquisition only); elapsed 3.0s; downloaded at ...
+[Advisor | Resource Graph resource inventory | 2/2 enrichment | page 1] Reused cache; 50 records; last page; elapsed 0.0s; downloaded at ...
+```
+
+The remaining-time estimate uses the observed mean time per completed
+subscription and covers only that source's main acquisition. Cache hits, varying
+subscription sizes, retries, and throttling can change the estimate. Before a
+subscription finishes, no ETA is asserted. Azure does not announce a total page
+count: logs say `more pages pending (total unknown)` until the last page rather
+than inventing a page percentage or a report-wide ETA. Each completed pipeline
+reports the finished/total and remaining source counts. Retries identify their
+source and page, next attempt/maximum attempts, and backoff delay.
 
 Successful Azure response objects are saved atomically under
 `<output-path>/.acquisition-cache/` (by default
