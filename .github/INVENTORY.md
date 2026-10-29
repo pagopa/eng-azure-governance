@@ -33,7 +33,7 @@ User-installed skills and agents are separate capabilities, not local copies.
 
 ## Skills
 
-- `.github/skills/local-azure-retirements/SKILL.md`
+- `.github/skills/local-azure-retirements-enrich/SKILL.md`
 
 ## Agents
 

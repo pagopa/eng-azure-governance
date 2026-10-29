@@ -83,6 +83,34 @@ file. In the YAML, descriptions longer than 100 characters use folded style,
 because they do not preserve the acquisition inputs needed for deterministic
 replay.
 
+### Refresh Committee Values Locally
+
+Use the [local-azure-retirements-enrich skill](../../../.github/skills/local-azure-retirements-enrich/SKILL.md)
+to complete missing editorial fields and refresh a selected month. Its only
+user inputs are the year and month.
+
+Use the existing monthly bundle as replay input to apply editorial YAML without
+acquiring Azure data:
+
+```bash
+bash src/comitato/comitato_azure_retirements_v2/run.sh \
+  --replay-bundle src/comitato/comitato_azure_retirements_v2/exports/2026/10 \
+  --refresh-committee \
+  --committee-yaml src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.yaml \
+  --output-path src/comitato/comitato_azure_retirements_v2/exports \
+  --output-format json
+```
+
+The manifest supplies the original report selector, date, subscription scope,
+and saved inputs. All reports selected by that manifest are republished; only
+the slide's committee fields are enriched. The editorial YAML is read but not
+rewritten, so entries for other months remain intact. The bundle must contain
+saved inputs and publish slides, and the YAML must exist. Ordinary replay
+continues to ignore editorial YAML unless `--refresh-committee` is explicit.
+The existing original-description match rule still applies: stale descriptions
+are not reused. Run from the repository root and use explicit paths to avoid
+environment-variable output overrides.
+
 ## Download Reuse And Timeouts
 
 The Advisor and Service Health pipelines run concurrently with at most two

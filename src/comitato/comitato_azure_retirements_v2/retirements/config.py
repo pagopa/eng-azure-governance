@@ -65,6 +65,7 @@ class RuntimeConfig:
     request: RunRequest
     catalog_path: Path = _DEFAULT_CATALOG_PATH
     replay_bundle_path: Path | None = None
+    refresh_committee: bool = False
     output_path: Path = _DEFAULT_OUTPUT_PATH
     committee_yaml_path: Path = _DEFAULT_COMMITTEE_YAML_PATH
     management_groups: tuple[str, ...] = ()
@@ -136,6 +137,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--replay-bundle", type=Path, default=None)
     parser.add_argument(
+        "--refresh-committee",
+        action="store_true",
+        help="Apply committee YAML during local replay without acquiring Azure data.",
+    )
+    parser.add_argument(
         "--output-path", "--output-root", dest="output_path", default=None
     )
     parser.add_argument("--committee-yaml", type=Path, default=None)
@@ -176,6 +182,8 @@ def _csv_values(value: str | None) -> tuple[str, ...]:
 def _parse_namespace(argv: Sequence[str] | None) -> argparse.Namespace:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.refresh_committee and args.replay_bundle is None:
+        parser.error("--refresh-committee requires --replay-bundle")
     subscriptions = list(_csv_values(args.subscriptions))
     for value in args.subscription_values:
         subscriptions.extend(_csv_values(value))
@@ -210,6 +218,7 @@ def _config_from_namespace(
             )
         ),
         replay_bundle_path=args.replay_bundle,
+        refresh_committee=args.refresh_committee,
         output_path=Path(
             args.output_path
             or os.getenv("COMITATO_AZURE_RETIREMENTS_OUTPUT", str(_DEFAULT_OUTPUT_PATH))
