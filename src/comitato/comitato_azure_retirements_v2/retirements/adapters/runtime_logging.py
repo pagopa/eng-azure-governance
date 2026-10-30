@@ -8,6 +8,7 @@ import traceback
 from collections.abc import Callable, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import RLock
 from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 
@@ -213,8 +214,13 @@ class RuntimeReporter:
         self._completed = False
         self._summary_rendered = False
         self._console_level = _LEVELS.get(settings.console_level.upper(), logging.INFO)
+        self._emit_lock = RLock()
 
     def emit(self, event: RuntimeEvent) -> None:
+        with self._emit_lock:
+            self._emit(event)
+
+    def _emit(self, event: RuntimeEvent) -> None:
         self._ensure_text_logger(event.run_id)
         if self._text_logger is not None:
             self._text_logger.emit(event)

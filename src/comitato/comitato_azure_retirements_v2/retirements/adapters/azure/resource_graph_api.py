@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Sequence
 
+from ...acquisition.progress import download_scope
 from ...domain.execution import RunContext
 from .arm_http import ArmHttpClient
 
@@ -26,11 +27,21 @@ class ResourceGraphApiSource:
         }
         results: list[dict[str, Any]] = []
         seen_tokens: set[str] = set()
+        page = 0
+        table = query.split("|", 1)[0].strip().casefold()
+        operation = {
+            "resources": "Resource Graph resource inventory",
+            "resourcecontainers": "Resource Graph subscription inventory",
+            "servicehealthresources": "Resource Graph impacted resources",
+        }.get(table, "Resource Graph query")
         while True:
-            payload = self.http.post_json(
-                f"https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version={self.api_version}",
-                body,
-            )
+            page += 1
+            with download_scope(operation=operation, page=page):
+                payload = self.http.post_json(
+                    f"https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version={self.api_version}",
+                    body,
+                    run_id=context.run_id,
+                )
             data = payload.get("data")
             if not isinstance(data, list) or any(
                 not isinstance(item, Mapping) for item in data
@@ -96,15 +107,20 @@ class ResourceGraphApiSource:
         if not normalized_ids:
             return ()
         results: list[dict[str, Any]] = []
-        for offset in range(0, len(normalized_ids), 100):
-            batch = normalized_ids[offset : offset + 100]
+        batch_size = 100
+        batch_total = (len(normalized_ids) + batch_size - 1) // batch_size
+        for batch_number, offset in enumerate(
+            range(0, len(normalized_ids), batch_size), start=1
+        ):
+            batch = normalized_ids[offset : offset + batch_size]
             quoted = ", ".join(json_quote(resource_id) for resource_id in batch)
-            results.extend(
-                self.query(
-                    context,
-                    f"resources | where tolower(id) in ({quoted}) | project id, name, type, location, resourceGroup, subscriptionId, tags, resourceId = tolower(id)",
+            with download_scope(batch_number=batch_number, batch_total=batch_total):
+                results.extend(
+                    self.query(
+                        context,
+                        f"resources | where tolower(id) in ({quoted}) | project id, name, type, location, resourceGroup, subscriptionId, tags, resourceId = tolower(id)",
+                    )
                 )
-            )
         return tuple(results)
 
 

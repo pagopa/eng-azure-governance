@@ -23,3 +23,7 @@ _Avoid_: inferred platform
 **Catalog schema version**:
 The integer contract that identifies the supported shape of the canonical catalog.
 _Avoid_: application version, Terraform version
+
+**Catalog tenant ID**:
+The Azure tenant UUID recorded as catalog metadata; it does not determine subscription mappings.
+_Avoid_: subscription ID, runtime scope

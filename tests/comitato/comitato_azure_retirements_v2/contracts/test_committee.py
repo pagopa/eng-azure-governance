@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from src.comitato.comitato_azure_retirements_v2.retirements.contracts.committee import (
     merge,
 )
@@ -61,6 +63,64 @@ def test_merge_preserves_committee_text_only_when_description_is_unchanged() -> 
         },
     ]
     assert updated["same"]["link_fonti"] == ["https://example.test/source"]
+
+
+@pytest.mark.parametrize(
+    ("old", "expected_description", "expected_sources"),
+    [
+        ({}, "", []),
+        (
+            {
+                "comitato_descrizione": "Service: change. Suggerimento: migrate.",
+                "descrizione_originale_completa": "Current source",
+                "comitato_fonti": [
+                    {"titolo": "Migration guide", "url": "https://example.test/guide"}
+                ],
+                "unrelated": "Do not retain unknown fields",
+            },
+            "Service: change. Suggerimento: migrate.",
+            [{"titolo": "Migration guide", "url": "https://example.test/guide"}],
+        ),
+        (
+            {
+                "comitato_descrizione": "Stale wording",
+                "descrizione_originale_completa": "Old source",
+                "comitato_fonti": [
+                    {"titolo": "Old guide", "url": "https://example.test/old"}
+                ],
+            },
+            "",
+            [],
+        ),
+        (
+            {
+                "comitato_descrizione": "Legacy wording without editorial sources",
+                "descrizione_originale_completa": "Current source",
+            },
+            "Legacy wording without editorial sources",
+            [],
+        ),
+    ],
+    ids=["new-template", "unchanged-source", "changed-source", "legacy-entry"],
+)
+def test_merge_keeps_editorial_sources_with_current_description_only(
+    old: dict[str, object],
+    expected_description: str,
+    expected_sources: list[dict[str, str]],
+) -> None:
+    row = {
+        "id_elemento": "item",
+        "descrizione_originale_completa": "Current source",
+        "link_fonti": "https://example.test/original",
+    }
+
+    merged_rows, updated = merge({"item": old}, (row,))
+
+    assert updated["item"]["comitato_descrizione"] == expected_description
+    assert updated["item"]["comitato_fonti"] == expected_sources
+    assert updated["item"]["link_fonti"] == ["https://example.test/original"]
+    assert "unrelated" not in updated["item"]
+    assert "comitato_fonti" not in dict(merged_rows[0].values)
 
 
 def test_merge_maps_every_date_meaning_and_drops_portal_links() -> None:

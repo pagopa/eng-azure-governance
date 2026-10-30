@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 from dataclasses import dataclass, field
 from datetime import date
@@ -11,7 +13,10 @@ from src.comitato.comitato_azure_retirements_v2.retirements.application import r
 from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.config import RuntimeConfig
+from src.comitato.comitato_azure_retirements_v2.retirements.config import (
+    RuntimeConfig,
+    parse_config,
+)
 from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
     ReportSelector,
     RunRequest,
@@ -195,6 +200,123 @@ def _replay_application(store: Any) -> Any:
             "publication_store": store,
         },
     )()
+
+
+def test_refresh_committee_replays_all_reports_without_changing_other_artifacts(
+    tmp_path,
+) -> None:
+    class Store:
+        def publish(self, candidate):
+            self.candidate = candidate
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
+
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    manifest, _ = _replay_slide_fixture("Saved title")
+    manifest["selector"] = "all"
+    (bundle / "publication-manifest.json").write_text(json.dumps(manifest))
+    baseline_store = Store()
+    baseline = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.ALL, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=bundle,
+    )
+    replay.run_replay(baseline, _replay_application(baseline_store))
+    original_artifacts = {
+        item.logical_path: item.data for item in baseline_store.candidate.artifacts
+    }
+    slide_path = "03_azure_retirements_slide.tsv"
+    original_rows = list(
+        csv.DictReader(
+            io.StringIO(original_artifacts[slide_path].decode()), delimiter="\t"
+        )
+    )
+    assert len(original_rows) == 1
+    row = original_rows[0]
+    committee_path = tmp_path / "committee.yaml"
+    committee_text = json.dumps(
+        {
+            row["id_elemento"]: {
+                "descrizione_originale_completa": row["descrizione_originale_completa"],
+                "comitato_descrizione": "Azure Functions – .NET 8: fine del supporto",
+                "comitato_retirement_date": "11/10/2026 — Azure Advisor",
+            },
+            "another-month": {"comitato_descrizione": "Keep this entry"},
+        }
+    )
+    committee_path.write_text(committee_text)
+    config = parse_config(
+        [
+            "--replay-bundle",
+            str(bundle),
+            "--refresh-committee",
+            "--committee-yaml",
+            str(committee_path),
+        ]
+    )
+    store = Store()
+    result = replay.run_replay(config, _replay_application(store))
+    artifacts = {item.logical_path: item.data for item in store.candidate.artifacts}
+    refreshed_rows = list(
+        csv.DictReader(io.StringIO(artifacts[slide_path].decode()), delimiter="\t")
+    )
+    assert result.context.as_of_date == date(2026, 9, 22)
+    assert artifacts.keys() == original_artifacts.keys()
+    assert all(
+        data == original_artifacts[path]
+        for path, data in artifacts.items()
+        if path != slide_path
+    )
+    assert refreshed_rows[0]["comitato_descrizione"] == (
+        "Azure Functions – .NET 8: fine del supporto"
+    )
+    assert refreshed_rows[0]["comitato_retirement_date"] == "11/10/2026 — Azure Advisor"
+    assert {
+        key: value
+        for key, value in refreshed_rows[0].items()
+        if key not in {"comitato_descrizione", "comitato_retirement_date"}
+    } == {
+        key: value
+        for key, value in row.items()
+        if key not in {"comitato_descrizione", "comitato_retirement_date"}
+    }
+    assert committee_path.read_text() == committee_text
+
+
+def test_refresh_committee_requires_replay_bundle(capsys) -> None:
+    with pytest.raises(SystemExit) as exc:
+        parse_config(["--refresh-committee"])
+    assert exc.value.code == 2
+    assert "--refresh-committee requires --replay-bundle" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("selector", "error"),
+    [
+        ("slides", "committee YAML"),
+        ("advisor", "requires a bundle that publishes slides"),
+    ],
+)
+def test_refresh_committee_rejects_invalid_inputs_before_publication(
+    tmp_path, selector, error
+) -> None:
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    manifest, _ = _replay_slide_fixture("Saved title")
+    manifest["selector"] = selector
+    (bundle / "publication-manifest.json").write_text(json.dumps(manifest))
+    config = parse_config(
+        [
+            "--replay-bundle",
+            str(bundle),
+            "--refresh-committee",
+            "--committee-yaml",
+            str(tmp_path / "missing.yaml"),
+        ]
+    )
+    with pytest.raises(ValueError, match=error):
+        replay.run_replay(config, _replay_application(object()))
 
 
 def test_main_writes_one_success_result_to_stdout(monkeypatch, capsys) -> None:

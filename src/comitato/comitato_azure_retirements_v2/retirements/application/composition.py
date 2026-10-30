@@ -14,6 +14,7 @@ from ..adapters.azure.azure_auth import AzureCliTokenProvider
 from ..adapters.azure.resource_graph_api import ResourceGraphApiSource
 from ..adapters.azure.resource_health_api import ResourceHealthApiSource
 from ..adapters.azure.subscription_api import SubscriptionApiSource
+from ..adapters.filesystem.arm_cache import ArmResponseCache
 from ..adapters.filesystem.platform_catalog_yaml import YamlPlatformCatalogSource
 from ..adapters.filesystem.publication import FilesystemAtomicPublicationStore
 from ..config import RuntimeConfig
@@ -47,6 +48,7 @@ def build_application(
             retry_attempts=config.http.retry_attempts,
             backoff_seconds=config.http.backoff_seconds,
             observer=runtime_observer,
+            cache=ArmResponseCache(config.output_path / ".acquisition-cache"),
         ),
     )
     resource_graph_source = overrides.get(
@@ -58,7 +60,19 @@ def build_application(
         AdvisorMetadataApiSource(http, api_version=config.api_versions.advisor),
     )
     return RetirementsApplication(
-        scope_source=overrides.get("scope_source", SubscriptionApiSource(http)),
+        scope_source=overrides.get(
+            "scope_source",
+            SubscriptionApiSource(
+                overrides.get("http")
+                or ArmHttpClient(
+                    AzureCliTokenProvider(),
+                    timeout_seconds=config.http.timeout_seconds,
+                    retry_attempts=config.http.retry_attempts,
+                    backoff_seconds=config.http.backoff_seconds,
+                    observer=runtime_observer,
+                )
+            ),
+        ),
         catalog_source=overrides.get(
             "catalog_source", YamlPlatformCatalogSource(config.catalog_path)
         ),

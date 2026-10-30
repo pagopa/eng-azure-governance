@@ -29,8 +29,10 @@ def merge(
         previous = previous if isinstance(previous, Mapping) else {}
         description = str(row.get("descrizione_originale_completa", ""))
         committee_description = str(previous.get("comitato_descrizione", ""))
+        committee_sources = previous.get("comitato_fonti", [])
         if str(previous.get("descrizione_originale_completa", "")) != description:
             committee_description = ""
+            committee_sources = []
         committee_date = str(previous.get("comitato_retirement_date", ""))
         values = dict(row)
         values["comitato_descrizione"] = committee_description
@@ -40,6 +42,7 @@ def merge(
         )
         updated[item_id] = {
             "comitato_descrizione": committee_description,
+            "comitato_fonti": committee_sources,
             "comitato_retirement_date": committee_date,
             "descrizione_originale_completa": description,
             "link_fonti": [

@@ -10,7 +10,7 @@
 
 Azure Governance defines custom roles, policy definitions, policy sets, and assignments in numbered Terraform roots.
 Identity provisions the production user-assigned identity, GitHub environment federation, and Azure role grants in separate Terraform state.
-The Eng FinOps Platform Catalog maps subscriptions to platforms under a versioned YAML schema.
+The Eng FinOps Platform Catalog maps subscriptions to platforms under a versioned YAML schema and records an optional tenant ID.
 Azure Retirement Intelligence collects Azure evidence with the v2 runtime and consumes active platform mappings while producing review artifacts.
 GitHub Actions validate source, detect drift, and invoke remediation or container-job operations.
 Checked-in files evidence two cross-domain dependencies but do not bind Identity outputs to GitHub secret values.

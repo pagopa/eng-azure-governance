@@ -82,6 +82,13 @@ def run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             dependency_plan=DependencyPlan(tuple(manifest["dependency_closure"])),
         )
         closure = application.report_catalog.plan(selector)
+        if config.refresh_committee:
+            if not closure.publishes(ReportSelector.SLIDES):
+                raise ValueError(
+                    "committee refresh requires a bundle that publishes slides"
+                )
+            if not config.committee_yaml_path.is_file():
+                raise ValueError("committee YAML must be an existing file")
         catalog = catalog_from_saved_inputs(saved_inputs)
         acquisitions = acquisitions_from_saved_inputs(saved_inputs, closure)
         prepared_by_selector = {}
@@ -115,6 +122,7 @@ def run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             prepared_by_selector,
             closure,
             catalog,
+            config.committee_yaml_path if config.refresh_committee else None,
         )
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
         raise ValueError(f"replay bundle is invalid or incomplete: {exc}") from exc

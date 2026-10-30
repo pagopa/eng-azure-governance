@@ -1,0 +1,206 @@
+{
+  "schema": "skill-eval-pack/v1",
+  "skill": "local-azure-retirements-enrich",
+  "requirements": [
+    {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
+    {"id": "R-EDITORIAL", "text": "Use Italian, plain-text service-first titles and balanced director-friendly Suggerimento paragraphs with concrete versions and targets. Keep only description and suggestion in comitato_descrizione; store every editorial reference title and URL in a separate comitato_fonti list of {titolo, url} mappings, without adding TSV columns.", "source": "SKILL.md#Editorial Rules"},
+    {"id": "R-PRESERVE", "text": "Fill only empty committee text fields and missing or empty comitato_fonti lists without altering source metadata, existing text, meaningful date labels, non-empty editorial references or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
+    {"id": "R-DATES", "text": "Separate operational dates from update dates, attribute evidence and expose uncertainty.", "source": "SKILL.md#Dates And Sources"},
+    {"id": "R-REPLAY", "text": "Invoke run.sh in explicit offline committee replay mode and preserve the original monthly bundle contracts.", "source": "SKILL.md#Refresh Through The Launcher"},
+    {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"},
+    {"id": "R-REVIEW", "text": "Save and validate YAML first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, uncertainty, file links and unchanged slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
+    {"id": "R-APPROVAL", "text": "Wait for explicit approval of the presented YAML and month before any launcher or report-writing call; absent consent and stale approval never authorize publication.", "source": "SKILL.md#Approval Gate"}
+  ],
+  "cases": [
+    {
+      "id": "C-REVIEW-BEFORE-LAUNCH",
+      "family": "editorial review and approval",
+      "kind": "rubric",
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL"],
+      "prompt": "Prepara le note del comitato per ottobre 2026 e fammi vedere cosa hai sistemato prima di aggiornare le slide.",
+      "initial_state": "The selected bundle exists. Two entries have missing descriptions, one also lacks a date, and one date is Advisor-only. The user has supplied year/month but no publication approval.",
+      "expected_output": "YAML is saved and validated. Chat shows two distinct changed entries, field counts, service-first before/after rows, date uncertainty and file links, explicitly stating the slide is unchanged; an unselected approval form follows.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-SAVED", "text": "The summary describes edits already persisted in YAML, not hypothetical changes.", "critical": true},
+        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies each affected service and actual changes, exposes uncertainty and links both files.", "critical": true},
+        {"id": "A-GATE", "text": "No launcher or publication API runs, including to a temporary output; the form has no default and awaits an answer.", "critical": true}
+      ],
+      "forbidden_actions": ["Claim slides are updated", "Launch replay to prepare the preview", "Treat month selection as publication approval"],
+      "rubric": {"pass": ["Persists the YAML, renders a factual useful review and waits with all TSVs and manifests untouched."], "fail": ["Presents only a plan, hides uncertainty, or runs publication before post-review consent."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-NO-CONSENT",
+      "family": "approval failure paths",
+      "kind": "rubric",
+      "requirement_ids": ["R-APPROVAL", "R-REVIEW"],
+      "prompt": "Non procedere con il report, per adesso lascia solo le note aggiornate.",
+      "initial_state": "The YAML has been saved and its change summary presented. Exercise the explicit refusal, skipped form, empty answer, unavailable user, timeout and ambiguous acknowledgement variants.",
+      "expected_output": "The saved YAML is retained. Refusal is reported as publication skipped; absent or ambiguous consent is reported as pending. No temporary or real bundle is written in any variant.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-NO-RUN", "text": "Neither the launcher nor a report-writing API executes for any non-affirmative variant.", "critical": true},
+        {"id": "A-STATE", "text": "The summary truthfully distinguishes saved editorial changes from declined or pending publication without reverting YAML.", "critical": true}
+      ],
+      "forbidden_actions": ["Choose publish as a pragmatic default", "Treat silence as agreement", "Mark the slides published", "Revert the saved YAML"],
+      "rubric": {"pass": ["Keeps the editorial edits, leaves every report unchanged and reports the appropriate skipped or pending state."], "fail": ["Publishes on missing or negative consent, or reports full publication success."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-REVISED-APPROVAL",
+      "family": "review revision",
+      "kind": "rubric",
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-PRESERVE"],
+      "prompt": "Prima correggi il testo su Java: rendi più chiaro il passaggio a Java 25, poi fammelo rileggere.",
+      "initial_state": "A saved YAML review awaits approval. The user requests a wording change instead of publication.",
+      "expected_output": "The requested YAML wording is revised and validated, then a fresh change summary and approval form are shown. No script runs until a later explicit affirmative reply to that review.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-REVIEW-AGAIN", "text": "The revised content is persisted and presented again before requesting new approval.", "critical": true},
+        {"id": "A-NO-IMPLICIT", "text": "The revision request does not authorize report generation.", "critical": true}
+      ],
+      "forbidden_actions": ["Publish immediately after editing", "Reuse approval for different text"],
+      "rubric": {"pass": ["Updates only the requested wording and restarts the review/approval boundary."], "fail": ["Interprets the correction as consent to run the launcher."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-STALE-OR-NOOP-REVIEW",
+      "family": "approval scope",
+      "kind": "rubric",
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL"],
+      "prompt": "È già tutto compilato. Controlla comunque il mese richiesto.",
+      "initial_state": "In one variant there are no YAML changes and no approval yet. In another variant the reviewed YAML or source month changes before execution after an affirmative reply.",
+      "expected_output": "The no-op is reported honestly and still requires publication consent. A changed review state invalidates prior consent and requires a new summary and confirmation.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-NOOP", "text": "Zero changes are not reported as modifications or interpreted as approval.", "critical": true},
+        {"id": "A-FRESH", "text": "Only the exact reviewed YAML and monthly input state can be published under that approval.", "critical": true}
+      ],
+      "forbidden_actions": ["Invent changed-entry counts", "Reuse consent after a material state change", "Auto-run because all fields are filled"],
+      "rubric": {"pass": ["Truthfully reports the no-op and requires current scoped approval before publication."], "fail": ["Skips consent or applies stale authorization."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-ABSENT-YAML-ENTRY",
+      "family": "source-backed initialization",
+      "kind": "rubric",
+      "requirement_ids": ["R-PRESERVE", "R-REPLAY", "R-VERIFY"],
+      "prompt": "Nel report di novembre c'è una novità che non vedo ancora nelle note del comitato: aggiungila senza perdere quelle vecchie.",
+      "initial_state": "The selected monthly manifest has valid saved inputs. One slide ID is absent from editorial YAML, which also contains entries from earlier months. Canonical source descriptions contain paragraphs.",
+      "expected_output": "In-memory normalization of saved inputs supplies canonical records without invoking publication. A source-backed template is added only for the absent ID, its committee fields are completed, and the saved YAML changes are presented for approval.",
+      "files": [],
+      "assertions": [
+        {"id": "A-CANONICAL", "text": "The new entry's original description, links and typed dates come from canonical replay records rather than flattened TSV cells or invented text.", "critical": true},
+        {"id": "A-MERGE", "text": "Only the absent entry is inserted; existing original metadata and entries from other months are preserved.", "critical": true}
+      ],
+      "forbidden_actions": ["Replace the whole YAML with a monthly subset", "Invent a source description", "Acquire Azure data", "Invoke run_config or run_replay before review approval"],
+      "rubric": {"pass": ["Seeds the missing ID from saved canonical records and preserves all existing entries."], "fail": ["Copies flattened source text, fabricates metadata or drops earlier entries."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-MISSING-MONTH",
+      "family": "input selection",
+      "kind": "rubric",
+      "requirement_ids": ["R-INPUT"],
+      "prompt": "Prepara le note per il comitato del 2027, il mese te lo dico dopo.",
+      "initial_state": "The year is explicit, but the month is not. Current date and example paths are visible.",
+      "expected_output": "A single request for the month; no edits or launcher execution before an answer.",
+      "files": [],
+      "assertions": [{"id": "A-WAIT", "text": "Only the missing month is requested and execution waits for an explicit answer.", "critical": true}],
+      "forbidden_actions": ["Assume the current month", "Ask additional style questions", "Run against an example partition"],
+      "rubric": {"pass": ["Asks for the month and waits without editing."], "fail": ["Chooses a month or performs publication before the answer."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-EDITORIAL-BALANCE",
+      "family": "audience and preservation",
+      "kind": "rubric",
+      "requirement_ids": ["R-INPUT", "R-EDITORIAL", "R-PRESERVE"],
+      "prompt": "Sistema le voci vuote per ottobre 2026: devono capirle i direttori, ma non togliere i nomi e le versioni.",
+      "initial_state": "The selected bundle exists. Functions .NET 8 has empty committee fields and a .NET 10 migration recommendation. Its editorial reference has a title and an official URL different from link_fonti. Another entry already has approved wording and non-empty comitato_fonti; an entry from July is also present.",
+      "expected_output": "Plain-text Italian Functions/.NET 8-first title and concise Suggerimento: paragraph naming .NET 10 in comitato_descrizione. The editorial reference title and URL are stored in comitato_fonti as a {titolo, url} mapping. Existing approved text, editorial references and all original metadata remain unchanged.",
+      "files": [],
+      "assertions": [
+        {"id": "A-SUBJECT", "text": "The title identifies the affected service and version before the event.", "critical": true},
+        {"id": "A-BALANCE", "text": "The suggestion gives a concrete migration target and impact without commands or implementation instructions.", "critical": true},
+        {"id": "A-PLAIN", "text": "comitato_descrizione contains only description and suggestion, with no Markdown formatting or source links; all editorial titles and URLs are retained in comitato_fonti, even when link_fonti differs.", "critical": true},
+        {"id": "A-KEEP", "text": "Populated committee text fields, non-empty comitato_fonti, original descriptions, source links, typed dates, meaningful date labels and unrelated entries remain unchanged.", "critical": true}
+      ],
+      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures", "Embed Markdown or links in comitato_descrizione", "Discard editorial reference titles or URLs", "Add TSV columns for comitato_fonti"],
+      "rubric": {"pass": ["Retains Functions, .NET 8 and .NET 10 in plain editorial text, separates references into comitato_fonti and preserves existing values and the TSV schema."], "fail": ["Omits the concrete subject, embeds Markdown or references in the description, drops reference metadata, becomes a technical runbook, or rewrites populated fields."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-DATE-CONFLICT",
+      "family": "evidence and uncertainty",
+      "kind": "rubric",
+      "requirement_ids": ["R-DATES", "R-PRESERVE"],
+      "prompt": "Completa le scadenze mancanti: una notifica ha due date diverse e un'altra è solo un consiglio sulle prestazioni.",
+      "initial_state": "A WAF recommendation has a retirement date, an update timestamp and a different verified official retirement date. A disk-performance recommendation has no retirement evidence.",
+      "expected_output": "Both WAF operational dates retain their sources and discrepancy; update time is excluded as a deadline. The disk entry states that no retirement deadline is indicated.",
+      "files": [],
+      "assertions": [
+        {"id": "A-DATES", "text": "Conflicts and source attribution are explicit; update timestamps are not treated as retirement dates.", "critical": true},
+        {"id": "A-NO-INVENT", "text": "The performance recommendation gets no invented retirement deadline.", "critical": true}
+      ],
+      "forbidden_actions": ["Claim an unread source verifies the date", "Overwrite structured source evidence", "Infer a deadline from an update timestamp"],
+      "rubric": {"pass": ["Documents source-specific conflicting dates and the absence of a disk retirement deadline."], "fail": ["Silently selects a date, invents a deadline or hides uncertainty."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-SAFE-PUBLICATION",
+      "family": "offline monthly refresh",
+      "kind": "rubric",
+      "requirement_ids": ["R-REPLAY", "R-VERIFY", "R-PRESERVE"],
+      "prompt": "Usa i testi approvati e aggiorna le slide di settembre 2026 senza toccare gli altri report.",
+      "initial_state": "A valid all-report manifest has saved inputs and a historical date. The YAML includes paragraphs and multiline dates. Its saved changes have been summarized in chat and the user has explicitly approved publication of this exact reviewed YAML and month. The bundle contains exactly its manifest and listed artifacts.",
+      "expected_output": "The launcher replays the exact bundle with --refresh-committee, first to an isolated output root, then to the canonical export root after comparison. All non-editorial data and other months remain unchanged.",
+      "files": [],
+      "assertions": [
+        {"id": "A-OFFLINE", "text": "The real run.sh command uses the selected replay bundle, committee refresh and explicit output paths without Azure acquisition.", "critical": true},
+        {"id": "A-CANDIDATE", "text": "The candidate is checked before real publication and final TSV cells match YAML with tab/newline-to-space normalization.", "critical": true},
+        {"id": "A-BUNDLE", "text": "Other reports, slide IDs/order/header and non-committee columns remain unchanged; manifest stays consistent.", "critical": true}
+      ],
+      "forbidden_actions": ["Run a live slides-only publication", "Use today's date in place of the saved date", "Copy only the TSV into the destination", "Treat literal multiline inequality as an enrichment failure"],
+      "rubric": {"pass": ["Executes offline replay and proves both candidate and published output satisfy all preservation invariants."], "fail": ["Acquires Azure data, drops artifacts, changes other columns, or claims success without reading the TSV."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-BLOCKED-INPUT",
+      "family": "fail closed",
+      "kind": "rubric",
+      "requirement_ids": ["R-INPUT", "R-REPLAY", "R-VERIFY"],
+      "prompt": "Aggiorna il comitato per luglio 2025 usando quello che trovi.",
+      "initial_state": "The requested month lacks saved inputs or includes an extra unlisted file that publication would discard.",
+      "expected_output": "An explicit blocker names the missing replay evidence or endangered file; nothing is published and no alternative month or live acquisition is selected.",
+      "files": [],
+      "assertions": [{"id": "A-STOP", "text": "The unavailable or unsafe monthly input produces an explicit failure without destructive or live fallback.", "critical": true}],
+      "forbidden_actions": ["Pick the newest month", "Fall back to live Azure", "Discard an extra bundle file"],
+      "rubric": {"pass": ["Reports the precise input or preservation blocker and leaves the bundle untouched."], "fail": ["Changes scope, invents evidence or publishes over the unsafe bundle."]},
+      "status": "not-run",
+      "held_out": false
+    }
+  ],
+  "triggers": {
+    "queries": [
+      {"id": "Q-ENRICH", "query": "Completa le note mancanti del comitato Azure e applicale alle slide di ottobre 2026.", "should_trigger": true, "split": "train"},
+      {"id": "Q-STYLE", "query": "Riscrivi le descrizioni del comitato di settembre mantenendo versioni e migrazioni comprensibili ai direttori.", "should_trigger": true, "split": "held-out"},
+      {"id": "Q-DATES", "query": "Mancano descrizioni e scadenze editoriali nel report Azure del mese scorso.", "should_trigger": true, "split": "train"},
+      {"id": "Q-REFRESH", "query": "Ho finito il file editoriale: riporta i testi nel TSV delle slide di agosto 2026.", "should_trigger": true, "split": "held-out"},
+      {"id": "Q-ACQUIRE", "query": "Scarica da Azure tutte le nuove raccomandazioni Advisor per le sottoscrizioni.", "should_trigger": false, "split": "train"},
+      {"id": "Q-PROJECT", "query": "Converti soltanto il report aggregato mensile nel TSV canonico delle slide.", "should_trigger": false, "split": "held-out", "competing_owner": "local-azure-retirements"},
+      {"id": "Q-POLICY", "query": "Crea una policy Azure per impedire l'uso degli IP Basic.", "should_trigger": false, "split": "train", "competing_owner": "internal-cloud-policy"},
+      {"id": "Q-DECK", "query": "Disegna una presentazione PowerPoint sui costi Azure.", "should_trigger": false, "split": "held-out", "competing_owner": "anthropic-pptx"}
+    ]
+  }
+}

@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from threading import Barrier, BrokenBarrierError
+from time import perf_counter, sleep
 
 import pytest
 
@@ -250,7 +252,8 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
 
     result = build_application(log, publication).run(RunRequest(ReportSelector.ALL))
 
-    assert log.events == ["scope", "catalog", "advisor", "service-health"]
+    assert log.events[:2] == ["scope", "catalog"]
+    assert sorted(log.events[2:]) == ["advisor", "service-health"]
     assert result.exit_status == 0
     assert [
         artifact.logical_path for artifact in publication.published[0].artifacts
@@ -264,6 +267,116 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
     ]
     assert len(publication.published) == 1
     assert result.publication_receipt.current_reference == "2026/07"
+
+
+def test_independent_sources_overlap_before_either_download_completes() -> None:
+    barrier = Barrier(2)
+    publication = FakePublicationStore()
+    log = EventLog()
+    application = build_application(log, publication)
+
+    class RendezvousSource(FakeSource):
+        def acquire(self, context):
+            try:
+                barrier.wait(timeout=2)
+            except BrokenBarrierError:
+                pytest.fail("Advisor and Service Health downloads did not overlap")
+            return super().acquire(context)
+
+    application.advisor_source = RendezvousSource("advisor", log)
+    application.service_health_source = RendezvousSource("service-health", log)
+    assert application.run(RunRequest(ReportSelector.ALL)).exit_status == 0
+
+
+def test_acquisition_latency_benchmark() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+    application = build_application(log, publication)
+
+    class DelayedSource(FakeSource):
+        def acquire(self, context):
+            sleep(0.15)
+            return super().acquire(context)
+
+    application.advisor_source = DelayedSource("advisor", log)
+    application.service_health_source = DelayedSource("service-health", log)
+    started = perf_counter()
+    assert application.run(RunRequest(ReportSelector.ALL)).exit_status == 0
+    print(
+        f"Acquisition latency with two 150 ms sources: {perf_counter() - started:.3f}s"
+    )
+
+
+def test_source_failure_waits_for_other_download_and_blocks_publication() -> None:
+    log = EventLog()
+    publication = FakePublicationStore()
+    application = build_application(log, publication)
+
+    class FailedSource(FakeSource):
+        def acquire(self, context):
+            raise ApplicationError("service-health download failed")
+
+    class CompletedSource(FakeSource):
+        def acquire(self, context):
+            sleep(0.01)
+            return super().acquire(context)
+
+    application.advisor_source = CompletedSource("advisor", log)
+    application.service_health_source = FailedSource("service-health", log)
+    with pytest.raises(ApplicationError, match="service-health download failed"):
+        application.run(RunRequest(ReportSelector.ALL))
+
+    assert "advisor" in log.events
+    assert publication.published == []
+
+
+def test_advisor_enrichment_runs_while_service_health_download_is_in_progress() -> None:
+    barrier = Barrier(2)
+    log = EventLog()
+    publication = FakePublicationStore()
+    observer = RecordingRunObserver()
+    application = build_application(log, publication, observer=observer)
+
+    class RendezvousEnrichment:
+        def enrich(self, context, recommendations):
+            try:
+                barrier.wait(timeout=2)
+            except BrokenBarrierError:
+                pytest.fail("Advisor enrichment waited for Service Health download")
+            return AdvisorEnrichments()
+
+    class RendezvousServiceHealth(FakeSource):
+        def acquire(self, context):
+            barrier.wait(timeout=2)
+            return super().acquire(context)
+
+    application.advisor_enrichment_source = RendezvousEnrichment()
+    application.service_health_source = RendezvousServiceHealth("service-health", log)
+    assert application.run(RunRequest(ReportSelector.ALL)).exit_status == 0
+    completed = [
+        event for event in observer.events if event.event == "source_completed"
+    ]
+    assert [event.context["completed_sources"] for event in completed] == [1, 2]
+    assert [event.context["remaining_sources"] for event in completed] == [1, 0]
+    assert {event.context["source"] for event in completed} == {
+        "advisor",
+        "service-health",
+    }
+
+
+def test_parallel_failures_keep_advisor_first_error_precedence() -> None:
+    application = build_application(EventLog(), FakePublicationStore())
+
+    class FailedSource(FakeSource):
+        def acquire(self, context):
+            if self.name == "advisor":
+                sleep(0.02)
+            raise ApplicationError(f"{self.name} failed")
+
+    application.advisor_source = FailedSource("advisor", EventLog())
+    application.service_health_source = FailedSource("service-health", EventLog())
+    with pytest.raises(ApplicationError, match="advisor failed"):
+        application.run(RunRequest(ReportSelector.ALL))
 
 
 def test_incomplete_receipt_blocks_staging() -> None:

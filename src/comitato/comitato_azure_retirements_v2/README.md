@@ -1,6 +1,6 @@
 # Azure Retirements v2
 
-This command performs a live Azure acquisition and publishes one validated
+This command acquires or reuses saved Azure responses and publishes one validated
 monthly report bundle. The default selector is `all`; use `--report`
 with `advisor`, `service-health`, `aggregate`, or `slides` to publish one
 selected contract and its complete dependency closure.
@@ -9,6 +9,8 @@ selected contract and its complete dependency closure.
 
 - [Package Layout](#package-layout)
 - [Advisor Enrichment](#advisor-enrichment)
+- [Download Reuse And Timeouts](#download-reuse-and-timeouts)
+- [Published Artifacts](#published-artifacts)
 - [Operator Output And Logging](#operator-output-and-logging)
 - [Service Health Evidence](#service-health-evidence)
 
@@ -33,7 +35,7 @@ diagnostics, manifests, or artifacts.
 
 ## Advisor Enrichment
 
-Advisor raw recommendations are enriched from three live sources: the
+Advisor raw recommendations are enriched from three Azure sources: the
 `Microsoft.Advisor/metadata` endpoint, Resource Graph resource inventory, and
 Resource Graph subscription inventory. Resource inventory is queried by
 normalized ARM resource ID, while subscription names come only from the
@@ -71,15 +73,127 @@ becomes current. Save a copy elsewhere before replacing a bundle that may need
 to be replayed later. New publication and replay use the hashed `saved_inputs`
 in `publication-manifest.json`. A live slide run merges committee values from
 `comitato_editoriale.yaml` into the slide before encoding and writes the YAML
-only after publication succeeds. A changed original description clears only
-`comitato_descrizione`; `comitato_retirement_date` is retained, and entries not
-present in the run are dropped. Pass `--committee-yaml PATH` to select another
-file. In the YAML, descriptions longer than 100 characters use folded style,
+only after publication succeeds. A changed original description clears
+`comitato_descrizione` and its editorial references in `comitato_fonti`;
+`comitato_retirement_date` is retained, and entries not present in the run are
+dropped. Unchanged source descriptions retain both editorial fields. New and
+legacy entries without editorial references default to `comitato_fonti: []`.
+Pass `--committee-yaml PATH` to select another file.
+In the YAML, `comitato_descrizione` contains only a plain-text, service-first
+description and a plain `Suggerimento:` paragraph, without Markdown formatting
+or source links. `comitato_fonti` holds editorial references as a list of
+`{titolo: str, url: str}` mappings, separate from the original `link_fonti`.
+Editorial references stay in the YAML; they do not add a TSV column.
+Descriptions longer than 100 characters use folded style,
 `link_fonti` omits Azure portal links (`app.azure.com`, `portal.azure.com`,
 `aka.ms/AzureServiceHealthAdvisories`), and `retirement_date` is a list of
 `{data, tipo, fonte}` entries. Schema-1 historical bundles without `saved_inputs` cannot be replayed
 because they do not preserve the acquisition inputs needed for deterministic
 replay.
+
+### Refresh Committee Values Locally
+
+Use the [local-azure-retirements-enrich skill](../../../.github/skills/local-azure-retirements-enrich/SKILL.md)
+to complete missing editorial fields for a selected year and month. The skill
+saves the YAML and presents a change summary first. It runs the launcher only
+after explicit user approval of that summary.
+
+Use the existing monthly bundle as replay input to apply editorial YAML without
+acquiring Azure data:
+
+```bash
+bash src/comitato/comitato_azure_retirements_v2/run.sh \
+  --replay-bundle src/comitato/comitato_azure_retirements_v2/exports/2026/10 \
+  --refresh-committee \
+  --committee-yaml src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.yaml \
+  --output-path src/comitato/comitato_azure_retirements_v2/exports \
+  --output-format json
+```
+
+The manifest supplies the original report selector, date, subscription scope,
+and saved inputs. All reports selected by that manifest are republished; only
+the slide's committee fields are enriched. The editorial YAML is read but not
+rewritten, so entries for other months remain intact. The bundle must contain
+saved inputs and publish slides, and the YAML must exist. Ordinary replay
+continues to ignore editorial YAML unless `--refresh-committee` is explicit.
+The existing original-description match rule still applies: stale descriptions
+are not reused. Run from the repository root and use explicit paths to avoid
+environment-variable output overrides.
+
+## Download Reuse And Timeouts
+
+The Advisor and Service Health pipelines run concurrently with at most two
+workers, including each source's enrichment downloads. Each worker uses its own
+HTTP session. Each source first acquires its main data (stage 1/2), then its
+enrichment evidence (stage 2/2). Subscription traversal and pagination within
+each source remain ordered. Aggregation and publication wait for both pipelines
+to finish successfully.
+
+Download logs identify the owning source, operation, stage, subscription ID,
+current subscription/total, and page. They distinguish a live request from a
+download saved to cache and a cache hit. Completion messages include the record
+count, elapsed time, original download timestamp, and whether more pages remain.
+For example:
+
+```text
+[Service Health | events | 1/2 main acquisition | subscription sub-example | 2/10 subscriptions | page 1] Downloaded and cached; 12 records; last page; remaining subscriptions 8; estimated remaining 24.0s (main acquisition only); elapsed 3.0s; downloaded at ...
+[Advisor | Resource Graph resource inventory | 2/2 enrichment | batch 1/3 | page 1] Reused cache; 50 records; last page of batch; remaining batches 2; elapsed 0.0s; downloaded at ...
+```
+
+The remaining-time estimate uses the observed mean time per completed
+subscription and covers only that source's main acquisition. Cache hits, varying
+subscription sizes, retries, and throttling can change the estimate. Before a
+subscription finishes, no ETA is asserted. Azure does not announce a total page
+count: logs say `more pages pending (total unknown)` until the last page rather
+than inventing a page percentage or a report-wide ETA. Each completed pipeline
+reports the finished/total and remaining source counts. Retries identify their
+source and page, next attempt/maximum attempts, and backoff delay.
+Resource inventory lookups show `batch X/Y` for groups of up to 100 unique
+resource IDs. Page numbering restarts within each batch. `last page of batch`
+and the remaining batch count distinguish the end of one query from the end of
+the whole lookup, including when responses come from cache.
+
+Successful Azure response objects are saved atomically under
+`<output-path>/.acquisition-cache/` (by default
+`src/comitato/comitato_azure_retirements_v2/exports/.acquisition-cache/`).
+The cache includes Advisor recommendations, Service Health events, Advisor
+metadata, and Resource Graph enrichment responses. It is independent of monthly
+publication and survives failed runs and replacement of a monthly bundle.
+Subscription scope resolution remains live unless subscriptions are explicit.
+
+Cache entries have **no expiry**, including across report months. A later run
+reuses existing entries and downloads only missing requests. Request identity
+includes the method, full URL, API version, query parameters, and POST body,
+so different subscriptions, queries, and continuation pages remain distinct.
+The cache is per response, not per report: completed pages survive a timeout on
+a later page. An incomplete acquisition still blocks publication.
+
+This is a saved snapshot, not an automatic refresh. New Azure notices and
+updates are invisible until the relevant cache entries are removed. A cache-hit
+event shows the original download timestamp on the human console and in the
+debug log. To refresh, stop active runs and delete
+`<output-path>/.acquisition-cache/`, or delete individual JSON entries to
+download only those requests again. Changing `--as-of-date` alone does not
+refresh Azure data. A resumed run can combine older completed responses with
+newly downloaded ones; clear the cache for a wholly fresh acquisition.
+
+Cache files contain Azure response data and must be treated like raw exports.
+They are excluded from Git, use private temporary files, and never store
+authentication headers or bearer tokens. Checksums detect damaged payloads.
+A corrupt or unreadable entry fails explicitly rather than silently triggering
+a new download; remove the indicated entry to recover. Disk-write failures also
+fail explicitly and do not leave a partial cache entry.
+
+`--timeout-seconds` controls the timeout for each HTTP attempt (default: 60).
+`--retry-attempts` controls additional attempts (default: 3). Read and connection
+timeouts now use the same bounded retry/backoff policy as retryable HTTP
+responses (408, 429, 500, 502, 503, 504). The default allows at most four attempts;
+a persistently slow endpoint can therefore still fail after exhausting its
+budget. Use a larger timeout, for example `./run.sh --timeout-seconds 120`, when
+the endpoint consistently needs more than 60 seconds. A failed run leaves the
+previous monthly bundle unchanged and keeps completed cached responses.
+
+## Published Artifacts
 
 The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
 aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.

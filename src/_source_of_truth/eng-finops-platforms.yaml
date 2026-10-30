@@ -1,4 +1,5 @@
 schema_version: 1
+tenant_id: 7788edaf-0346-4068-9d79-c868aed15b3d
 platforms:
   IO:
     subscriptions:
@@ -25,6 +26,18 @@ platforms:
         state: active
       - name: PROD-Esercenti
         id: 74da48a3-b0e7-489d-8172-da79801086ed
+        state: active
+      - name: COPILOT-IO-APP
+        id: a9a529f9-b18c-454b-ba95-c69c5eba134c
+        state: active
+      - name: COPILOT-IO-CARABINIERI
+        id: 56ae6b0e-2bd4-4080-a13a-9618c9189d43
+        state: active
+      - name: COPILOT-IO-WALLET
+        id: 89b3e3cf-cd5d-41d7-97d2-8ef2c8532799
+        state: active
+      - name: COPILOT-IO-CGN
+        id: 3a4cff68-ae8c-4c59-8333-06b4c8952e1f
         state: active
 
   pagoPA:
@@ -145,6 +158,12 @@ platforms:
         state: active
       - name: DEV-PS
         id: f9621223-55a8-49e5-b719-5f740a4f3652
+        state: active
+      - name: MDASH-Evaluation
+        id: 728a1e35-cfa5-4d73-a027-8afa624d3462
+        state: active
+      - name: COPILOT-TECHNOLOGY-CLOUD-STRATEGY
+        id: 7e206bc6-280e-416c-97f3-f1dd5011ad39
         state: active
       - name: Unassigned
         id: null
