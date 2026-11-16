@@ -42,11 +42,11 @@ platforms:
           deleted_at: null
       - name: DEV-ITWALLET
         id: e1798093-c95c-4b8b-b0e9-0b4796f66910
-        state: disabled
+        state: dismiss
         lifecycle:
           created_at: "2024-11-13"
-          disabled_at: null
-          deleted_at: null
+          disabled_at: "2026-03-30"
+          deleted_at: "2026-06-30"
       - name: UAT-Esercenti
         id: d1a90d9f-6ee1-4fb2-a149-7aedbf3ed49d
         state: active
@@ -160,21 +160,21 @@ platforms:
           deleted_at: null
       - name: DEV-MIL
         id: 000df80e-d061-4064-998e-d4e32146d17b
-        state: deleted
+        state: dismiss
         lifecycle:
           created_at: "2022-12-05"
           disabled_at: "2026-06-30"
           deleted_at: "2026-06-30"
       - name: UAT-MIL
         id: 3b91354c-5956-4c35-b711-afeecb164933
-        state: deleted
+        state: dismiss
         lifecycle:
           created_at: "2022-12-05"
           disabled_at: "2026-06-30"
           deleted_at: "2026-06-30"
       - name: PROD-MIL
         id: d329da34-8a62-4fc1-8178-d0cf9189ece2
-        state: deleted
+        state: dismiss
         lifecycle:
           created_at: "2022-12-05"
           disabled_at: "2026-06-30"
@@ -353,25 +353,28 @@ platforms:
           deleted_at: null
       - name: Unassigned
         id: null
-        state: disabled
-        lifecycle: null
+        state: dismiss
+        lifecycle:
+          created_at: null
+          disabled_at: "2026-03-30"
+          deleted_at: "2026-06-30"
       - name: PROD-PSN
         id: 921abae5-e785-443b-b939-3ab6f5e6f829
-        state: disabled
+        state: dismiss
         lifecycle:
           created_at: "2024-06-25"
-          disabled_at: null
-          deleted_at: null
+          disabled_at: "2026-03-30"
+          deleted_at: "2026-06-30"
       - name: DELETEME_DIEGO_V2
         id: 4c6905f7-1596-46a3-bf7a-cbb94494b92d
-        state: deleted
+        state: dismiss
         lifecycle:
           created_at: "2026-02-16"
           disabled_at: "2026-06-30"
           deleted_at: "2026-06-30"
       - name: DELETEME_TEST_DIEGO
         id: c4d07893-f6e0-401a-b0f2-f2c624a651fa
-        state: deleted
+        state: dismiss
         lifecycle:
           created_at: "2026-02-16"
           disabled_at: "2026-06-30"

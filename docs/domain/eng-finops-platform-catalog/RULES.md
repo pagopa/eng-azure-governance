@@ -43,8 +43,8 @@ These rules govern the canonical mapping of Eng FinOps platforms to Azure subscr
 - Severity: blocking
 - Enforcement owner: `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`, `tests/comitato/comitato_azure_retirements_v2/adapters/test_platform_catalog_yaml.py`
 - Evidence: `src/_source_of_truth/README.md`, `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`
-- Remediation: Keep disabled and deleted entries in the catalog for lifecycle history, but exclude them from the mapping returned to runtime consumers.
-- Rule: Catalog consumers must receive subscription-to-platform mappings only for entries whose state is `active`.
+- Remediation: Keep dismissed entries in the catalog with their known lifecycle dates, but exclude them from the mapping returned to runtime consumers.
+- Rule: Subscription state must be `active` or `dismiss`. Catalog consumers must receive subscription-to-platform mappings only for entries whose state is `active`.
 
 ## CAT-005 - Match by the runtime's declared key
 
@@ -76,5 +76,5 @@ These rules govern the canonical mapping of Eng FinOps platforms to Azure subscr
 - Severity: blocking
 - Enforcement owner: `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`, `tests/comitato/comitato_azure_retirements_v2/adapters/test_platform_catalog_yaml.py`
 - Evidence: `src/_source_of_truth/README.md`, `src/_source_of_truth/eng-finops-platforms.yaml`
-- Remediation: Replace guessed or sentinel dates with null, mark incomplete history explicitly, and provide evidence for every known date and interval.
-- Rule: Real subscriptions must use nullable UTC lifecycle dates with matching sources and ordered, non-overlapping activity and platform-assignment intervals. Unknown history must not be interpreted as continuous activity or an unchanged platform. Complete histories must agree with creation, the latest disable date, deletion, and the current catalog mapping. A null-ID placeholder may have only null lifecycle metadata.
+- Remediation: Replace guessed or sentinel dates with null and use only the three lifecycle fields declared by the canonical YAML.
+- Rule: A lifecycle block must contain exactly `created_at`, `disabled_at`, and `deleted_at`, each a quoted `YYYY-MM-DD` date or null. `created_at` records the enrollment-account association start, not a certified Azure creation date. Known dates must be ordered; active entries must have null disable and deletion dates. Unknown dates must not be interpreted as continuous activity or an unchanged platform. A null-ID placeholder may have either the same block or null lifecycle metadata; a real subscription must not have null lifecycle metadata when the field is present.
