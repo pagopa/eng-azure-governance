@@ -1,230 +1,480 @@
 schema_version: 1
 tenant_id: 7788edaf-0346-4068-9d79-c868aed15b3d
+# lifecycle.created_at uses enrollmentAccountStartDate (enrollment account
+# association start), not a certified Azure creation date.
 platforms:
   IO:
     subscriptions:
       - name: DEV-IO
         id: a4e96bcd-59dc-4d66-b2f7-5547ad157c12
         state: active
+        lifecycle:
+          created_at: "2021-07-20"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-IO
         id: ec285037-c673-4f58-b594-d7c480da4e8b
         state: active
+        lifecycle:
+          created_at: "2019-12-18"
+          disabled_at: null
+          deleted_at: null
       - name: DEV-QATM
         id: 1e2abb45-b5ba-4890-a354-b3eb0db26921
         state: active
+        lifecycle:
+          created_at: "2025-12-15"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-QATM
         id: 0895ec63-805a-473f-b93c-4f52af5bd088
         state: active
+        lifecycle:
+          created_at: "2025-12-15"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-CED
         id: 0f1c9857-d58b-47d2-874e-c905c5276dda
         state: active
+        lifecycle:
+          created_at: "2026-03-05"
+          disabled_at: null
+          deleted_at: null
       - name: DEV-ITWALLET
         id: e1798093-c95c-4b8b-b0e9-0b4796f66910
-        state: disabled
+        state: dismiss
+        lifecycle:
+          created_at: "2024-11-13"
+          disabled_at: "2026-03-30"
+          deleted_at: "2026-06-30"
       - name: UAT-Esercenti
         id: d1a90d9f-6ee1-4fb2-a149-7aedbf3ed49d
         state: active
+        lifecycle:
+          created_at: "2021-04-14"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-Esercenti
         id: 74da48a3-b0e7-489d-8172-da79801086ed
         state: active
+        lifecycle:
+          created_at: "2021-04-14"
+          disabled_at: null
+          deleted_at: null
       - name: COPILOT-IO-APP
         id: a9a529f9-b18c-454b-ba95-c69c5eba134c
         state: active
+        lifecycle:
+          created_at: "2026-10-06"
+          disabled_at: null
+          deleted_at: null
       - name: COPILOT-IO-CARABINIERI
         id: 56ae6b0e-2bd4-4080-a13a-9618c9189d43
         state: active
+        lifecycle:
+          created_at: "2026-10-06"
+          disabled_at: null
+          deleted_at: null
       - name: COPILOT-IO-WALLET
         id: 89b3e3cf-cd5d-41d7-97d2-8ef2c8532799
         state: active
+        lifecycle:
+          created_at: "2026-10-06"
+          disabled_at: null
+          deleted_at: null
       - name: COPILOT-IO-CGN
         id: 3a4cff68-ae8c-4c59-8333-06b4c8952e1f
         state: active
+        lifecycle:
+          created_at: "2026-10-06"
+          disabled_at: null
+          deleted_at: null
 
   pagoPA:
     subscriptions:
       - name: DEV-pagoPA
         id: bbe47ad4-08b3-4925-94c5-1278e5819b86
         state: active
+        lifecycle:
+          created_at: "2021-08-30"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-pagoPA
         id: 26abc801-0d8f-4a6e-ac5f-8e81bcc09112
         state: active
+        lifecycle:
+          created_at: "2021-08-30"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-pagoPA
         id: b9fc9419-6097-45fe-9f74-ba0641c91912
         state: active
+        lifecycle:
+          created_at: "2021-08-30"
+          disabled_at: null
+          deleted_at: null
       - name: Common
         id: 1fa3dd86-a404-4a89-af1f-9350a2ac0894
         state: active
+        lifecycle:
+          created_at: "2021-04-15"
+          disabled_at: null
+          deleted_at: null
       - name: PDA-Migration-PostgreSQL
         id: 6dacb238-b8dc-4bca-a40a-f9d5b3b21f5e
         state: active
+        lifecycle:
+          created_at: null
+          disabled_at: null
+          deleted_at: null
       - name: PROD-PDA-BACKUP
         id: 1acbc8b8-ebc5-4f51-b2b9-1c8c98c6a65e
         state: active
+        lifecycle:
+          created_at: "2024-06-18"
+          disabled_at: null
+          deleted_at: null
 
   PARI:
     subscriptions:
       - name: DEV-CSTAR
         id: 4d177dd6-5c7d-40ab-8019-0c1be380a25d
         state: active
+        lifecycle:
+          created_at: "2021-04-14"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-CSTAR
         id: f9f0ed60-4b4b-49a6-97cb-8c8a0f9e2435
         state: active
+        lifecycle:
+          created_at: "2021-04-29"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-CSTAR
         id: 88c709b0-11cf-4450-856e-f9bf54051c1d
         state: active
+        lifecycle:
+          created_at: "2021-04-29"
+          disabled_at: null
+          deleted_at: null
       - name: DEV-MIL
         id: 000df80e-d061-4064-998e-d4e32146d17b
-        state: deleted
+        state: dismiss
+        lifecycle:
+          created_at: "2022-12-05"
+          disabled_at: "2026-06-30"
+          deleted_at: "2026-06-30"
       - name: UAT-MIL
         id: 3b91354c-5956-4c35-b711-afeecb164933
-        state: deleted
+        state: dismiss
+        lifecycle:
+          created_at: "2022-12-05"
+          disabled_at: "2026-06-30"
+          deleted_at: "2026-06-30"
       - name: PROD-MIL
         id: d329da34-8a62-4fc1-8178-d0cf9189ece2
-        state: deleted
+        state: dismiss
+        lifecycle:
+          created_at: "2022-12-05"
+          disabled_at: "2026-06-30"
+          deleted_at: "2026-06-30"
 
   Software Version Control:
     subscriptions:
       - name: GitHub
         id: 0051948b-122c-405f-a59b-e4d4628ba8e1
         state: active
+        lifecycle:
+          created_at: "2025-03-03"
+          disabled_at: null
+          deleted_at: null
 
   Security:
     subscriptions:
       - name: Prod-Sec
         id: 0da48c97-355f-4050-a520-f11a18b8be90
         state: active
+        lifecycle:
+          created_at: "2021-08-30"
+          disabled_at: null
+          deleted_at: null
 
   SelfCare:
     subscriptions:
       - name: DEV-SelfCare
         id: 1ab5e788-3b98-4c63-bd05-de0c7388c853
         state: active
+        lifecycle:
+          created_at: "2021-10-01"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-SelfCare
         id: f47d50dc-b874-4e04-9d5c-c27f5053a651
         state: active
+        lifecycle:
+          created_at: "2021-10-01"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-SelfCare
         id: 813119d7-0943-46ed-8ebe-cebe24f9106c
         state: active
+        lifecycle:
+          created_at: "2021-10-01"
+          disabled_at: null
+          deleted_at: null
 
   Piattaforma Unitaria:
     subscriptions:
       - name: DEV-ARC
         id: e38f8c8c-3996-4e3c-976d-89cb22885543
         state: active
+        lifecycle:
+          created_at: "2024-05-22"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-ARC
         id: 32fe5eba-5d0c-4571-988f-3823d537b57f
         state: active
+        lifecycle:
+          created_at: "2024-05-22"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-ARC
         id: def6a97c-e3fb-4e10-9f1e-5884dac82d78
         state: active
+        lifecycle:
+          created_at: "2024-05-22"
+          disabled_at: null
+          deleted_at: null
       - name: DEV-P4PA
         id: 00288c16-f581-4bb4-9c52-6954dce102f4
         state: active
+        lifecycle:
+          created_at: "2024-01-17"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-P4PA
         id: 1b06ce19-c192-49b3-8418-0f5bf013ea5f
         state: active
+        lifecycle:
+          created_at: "2024-02-12"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-P4PA
         id: 1f1a5d38-ab5b-44af-b709-1d4085443abb
         state: active
+        lifecycle:
+          created_at: "2024-02-12"
+          disabled_at: null
+          deleted_at: null
 
   Fatturazione:
     subscriptions:
       - name: DEV-FATTURAZIONE
         id: 5c587d75-fb91-4559-bda2-8612949a2b7d
         state: active
+        lifecycle:
+          created_at: "2023-10-13"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-FATTURAZIONE
         id: e94b082d-f723-4380-85ec-7998a33e8ad0
         state: active
+        lifecycle:
+          created_at: "2024-09-23"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-FATTURAZIONE
         id: 794146a8-9ae6-4002-b37c-f51d91ecc399
         state: active
+        lifecycle:
+          created_at: "2023-10-13"
+          disabled_at: null
+          deleted_at: null
 
   Technology:
     subscriptions:
       - name: ORG
         id: a001fc05-3125-4940-bbe0-7ef4125a8263
         state: active
+        lifecycle:
+          created_at: "2021-07-02"
+          disabled_at: null
+          deleted_at: null
       - name: DevOpsAutomation
         id: eecb6e5c-a257-4994-bc32-eb79ca8e8a9a
         state: active
+        lifecycle:
+          created_at: "2021-11-16"
+          disabled_at: null
+          deleted_at: null
       - name: DevOpsLab
         id: ac17914c-79bf-48fa-831e-1359ef74c1d5
         state: active
+        lifecycle:
+          created_at: "2021-11-16"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-SITECORP
         id: e7799d11-87a7-4c8f-a260-5539dc9c0e10
         state: active
+        lifecycle:
+          created_at: "2021-06-28"
+          disabled_at: null
+          deleted_at: null
       - name: Microsoft Azure Enterprise
         id: afffdad1-3619-4331-89b7-7ed3ef838bc5
         state: active
+        lifecycle:
+          created_at: "2025-12-15"
+          disabled_at: null
+          deleted_at: null
       - name: DEV-PS
         id: f9621223-55a8-49e5-b719-5f740a4f3652
         state: active
+        lifecycle:
+          created_at: "2026-02-18"
+          disabled_at: null
+          deleted_at: null
       - name: MDASH-Evaluation
         id: 728a1e35-cfa5-4d73-a027-8afa624d3462
         state: active
+        lifecycle:
+          created_at: "2026-10-02"
+          disabled_at: null
+          deleted_at: null
       - name: COPILOT-TECHNOLOGY-CLOUD-STRATEGY
         id: 7e206bc6-280e-416c-97f3-f1dd5011ad39
         state: active
+        lifecycle:
+          created_at: "2026-10-12"
+          disabled_at: null
+          deleted_at: null
       - name: Unassigned
         id: null
-        state: disabled
+        state: dismiss
+        lifecycle:
+          created_at: null
+          disabled_at: "2026-03-30"
+          deleted_at: "2026-06-30"
       - name: PROD-PSN
         id: 921abae5-e785-443b-b939-3ab6f5e6f829
-        state: disabled
+        state: dismiss
+        lifecycle:
+          created_at: "2024-06-25"
+          disabled_at: "2026-03-30"
+          deleted_at: "2026-06-30"
       - name: DELETEME_DIEGO_V2
         id: 4c6905f7-1596-46a3-bf7a-cbb94494b92d
-        state: deleted
+        state: dismiss
+        lifecycle:
+          created_at: "2026-02-16"
+          disabled_at: "2026-06-30"
+          deleted_at: "2026-06-30"
       - name: DELETEME_TEST_DIEGO
         id: c4d07893-f6e0-401a-b0f2-f2c624a651fa
-        state: deleted
+        state: dismiss
+        lifecycle:
+          created_at: "2026-02-16"
+          disabled_at: "2026-06-30"
+          deleted_at: "2026-06-30"
 
   ICT:
     subscriptions:
       - name: DEV-ICT
         id: 82ef7414-5e6b-4383-a344-b981c2ba7267
         state: active
+        lifecycle:
+          created_at: "2024-09-30"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-ICT
         id: f4b92052-083f-493c-b765-6d6a28eb809c
         state: active
+        lifecycle:
+          created_at: "2024-09-30"
+          disabled_at: null
+          deleted_at: null
 
   Platform Service Management:
     subscriptions:
       - name: DEV-PLATFORM-SM
         id: 2d2f0c09-adad-4118-8ef8-8bf737bdca76
         state: active
+        lifecycle:
+          created_at: "2025-05-21"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-PLATFORM-SM
         id: c703d239-22b7-4d1a-9433-145daa884c10
         state: active
+        lifecycle:
+          created_at: "2025-05-21"
+          disabled_at: null
+          deleted_at: null
 
   DEVEX:
     subscriptions:
       - name: DEV-ENGINEERING
         id: d7de83e0-0571-40ad-b63a-64c942385eae
         state: active
+        lifecycle:
+          created_at: "2025-12-15"
+          disabled_at: null
+          deleted_at: null
       - name: DEV-DEVEX
         id: 35e6e3b2-4388-470e-a1b9-ad3bc34326d1
         state: active
+        lifecycle:
+          created_at: "2025-05-15"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-DEVEX
         id: 4eed9304-ce39-4d3f-bc84-f7964523d5e8
         state: active
+        lifecycle:
+          created_at: "2025-12-15"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-DEVEX
         id: 02a23258-2e41-433c-8e9a-465b99e77bca
         state: active
+        lifecycle:
+          created_at: "2025-05-15"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-TRIAL
         id: a2124115-ba74-462f-832a-9192cbd03649
         state: active
+        lifecycle:
+          created_at: "2024-04-29"
+          disabled_at: null
+          deleted_at: null
 
   CRM:
     subscriptions:
       - name: DEV-CRM
         id: eabd491e-e8ad-4104-88a6-91bde355e497
         state: active
+        lifecycle:
+          created_at: "2024-10-04"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-CRM
         id: 57cfa745-48f4-4ad8-91ab-fb63aebc57ec
         state: active
+        lifecycle:
+          created_at: "2024-10-04"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-CRM
         id: 59f48fac-dfdb-4063-bcc6-9322c9e5ebd0
         state: active
+        lifecycle:
+          created_at: "2024-10-04"
+          disabled_at: null
+          deleted_at: null
 
   PCI:
     subscriptions: []
@@ -234,24 +484,48 @@ platforms:
       - name: DEV-GRC
         id: e08b2c72-445b-4c8d-8bf0-bc19ff6bd78b
         state: active
+        lifecycle:
+          created_at: "2024-05-27"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-GRC
         id: ff7e8fed-3bc2-406e-a475-5212dea88264
         state: active
+        lifecycle:
+          created_at: "2024-05-27"
+          disabled_at: null
+          deleted_at: null
 
   Monitoraggio Pagamenti:
     subscriptions:
       - name: DEV-PAY-MONITORING
         id: a1c820d4-9fbd-4e24-b39a-745e74c01040
         state: active
+        lifecycle:
+          created_at: "2025-01-21"
+          disabled_at: null
+          deleted_at: null
       - name: UAT-PAY-MONITORING
         id: 8fa8f33a-6309-40c4-bccf-b52fe517ae7d
         state: active
+        lifecycle:
+          created_at: "2025-01-21"
+          disabled_at: null
+          deleted_at: null
       - name: PROD-PAY-MONITORING
         id: cbbe33f9-f35f-4d38-8b0c-adfb3a54c228
         state: active
+        lifecycle:
+          created_at: "2025-01-21"
+          disabled_at: null
+          deleted_at: null
 
   Assistenza:
     subscriptions:
       - name: DEV-Assistenza
         id: c3af72a3-8a5c-45b1-9fb2-401649752960
         state: active
+        lifecycle:
+          created_at: "2022-11-16"
+          disabled_at: null
+          deleted_at: null

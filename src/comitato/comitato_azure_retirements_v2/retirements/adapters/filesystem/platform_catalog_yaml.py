@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+from datetime import date
 from hashlib import sha256
 from pathlib import Path
 from uuid import UUID
@@ -15,6 +17,47 @@ from ...domain.platforms import (
 
 class CatalogLoadError(ValueError):
     """The source-of-truth catalog is missing or violates schema version 1."""
+
+
+def _lifecycle_date(value: object) -> date | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not re.fullmatch(
+        r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value
+    ):
+        raise CatalogLoadError(
+            "platform catalog lifecycle date must be a quoted YYYY-MM-DD string"
+        )
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError as exc:
+        raise CatalogLoadError("platform catalog lifecycle date is invalid") from exc
+    if parsed.year == 1:
+        raise CatalogLoadError("platform catalog lifecycle date is a sentinel")
+    return parsed
+
+
+def _validate_lifecycle(value: object, identifier: object, state: str) -> None:
+    if value is None:
+        if identifier is not None:
+            raise CatalogLoadError(
+                "platform catalog lifecycle is null for a real subscription"
+            )
+        return
+    keys = {"created_at", "disabled_at", "deleted_at"}
+    if not isinstance(value, dict) or set(value) != keys:
+        raise CatalogLoadError("platform catalog lifecycle shape is invalid")
+    created, disabled, deleted = (
+        _lifecycle_date(value[key])
+        for key in ("created_at", "disabled_at", "deleted_at")
+    )
+    known_dates = [day for day in (created, disabled, deleted) if day is not None]
+    if known_dates != sorted(known_dates) or (
+        state == "active" and (disabled is not None or deleted is not None)
+    ):
+        raise CatalogLoadError(
+            "platform catalog lifecycle dates conflict with lifespan or state"
+        )
 
 
 class YamlPlatformCatalogSource:
@@ -68,7 +111,12 @@ class YamlPlatformCatalogSource:
             ):
                 raise CatalogLoadError("platform catalog platform shape is invalid")
             for item in definition["subscriptions"]:
-                if not isinstance(item, dict) or set(item) != {"name", "id", "state"}:
+                required_item_keys = {"name", "id", "state"}
+                if (
+                    not isinstance(item, dict)
+                    or not required_item_keys.issubset(item)
+                    or not set(item).issubset(required_item_keys | {"lifecycle"})
+                ):
                     raise CatalogLoadError(
                         "platform catalog subscription shape is invalid"
                     )
@@ -77,11 +125,13 @@ class YamlPlatformCatalogSource:
                     not isinstance(name, str)
                     or not name.strip()
                     or not isinstance(state, str)
-                    or state not in {"active", "disabled", "deleted"}
+                    or state not in {"active", "dismiss"}
                 ):
                     raise CatalogLoadError(
                         "platform catalog subscription values are invalid"
                     )
+                if "lifecycle" in item:
+                    _validate_lifecycle(item["lifecycle"], identifier, state)
                 if identifier is None:
                     if state == "active":
                         raise CatalogLoadError(
