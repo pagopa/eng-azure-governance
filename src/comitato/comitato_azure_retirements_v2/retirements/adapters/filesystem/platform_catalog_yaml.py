@@ -22,7 +22,9 @@ class CatalogLoadError(ValueError):
 def _lifecycle_date(value: object) -> date | None:
     if value is None:
         return None
-    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+    if not isinstance(value, str) or not re.fullmatch(
+        r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value
+    ):
         raise CatalogLoadError(
             "platform catalog lifecycle date must be a quoted YYYY-MM-DD string"
         )

@@ -317,9 +317,14 @@ def test_yaml_catalog_excludes_dismissed_lifecycle_from_active_mapping(
         "disabled_at": disabled,
         "deleted_at": deleted,
     }
-    assert YamlPlatformCatalogSource(
-        write_lifecycle_catalog(tmp_path, lifecycle, state="dismiss")
-    ).load().active_ids == ()
+    assert (
+        YamlPlatformCatalogSource(
+            write_lifecycle_catalog(tmp_path, lifecycle, state="dismiss")
+        )
+        .load()
+        .active_ids
+        == ()
+    )
 
 
 @pytest.mark.parametrize(
@@ -364,9 +369,16 @@ def test_yaml_catalog_rejects_closed_dates_for_active_subscription(
 def test_yaml_catalog_accepts_placeholder_lifecycle(
     tmp_path: Path, lifecycle: object
 ) -> None:
-    assert YamlPlatformCatalogSource(
-        write_lifecycle_catalog(tmp_path, lifecycle, state="dismiss", identifier=None)
-    ).load().active_ids == ()
+    assert (
+        YamlPlatformCatalogSource(
+            write_lifecycle_catalog(
+                tmp_path, lifecycle, state="dismiss", identifier=None
+            )
+        )
+        .load()
+        .active_ids
+        == ()
+    )
 
 
 def test_yaml_catalog_rejects_null_lifecycle_for_real_subscription(
