@@ -9,7 +9,7 @@ A named organizational grouping for Azure subscriptions in the canonical catalog
 _Avoid_: Azure service, retirement source
 
 **Catalog subscription**:
-A subscription entry associated with one Eng FinOps platform and one lifecycle state.
+A subscription entry currently grouped under one Eng FinOps platform and one lifecycle state, with optional independent activity and platform-assignment histories.
 _Avoid_: runtime scope, policy assignment
 
 **Subscription state**:
@@ -27,3 +27,14 @@ _Avoid_: application version, Terraform version
 **Catalog tenant ID**:
 The Azure tenant UUID recorded as catalog metadata; it does not determine subscription mappings.
 _Avoid_: subscription ID, runtime scope
+
+**Subscription lifecycle history**:
+Evidence-backed creation, latest disactivation, deletion, and activity intervals,
+separate from platform-assignment intervals. Null dates and incomplete histories
+preserve uncertainty; they do not establish continuous activity.
+_Avoid_: inferred lifespan, first observed cost
+
+**Subscription purchase day**:
+A verified purchase calendar day, distinct from an exact subscription creation
+instant. The catalog preserves the precision and label of the source.
+_Avoid_: inferred creation timestamp
