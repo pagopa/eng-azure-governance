@@ -75,7 +75,8 @@ technical context to recognize the affected service. Use this middle ground:
 2. Add one short plain `Suggerimento:` paragraph. Lead with the action and name
    the concrete target when known. Include the main operational impact when it
    helps directors decide. Name a relevant tool, such as Terraform, only when
-   it clarifies which work is affected; do not add implementation steps.
+   it clarifies which work is affected; do not add implementation steps or
+   use the suggestion to surface unverified dates or source conflicts.
 3. Keep only the description and suggestion in `comitato_descrizione`, without
    Markdown formatting, inline source links, or reference sections. Store
    editorial references separately in `comitato_fonti`, a list of mappings
@@ -116,27 +117,38 @@ outside the selected month. Keep folded YAML descriptions and existing layout.
 ## Dates And Sources
 
 Read the entry's original description, source links, and typed date evidence.
-Use retirement or end-of-support dates, never an update timestamp.
-Prefer official Microsoft sources for any external verification; send only
-public service/version terms or public URLs, never internal inventory data.
+Verify that the source supports the specific service, component or version,
+event, and date. Use a retirement, end-of-support, or documented migration
+deadline, never an update or notice timestamp. An explicit Service Health date
+for a completed change may be used for that event, limited to the affected
+instances. For external verification, use official Microsoft sources and send
+only public service/version terms or public URLs, never internal inventory data.
 
-Use the existing `MM/DD/YYYY` display convention, with the event and source.
-If only a month is documented, retain month-level precision. Label past dates
-`[SCADUTA]` using the execution date. Show conflicting Advisor/documentation
-dates separately, without silently choosing one. Do not invent a deadline for
-an undated recommendation.
+Use `MM/DD/YYYY`, or `MM/YYYY` when the source only documents a month. Name
+the event and its source and record any newly consulted reference in
+`comitato_fonti`. Use `[SCADUTA]` only for a deadline that has already passed
+as of execution; do not label a completed change as an expired deadline.
 
-An Advisor-only date is acceptable when explicitly attributed to Azure Advisor
-and marked "data da confermare nella fonte collegata". Do not claim that a
-linked page verifies a date unless it was actually checked. Preserve source
-metadata even when documentation reports a different operational deadline.
+When dates conflict for the same event, use a single deadline only if a
+checked, service-specific Microsoft source establishes the action and scope.
+For example, state `Entro il 03/15/2027 — Migrare a WAF Policy` when the product
+guide establishes that migration deadline, not both the guide and Advisor dates.
+Do not promote an Advisor-only candidate or add a day that the source does not
+document. If no usable date can be verified, write only
+`Consultare la documentazione Microsoft.` in `comitato_retirement_date`.
+For an optional recommendation with no retirement event, use `Non applicabile`.
+Do not include candidate dates, `da confermare`, or verification notes in
+either management field. Preserve the original source metadata and explain
+material omissions separately in the technical review.
 
 ## Save And Review The YAML
 
 Save the enriched YAML before reporting changes. Validate parsing, unique keys,
-selected-ID coverage, a non-empty `comitato_descrizione`, and a string-valued
-`comitato_retirement_date` that may be empty when no operational deadline is
-documented.
+selected-ID coverage, and a non-empty `comitato_descrizione`. Validate that
+each date field being enriched is a string with verified dates at source
+precision, the generic documentation pointer, or a not-applicable statement,
+as appropriate. Newly initialized entries may start with an empty date before
+enrichment.
 Validate plain-text editorial wording and the separate `comitato_fonti` list
 of `{titolo, url}` mappings. Regenerate the sibling editorial TSV through
 `retirements.adapters.filesystem.committee_yaml.write_tsv` after every save;
@@ -152,9 +164,10 @@ formatting alone is not a source change.
 Compare the saved YAML with its snapshot and present the actual changes using
 the [editorial review template](references/chat-templates.md#editorial-review).
 Include the selected month, distinct changed-entry and field counts, affected
-services, before/after highlights, date/source uncertainty, validation results,
-and file links. State clearly that the editorial YAML and editorial TSV are
-saved but the selected monthly slide TSV is unchanged.
+services, before/after highlights, reasons for material date omissions in a
+separate technical note, validation results, and file links. State clearly that
+the editorial YAML and editorial TSV are saved but the selected monthly slide
+TSV is unchanged.
 Record the exact reviewed YAML, editorial TSV, and source manifest state for the
 approval check.
 If there are no edits, report that honestly; a no-op is not publication consent.
@@ -228,9 +241,10 @@ refresh as success. Keep the snapshot available for recovery and never revert
 unrelated user edits. Remove task-owned temporary outputs after success.
 
 Use the [publication result template](references/chat-templates.md#publication-result)
-only after these checks pass. Include source/date uncertainty and link the YAML
-and target TSV. On failure, identify the failed stage and actual file state
-instead of displaying the success template. Do not commit unless requested.
+only after these checks pass. Note material date omissions separately from
+published wording and link the YAML and target TSV. On failure, identify the
+failed stage and actual file state instead of displaying the success template.
+Do not commit unless requested.
 
 ## Evaluation
 

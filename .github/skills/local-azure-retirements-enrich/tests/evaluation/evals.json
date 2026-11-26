@@ -5,10 +5,10 @@
     {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
     {"id": "R-EDITORIAL", "text": "Use plain Italian for directors. Name the affected service and component or version first, then state what is happening or what to evaluate using direct wording rather than a fixed title formula. Give one concise, concrete Suggerimento with the target and decision-relevant impact when known. Keep only description and suggestion in comitato_descrizione; store editorial reference titles and URLs in separate comitato_fonti mappings without adding monthly slide columns.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-PRESERVE", "text": "Fill only empty committee text fields and missing or empty comitato_fonti lists without altering source metadata, existing text, meaningful date labels, non-empty editorial references or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
-    {"id": "R-DATES", "text": "Separate operational dates from update dates, attribute evidence and expose uncertainty.", "source": "SKILL.md#Dates And Sources"},
+    {"id": "R-DATES", "text": "Publish only source-backed operational dates at documented precision. Use a generic Microsoft documentation pointer when no usable date is verified, and keep unverified or conflicting evidence out of management fields without changing source metadata.", "source": "SKILL.md#Dates And Sources"},
     {"id": "R-REPLAY", "text": "Invoke run.sh in explicit offline committee replay mode and preserve the original monthly bundle contracts.", "source": "SKILL.md#Refresh Through The Launcher"},
     {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"},
-    {"id": "R-REVIEW", "text": "Save and validate the YAML and its editorial TSV first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, uncertainty, file links and unchanged monthly slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
+    {"id": "R-REVIEW", "text": "Save and validate the YAML and its editorial TSV first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, separate notes for material date omissions, file links and unchanged monthly slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
     {"id": "R-APPROVAL", "text": "Wait for explicit approval of the presented YAML and month before any launcher or report-writing call; absent consent and stale approval never authorize publication.", "source": "SKILL.md#Approval Gate"}
   ],
   "cases": [
@@ -19,11 +19,11 @@
       "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL"],
       "prompt": "Prepara le note del comitato per ottobre 2026 e fammi vedere cosa hai sistemato prima di aggiornare le slide.",
       "initial_state": "The selected bundle exists. Two entries have missing descriptions, one also lacks a date, and one date is Advisor-only. The user has supplied year/month but no publication approval.",
-      "expected_output": "YAML and editorial TSV are saved and validated. Chat shows two distinct changed entries, field counts, service-first before/after rows, date uncertainty and file links, explicitly stating the monthly slide is unchanged; an unselected approval form follows.",
+      "expected_output": "YAML and editorial TSV are saved and validated. The Advisor-only date is replaced by the generic Microsoft documentation pointer if not independently verified. Chat shows two distinct changed entries, field counts, service-first before/after rows, the reason for omitting the date and file links, explicitly stating the monthly slide is unchanged; an unselected approval form follows.",
       "files": ["references/chat-templates.md"],
       "assertions": [
         {"id": "A-SAVED", "text": "The summary describes edits already persisted in the YAML and synchronized editorial TSV, not hypothetical changes.", "critical": true},
-        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies each affected service and actual changes, exposes uncertainty and links the YAML, editorial TSV and monthly slide.", "critical": true},
+        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies affected services and actual changes, explains material date omissions separately, and links the YAML, editorial TSV and monthly slide.", "critical": true},
         {"id": "A-GATE", "text": "No launcher or publication API runs, including to a temporary output; the form has no default and awaits an answer.", "critical": true}
       ],
       "forbidden_actions": ["Claim slides are updated", "Launch replay to prepare the preview", "Treat month selection as publication approval"],
@@ -145,15 +145,17 @@
       "kind": "rubric",
       "requirement_ids": ["R-DATES", "R-PRESERVE"],
       "prompt": "Completa le scadenze mancanti: una notifica ha due date diverse e un'altra è solo un consiglio sulle prestazioni.",
-      "initial_state": "A WAF recommendation has a retirement date, an update timestamp and a different verified official retirement date. A disk-performance recommendation has no retirement evidence.",
-      "expected_output": "Both WAF operational dates retain their sources and discrepancy; update time is excluded as a deadline. The disk entry states that no retirement deadline is indicated.",
+      "initial_state": "WAF has an Advisor date, an update timestamp and a different migration deadline verified in the Microsoft product guide. A second service has only an unverified Advisor date. A third has a verified retirement month but Advisor suggests a specific day. A disk-performance recommendation has no retirement event.",
+      "expected_output": "Only the verified migration deadline appears for WAF. The second service says 'Consultare la documentazione Microsoft.' with no date. The third retains the verified month without a day. The disk recommendation says the field does not apply. The technical review explains omissions separately; original evidence is preserved.",
       "files": [],
       "assertions": [
-        {"id": "A-DATES", "text": "Conflicts and source attribution are explicit; update timestamps are not treated as retirement dates.", "critical": true},
+        {"id": "A-DATES", "text": "The WAF field gives one verified product-guide deadline with event and source; the competing Advisor date and update timestamp stay out of management fields.", "critical": true},
+        {"id": "A-FALLBACK", "text": "An unverified Advisor-only date has only the generic documentation pointer, with no candidate date or verification note in the description or the date field.", "critical": true},
+        {"id": "A-PRECISION", "text": "A verified month is not promoted to day precision without documented evidence.", "critical": true},
         {"id": "A-NO-INVENT", "text": "The performance recommendation gets no invented retirement deadline.", "critical": true}
       ],
-      "forbidden_actions": ["Claim an unread source verifies the date", "Overwrite structured source evidence", "Infer a deadline from an update timestamp"],
-      "rubric": {"pass": ["Documents source-specific conflicting dates and the absence of a disk retirement deadline."], "fail": ["Silently selects a date, invents a deadline or hides uncertainty."]},
+      "forbidden_actions": ["Show competing dates in management fields", "Claim an unread source verifies the date", "Overwrite structured source evidence", "Infer a deadline from an update timestamp"],
+      "rubric": {"pass": ["Uses the verified deadline or documented month when available, otherwise the generic pointer or not applicable; explains omissions separately."], "fail": ["Publishes a competing or unverified date, invents precision, uses 'da confermare' in management fields or changes original evidence."]},
       "status": "not-run",
       "held_out": true
     },
