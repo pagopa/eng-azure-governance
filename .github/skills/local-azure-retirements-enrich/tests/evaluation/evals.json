@@ -3,12 +3,12 @@
   "skill": "local-azure-retirements-enrich",
   "requirements": [
     {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
-    {"id": "R-EDITORIAL", "text": "Use Italian, plain-text service-first titles and balanced director-friendly Suggerimento paragraphs with concrete versions and targets. Keep only description and suggestion in comitato_descrizione; store every editorial reference title and URL in a separate comitato_fonti list of {titolo, url} mappings, without adding TSV columns.", "source": "SKILL.md#Editorial Rules"},
+    {"id": "R-EDITORIAL", "text": "Use Italian, plain-text service-first titles and balanced director-friendly Suggerimento paragraphs with concrete versions and targets. Keep only description and suggestion in comitato_descrizione; store every editorial reference title and URL in a separate comitato_fonti list of {titolo, url} mappings, without adding columns to the monthly slide TSV.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-PRESERVE", "text": "Fill only empty committee text fields and missing or empty comitato_fonti lists without altering source metadata, existing text, meaningful date labels, non-empty editorial references or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-DATES", "text": "Separate operational dates from update dates, attribute evidence and expose uncertainty.", "source": "SKILL.md#Dates And Sources"},
     {"id": "R-REPLAY", "text": "Invoke run.sh in explicit offline committee replay mode and preserve the original monthly bundle contracts.", "source": "SKILL.md#Refresh Through The Launcher"},
     {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"},
-    {"id": "R-REVIEW", "text": "Save and validate YAML first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, uncertainty, file links and unchanged slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
+    {"id": "R-REVIEW", "text": "Save and validate the YAML and its editorial TSV first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, uncertainty, file links and unchanged monthly slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
     {"id": "R-APPROVAL", "text": "Wait for explicit approval of the presented YAML and month before any launcher or report-writing call; absent consent and stale approval never authorize publication.", "source": "SKILL.md#Approval Gate"}
   ],
   "cases": [
@@ -19,15 +19,15 @@
       "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL"],
       "prompt": "Prepara le note del comitato per ottobre 2026 e fammi vedere cosa hai sistemato prima di aggiornare le slide.",
       "initial_state": "The selected bundle exists. Two entries have missing descriptions, one also lacks a date, and one date is Advisor-only. The user has supplied year/month but no publication approval.",
-      "expected_output": "YAML is saved and validated. Chat shows two distinct changed entries, field counts, service-first before/after rows, date uncertainty and file links, explicitly stating the slide is unchanged; an unselected approval form follows.",
+      "expected_output": "YAML and editorial TSV are saved and validated. Chat shows two distinct changed entries, field counts, service-first before/after rows, date uncertainty and file links, explicitly stating the monthly slide is unchanged; an unselected approval form follows.",
       "files": ["references/chat-templates.md"],
       "assertions": [
-        {"id": "A-SAVED", "text": "The summary describes edits already persisted in YAML, not hypothetical changes.", "critical": true},
-        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies each affected service and actual changes, exposes uncertainty and links both files.", "critical": true},
+        {"id": "A-SAVED", "text": "The summary describes edits already persisted in the YAML and synchronized editorial TSV, not hypothetical changes.", "critical": true},
+        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies each affected service and actual changes, exposes uncertainty and links the YAML, editorial TSV and monthly slide.", "critical": true},
         {"id": "A-GATE", "text": "No launcher or publication API runs, including to a temporary output; the form has no default and awaits an answer.", "critical": true}
       ],
       "forbidden_actions": ["Claim slides are updated", "Launch replay to prepare the preview", "Treat month selection as publication approval"],
-      "rubric": {"pass": ["Persists the YAML, renders a factual useful review and waits with all TSVs and manifests untouched."], "fail": ["Presents only a plan, hides uncertainty, or runs publication before post-review consent."]},
+      "rubric": {"pass": ["Persists the YAML and editorial TSV, renders a factual useful review and waits with the monthly slide and manifest untouched."], "fail": ["Presents only a plan, hides uncertainty, or runs publication before post-review consent."]},
       "status": "not-run",
       "held_out": false
     },
@@ -133,7 +133,7 @@
         {"id": "A-PLAIN", "text": "comitato_descrizione contains only description and suggestion, with no Markdown formatting or source links; all editorial titles and URLs are retained in comitato_fonti, even when link_fonti differs.", "critical": true},
         {"id": "A-KEEP", "text": "Populated committee text fields, non-empty comitato_fonti, original descriptions, source links, typed dates, meaningful date labels and unrelated entries remain unchanged.", "critical": true}
       ],
-      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures", "Embed Markdown or links in comitato_descrizione", "Discard editorial reference titles or URLs", "Add TSV columns for comitato_fonti"],
+      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures", "Embed Markdown or links in comitato_descrizione", "Discard editorial reference titles or URLs", "Add monthly slide columns for comitato_fonti"],
       "rubric": {"pass": ["Retains Functions, .NET 8 and .NET 10 in plain editorial text, separates references into comitato_fonti and preserves existing values and the TSV schema."], "fail": ["Omits the concrete subject, embeds Markdown or references in the description, drops reference metadata, becomes a technical runbook, or rewrites populated fields."]},
       "status": "not-run",
       "held_out": false

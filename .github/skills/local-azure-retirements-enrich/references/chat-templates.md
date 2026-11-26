@@ -20,7 +20,7 @@ in this chat presentation does not authorize Markdown in editorial YAML text.
 ```markdown
 ## Comitato Azure · <YYYY/MM>
 
-**✅ YAML salvato · ⏸ Slide non aggiornate**
+**✅ YAML e TSV editoriale salvati · ⏸ Slide non aggiornate**
 
 **<N> voci modificate** · <D> descrizioni · <S> scadenze · <F> fonti editoriali · <I> nuove voci
 
@@ -39,9 +39,9 @@ in this chat presentation does not authorize Markdown in editorial YAML text.
 - <esito effettivo della validazione YAML e della completezza>
 - <esito del confronto: dati originali e testi già approvati preservati>
 - <esito del controllo: descrizioni senza Markdown e riferimenti in comitato_fonti>
-- TSV e manifest mensile non modificati.
+- TSV editoriale sincronizzato; slide TSV e manifest mensile non modificati.
 
-**File:** [YAML editoriale](<absolute-yaml-path>) · [Slide da aggiornare](<absolute-tsv-path>)
+**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide da aggiornare](<absolute-slide-tsv-path>)
 
 **Passo successivo:** serve la tua conferma nel modulo per applicare questi
 contenuti alle slide di <YYYY/MM>.
@@ -98,5 +98,5 @@ changed YAML entries and total slide rows explicit.
 
 **Da tenere presente:** <eventuali incertezze residue sulle fonti/date>
 
-**File:** [YAML editoriale](<absolute-yaml-path>) · [Slide aggiornate](<absolute-tsv-path>)
+**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide aggiornate](<absolute-slide-tsv-path>)
 ```

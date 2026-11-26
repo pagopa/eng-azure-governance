@@ -22,6 +22,7 @@ Resolve these paths from the repository root:
 
 - Launcher: `src/comitato/comitato_azure_retirements_v2/run.sh`.
 - Editorial YAML: `src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.yaml`.
+- Editorial TSV: `src/comitato/comitato_azure_retirements_v2/data/comitato_editoriale.tsv`.
 - Export root: `src/comitato/comitato_azure_retirements_v2/exports`.
 - Selected bundle: `<export-root>/<YYYY>/<MM>`.
 - Target: `<selected-bundle>/03_azure_retirements_slide.tsv`.
@@ -30,8 +31,9 @@ For example, `2026 10` selects `exports/2026/10`, never another month.
 
 ## Preflight
 
-Inspect the worktree and preserve existing edits. Require the selected TSV,
-`publication-manifest.json`, and editorial YAML. The manifest must match the
+Inspect the worktree and preserve existing edits. Require the selected monthly
+TSV, `publication-manifest.json`, and editorial YAML. Regenerate the editorial
+TSV through the committee YAML adapter whenever the YAML is saved. The manifest must match the
 requested year/month, contain integrity-checked `saved_inputs`, and select
 `all` or `slides`. Keep its exact date, selector, scope, and committee window;
 do not manufacture a day from the month.
@@ -96,10 +98,12 @@ Avoid vague replacements such as "aggiornare la piattaforma" without naming
 what changes. Distinguish a retirement from a performance recommendation.
 
 Fill only empty committee fields, including missing or empty `comitato_fonti`
-lists. Preserve existing non-empty wording, dates, and editorial references
-unless the user explicitly requests their revision. New source-backed templates
-start with `comitato_fonti: []`; do not overwrite existing references with an
-empty template. Preserve meaningful `[SCADUTA]` and `[IMMINENTE]` labels.
+lists. Keep `comitato_retirement_date` present and set it to an empty string
+when the original source description changed or a source-backed entry is new.
+Preserve existing non-empty wording, dates, and editorial references unless the
+user explicitly requests their revision. New source-backed templates start
+with `comitato_fonti: []`; do not overwrite existing references with an empty
+template. Preserve meaningful `[SCADUTA]` and `[IMMINENTE]` labels.
 Preserve entry IDs, `descrizione_originale_completa`, `link_fonti`,
 `retirement_date`, and entries
 outside the selected month. Keep folded YAML descriptions and existing layout.
@@ -125,20 +129,29 @@ metadata even when documentation reports a different operational deadline.
 ## Save And Review The YAML
 
 Save the enriched YAML before reporting changes. Validate parsing, unique keys,
-selected-ID coverage, and non-empty strings in both committee text fields.
+selected-ID coverage, a non-empty `comitato_descrizione`, and a string-valued
+`comitato_retirement_date` that may be empty when no operational deadline is
+documented.
 Validate plain-text editorial wording and the separate `comitato_fonti` list
-of `{titolo, url}` mappings; do not add TSV columns for these references.
+of `{titolo, url}` mappings. Regenerate the sibling editorial TSV through
+`retirements.adapters.filesystem.committee_yaml.write_tsv` after every save;
+encode nested references and dates as compact JSON in that sidecar. Selective
+editorial edits must preserve the existing YAML layout. Full programmatic
+document generation may use `committee_yaml.write`, which writes both files.
+These editorial references do not add columns to the monthly slide TSV.
 Compare source descriptions with the canonical replay data: the existing merge
-deliberately clears editorial descriptions and their references when the original
-has changed. A TSV flattens tabs and line breaks to spaces; that formatting alone
-is not a source change.
+deliberately clears editorial descriptions, dates, and references when the
+original has changed. A TSV flattens tabs and line breaks to spaces; that
+formatting alone is not a source change.
 
 Compare the saved YAML with its snapshot and present the actual changes using
 the [editorial review template](references/chat-templates.md#editorial-review).
 Include the selected month, distinct changed-entry and field counts, affected
 services, before/after highlights, date/source uncertainty, validation results,
-and file links. State clearly that the YAML is saved but the TSV is unchanged.
-Record the exact reviewed YAML and source manifest state for the approval check.
+and file links. State clearly that the editorial YAML and editorial TSV are
+saved but the selected monthly slide TSV is unchanged.
+Record the exact reviewed YAML, editorial TSV, and source manifest state for the
+approval check.
 If there are no edits, report that honestly; a no-op is not publication consent.
 
 ## Approval Gate
