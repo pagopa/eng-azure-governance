@@ -40,9 +40,9 @@ in this chat presentation does not authorize Markdown in editorial YAML text.
 - <esito effettivo della validazione YAML e della completezza>
 - <esito del confronto: dati originali e testi già approvati preservati>
 - <esito del controllo: descrizioni senza Markdown e riferimenti in comitato_fonti>
-- TSV editoriale sincronizzato; slide TSV e manifest mensile non modificati.
+- TSV editoriale sincronizzato; slide XLSX ed export/support mensili non modificati.
 
-**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide da aggiornare](<absolute-slide-tsv-path>)
+**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide da aggiornare](<absolute-slide-xlsx-path>)
 
 **Passo successivo:** serve la tua conferma nel modulo per applicare questi
 contenuti alle slide di <YYYY/MM>.
@@ -94,10 +94,10 @@ changed YAML entries and total slide rows explicit.
 | Controllo | Esito |
 |---|---|
 | Launcher locale | <exit status e risultato JSON osservati> |
-| Testi e scadenze nel TSV | <esito del confronto con il YAML> |
+| Testi e scadenze nell'XLSX | <esito del confronto con il YAML> |
 | Altri report e dati originali | <esito effettivo del confronto> |
 
 **Nota tecnica:** <eventuali motivi per cui non sono state pubblicate alcune date>
 
-**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide aggiornate](<absolute-slide-tsv-path>)
+**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide aggiornate](<absolute-slide-xlsx-path>)
 ```
