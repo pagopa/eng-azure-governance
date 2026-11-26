@@ -8,8 +8,8 @@ These rules govern the v2 retirement runtime and its committee-facing artifacts.
 - Serves: PRI-04
 - Owner: Azure Retirement Intelligence
 - Severity: blocking
-- Enforcement owner: `src/comitato/comitato_azure_retirements_v2/retirements/adapters/azure/subscription_api.py`
-- Evidence: `src/comitato/comitato_azure_retirements_v2/README.md`, `src/comitato/comitato_azure_retirements_v2/retirements/adapters/azure/subscription_api.py`
+- Enforcement owner: `src/comitato/comitato_azure_retirements_v2/src/adapters/azure/subscription_api.py`
+- Evidence: `src/comitato/comitato_azure_retirements_v2/README.md`, `src/comitato/comitato_azure_retirements_v2/src/adapters/azure/subscription_api.py`
 - Remediation: Supply subscriptions or management groups before running in live mode.
 - Rule: Live collection must refuse an empty Azure scope.
 
@@ -44,7 +44,7 @@ These rules govern the v2 retirement runtime and its committee-facing artifacts.
 - Enforcement owner: `.github/workflows/_code-analysis.yml`, which runs the v2 contract tests
 - Evidence: `src/comitato/comitato_azure_retirements_v2/README.md`, `tests/comitato/comitato_azure_retirements_v2`
 - Remediation: Update the runtime and its tests together, keeping the required filenames and ordered headers explicit.
-- Rule: The runtime's raw, aggregate, slide, diagnostics, and manifest artifacts must preserve their documented contracts.
+- Rule: The runtime must publish raw and aggregate TSV contracts and the committee slide XLSX contract exactly as documented. Publication manifests and replay inputs must remain in external support storage.
 
 ## RET-006 - Publish monthly bundles atomically
 
@@ -54,5 +54,5 @@ These rules govern the v2 retirement runtime and its committee-facing artifacts.
 - Severity: blocking
 - Enforcement owner: `tests/comitato/comitato_azure_retirements_v2/adapters/test_filesystem_publication.py`, run by `.github/workflows/_code-analysis.yml`
 - Evidence: `src/comitato/comitato_azure_retirements_v2/README.md`, `tests/comitato/comitato_azure_retirements_v2/adapters/test_filesystem_publication.py`
-- Remediation: Stage and validate the new bundle before it replaces the month, and return a non-zero status without touching the current bundle on failure.
-- Rule: In the v2 runtime, a failed run leaves the current monthly bundle unchanged, and a successful run replaces it whole.
+- Remediation: Stage and validate the new export and support generations before either replaces the month, and return a non-zero status without touching the current export or replay support on failure.
+- Rule: In the v2 runtime, a failed run leaves the current monthly export and its support unchanged, and a successful run replaces both as one publication.

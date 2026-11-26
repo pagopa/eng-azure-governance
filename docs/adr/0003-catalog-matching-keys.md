@@ -13,8 +13,8 @@ The architecture stated that catalog subscription IDs must not be used as runtim
 
 | Evidence | Finding |
 | --- | --- |
-| `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py` | The v2 reader validates subscription UUIDs and keys assignments by subscription ID. |
-| `src/comitato/comitato_azure_retirements_v2/retirements/application/orchestration.py` | v2 coverage compares acquired subscriptions with the catalog subscription IDs. |
+| `src/comitato/comitato_azure_retirements_v2/src/adapters/filesystem/platform_catalog_yaml.py` | The v2 reader validates subscription UUIDs and keys assignments by subscription ID. |
+| `src/comitato/comitato_azure_retirements_v2/src/application/orchestration.py` | v2 coverage compares acquired subscriptions with the catalog subscription IDs. |
 | `src/_source_of_truth/eng-finops-platforms.yaml` | Every active entry carries both a name and a UUID. |
 
 ## Decision Drivers
