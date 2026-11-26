@@ -245,6 +245,46 @@ azure-retirement:v2:49eb67e4f9deba19056157a19c44ee7dd201f4f204bb63fa2ddecbb94d07
   - data: '2027-09-30'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
+azure-retirement:v2:55caf7efed6d74f0367491ca384b40f4e1f189dd0267a804ec05ad576292f395:
+  comitato_descrizione: >-
+    Azure API Management - Developer Portal, accesso con username e password: disattivazione per inattività
+
+
+    Suggerimento: configurare Microsoft Entra ID come metodo di accesso raccomandato; il traffico delle
+    API non è coinvolto. Se resta necessaria l'autenticazione Basic, riabilitare e gestire il provider
+    username e password.
+  comitato_fonti:
+  - titolo: Proteggere l’accesso al portale per sviluppatori di API Management | Microsoft Learn
+    url: https://learn.microsoft.com/en-us/azure/api-management/secure-developer-portal-access
+  - titolo: Configurare l’autenticazione Basic per il Developer Portal | Microsoft Learn
+    url: https://learn.microsoft.com/en-us/azure/api-management/developer-portal-basic-authentication
+  comitato_retirement_date: ''
+  descrizione_originale_completa: >-
+    Service Health: On November 22, 2026, as part of a latest platform update, Microsoft turned off username
+    and password sign-in to the Azure API Management Developer Portal due to inactivity. On those instances,
+    developers can't sign in or sign up with a username and password. API traffic isn't affected. What
+    you need to do: Recommended: set up Microsoft Entra ID for Developer Portal sign-in. Secure access
+    to developer portal - Azure API Management | Microsoft Learn (https://learn.microsoft.com/en-us/azure/api-management/secure-developer-portal-access)
+    To turn username and password sign-in back on: in the Azure portal, open your API Management instance
+    and go to Developer portal > Identities > + Add > Username and password. Set up Basic Authentication
+    to the Developer Portal - Azure API Management | Microsoft Learn (https://learn.microsoft.com/en-us/azure/api-management/developer-portal-basic-authentication)
+    Help and Support If you have questions, get answers from community experts in Microsoft Q&A (https://learn.microsoft.com/answers/tags/133/azure).
+    If you have a support plan and need technical help, please create a support request (https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request).
+  link_fonti:
+  - https://learn.microsoft.com/answers/tags/133/azure
+  - https://learn.microsoft.com/azure/azure-portal/supportability/how-to-create-azure-support-request
+  - https://learn.microsoft.com/en-us/azure/api-management/developer-portal-basic-authentication
+  - https://learn.microsoft.com/en-us/azure/api-management/secure-developer-portal-access
+  retirement_date:
+  - data: '2026-11-23'
+    fonte: Azure Service Health
+    tipo: avviso_inizio
+  - data: '2026-11-23'
+    fonte: Azure Service Health
+    tipo: ultimo_aggiornamento
+  - data: '2026-12-01'
+    fonte: Azure Service Health
+    tipo: avviso_fine
 azure-retirement:v2:59ced2da515de40b75bfeab0c46921c7045f23c27c09316c3cd8ecd18fbb39bb:
   comitato_descrizione: >-
     Azure Functions – .NET 8: fine del supporto
@@ -592,6 +632,35 @@ azure-retirement:v2:a3e9f8083bd392c8f56048687f0f91191c3282e90f862cf14f98dc3f8a18
   - data: '2026-10-25'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
+azure-retirement:v2:ab5ff4ca2273207b838f6f982561b3e6e12f6d213f0a0c5e5170259820326232:
+  comitato_descrizione: >-
+    Azure Functions - Node.js 22: fine del supporto
+
+
+    Suggerimento: migrare le app a Node.js 24 per mantenere supporto e aggiornamenti di sicurezza; verificare
+    dipendenze e piano di hosting, perché Node.js 22 è l’ultima versione supportata su Linux Consumption.
+  comitato_fonti:
+  - titolo: Linguaggi supportati in Azure Functions | Microsoft Learn
+    url: https://learn.microsoft.com/en-us/azure/azure-functions/supported-languages
+  - titolo: Aggiornare le versioni dei linguaggi in Azure Functions | Microsoft Learn
+    url: https://learn.microsoft.com/en-us/azure/azure-functions/update-language-versions?pivots=programming-language-javascript
+  comitato_retirement_date: 04/30/2027 — Fine del supporto per Node.js 22 (Microsoft Learn)
+  descrizione_originale_completa: >-
+    Advisor: Support for Node.js 22 is ending. Security patches and updates will no longer be provided
+    and customer support for Node.js 22 will be discontinued. Upgrade your apps to Node.js 24 to maintain
+    support eligibility.
+
+
+    Upgrade your apps from Node.js 22 to Node.js 24
+  link_fonti:
+  - https://learn.microsoft.com/azure/azure-functions/update-language-versions?tabs=azure-portal%2Cwindows&pivots=programming-language-javascript
+  retirement_date:
+  - data: '2026-11-02'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2027-04-30'
+    fonte: Azure Advisor (raccomandazione)
+    tipo: ritiro
 azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07b274:
   comitato_descrizione: >-
     Azure Functions – connessioni TLS 1.0 e 1.1: ritiro
@@ -736,6 +805,36 @@ azure-retirement:v2:bd402fdf56128f709d3f49aa4a376d29f3b5fb3c5fc0303c3326578c1347
     tipo: ritiro
   - data: '2028-09-30'
     fonte: Azure Advisor (metadati)
+    tipo: ritiro
+azure-retirement:v2:c1f681bc080e1505d9f1449774feabdead8dd8e7d7a90adcbf7c460e50fff850:
+  comitato_descrizione: >-
+    Azure Functions - Java 8, 11 e 17: fine del supporto
+
+
+    Suggerimento: migrare le app a Java 25 per mantenere supporto e patch di sicurezza; verificare dipendenze
+    e piano di hosting, perché Java 21 è l’ultima versione supportata su Linux Consumption.
+  comitato_fonti:
+  - titolo: Linguaggi supportati in Azure Functions | Microsoft Learn
+    url: https://learn.microsoft.com/en-us/azure/azure-functions/supported-languages?pivots=programming-language-java
+  - titolo: Aggiornare le versioni dei linguaggi in Azure Functions | Microsoft Learn
+    url: https://learn.microsoft.com/en-us/azure/azure-functions/update-language-versions?pivots=programming-language-java
+  comitato_retirement_date: 09/01/2027 [giorno Advisor da confermare; Microsoft Learn indica settembre
+    2027] — Fine del supporto per Java 8, 11 e 17 (Azure Advisor e Microsoft Learn)
+  descrizione_originale_completa: >-
+    Advisor: Azure Functions support for Java 8, 11, and 17 is ending. Apps that are hosted on Azure Functions
+    will continue to run, but security updates will no longer be available, and we’ll no longer provide
+    customer service. Upgrade to Java 25
+
+
+    Upgrade Function Apps from Java 8, 11 and 17 to Java 25
+  link_fonti:
+  - https://learn.microsoft.com/azure/azure-functions/update-language-versions?tabs=azure-portal%2Clinux&pivots=programming-language-python#update-the-stack-configuration
+  retirement_date:
+  - data: '2026-11-03'
+    fonte: Azure Advisor
+    tipo: ultimo_aggiornamento
+  - data: '2027-09-01'
+    fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
 azure-retirement:v2:e505206ada85e3679d8b5a971c35d0904498361c7d88d0aa54c7fa0f4d85619c:
   comitato_descrizione: >-

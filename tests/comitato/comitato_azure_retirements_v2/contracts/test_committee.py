@@ -47,8 +47,11 @@ def test_merge_preserves_committee_text_only_when_description_is_unchanged() -> 
     assert merged_rows[0]["comitato_descrizione"] == "Keep this wording"
     assert merged_rows[0]["comitato_retirement_date"] == "2027-01-15"
     assert merged_rows[1]["comitato_descrizione"] == ""
-    assert merged_rows[1]["comitato_retirement_date"] == "2027-02-15"
+    assert merged_rows[1]["comitato_retirement_date"] == ""
     assert merged_rows[2]["comitato_descrizione"] == ""
+    assert merged_rows[2]["comitato_retirement_date"] == ""
+    assert updated["changed"]["comitato_retirement_date"] == ""
+    assert updated["new"]["comitato_retirement_date"] == ""
     assert set(updated) == {"same", "changed", "new"}
     assert updated["same"]["retirement_date"] == [
         {
@@ -63,6 +66,24 @@ def test_merge_preserves_committee_text_only_when_description_is_unchanged() -> 
         },
     ]
     assert updated["same"]["link_fonti"] == ["https://example.test/source"]
+
+
+def test_merge_ignores_whitespace_only_committee_date() -> None:
+    row = {
+        "id_elemento": "item",
+        "descrizione_originale_completa": "Current source",
+    }
+    old = {
+        "item": {
+            "descrizione_originale_completa": "Current source",
+            "comitato_retirement_date": " \n\t ",
+        }
+    }
+
+    merged_rows, updated = merge(old, (row,))
+
+    assert merged_rows[0]["comitato_retirement_date"] == ""
+    assert updated["item"]["comitato_retirement_date"] == ""
 
 
 @pytest.mark.parametrize(

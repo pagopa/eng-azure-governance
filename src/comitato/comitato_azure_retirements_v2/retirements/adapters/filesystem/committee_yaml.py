@@ -1,7 +1,10 @@
-"""Committee-owned slide values and their minimal YAML round-trip."""
+"""Committee-owned slide values and their YAML/TSV persistence."""
 
 from __future__ import annotations
 
+import csv
+import io
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -38,6 +41,34 @@ def load(path: Path) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _tsv_cell(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, (dict, list)):
+        return json.dumps(
+            value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
+    return str(value).replace("\t", " ").replace("\r", " ").replace("\n", " ")
+
+
+def write_tsv(path: Path, value: Mapping[str, Any]) -> None:
+    entries = [
+        (item_id, entry if isinstance(entry, Mapping) else {})
+        for item_id, entry in value.items()
+    ]
+    fields = sorted({field for _, entry in entries for field in entry})
+    stream = io.StringIO(newline="")
+    writer = csv.writer(stream, delimiter="\t", lineterminator="\n")
+    writer.writerow(("id_elemento", *fields))
+    for item_id, entry in sorted(entries):
+        writer.writerow(
+            (str(item_id), *(_tsv_cell(entry.get(field, "")) for field in fields))
+        )
+    tsv_path = path.with_suffix(".tsv")
+    tsv_path.parent.mkdir(parents=True, exist_ok=True)
+    tsv_path.write_text(stream.getvalue(), encoding="utf-8")
+
+
 def write(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -46,6 +77,7 @@ def write(path: Path, value: Mapping[str, Any]) -> None:
         ),
         encoding="utf-8",
     )
+    write_tsv(path, value)
 
 
-__all__ = ["load", "write"]
+__all__ = ["load", "write", "write_tsv"]

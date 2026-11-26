@@ -73,17 +73,23 @@ becomes current. Save a copy elsewhere before replacing a bundle that may need
 to be replayed later. New publication and replay use the hashed `saved_inputs`
 in `publication-manifest.json`. A live slide run merges committee values from
 `comitato_editoriale.yaml` into the slide before encoding and writes the YAML
-only after publication succeeds. A changed original description clears
-`comitato_descrizione` and its editorial references in `comitato_fonti`;
-`comitato_retirement_date` is retained, and entries not present in the run are
-dropped. Unchanged source descriptions retain both editorial fields. New and
-legacy entries without editorial references default to `comitato_fonti: []`.
-Pass `--committee-yaml PATH` to select another file.
+and its sibling `comitato_editoriale.tsv` only after publication succeeds. A
+changed original description clears `comitato_descrizione`, its editorial
+references in `comitato_fonti`, and `comitato_retirement_date`, so the next
+editorial enrichment must recalculate the deadline. Entries not present in the
+run are dropped. Unchanged source descriptions retain the editorial fields;
+missing or whitespace-only `comitato_retirement_date` values remain absent
+from the slide. New and legacy entries without editorial references default to
+`comitato_fonti: []`. Pass `--committee-yaml PATH` to select another YAML file;
+its TSV sibling uses the same basename and `.tsv` suffix.
 In the YAML, `comitato_descrizione` contains only a plain-text, service-first
 description and a plain `Suggerimento:` paragraph, without Markdown formatting
 or source links. `comitato_fonti` holds editorial references as a list of
 `{titolo: str, url: str}` mappings, separate from the original `link_fonti`.
-Editorial references stay in the YAML; they do not add a TSV column.
+Editorial references stay outside `comitato_descrizione` and do not add a
+monthly slide column. The sibling TSV is a one-row-per-entry,
+spreadsheet-readable version of the complete YAML document. Lists and mappings,
+including editorial references, are encoded as compact JSON.
 Descriptions longer than 100 characters use folded style,
 `link_fonti` omits Azure portal links (`app.azure.com`, `portal.azure.com`,
 `aka.ms/AzureServiceHealthAdvisories`), and `retirement_date` is a list of
@@ -205,11 +211,12 @@ existing monthly bundle.
 
 The complete aggregate retains source membership independently of the
 committee view. The slide artifact has exactly these 19 columns, in order:
-`id_elemento`, `titolo_breve`, `descrizione_breve`, `comitato_priorità`,
-`impatto_microsoft`, `comitato_descrizione`, `comitato_retirement_date`,
-`comitato_piattaforme`, `retirement_date`, `stato_data`, `giorni_ritardo`,
-`descrizione_originale_completa`, `azione_originale`, `fonti`, `link_fonti`,
-`ambito_impatto`, `id_advisor`, `id_service_health`, `risorse_json`.
+`id_elemento`, `titolo_breve`, `descrizione_breve`, `comitato_piattaforme`,
+`comitato_priorità`, `impatto_microsoft`, `comitato_descrizione`,
+`descrizione_originale_completa`, `comitato_retirement_date`,
+`retirement_date`, `stato_data`, `giorni_ritardo`, `azione_originale`,
+`fonti`, `link_fonti`, `ambito_impatto`, `id_advisor`, `id_service_health`,
+`risorse_json`.
 Rows group by Advisor recommendation type id, then Service Health tracking id,
 then aggregate id. Stable slide ids use the `azure-retirement:v2:` prefix.
 `descrizione_breve` uses the first problem title, with retiring feature and
@@ -226,10 +233,11 @@ recommendation type and the Service Health tracking id. Rows beyond the
 committee window are excluded; the remaining date states are `Data non
 disponibile`, `Date discordanti`, `Scaduta`, and `In scadenza`.
 
-Replay does not read or write `comitato_editoriale.yaml`, so replayed slide
-committee cells are empty. The live YAML is independent from the published
-monthly bundle. Priority remains an external decision. `ambito_impatto` records
-platform, subscription, resource, environment, service, and region counts;
+Replay does not read or write `comitato_editoriale.yaml` unless
+`--refresh-committee` is explicit. The live YAML and its TSV sibling are
+independent from the published monthly bundle. Priority remains an external
+decision. `ambito_impatto` records platform, subscription, resource,
+environment, service, and region counts;
 `risorse_json` is compact and groups resource names by platform, subscription,
 and resource group. Cells longer than the Excel limit of 32,767 characters are
 not truncated by this projection contract.

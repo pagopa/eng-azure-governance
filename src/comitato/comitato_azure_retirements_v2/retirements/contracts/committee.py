@@ -7,6 +7,14 @@ from ..domain.links import is_azure_portal_link
 from .slides_v1 import DATE_MEANING_TYPES, SlideRecord
 
 
+def _committee_text(previous: Mapping[str, Any], name: str) -> str:
+    value = previous.get(name, "")
+    if value is None:
+        return ""
+    text = str(value)
+    return text if text.strip() else ""
+
+
 def _date_entries(value: str) -> list[dict[str, str]]:
     entries = []
     for line in value.splitlines():
@@ -28,12 +36,14 @@ def merge(
         previous = old.get(item_id, {})
         previous = previous if isinstance(previous, Mapping) else {}
         description = str(row.get("descrizione_originale_completa", ""))
-        committee_description = str(previous.get("comitato_descrizione", ""))
+        committee_description = _committee_text(previous, "comitato_descrizione")
         committee_sources = previous.get("comitato_fonti", [])
         if str(previous.get("descrizione_originale_completa", "")) != description:
             committee_description = ""
             committee_sources = []
-        committee_date = str(previous.get("comitato_retirement_date", ""))
+            committee_date = ""
+        else:
+            committee_date = _committee_text(previous, "comitato_retirement_date")
         values = dict(row)
         values["comitato_descrizione"] = committee_description
         values["comitato_retirement_date"] = committee_date
