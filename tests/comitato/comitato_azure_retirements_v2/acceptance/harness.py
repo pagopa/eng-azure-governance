@@ -87,8 +87,7 @@ def read_workbook_cell_types(data: bytes) -> tuple[tuple[str, ...], ...]:
     workbook = load_workbook(io.BytesIO(data), read_only=True, data_only=False)
     try:
         return tuple(
-            tuple(cell.data_type for cell in row)
-            for row in workbook.active.iter_rows()
+            tuple(cell.data_type for cell in row) for row in workbook.active.iter_rows()
         )
     finally:
         workbook.close()
@@ -101,17 +100,23 @@ def assert_matches_fixture_publication(
     expected_tsv = {
         path.name: path.read_bytes()
         for path in expected_root.iterdir()
-        if path.suffix == ".tsv"
-        and path.name != "03_azure_retirements_slide.tsv"
+        if path.suffix == ".tsv" and path.name != "03_azure_retirements_slide.tsv"
     }
-    assert set(result.current_tree) == {*expected_tsv, "03_azure_retirements_slide.xlsx"}
+    assert set(result.current_tree) == {
+        *expected_tsv,
+        "03_azure_retirements_slide.xlsx",
+    }
     for name, expected in expected_tsv.items():
         assert result.current_tree[name] == expected
 
-    expected_support = {
-        path.name: path.read_bytes()
-        for path in (fixture_dir / "expected" / "support").iterdir()
-    } if (fixture_dir / "expected" / "support").is_dir() else {}
+    expected_support = (
+        {
+            path.name: path.read_bytes()
+            for path in (fixture_dir / "expected" / "support").iterdir()
+        }
+        if (fixture_dir / "expected" / "support").is_dir()
+        else {}
+    )
     assert set(result.support_tree) == {
         *expected_support,
         "publication-manifest.json",
@@ -126,24 +131,23 @@ def assert_matches_fixture_publication(
     assert manifest["manifest_schema_version"] == 2
     assert manifest["saved_inputs_path"] == "saved-acquisition-inputs.json"
     assert "saved_inputs" not in manifest
-    assert manifest["saved_inputs_sha256"] == sha256(
-        json.dumps(
-            json.loads(saved_inputs),
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
-    assert {
-        item["path"]: item["destination"] for item in manifest["artifacts"]
-    } == {
+    assert (
+        manifest["saved_inputs_sha256"]
+        == sha256(
+            json.dumps(
+                json.loads(saved_inputs),
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+    )
+    assert {item["path"]: item["destination"] for item in manifest["artifacts"]} == {
         **{name: "exports" for name in result.current_tree},
         **{name: "support" for name in expected_support},
     }
 
-    actual = read_workbook_rows(
-        result.current_tree["03_azure_retirements_slide.xlsx"]
-    )
+    actual = read_workbook_rows(result.current_tree["03_azure_retirements_slide.xlsx"])
     expected_slide = tuple(
         tuple(row)
         for row in csv.reader(
@@ -269,8 +273,7 @@ class TemporaryAtomicPublicationStore(FilesystemAtomicPublicationStore):
     ) -> None:
         super().__init__(
             destination,
-            support_destination
-            or destination.with_name(f"{destination.name}-support"),
+            support_destination or destination.with_name(f"{destination.name}-support"),
         )
         self.candidates = []
 
@@ -440,14 +443,11 @@ def run_scenario(
     if scenario.publication_fault:
         publication = FaultInjectingPublicationStore(
             destination,
-            support_destination
-            or destination.with_name(f"{destination.name}-support"),
+            support_destination or destination.with_name(f"{destination.name}-support"),
             fault=scenario.publication_fault,
         )
     else:
-        publication = TemporaryAtomicPublicationStore(
-            destination, support_destination
-        )
+        publication = TemporaryAtomicPublicationStore(destination, support_destination)
     application = RetirementsApplication(
         scope_source=_FixedScopeSource(scenario.scope),
         catalog_source=_CatalogSource(catalog),
@@ -482,10 +482,7 @@ def run_scenario(
     if monthly_bundle.exists():
         current_tree = read_monthly_tree(destination, scenario.as_of_date)
     support_bundle = (
-        (
-            support_destination
-            or destination.with_name(f"{destination.name}-support")
-        )
+        (support_destination or destination.with_name(f"{destination.name}-support"))
         / f"{scenario.as_of_date.year:04d}"
         / f"{scenario.as_of_date.month:02d}"
     )

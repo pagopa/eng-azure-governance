@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 import requests
 
+import src.comitato.comitato_azure_retirements_v2.src.config as runtime_config
 from src.comitato.comitato_azure_retirements_v2.src.acquisition.progress import (
     download_context,
     download_scope,
@@ -22,7 +23,6 @@ from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.azure_auth im
 from src.comitato.comitato_azure_retirements_v2.src.application.composition import (
     build_application,
 )
-import src.comitato.comitato_azure_retirements_v2.src.config as runtime_config
 from src.comitato.comitato_azure_retirements_v2.src.config import (
     HttpPolicy,
     RuntimeConfig,

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
 import src.comitato.comitato_azure_retirements_v2.src.config as runtime_config
 from src.comitato.comitato_azure_retirements_v2.src import cli
 from src.comitato.comitato_azure_retirements_v2.src.application import replay

@@ -46,7 +46,9 @@ def test_acceptance_matrix_has_exactly_s1_to_s12_with_proof_metadata() -> None:
         assert (fixture / "expected" / "stderr.jsonl").is_file()
         if metadata["proof"] == "golden-tree":
             assert (fixture / "expected" / "current").is_dir()
-            assert (fixture / "expected" / "current" / "03_azure_retirements_slide.tsv").is_file()
+            assert (
+                fixture / "expected" / "current" / "03_azure_retirements_slide.tsv"
+            ).is_file()
             assert not (
                 fixture / "expected" / "current" / "publication-manifest.json"
             ).exists()

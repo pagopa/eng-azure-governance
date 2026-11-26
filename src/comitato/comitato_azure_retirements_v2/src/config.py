@@ -100,9 +100,7 @@ class RuntimeConfig:
     def replay_support_bundle_path(self) -> Path | None:
         if self.replay_bundle_path is None:
             return None
-        return resolve_replay_support_bundle(
-            self.output_path, self.replay_bundle_path
-        )
+        return resolve_replay_support_bundle(self.output_path, self.replay_bundle_path)
 
     @classmethod
     def from_request(

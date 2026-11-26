@@ -95,7 +95,11 @@ def write(path: Path, value: Mapping[str, Any]) -> None:
     tsv_path = path.with_suffix(".tsv")
     pairs = (
         (staged_root / "committee.yaml", path, staged_root / "committee.yaml.previous"),
-        (staged_root / "committee.tsv", tsv_path, staged_root / "committee.tsv.previous"),
+        (
+            staged_root / "committee.tsv",
+            tsv_path,
+            staged_root / "committee.tsv.previous",
+        ),
     )
     state = [(False, False) for _ in pairs]
     try:

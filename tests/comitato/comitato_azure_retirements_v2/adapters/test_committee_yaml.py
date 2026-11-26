@@ -84,12 +84,10 @@ def test_write_creates_a_tsv_version_of_the_full_document(tmp_path: Path) -> Non
     assert rows[1]["comitato_descrizione"] == (
         "Azure Service - SDK 1: ritiro  Suggerimento: migrare."
     )
-    assert json.loads(rows[1]["comitato_fonti"]) == document["item-2"][
-        "comitato_fonti"
-    ]
-    assert json.loads(rows[1]["retirement_date"]) == document["item-2"][
-        "retirement_date"
-    ]
+    assert json.loads(rows[1]["comitato_fonti"]) == document["item-2"]["comitato_fonti"]
+    assert (
+        json.loads(rows[1]["retirement_date"]) == document["item-2"]["retirement_date"]
+    )
 
 
 def test_write_failure_preserves_both_previous_sidecar_files(

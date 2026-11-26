@@ -72,7 +72,9 @@ def test_separate_output_roots_get_separate_support_and_cache_paths(
 
     assert first.publication_support_path != second.publication_support_path
     assert first.acquisition_cache_path != second.acquisition_cache_path
-    assert first.publication_support_path.parent == second.publication_support_path.parent
+    assert (
+        first.publication_support_path.parent == second.publication_support_path.parent
+    )
     assert first.acquisition_cache_path.parent == second.acquisition_cache_path.parent
 
 

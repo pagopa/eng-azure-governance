@@ -1,5 +1,4 @@
 from datetime import date, datetime, timezone
-
 from io import BytesIO
 
 import pytest

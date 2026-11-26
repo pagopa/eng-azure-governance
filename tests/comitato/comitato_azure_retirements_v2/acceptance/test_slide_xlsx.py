@@ -7,16 +7,16 @@ from pathlib import Path
 
 import yaml
 
+import src.comitato.comitato_azure_retirements_v2.src.paths as runtime_paths
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
+    ReportSelector,
+)
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
     load_scenario,
     read_workbook_cell_types,
     read_workbook_rows,
     run_scenario,
 )
-from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
-    ReportSelector,
-)
-import src.comitato.comitato_azure_retirements_v2.src.paths as runtime_paths
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 SLIDE_PATH = "03_azure_retirements_slide.xlsx"
@@ -32,14 +32,16 @@ def _tsv_flattened(
     rows: tuple[tuple[str, ...], ...],
 ) -> tuple[tuple[str, ...], ...]:
     return tuple(
-        tuple(value.replace("\t", " ").replace("\r", " ").replace("\n", " ")
-              for value in row)
+        tuple(
+            value.replace("\t", " ").replace("\r", " ").replace("\n", " ")
+            for value in row
+        )
         for row in rows
     )
 
 
 def _fixture_slide_rows(fixture: Path) -> tuple[tuple[str, ...], ...]:
-    content = (fixture / "expected" / "current" / "03_azure_retirements_slide.tsv")
+    content = fixture / "expected" / "current" / "03_azure_retirements_slide.tsv"
     return tuple(
         tuple(row)
         for row in csv.reader(
@@ -48,9 +50,7 @@ def _fixture_slide_rows(fixture: Path) -> tuple[tuple[str, ...], ...]:
     )
 
 
-def _support_files(
-    destination: Path, as_of_date: date = date(2026, 7, 30)
-) -> set[str]:
+def _support_files(destination: Path, as_of_date: date = date(2026, 7, 30)) -> set[str]:
     support = (
         destination.with_name(f"{destination.name}-support")
         / f"{as_of_date.year:04d}"
@@ -78,16 +78,11 @@ def test_all_publication_emits_exact_xlsx_and_tsv_bundle(tmp_path: Path) -> None
     }
     assert _tsv_flattened(
         read_workbook_rows(result.current_tree[SLIDE_PATH])
-    ) == _fixture_slide_rows(
-        fixture
-    )
+    ) == _fixture_slide_rows(fixture)
     assert (
         result.current_tree["01_azure_advisor_retirements_raw.tsv"]
         == (
-            fixture
-            / "expected"
-            / "current"
-            / "01_azure_advisor_retirements_raw.tsv"
+            fixture / "expected" / "current" / "01_azure_advisor_retirements_raw.tsv"
         ).read_bytes()
     )
     assert (
@@ -101,8 +96,9 @@ def test_all_publication_emits_exact_xlsx_and_tsv_bundle(tmp_path: Path) -> None
     )
     assert (
         result.current_tree["02_azure_retirements_aggregate.tsv"]
-        == (fixture / "expected" / "current" / "02_azure_retirements_aggregate.tsv")
-        .read_bytes()
+        == (
+            fixture / "expected" / "current" / "02_azure_retirements_aggregate.tsv"
+        ).read_bytes()
     )
 
 
@@ -180,7 +176,8 @@ def test_slide_publication_rejects_values_that_excel_would_truncate(
 
 
 def test_november_2026_all_publication_has_exact_clean_destinations(
-    tmp_path: Path, monkeypatch,
+    tmp_path: Path,
+    monkeypatch,
 ) -> None:
     november = date(2026, 11, 1)
     scenario = replace(
@@ -197,9 +194,7 @@ def test_november_2026_all_publication_has_exact_clean_destinations(
     output_root = tmp_path / "src" / "comitato_azure_retirements_v2" / "exports"
     monkeypatch.setattr(runtime_paths, "DEFAULT_OUTPUT_ROOT", output_root)
     support_root = runtime_paths.publication_support_root(output_root)
-    result = run_scenario(
-        scenario, output_root, support_destination=support_root
-    )
+    result = run_scenario(scenario, output_root, support_destination=support_root)
 
     assert result.exit_status == 0
     assert set(result.current_tree) == EXPECTED_DATA_FILES
@@ -216,9 +211,7 @@ def test_november_2026_all_publication_has_exact_clean_destinations(
     }
     assert "repository-tmp" in str(support_month)
     assert support_root.name == "default"
-    assert not list(
-        output_root.rglob("*.json")
-    )
+    assert not list(output_root.rglob("*.json"))
     assert not list(output_root.rglob("*.jsonl"))
 
 
@@ -228,9 +221,7 @@ def test_slide_selector_emits_only_xlsx_and_data_selectors_never_emit_xlsx(
     scenario = load_scenario(FIXTURES / "s01_explicitly_correlated")
     expected_exports = {
         ReportSelector.ADVISOR: "01_azure_advisor_retirements_raw.tsv",
-        ReportSelector.SERVICE_HEALTH: (
-            "01_azure_service_health_advisories_raw.tsv"
-        ),
+        ReportSelector.SERVICE_HEALTH: ("01_azure_service_health_advisories_raw.tsv"),
         ReportSelector.AGGREGATE: "02_azure_retirements_aggregate.tsv",
         ReportSelector.SLIDES: SLIDE_PATH,
     }

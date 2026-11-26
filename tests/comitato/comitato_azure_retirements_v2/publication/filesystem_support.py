@@ -11,9 +11,7 @@ def read_monthly_tree(destination: Path, as_of_date: date) -> dict[str, bytes]:
     }
 
 
-def read_monthly_support_tree(
-    destination: Path, as_of_date: date
-) -> dict[str, bytes]:
+def read_monthly_support_tree(destination: Path, as_of_date: date) -> dict[str, bytes]:
     support = destination.with_name(f"{destination.name}-support")
     current = support / f"{as_of_date.year:04d}" / f"{as_of_date.month:02d}"
     return {

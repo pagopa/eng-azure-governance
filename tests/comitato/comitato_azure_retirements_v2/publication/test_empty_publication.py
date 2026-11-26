@@ -125,9 +125,9 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(
         artifact.logical_path for artifact in candidate.artifacts
     ]
     for item, artifact in zip(manifest["artifacts"], candidate.artifacts, strict=True):
-        written = (
-            support if item["destination"] == "support" else tree
-        )[artifact.logical_path]
+        written = (support if item["destination"] == "support" else tree)[
+            artifact.logical_path
+        ]
         assert written == artifact.data
         assert item["bytes"] == len(written)
         assert item["sha256"] == artifact.digest
