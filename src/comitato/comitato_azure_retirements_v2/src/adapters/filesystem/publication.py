@@ -4,7 +4,6 @@ import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from ...domain.diagnostics import Diagnostic
 from ...ports import NullRunObserver, RunObserver, RuntimeEvent
@@ -15,24 +14,19 @@ from ...publication.model import (
 )
 from .staging import ValidatedStagedGeneration, stage_candidate
 
-_COMMIT_FAULTS = {
-    "before_switch",
-    "after_export_backup",
-    "after_export_switch",
-    "after_support_backup",
-    "after_support_switch",
-    "durable_marker",
-}
-
 
 @dataclass(slots=True)
-class PublicationReplacement:
+class _Replacement:
+    name: str
     staged: Path
     destination: Path
-    backup: Path
     root: Path
-    previous_moved: bool = False
-    new_moved: bool = False
+    backup_started: bool = False
+    switch_started: bool = False
+
+    @property
+    def backup(self) -> Path:
+        return self.staged.with_name(f"{self.staged.name}-previous")
 
 
 class FilesystemAtomicPublicationStore:
@@ -63,16 +57,15 @@ class FilesystemAtomicPublicationStore:
     def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
         generation = self._stage(candidate)
         try:
-            return self._commit(generation)
-        except Exception:
+            return self._commit(candidate, generation)
+        finally:
             self._discard_unpublished(generation)
-            raise
 
     def _discard_unpublished(self, generation: ValidatedStagedGeneration) -> None:
         for generation_dir, staging_root in (
-            (Path(generation.generation_dir), self.destination / ".staging"),
+            (generation.generation_dir, self.destination / ".staging"),
             (
-                Path(generation.support_generation_dir),
+                generation.support_generation_dir,
                 self.support_destination / ".staging",
             ),
         ):
@@ -82,9 +75,7 @@ class FilesystemAtomicPublicationStore:
                 continue
             shutil.rmtree(generation_dir, ignore_errors=True)
 
-    def _preflight(self) -> None:
-        candidate = getattr(self, "_candidate", None)
-        run_id = getattr(getattr(candidate, "context", None), "run_id", "")
+    def _preflight(self, run_id: str) -> None:
         self._observer.emit(
             RuntimeEvent(
                 "INFO",
@@ -94,17 +85,13 @@ class FilesystemAtomicPublicationStore:
             )
         )
         try:
-            self.destination.mkdir(parents=True, exist_ok=True)
-            if not self.destination.is_dir():
-                raise OSError("destination is not a directory")
-            self.support_destination.mkdir(parents=True, exist_ok=True)
-            if not self.support_destination.is_dir():
-                raise OSError("support destination is not a directory")
             if self.support_destination == self.destination:
-                raise OSError("support destination collides with publication destination")
+                raise OSError(
+                    "support destination collides with publication destination"
+                )
             for root in (self.destination, self.support_destination):
                 staging_root = root / ".staging"
-                staging_root.mkdir(exist_ok=True)
+                staging_root.mkdir(parents=True, exist_ok=True)
                 if staging_root.stat().st_dev != root.stat().st_dev:
                     raise OSError("staging is on a different filesystem")
         except OSError as exc:
@@ -119,7 +106,6 @@ class FilesystemAtomicPublicationStore:
             raise PublicationError(diagnostic) from exc
 
     def _stage(self, candidate: PublicationCandidate) -> ValidatedStagedGeneration:
-        self._candidate = candidate
         self._observer.emit(
             RuntimeEvent(
                 "INFO",
@@ -129,9 +115,14 @@ class FilesystemAtomicPublicationStore:
                 {"artifacts": len(candidate.artifacts)},
             )
         )
-        self._preflight()
+        self._preflight(candidate.context.run_id)
         generation = stage_candidate(
-            candidate, self.destination, self.support_destination
+            candidate,
+            self.destination,
+            self.support_destination,
+            fault_injector=lambda point, artifact: self._inject_fault(
+                candidate, point, artifact
+            ),
         )
         self._observer.emit(
             RuntimeEvent(
@@ -147,44 +138,32 @@ class FilesystemAtomicPublicationStore:
         )
         return generation
 
-    def _inject_commit_fault(self, point: str) -> None:
-        return None
+    def _inject_fault(
+        self, candidate: PublicationCandidate, point: str, artifact: str = ""
+    ) -> None:
+        pass
 
-    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
-        self._preflight()
+    def _commit(
+        self, candidate: PublicationCandidate, generation: ValidatedStagedGeneration
+    ) -> PublicationReceipt:
+        self._inject_fault(candidate, "before_switch")
+        self._preflight(candidate.context.run_id)
         if self.fail_before_switch:
             raise PublicationError("fault injected before monthly publication switch")
-        candidate = getattr(self, "_candidate", None)
-        if candidate is None:
-            raise PublicationError(
-                Diagnostic(
-                    "error",
-                    "missing_publication_candidate",
-                    "commit",
-                    "",
-                    "",
-                    message="publication candidate is unavailable",
-                )
-            )
-        month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
-        monthly_bundle = self.destination / month_reference
-        monthly_support = self.support_destination / month_reference
+        as_of = candidate.context.as_of_date
+        month_reference = f"{as_of.year:04d}/{as_of.month:02d}"
         replacements = (
-            PublicationReplacement(
-                staged=Path(generation.generation_dir),
-                destination=monthly_bundle,
-                backup=self.destination
-                / ".staging"
-                / f"{Path(generation.generation_dir).name}-previous",
-                root=self.destination,
+            _Replacement(
+                "export",
+                generation.generation_dir,
+                self.destination / month_reference,
+                self.destination,
             ),
-            PublicationReplacement(
-                staged=Path(generation.support_generation_dir),
-                destination=monthly_support,
-                backup=self.support_destination
-                / ".staging"
-                / f"{Path(generation.support_generation_dir).name}-previous",
-                root=self.support_destination,
+            _Replacement(
+                "support",
+                generation.support_generation_dir,
+                self.support_destination / month_reference,
+                self.support_destination,
             ),
         )
         for replacement in replacements:
@@ -216,6 +195,7 @@ class FilesystemAtomicPublicationStore:
                         ),
                     )
                 )
+        committed = False
         try:
             self._observer.emit(
                 RuntimeEvent(
@@ -226,7 +206,7 @@ class FilesystemAtomicPublicationStore:
                     {"current_reference": month_reference},
                 )
             )
-            for index, replacement in enumerate(replacements):
+            for replacement in replacements:
                 destination = replacement.destination
                 backup = replacement.backup
                 destination.parent.mkdir(parents=True, exist_ok=True)
@@ -235,37 +215,18 @@ class FilesystemAtomicPublicationStore:
                 if backup.exists():
                     raise OSError("monthly publication backup already exists")
                 if destination.exists():
+                    replacement.backup_started = True
                     os.replace(destination, backup)
-                    replacement.previous_moved = True
-                self._inject_commit_fault(
-                    "after_export_backup" if index == 0 else "after_support_backup"
-                )
-            for index, replacement in enumerate(replacements):
+                self._inject_fault(candidate, f"after_{replacement.name}_backup")
+            for replacement in replacements:
+                replacement.switch_started = True
                 os.replace(replacement.staged, replacement.destination)
-                replacement.new_moved = True
-                self._inject_commit_fault(
-                    "after_export_switch" if index == 0 else "after_support_switch"
-                )
-            self._inject_commit_fault("durable_marker")
+                self._inject_fault(candidate, f"after_{replacement.name}_switch")
+            self._inject_fault(candidate, "durable_marker")
             if candidate.after_switch is not None:
                 candidate.after_switch()
-        except (OSError, PublicationError) as exc:
-            for replacement in reversed(replacements):
-                if replacement.new_moved:
-                    shutil.rmtree(replacement.destination, ignore_errors=True)
-                if (
-                    replacement.previous_moved
-                    and replacement.backup.exists()
-                ):
-                    try:
-                        os.replace(replacement.backup, replacement.destination)
-                    except OSError:
-                        self._warnings.append(
-                            "superseded monthly bundle restoration failed"
-                        )
-                shutil.rmtree(replacement.staged, ignore_errors=True)
-            if isinstance(exc, PublicationError):
-                raise
+            committed = True
+        except OSError as exc:
             raise PublicationError(
                 Diagnostic(
                     "error",
@@ -276,10 +237,25 @@ class FilesystemAtomicPublicationStore:
                     message="monthly publication replacement failed",
                 )
             ) from exc
+        finally:
+            if not committed:
+                for replacement in reversed(replacements):
+                    # An interruption can arrive after rename but before it returns.
+                    if replacement.switch_started and not replacement.staged.exists():
+                        shutil.rmtree(replacement.destination, ignore_errors=True)
+                    if replacement.backup_started and replacement.backup.exists():
+                        try:
+                            os.replace(replacement.backup, replacement.destination)
+                        except OSError:
+                            self._warnings.append(
+                                "superseded monthly bundle restoration failed"
+                            )
 
         for replacement in replacements:
-            if replacement.previous_moved:
+            if replacement.backup_started:
                 try:
+                    if replacement.name == "export":
+                        self._inject_fault(candidate, "cleanup")
                     shutil.rmtree(replacement.backup)
                 except OSError:
                     self._warnings.append("superseded monthly bundle cleanup failed")
@@ -318,120 +294,31 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
         fault: str,
         observer: RunObserver | None = None,
     ) -> None:
-        super().__init__(
-            destination, support_destination, observer=observer
-        )
+        super().__init__(destination, support_destination, observer=observer)
         self.fault = fault
-        self.candidates: list[Any] = []
+        self.candidates: list[PublicationCandidate] = []
 
-    def _stage(self, candidate: PublicationCandidate):
-        self._candidate = candidate
-        self._observer.emit(
-            RuntimeEvent(
-                "INFO",
-                "publication_staging_started",
-                "Publication staging started",
-                candidate.context.run_id,
-                {"artifacts": len(candidate.artifacts)},
-            )
-        )
-        self._preflight()
+    def publish(self, candidate: PublicationCandidate) -> PublicationReceipt:
         self.candidates.append(candidate)
+        return super().publish(candidate)
 
-        def inject(point: str, artifact: str) -> None:
-            if point == self.fault:
-                raise PublicationError(
-                    Diagnostic(
-                        severity="error",
-                        code=f"filesystem_{point}_failure",
-                        stage="staging",
-                        report=candidate.context.request.selector.value,
-                        run_id=candidate.context.run_id,
-                        artifact=artifact,
-                        message=f"filesystem {point} failed before publication switch",
-                    )
-                )
-
-        generation = stage_candidate(
-            candidate,
-            self.destination,
-            self.support_destination,
-            fault_injector=inject,
-        )
-        self._observer.emit(
-            RuntimeEvent(
-                "INFO",
-                "publication_staging_completed",
-                "Publication staging completed",
-                candidate.context.run_id,
-                {
-                    "artifacts": len(generation.artifacts),
-                    "bytes": sum(artifact.bytes for artifact in generation.artifacts),
-                },
-            )
-        )
-        return generation
-
-    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
-        if self.fault == "before_switch":
-            candidate = getattr(self, "_candidate", None)
-            report = getattr(getattr(candidate, "context", None), "request", None)
-            report_name = (
-                getattr(report, "selector", "").value
-                if getattr(report, "selector", None)
-                else ""
-            )
-            run_id = getattr(getattr(candidate, "context", None), "run_id", "")
-            raise PublicationError(
-                Diagnostic(
-                    severity="error",
-                    code=f"filesystem_{self.fault}_failure",
-                    stage="commit",
-                    report=report_name,
-                    run_id=run_id,
-                    artifact="publication-manifest.json",
-                    message=f"filesystem {self.fault} failed before publication switch",
-                )
-            )
-        if self.fault == "cleanup":
-            candidate = getattr(self, "_candidate", None)
-            had_previous_bundle = False
-            if candidate is not None:
-                month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
-                had_previous_bundle = (self.destination / month_reference).exists()
-            receipt = super()._commit(generation)
-            if had_previous_bundle:
-                self._warnings.append("superseded monthly bundle cleanup failed")
-                self._observer.emit(
-                    RuntimeEvent(
-                        "WARNING",
-                        "publication_cleanup_warning",
-                        "Superseded monthly bundle cleanup failed",
-                        candidate.context.run_id,
-                    )
-                )
-            return receipt
-        return super()._commit(generation)
-
-    def _inject_commit_fault(self, point: str) -> None:
-        if point not in _COMMIT_FAULTS or point != self.fault:
+    def _inject_fault(
+        self, candidate: PublicationCandidate, point: str, artifact: str = ""
+    ) -> None:
+        if point != self.fault:
             return
-        candidate = getattr(self, "_candidate", None)
-        report = getattr(getattr(candidate, "context", None), "request", None)
-        report_name = (
-            getattr(report, "selector", "").value
-            if getattr(report, "selector", None)
-            else ""
-        )
-        run_id = getattr(getattr(candidate, "context", None), "run_id", "")
+        if point == "cleanup":
+            raise OSError("filesystem cleanup failed")
+        stage = "staging" if artifact else "commit"
+        timing = "before" if artifact or point == "before_switch" else "during"
         raise PublicationError(
             Diagnostic(
                 severity="error",
                 code=f"filesystem_{point}_failure",
-                stage="commit",
-                report=report_name,
-                run_id=run_id,
-                artifact="publication-manifest.json",
-                message=f"filesystem {point} failed during publication switch",
+                stage=stage,
+                report=candidate.context.request.selector.value,
+                run_id=candidate.context.run_id,
+                artifact=artifact or "publication-manifest.json",
+                message=f"filesystem {point} failed {timing} publication switch",
             )
         )

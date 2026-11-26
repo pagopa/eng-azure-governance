@@ -421,26 +421,23 @@ class SlidesV1Contract:
 
     def encode(self, artifact: Artifact[SlideRecord]) -> EncodedArtifact:
         workbook = Workbook()
-        worksheet = workbook.active
-        worksheet.title = "Azure Retirements"
-        worksheet.append(self.header)
-        for row in artifact.records:
-            for column in self.header:
-                if len(row[column]) > EXCEL_CELL_TEXT_LIMIT:
-                    raise ValueError(
-                        f"slide cell {column} exceeds the Excel text limit "
-                        f"of {EXCEL_CELL_TEXT_LIMIT} characters"
-                    )
-            worksheet.append(tuple(row[column] for column in self.header))
-            current_row = worksheet.max_row
-            for column_index, column in enumerate(self.header, start=1):
-                value = row[column]
-                if value:
-                    worksheet.cell(current_row, column_index).value = value
-                    worksheet.cell(current_row, column_index).data_type = "s"
         output = BytesIO()
-        workbook.save(output)
-        workbook.close()
+        try:
+            worksheet = workbook.active
+            worksheet.title = "Azure Retirements"
+            worksheet.append(self.header)
+            for row_index, row in enumerate(artifact.records, start=2):
+                for column_index, column in enumerate(self.header, start=1):
+                    value = row[column]
+                    if len(value) > EXCEL_CELL_TEXT_LIMIT:
+                        raise ValueError(
+                            f"slide cell {column} exceeds the Excel text limit "
+                            f"of {EXCEL_CELL_TEXT_LIMIT} characters"
+                        )
+                    worksheet.cell(row_index, column_index, value).data_type = "s"
+            workbook.save(output)
+        finally:
+            workbook.close()
         return EncodedArtifact(
             logical_path=self.path,
             data=output.getvalue(),
@@ -468,10 +465,7 @@ class SlidesV1Contract:
                 dict(
                     zip(
                         self.header,
-                        (
-                            "" if value is None else str(value)
-                            for value in row
-                        ),
+                        ("" if value is None else str(value) for value in row),
                         strict=True,
                     )
                 )
@@ -538,8 +532,7 @@ class SlidesV1Contract:
         return ValidationResult.valid(artifact)
 
 
-SLIDES_V1 = SlidesV1Contract(
-)
+SLIDES_V1 = SlidesV1Contract()
 
 
 def encode(artifact):

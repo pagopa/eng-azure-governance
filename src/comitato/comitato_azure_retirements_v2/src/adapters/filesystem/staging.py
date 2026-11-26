@@ -3,8 +3,9 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
-from collections.abc import Mapping
-from dataclasses import asdict, dataclass, is_dataclass
+from collections.abc import Callable, Mapping
+from contextlib import ExitStack
+from dataclasses import asdict, dataclass, is_dataclass, replace
 from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -25,6 +26,8 @@ from ...publication.validation import (
     validate_selected_set,
 )
 from ...reports.model import StagedDecodeFailure
+
+StageFault = Callable[[str, str], None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,7 +58,7 @@ def _error(
 
 
 def _fsync_file(
-    path: Path, data: bytes, fault_injector: Any = None, logical_path: str = ""
+    path: Path, data: bytes, fault_injector: StageFault | None, logical_path: str
 ) -> None:
     with path.open("wb") as handle:
         handle.write(data)
@@ -72,33 +75,19 @@ def _fsync_file(
 def _decode_and_validate(
     candidate: PublicationCandidate,
     artifacts: tuple[EncodedArtifact, ...],
-    generation_dir: Path,
 ) -> tuple[Diagnostic, ...]:
     diagnostics: list[Diagnostic] = []
     payloads = {artifact.logical_path: artifact.data for artifact in artifacts}
-    original_by_path = {
-        artifact.logical_path: artifact for artifact in candidate.artifacts
-    }
-    for artifact in artifacts:
-        target = generation_dir / PurePosixPath(artifact.logical_path)
-        try:
-            data = target.read_bytes()
-            if data != original_by_path[artifact.logical_path].data:
-                diagnostics.append(
-                    _error(
-                        "staged_bytes_changed",
-                        candidate,
-                        artifact=artifact.logical_path,
-                        message="reread staged bytes differ from the encoded candidate",
-                    ).diagnostics[0]
-                )
-        except OSError:
+    for original, artifact in zip(candidate.artifacts, artifacts, strict=True):
+        if artifact.data != original.data:
             diagnostics.append(
                 _error(
-                    "staged_artifact_missing", candidate, artifact=artifact.logical_path
+                    "staged_bytes_changed",
+                    candidate,
+                    artifact=artifact.logical_path,
+                    message="reread staged bytes differ from the encoded candidate",
                 ).diagnostics[0]
             )
-            continue
         try:
             definition = candidate.report_closure.owner_of(artifact.logical_path)
         except KeyError:
@@ -129,14 +118,15 @@ def _decode_and_validate(
 
 
 def _measured_artifacts(
-    candidate: PublicationCandidate, generation_dir: Path, fault_injector: Any = None
+    candidate: PublicationCandidate,
+    targets: Mapping[str, Path],
+    fault_injector: StageFault | None,
 ) -> tuple[EncodedArtifact, ...]:
     measured: list[EncodedArtifact] = []
     for artifact in candidate.artifacts:
-        target = generation_dir / PurePosixPath(artifact.logical_path)
         if fault_injector:
             fault_injector("reread", artifact.logical_path)
-        data = target.read_bytes()
+        data = targets[artifact.logical_path].read_bytes()
         if artifact.logical_path.endswith(".tsv"):
             rows = max(0, len(data.decode("utf-8").splitlines()) - 1)
         elif artifact.logical_path.endswith(".jsonl"):
@@ -145,16 +135,7 @@ def _measured_artifacts(
             rows = artifact.rows
         if fault_injector:
             fault_injector("hash", artifact.logical_path)
-        measured.append(
-            EncodedArtifact(
-                logical_path=artifact.logical_path,
-                data=data,
-                rows=rows,
-                media_type=artifact.media_type,
-                schema_version=artifact.schema_version,
-                run_id=artifact.run_id,
-            )
-        )
+        measured.append(replace(artifact, data=data, rows=rows))
     return tuple(measured)
 
 
@@ -291,8 +272,8 @@ def stage_candidate(
     destination: Path,
     support_destination: Path | None = None,
     *,
-    staged_byte_mutator: Any = None,
-    fault_injector: Any = None,
+    staged_byte_mutator: Callable[[Path, Path], None] | None = None,
+    fault_injector: StageFault | None = None,
 ) -> ValidatedStagedGeneration:
     path_diagnostics = validate_candidate_paths(candidate)
     if path_diagnostics:
@@ -311,7 +292,6 @@ def stage_candidate(
                 candidate,
                 message=f"{acquisition.receipt.source} acquisition is incomplete",
             )
-    destination.mkdir(parents=True, exist_ok=True)
     support_destination = (
         support_destination
         if support_destination is not None
@@ -323,82 +303,94 @@ def stage_candidate(
             candidate,
             message="support destination must be separate from publication exports",
         )
-    staging_root = destination / ".staging"
-    staging_root.mkdir(parents=True, exist_ok=True)
-    support_staging_root = support_destination / ".staging"
-    support_staging_root.mkdir(parents=True, exist_ok=True)
-    generation_dir = Path(
-        tempfile.mkdtemp(prefix=f"{candidate.context.run_id}-", dir=staging_root)
-    )
-    support_generation_dir = Path(
-        tempfile.mkdtemp(
-            prefix=generation_dir.name + "-", dir=support_staging_root
-        )
-    )
-    support_generation_dir.rmdir()
     try:
-        for artifact in candidate.artifacts:
-            target = generation_dir / PurePosixPath(artifact.logical_path)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            _fsync_file(target, artifact.data, fault_injector, artifact.logical_path)
-        if staged_byte_mutator is not None:
-            staged_byte_mutator(generation_dir)
-        expected_payloads = {artifact.logical_path for artifact in candidate.artifacts}
-        actual_payloads = {
-            path.relative_to(generation_dir).as_posix()
-            for path in generation_dir.rglob("*")
-            if path.is_file()
-        }
-        if actual_payloads != expected_payloads:
-            extra = sorted(actual_payloads - expected_payloads)
-            missing = sorted(expected_payloads - actual_payloads)
-            artifact = (extra or missing or [""])[0]
-            raise _error("staged_file_closure_mismatch", candidate, artifact=artifact)
-        measured = _measured_artifacts(candidate, generation_dir, fault_injector)
-        diagnostics = _decode_and_validate(candidate, measured, generation_dir)
-        if diagnostics:
-            ordered = sort_diagnostics(diagnostics)
-            raise PublicationError("staged bytes validation failed", ordered)
-        manifest = _manifest(candidate, measured)
-        manifest_diagnostics = validate_manifest(candidate, manifest, measured)
-        if manifest_diagnostics:
-            raise PublicationError(
-                "publication manifest validation failed", manifest_diagnostics
+        with ExitStack() as cleanup:
+            staged_roots: dict[str, Path] = {}
+            for name, root in (
+                ("exports", destination),
+                ("support", support_destination),
+            ):
+                staging_root = root / ".staging"
+                staging_root.mkdir(parents=True, exist_ok=True)
+                staged = Path(
+                    tempfile.mkdtemp(
+                        prefix=f"{candidate.context.run_id}-", dir=staging_root
+                    )
+                )
+                cleanup.callback(shutil.rmtree, staged, ignore_errors=True)
+                staged_roots[name] = staged
+
+            targets = {}
+            for artifact in candidate.artifacts:
+                path = artifact.logical_path
+                target = staged_roots[artifact_destination(path)] / PurePosixPath(path)
+                targets[path] = target
+                target.parent.mkdir(parents=True, exist_ok=True)
+                _fsync_file(target, artifact.data, fault_injector, path)
+
+            exports = staged_roots["exports"]
+            support = staged_roots["support"]
+            if staged_byte_mutator is not None:
+                staged_byte_mutator(exports, support)
+            expected = set(targets.values())
+            actual = {
+                path
+                for root in staged_roots.values()
+                for path in root.rglob("*")
+                if path.is_file()
+            }
+            if actual != expected:
+                unexpected = sorted(actual - expected) or sorted(expected - actual)
+                path = unexpected[0]
+                logical_path = next(
+                    path.relative_to(root).as_posix()
+                    for root in staged_roots.values()
+                    if path.is_relative_to(root)
+                )
+                raise _error(
+                    "staged_file_closure_mismatch", candidate, artifact=logical_path
+                )
+
+            measured = _measured_artifacts(candidate, targets, fault_injector)
+            diagnostics = _decode_and_validate(candidate, measured)
+            if diagnostics:
+                raise PublicationError(
+                    "staged bytes validation failed", sort_diagnostics(diagnostics)
+                )
+            manifest = _manifest(candidate, measured)
+            manifest_diagnostics = validate_manifest(candidate, manifest, measured)
+            if manifest_diagnostics:
+                raise PublicationError(
+                    "publication manifest validation failed", manifest_diagnostics
+                )
+            saved_inputs = manifest.pop("saved_inputs")
+            manifest["saved_inputs_path"] = "saved-acquisition-inputs.json"
+            expected_bytes = {
+                artifact.logical_path: artifact.data for artifact in measured
+            }
+            for name, data in (
+                (
+                    "saved-acquisition-inputs.json",
+                    (canonical_json(saved_inputs) + "\n").encode("utf-8"),
+                ),
+                ("publication-manifest.json", PublicationManifest(manifest).to_bytes()),
+            ):
+                target = support / name
+                _fsync_file(target, data, fault_injector, name)
+                targets[name] = target
+                expected_bytes[name] = data
+
+            for name, expected_data in expected_bytes.items():
+                if targets[name].read_bytes() != expected_data:
+                    raise _error("staged_bytes_changed", candidate, artifact=name)
+
+            result = ValidatedStagedGeneration(
+                generation_dir=exports,
+                support_generation_dir=support,
+                manifest=manifest,
+                artifacts=measured,
             )
-        saved_inputs = dict(manifest.pop("saved_inputs"))
-        manifest["saved_inputs_path"] = "saved-acquisition-inputs.json"
-        saved_inputs_bytes = (
-            canonical_json(saved_inputs) + "\n"
-        ).encode("utf-8")
-        support_generation_dir.mkdir()
-        for artifact in candidate.artifacts:
-            if artifact_destination(artifact.logical_path) != "support":
-                continue
-            source = generation_dir / PurePosixPath(artifact.logical_path)
-            target = support_generation_dir / PurePosixPath(artifact.logical_path)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(source, target)
-        _fsync_file(
-            support_generation_dir / "saved-acquisition-inputs.json",
-            saved_inputs_bytes,
-            fault_injector,
-            "saved-acquisition-inputs.json",
-        )
-        _fsync_file(
-            support_generation_dir / "publication-manifest.json",
-            PublicationManifest(manifest).to_bytes(),
-            fault_injector,
-            "publication-manifest.json",
-        )
-        return ValidatedStagedGeneration(
-            generation_dir=generation_dir,
-            support_generation_dir=support_generation_dir,
-            manifest=manifest,
-            artifacts=measured,
-        )
-    except Exception as exc:
-        shutil.rmtree(generation_dir, ignore_errors=True)
-        shutil.rmtree(support_generation_dir, ignore_errors=True)
-        if isinstance(exc, PublicationError):
-            raise
+            cleanup.pop_all()
+            return result
+    except (OSError, ValueError) as exc:
         raise _error("staging_failure", candidate) from exc
