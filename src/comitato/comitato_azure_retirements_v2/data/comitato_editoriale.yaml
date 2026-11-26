@@ -1,10 +1,10 @@
 azure-retirement:v2:0089cddc8ed93a6ece34b9683b0a1c64a6a1d451b029f48b9b3950f12748b29e:
   comitato_descrizione: >-
-    Azure Key Vault – API di gestione precedenti alla versione 2026-02-01: ritiro
+    Azure Key Vault – le API di gestione precedenti alla versione 2026-02-01 sono in ritiro
 
 
-    Suggerimento: aggiornare gli strumenti di gestione alle API 2026-02-01 o successive per mantenere
-    la compatibilità; l'accesso applicativo ai segreti non è coinvolto.
+    Suggerimento: aggiornare gli strumenti di gestione, come Terraform, alle API 2026-02-01 o
+    successive per mantenere la compatibilità; l'accesso applicativo ai segreti non è coinvolto.
   comitato_fonti:
   - titolo: Aggiornare la versione API di Key Vault | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/key-vault/general/migrate-api-version
@@ -30,11 +30,11 @@ azure-retirement:v2:0089cddc8ed93a6ece34b9683b0a1c64a6a1d451b029f48b9b3950f12748
     tipo: ritiro
 azure-retirement:v2:04ac569d8e9372c200ec5dfdde5da134d7ee6a3129bb194d130e6a7b68709b91:
   comitato_descrizione: >-
-    Azure Public IP – SKU Basic: ritiro
+    Azure Public IP – gli IP pubblici con SKU Basic sono in ritiro
 
 
     Suggerimento: pianificare il passaggio degli IP pubblici da Basic a Standard per mantenere
-    supporto e garanzie di servizio; verificare l'eccezione per Cloud Services (extended support).
+    supporto e garanzie di servizio.
   comitato_fonti:
   - titolo: Aggiornare gli IP pubblici Basic a Standard | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-basic-upgrade-guidance
@@ -63,7 +63,7 @@ azure-retirement:v2:04ac569d8e9372c200ec5dfdde5da134d7ee6a3129bb194d130e6a7b6870
     tipo: ultimo_aggiornamento
 azure-retirement:v2:0dda532f9277a67d20d5882550f858d605002e5611be1bb62c261b6e25a8ce5a:
   comitato_descrizione: >-
-    Azure Cosmos DB – SDK obsoleti: aggiornamento
+    Azure Cosmos DB – si consiglia di aggiornare gli SDK obsoleti
 
 
     Suggerimento: aggiornare le librerie di connessione a Cosmos DB (SDK) a versioni supportate
@@ -96,7 +96,7 @@ azure-retirement:v2:0dda532f9277a67d20d5882550f858d605002e5611be1bb62c261b6e25a8
     tipo: ultimo_aggiornamento
 azure-retirement:v2:194d85400e8dee189beccb5882d05b8d85806b15ebe7d824e38cd0837eb2ae7f:
   comitato_descrizione: >-
-    Azure Network Watcher – flow log degli NSG: ritiro
+    Azure Network Watcher – i flow log degli NSG sono in ritiro
 
 
     Suggerimento: migrare dai log dei gruppi di sicurezza di rete (NSG) ai Virtual Network flow
@@ -247,7 +247,7 @@ azure-retirement:v2:49eb67e4f9deba19056157a19c44ee7dd201f4f204bb63fa2ddecbb94d07
     tipo: ritiro
 azure-retirement:v2:55caf7efed6d74f0367491ca384b40f4e1f189dd0267a804ec05ad576292f395:
   comitato_descrizione: >-
-    Azure API Management - Developer Portal, accesso con username e password: disattivazione per inattività
+    Azure API Management – Developer Portal: accesso con username e password disattivato
 
 
     Suggerimento: configurare Microsoft Entra ID come metodo di accesso raccomandato; il traffico delle
@@ -350,7 +350,8 @@ azure-retirement:v2:5c49ee8a23eb422df6c10e9d1cc50dd3b0437a68b8d8b50f8a109f26dd25
     tipo: ritiro
 azure-retirement:v2:71b5a8485939b6fe2cf31e7d3e985b015093b80b02819b6a4f699b89d2cb5279:
   comitato_descrizione: >-
-    Azure Managed Disks – dischi Standard: valutare il passaggio a Premium SSD
+    Azure Managed Disks – dischi Standard: valutare il passaggio a Premium SSD per incrementare
+    la disponibilità
 
 
     Suggerimento: valutare Premium SSD per aumentare la disponibilità dei servizi su singole
@@ -407,7 +408,7 @@ azure-retirement:v2:7212de1ba3c64dc372630196d2ed51ba344e4e465247bfa430bf3f3bcc89
     tipo: ritiro
 azure-retirement:v2:72a0c69fc81859280532f3a4237b0778bfd241259a2f14c05ee13f36204d7f19:
   comitato_descrizione: >-
-    Azure Application Gateway WAF v2 – configurazione legacy: ritiro
+    Azure Application Gateway WAF v2 – la configurazione legacy è in ritiro
 
 
     Suggerimento: migrare a WAF Policy per mantenere la protezione delle applicazioni web;
@@ -517,7 +518,7 @@ azure-retirement:v2:914d8a5b4a90d8ebb7be9b891aff11a1005ce1b20a62249de752f8c75f36
     tipo: ultimo_aggiornamento
 azure-retirement:v2:92f47f99e370643a10ada40ae9aff1be53257b855c9d34f96c5c773dace7cea6:
   comitato_descrizione: >-
-    Azure Virtual Machine Scale Sets – immagini di base: ritiro
+    Azure Virtual Machine Scale Sets – le immagini di base sono in ritiro
 
 
     Suggerimento: aggiornare le immagini di base dei VM Scale Sets per evitare il blocco
@@ -545,11 +546,11 @@ azure-retirement:v2:92f47f99e370643a10ada40ae9aff1be53257b855c9d34f96c5c773dace7
     tipo: ultimo_aggiornamento
 azure-retirement:v2:95ffbdf8b76ff7ac6b9f5dd0ee7b77c74b22907ee064e6fc7d813a20dd618fa2:
   comitato_descrizione: >-
-    Azure Data Factory – accesso a Storage e Key Vault: passaggio a Modern trusted service
+    Azure Data Factory – cambia l'accesso a Storage e Key Vault per migliorare la sicurezza
 
 
     Suggerimento: abilitare Modern trusted service, il nuovo modello di accesso sicuro a
-    Storage e Key Vault, verificando la continuità dei flussi di dati.
+    Storage e Key Vault, per potenziare la sicurezza.
   comitato_fonti:
   - titolo: Modern trusted service | Microsoft Learn
     url: https://learn.microsoft.com/azure/data-factory/modern-trusted-service
@@ -715,7 +716,7 @@ azure-retirement:v2:af57e9232ec93e0ad205c79a07a1b6475ce60752502d510d56aa0b08245a
     tipo: ultimo_aggiornamento
 azure-retirement:v2:b2a19387c78607b7c48cdb2390b4865448806965282b0261d1766cea63636a75:
   comitato_descrizione: >-
-    Azure Virtual Machines – immagini di base: ritiro
+    Azure Virtual Machines – le immagini di base sono in ritiro
 
 
     Suggerimento: aggiornare le immagini di base interessate per poter continuare a creare

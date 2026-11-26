@@ -67,10 +67,15 @@ or silently selecting another month.
 Write the committee content in **Italian** for directors who need enough
 technical context to recognize the affected service. Use this middle ground:
 
-1. Start with a plain-text title: service - affected component/version: change.
-   Name the actual Azure service or technology before describing the event.
-2. Add one short plain `Suggerimento:` paragraph with the migration or action,
-   its concrete target when known, and the main operational impact.
+1. Start with the actual Azure service or technology, then name the affected
+   component or version. State what is happening or what to evaluate in direct,
+   natural Italian. Do not force a fixed title formula or end with a bare label
+   such as `: ritiro`. Match the wording to the event: `sono in ritiro`,
+   `accesso disattivato`, or `valutare il passaggio` for an optional improvement.
+2. Add one short plain `Suggerimento:` paragraph. Lead with the action and name
+   the concrete target when known. Include the main operational impact when it
+   helps directors decide. Name a relevant tool, such as Terraform, only when
+   it clarifies which work is affected; do not add implementation steps.
 3. Keep only the description and suggestion in `comitato_descrizione`, without
    Markdown formatting, inline source links, or reference sections. Store
    editorial references separately in `comitato_fonti`, a list of mappings
@@ -81,7 +86,7 @@ Example:
 
 ```yaml
 comitato_descrizione: >-
-  Azure Functions - .NET 8: fine del supporto
+  Azure Functions - il supporto per .NET 8 sta terminando
 
 
   Suggerimento: pianificare la migrazione delle app a .NET 10 per mantenere
