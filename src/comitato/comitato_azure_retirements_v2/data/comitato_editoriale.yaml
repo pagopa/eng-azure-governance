@@ -8,7 +8,7 @@ azure-retirement:v2:0089cddc8ed93a6ece34b9683b0a1c64a6a1d451b029f48b9b3950f12748
   comitato_fonti:
   - titolo: Aggiornare la versione API di Key Vault | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/key-vault/general/migrate-api-version
-  comitato_retirement_date: 02/27/2027 — Data di ritiro (Microsoft Learn)
+  comitato_retirement_date: 27/02/2027 — Data di ritiro (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: Azure Key Vault API versions prior to 2026-02-01 are being retired
 
@@ -38,10 +38,10 @@ azure-retirement:v2:04ac569d8e9372c200ec5dfdde5da134d7ee6a3129bb194d130e6a7b6870
   comitato_fonti:
   - titolo: Aggiornare gli IP pubblici Basic a Standard | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-basic-upgrade-guidance
-  comitato_retirement_date: '09/30/2025 [SCADUTA] — Ritiro; gli IP esistenti restano operativi senza supporto/SLA;
+  comitato_retirement_date: '30/09/2025 [SCADUTA] — Ritiro; gli IP esistenti restano operativi senza supporto/SLA;
     eccezione CSES (Microsoft Learn)
 
-    04/28/2026 [SCADUTA] — Ritiro di Application Gateway v1, termine della relativa eccezione operativa
+    28/04/2026 [SCADUTA] — Ritiro di Application Gateway v1, termine della relativa eccezione operativa
     (Microsoft Learn)'
   descrizione_originale_completa: >-
     Advisor: Basic SKU is being retired
@@ -73,7 +73,7 @@ azure-retirement:v2:20be56f25f50b996cf7007a6b4e3d41d7e8ecb4a4e8ea167fad952589fa3
     url: https://azure.microsoft.com/updates?id=Azure-CDN-Standard-from-Microsoft-classic-will-be-retired-on-30-September-2027
   - titolo: Confronto tra Azure Front Door e Azure CDN | Microsoft Learn
     url: https://learn.microsoft.com/azure/frontdoor/front-door-cdn-comparison
-  comitato_retirement_date: 09/30/2027 — Ritiro di Azure CDN Standard from Microsoft (classic) (Microsoft
+  comitato_retirement_date: 30/09/2027 — Ritiro di Azure CDN Standard from Microsoft (classic) (Microsoft
     Learn)
   descrizione_originale_completa: >-
     Advisor: Azure CDN Standard from Microsoft (classic) is being retired.
@@ -99,7 +99,7 @@ azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d2398
   comitato_fonti:
   - titolo: Versioni Kubernetes supportate | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions
-  comitato_retirement_date: 03/31/2027 — Fine del supporto standard (Microsoft Learn)
+  comitato_retirement_date: 31/03/2027 — Fine del supporto standard (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: Azure Kubernetes Service retires 1.35 Kubernetes Official version. To stay within supported
     versions and service-level agreements (SLA), upgrade to a supported version within 30 days after Azure
@@ -137,7 +137,7 @@ azure-retirement:v2:49eb67e4f9deba19056157a19c44ee7dd201f4f204bb63fa2ddecbb94d07
     url: https://learn.microsoft.com/azure/azure-monitor/metrics/prometheus-metrics-overview
   - titolo: Riferimento delle metriche di AKS | Microsoft Learn
     url: https://learn.microsoft.com/azure/aks/monitor-aks-reference
-  comitato_retirement_date: 09/30/2027 — Ritiro del dettaglio per pod nelle metriche di piattaforma interessate
+  comitato_retirement_date: 30/09/2027 — Ritiro del dettaglio per pod nelle metriche di piattaforma interessate
     (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: AKS Pod name dimension within kube_pod_status_phase and kube_pod_status_ready platform metrics
@@ -170,7 +170,7 @@ azure-retirement:v2:55caf7efed6d74f0367491ca384b40f4e1f189dd0267a804ec05ad576292
     url: https://learn.microsoft.com/en-us/azure/api-management/secure-developer-portal-access
   - titolo: Configurare l’autenticazione Basic per il Developer Portal | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/api-management/developer-portal-basic-authentication
-  comitato_retirement_date: 11/22/2026 — Disattivazione dell'accesso con username e password sui portali
+  comitato_retirement_date: 22/11/2026 — Disattivazione dell'accesso con username e password sui portali
     interessati (Azure Service Health)
   descrizione_originale_completa: >-
     Service Health: On November 22, 2026, as part of a latest platform update, Microsoft turned off username
@@ -212,7 +212,7 @@ azure-retirement:v2:59ced2da515de40b75bfeab0c46921c7045f23c27c09316c3cd8ecd18fbb
     url: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core
   - titolo: Modelli .NET e piani di hosting di Azure Functions | Microsoft Learn
     url: https://learn.microsoft.com/azure/azure-functions/dotnet-isolated-process-guide
-  comitato_retirement_date: 11/10/2026 [SCADUTA] — Fine del supporto di .NET 8 e del modello in-process
+  comitato_retirement_date: 10/11/2026 [SCADUTA] — Fine del supporto di .NET 8 e del modello in-process
     di Azure Functions (Microsoft)
   descrizione_originale_completa: >-
     Advisor: Azure Functions support for .NET 8 is ending. Running function apps on unsupported runtime
@@ -376,7 +376,7 @@ azure-retirement:v2:ab5ff4ca2273207b838f6f982561b3e6e12f6d213f0a0c5e517025982032
     url: https://learn.microsoft.com/en-us/azure/azure-functions/supported-languages
   - titolo: Aggiornare le versioni dei linguaggi in Azure Functions | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/azure-functions/update-language-versions?pivots=programming-language-javascript
-  comitato_retirement_date: 04/30/2027 — Fine del supporto per Node.js 22 (Microsoft Learn)
+  comitato_retirement_date: 30/04/2027 — Fine del supporto per Node.js 22 (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: Support for Node.js 22 is ending. Security patches and updates will no longer be provided
     and customer support for Node.js 22 will be discontinued. Upgrade your apps to Node.js 24 to maintain
@@ -403,7 +403,7 @@ azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07
   comitato_fonti:
   - titolo: Ritiro TLS 1.0/1.1 in App Service e Functions | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/app-service/tls-minimum-version
-  comitato_retirement_date: 05/31/2027 — Ritiro TLS 1.0/1.1 per connessioni in ingresso (Microsoft Learn)
+  comitato_retirement_date: 31/05/2027 — Ritiro TLS 1.0/1.1 per connessioni in ingresso (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: Functions will no longer accept connections using TLS 1.0 or TLS 1.1. Any client, application,
     or service that continues to use these legacy TLS versions will be unable to connect to these services.
@@ -462,7 +462,7 @@ azure-retirement:v2:ba6214607cd8293bcb2a02b8685550bdd9e626491ff2abd81fef6dbfa183
   comitato_retirement_date: '02/02/2026 [SCADUTA] — Termine per aggiornare i client a TLS 1.2 (Azure Storage
     Blog)
 
-    02/03/2026 [SCADUTA] — TLS 1.0/1.1 non più accettati (Azure Storage Blog)'
+    03/02/2026 [SCADUTA] — TLS 1.0/1.1 non più accettati (Azure Storage Blog)'
   descrizione_originale_completa: >-
     Advisor: Support for TLS 1.0 and TLS 1.1 in Azure storage accounts is ending
 
@@ -490,7 +490,7 @@ azure-retirement:v2:bd402fdf56128f709d3f49aa4a376d29f3b5fb3c5fc0303c3326578c1347
   comitato_fonti:
   - titolo: Test di disponibilità di Application Insights | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability
-  comitato_retirement_date: 09/30/2028 — Ritiro e rimozione dei test URL ping esistenti (Microsoft Learn)
+  comitato_retirement_date: 30/09/2028 — Ritiro e rimozione dei test URL ping esistenti (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: The URL ping test capability of the application insights feature for Azure Monitor is being
     retired.
@@ -552,7 +552,7 @@ azure-retirement:v2:ec4229f9a6745cfa8690af126ea8150fc9dd643b1915c79a80f68863365c
   comitato_fonti:
   - titolo: Versioni Kubernetes supportate | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions
-  comitato_retirement_date: 11/30/2026 [IMMINENTE] — Fine del supporto standard (Microsoft Learn)
+  comitato_retirement_date: 30/11/2026 [IMMINENTE] — Fine del supporto standard (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: Azure Kubernetes Service retires 1.34 Kubernetes Official version. To stay within supported
     versions and service-level agreements (SLA), upgrade to a supported version within 30 days after Azure
@@ -584,7 +584,7 @@ azure-retirement:v2:f4641c02fc1a2f9e58145433a27555d236b4d59522a196d574b801080a71
     url: https://learn.microsoft.com/azure/azure-monitor/logs/custom-logs-migrate
   - titolo: HTTP Data Collector API | Microsoft Learn
     url: https://learn.microsoft.com/previous-versions/azure/azure-monitor/logs/data-collector-api
-  comitato_retirement_date: 09/14/2026 [SCADUTA] — Fine del supporto per HTTP Data Collector API (Microsoft
+  comitato_retirement_date: 14/09/2026 [SCADUTA] — Fine del supporto per HTTP Data Collector API (Microsoft
     Learn)
   descrizione_originale_completa: >-
     Advisor: HTTP Data Collector API support is ending. Migrate to the Logs ingestion API which provides

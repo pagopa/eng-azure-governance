@@ -11,6 +11,10 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 
 from ..domain.diagnostics import Diagnostic, ValidationResult
+from .date_presentation import (
+    detect_slash_date_style,
+    format_italian_date_text,
+)
 from .model import Artifact, EncodedArtifact
 
 HEADER = (
@@ -183,7 +187,10 @@ def _dates(rows: tuple[Mapping[str, str], ...]) -> list[dict[str, str]]:
         if len(update_dates) > 1:
             values.add((min(update_dates), _DATE_MEANINGS[(source, "oldest_update")]))
     return [
-        {"date": date_value, "meaning": meaning}
+        {
+            "date": format_italian_date_text(date_value),
+            "meaning": meaning,
+        }
         for date_value, meaning in sorted(values)
     ]
 
@@ -426,9 +433,18 @@ class SlidesV1Contract:
             worksheet = workbook.active
             worksheet.title = "Azure Retirements"
             worksheet.append(self.header)
+            committee_date_style = detect_slash_date_style(
+                row["comitato_retirement_date"] for row in artifact.records
+            )
             for row_index, row in enumerate(artifact.records, start=2):
                 for column_index, column in enumerate(self.header, start=1):
                     value = row[column]
+                    if column == "comitato_retirement_date":
+                        value = format_italian_date_text(
+                            value, slash_style=committee_date_style
+                        )
+                    elif column == "retirement_date":
+                        value = format_italian_date_text(value)
                     if len(value) > EXCEL_CELL_TEXT_LIMIT:
                         raise ValueError(
                             f"slide cell {column} exceeds the Excel text limit "

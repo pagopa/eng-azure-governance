@@ -45,7 +45,7 @@ def test_merge_preserves_committee_text_only_when_description_is_unchanged() -> 
     merged_rows, updated = merge(old, rows)
 
     assert merged_rows[0]["comitato_descrizione"] == "Keep this wording"
-    assert merged_rows[0]["comitato_retirement_date"] == "2027-01-15"
+    assert merged_rows[0]["comitato_retirement_date"] == "15/01/2027"
     assert merged_rows[1]["comitato_descrizione"] == ""
     assert merged_rows[1]["comitato_retirement_date"] == ""
     assert merged_rows[2]["comitato_descrizione"] == ""
@@ -150,12 +150,12 @@ def test_merge_maps_every_date_meaning_and_drops_portal_links() -> None:
         "descrizione_originale_completa": "Text",
         "retirement_date": "\n".join(
             (
-                "2026-03-31 — Data di ritiro (metadati Azure Advisor)",
-                "2026-04-22 — Rimozione immagine (Azure Advisor)",
-                "2026-04-01 — Aggiornamento meno recente osservato (Azure Advisor)",
-                "2026-09-22 — Avviso pubblicato il",
-                "2026-10-06 — Avviso attivo fino al",
-                "2026-09-23 — Ultimo aggiornamento (Azure Service Health)",
+                "31/03/2026 — Data di ritiro (metadati Azure Advisor)",
+                "22/04/2026 — Rimozione immagine (Azure Advisor)",
+                "01/04/2026 — Aggiornamento meno recente osservato (Azure Advisor)",
+                "22/09/2026 — Avviso pubblicato il",
+                "06/10/2026 — Avviso attivo fino al",
+                "23/09/2026 — Ultimo aggiornamento (Azure Service Health)",
             )
         ),
         "link_fonti": "; ".join(
@@ -191,3 +191,49 @@ def test_merge_maps_every_date_meaning_and_drops_portal_links() -> None:
             "fonte": "Azure Service Health",
         },
     ]
+
+
+def test_merge_normalizes_legacy_committee_dates_to_italian_idempotently() -> None:
+    rows = (
+        {
+            "id_elemento": "ambiguous",
+            "descrizione_originale_completa": "Source one",
+            "retirement_date": "",
+            "link_fonti": "",
+        },
+        {
+            "id_elemento": "unambiguous",
+            "descrizione_originale_completa": "Source two",
+            "retirement_date": "",
+            "link_fonti": "",
+        },
+    )
+    legacy = {
+        "ambiguous": {
+            "descrizione_originale_completa": "Source one",
+            "comitato_retirement_date": "11/10/2026 — Event",
+        },
+        "unambiguous": {
+            "descrizione_originale_completa": "Source two",
+            "comitato_retirement_date": "09/30/2026 — Event",
+        },
+    }
+
+    merged_rows, updated = merge(legacy, rows)
+
+    assert [row["comitato_retirement_date"] for row in merged_rows] == [
+        "10/11/2026 — Event",
+        "30/09/2026 — Event",
+    ]
+    assert updated["ambiguous"]["comitato_retirement_date"] == "10/11/2026 — Event"
+    assert updated["unambiguous"]["comitato_retirement_date"] == "30/09/2026 — Event"
+
+    merged_again, updated_again = merge(updated, rows)
+
+    assert [row["comitato_retirement_date"] for row in merged_again] == [
+        "10/11/2026 — Event",
+        "30/09/2026 — Event",
+    ]
+    assert updated_again["ambiguous"]["comitato_retirement_date"] == (
+        "10/11/2026 — Event"
+    )

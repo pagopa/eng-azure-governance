@@ -161,7 +161,7 @@ def test_project_slides_emits_committee_projection_and_leaves_external_fields_em
     assert slide["comitato_priorità"] == ""
     assert slide["comitato_descrizione"] == ""
     assert slide["comitato_retirement_date"] == ""
-    assert slide["retirement_date"] == "2027-01-01 — Data di ritiro (Azure Advisor)"
+    assert slide["retirement_date"] == "01/01/2027 — Data di ritiro (Azure Advisor)"
     assert slide["stato_data"] == "In scadenza"
     assert slide["giorni_ritardo"] == ""
     assert slide["fonti"] == "Azure Advisor"
@@ -406,8 +406,8 @@ def test_metadata_date_that_differs_from_recommendation_is_a_conflict() -> None:
     assert slide["stato_data"] == "Date discordanti"
     assert slide["giorni_ritardo"] == ""
     assert slide["retirement_date"] == (
-        "2026-03-01 — Data di ritiro (Azure Advisor)\n"
-        "2026-03-31 — Data di ritiro (metadati Azure Advisor)"
+        "01/03/2026 — Data di ritiro (Azure Advisor)\n"
+        "31/03/2026 — Data di ritiro (metadati Azure Advisor)"
     )
 
 
@@ -428,8 +428,8 @@ def test_image_removal_dates_use_the_nearest_without_conflict() -> None:
     assert slide["stato_data"] == "Scaduta"
     assert slide["giorni_ritardo"] == "10"
     assert slide["retirement_date"] == (
-        "2026-07-20 — Rimozione immagine (Azure Advisor)\n"
-        "2027-01-12 — Rimozione immagine (Azure Advisor)"
+        "20/07/2026 — Rimozione immagine (Azure Advisor)\n"
+        "12/01/2027 — Rimozione immagine (Azure Advisor)"
     )
 
 
@@ -448,8 +448,8 @@ def test_updates_keep_only_oldest_and_latest_per_source_and_do_not_drive_status(
 
     assert slide["stato_data"] == "Data non disponibile"
     assert slide["retirement_date"] == (
-        "2026-05-01 — Aggiornamento meno recente osservato (Azure Advisor)\n"
-        "2026-05-20 — Ultimo aggiornamento (Azure Advisor)"
+        "01/05/2026 — Aggiornamento meno recente osservato (Azure Advisor)\n"
+        "20/05/2026 — Ultimo aggiornamento (Azure Advisor)"
     )
 
 
@@ -467,8 +467,8 @@ def test_slides_order_by_deadline_not_by_first_listed_date() -> None:
     records = project_slides(aggregate_artifact(later, sooner), context()).value.records
 
     assert [row["retirement_date"][:10] for row in records] == [
-        "2026-12-01",
-        "2026-01-01",
+        "01/12/2026",
+        "01/01/2026",
     ]
 
 
