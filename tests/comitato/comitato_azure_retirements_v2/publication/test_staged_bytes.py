@@ -3,15 +3,18 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.staging import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.staging import (
     stage_candidate,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.codecs import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.codecs import (
     decode_tsv,
     encode_tsv,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
     PublicationError,
+)
+from src.comitato.comitato_azure_retirements_v2.src.paths import (
+    artifact_destination,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
@@ -176,8 +179,13 @@ def test_stage_returns_validated_generation_and_manifest_uses_measured_facts(
         "program_revision": "0.1.0",
     }
     for measured in staged.artifacts:
+        generation_dir = (
+            staged.support_generation_dir
+            if artifact_destination(measured.logical_path) == "support"
+            else staged.generation_dir
+        )
         assert measured.bytes == len(
-            (staged.generation_dir / measured.logical_path).read_bytes()
+            (generation_dir / measured.logical_path).read_bytes()
         )
         manifest_item = next(
             item

@@ -2,26 +2,26 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.advisor.normalize import (
     ADVISOR_REPORT,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
     ReportCatalog,
     SelectedReportClosure,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.model import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.model import (
     ReportDefinition,
     StagedDecodeFailure,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
@@ -68,8 +68,8 @@ def test_plan_returns_one_immutable_selected_closure() -> None:
     closure = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
 
     assert isinstance(closure, SelectedReportClosure)
-    assert closure.expected_paths == ("03_azure_retirements_slide.tsv",)
-    assert closure.owner_of("03_azure_retirements_slide.tsv").name == "slides"
+    assert closure.expected_paths == ("03_azure_retirements_slide.xlsx",)
+    assert closure.owner_of("03_azure_retirements_slide.xlsx").name == "slides"
     with pytest.raises(KeyError):
         closure.owner_of("comitato_editoriale.yaml")
     with pytest.raises(FrozenInstanceError):
@@ -87,7 +87,7 @@ def test_non_default_catalog_closure_preserves_custom_ownership() -> None:
         closure.owner_of("01_azure_advisor_retirements_raw.tsv").name
         == "custom-advisor"
     )
-    assert closure.owner_of("03_azure_retirements_slide.tsv").name == "custom-slides"
+    assert closure.owner_of("03_azure_retirements_slide.xlsx").name == "custom-slides"
 
 
 @pytest.mark.parametrize(

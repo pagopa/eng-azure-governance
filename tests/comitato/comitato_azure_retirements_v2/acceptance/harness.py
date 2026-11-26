@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+import io
 import json
 import shutil
 from dataclasses import dataclass
@@ -9,29 +11,30 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from openpyxl import load_workbook
 
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.paging import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.paging import (
     AcquisitionIntegrityError,
     ScriptedRequest,
     SourcePage,
     collect_complete_pages,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.platform_catalog_yaml import (
     YamlPlatformCatalogSource,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.publication import (
     FaultInjectingPublicationStore,
     FilesystemAtomicPublicationStore,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration import (
     ApplicationError,
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     ReportSelector,
     RunContext,
@@ -64,8 +67,110 @@ class ScenarioResult:
     exit_status: int
     stderr_jsonl: bytes
     current_tree: dict[str, bytes]
+    support_tree: dict[str, bytes]
     slide_selection: dict[str, tuple[str, ...]] = None
     slide_records: tuple[dict[str, str], ...] = ()
+
+
+def read_workbook_rows(data: bytes) -> tuple[tuple[str, ...], ...]:
+    workbook = load_workbook(io.BytesIO(data), read_only=True, data_only=False)
+    try:
+        return tuple(
+            tuple("" if value is None else str(value) for value in row)
+            for row in workbook.active.iter_rows(values_only=True)
+        )
+    finally:
+        workbook.close()
+
+
+def read_workbook_cell_types(data: bytes) -> tuple[tuple[str, ...], ...]:
+    workbook = load_workbook(io.BytesIO(data), read_only=True, data_only=False)
+    try:
+        return tuple(
+            tuple(cell.data_type for cell in row)
+            for row in workbook.active.iter_rows()
+        )
+    finally:
+        workbook.close()
+
+
+def assert_matches_fixture_publication(
+    result: ScenarioResult, fixture_dir: Path
+) -> None:
+    expected_root = fixture_dir / "expected" / "current"
+    expected_tsv = {
+        path.name: path.read_bytes()
+        for path in expected_root.iterdir()
+        if path.suffix == ".tsv"
+        and path.name != "03_azure_retirements_slide.tsv"
+    }
+    assert set(result.current_tree) == {*expected_tsv, "03_azure_retirements_slide.xlsx"}
+    for name, expected in expected_tsv.items():
+        assert result.current_tree[name] == expected
+
+    expected_support = {
+        path.name: path.read_bytes()
+        for path in (fixture_dir / "expected" / "support").iterdir()
+    } if (fixture_dir / "expected" / "support").is_dir() else {}
+    assert set(result.support_tree) == {
+        *expected_support,
+        "publication-manifest.json",
+        "saved-acquisition-inputs.json",
+    }
+    for name, expected in expected_support.items():
+        assert result.support_tree[name] == expected
+    manifest = json.loads(
+        result.support_tree["publication-manifest.json"].decode("utf-8")
+    )
+    saved_inputs = result.support_tree["saved-acquisition-inputs.json"]
+    assert manifest["manifest_schema_version"] == 2
+    assert manifest["saved_inputs_path"] == "saved-acquisition-inputs.json"
+    assert "saved_inputs" not in manifest
+    assert manifest["saved_inputs_sha256"] == sha256(
+        json.dumps(
+            json.loads(saved_inputs),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    assert {
+        item["path"]: item["destination"] for item in manifest["artifacts"]
+    } == {
+        **{name: "exports" for name in result.current_tree},
+        **{name: "support" for name in expected_support},
+    }
+
+    actual = read_workbook_rows(
+        result.current_tree["03_azure_retirements_slide.xlsx"]
+    )
+    expected_slide = tuple(
+        tuple(row)
+        for row in csv.reader(
+            io.StringIO(
+                (expected_root / "03_azure_retirements_slide.tsv").read_text(
+                    encoding="utf-8"
+                )
+            ),
+            delimiter="\t",
+        )
+    )
+    projected_slide = (
+        expected_slide[0],
+        *(
+            tuple(row[column] for column in expected_slide[0])
+            for row in result.slide_records
+        ),
+    )
+    assert actual == projected_slide
+    flattened = tuple(
+        tuple(
+            value.replace("\t", " ").replace("\r", " ").replace("\n", " ")
+            for value in row
+        )
+        for row in actual
+    )
+    assert flattened == expected_slide
 
 
 @dataclass(frozen=True, slots=True)
@@ -159,8 +264,14 @@ class FixedRunIdFactory:
 
 
 class TemporaryAtomicPublicationStore(FilesystemAtomicPublicationStore):
-    def __init__(self, destination: Path) -> None:
-        super().__init__(destination)
+    def __init__(
+        self, destination: Path, support_destination: Path | None = None
+    ) -> None:
+        super().__init__(
+            destination,
+            support_destination
+            or destination.with_name(f"{destination.name}-support"),
+        )
         self.candidates = []
 
     def publish(self, candidate):
@@ -268,7 +379,13 @@ def load_scenario(fixture_dir: Path) -> Scenario:
     )
 
 
-def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
+def run_scenario(
+    scenario: Scenario,
+    destination: Path,
+    *,
+    support_destination: Path | None = None,
+    committee_yaml_path: Path | None = None,
+) -> ScenarioResult:
     catalog_path = scenario.fixture_dir / "catalog.yaml"
     catalog_payload = yaml.safe_load(catalog_path.read_text(encoding="utf-8"))
     if "platforms" in catalog_payload:
@@ -322,10 +439,15 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
                 shutil.copyfile(source, target)
     if scenario.publication_fault:
         publication = FaultInjectingPublicationStore(
-            destination, fault=scenario.publication_fault
+            destination,
+            support_destination
+            or destination.with_name(f"{destination.name}-support"),
+            fault=scenario.publication_fault,
         )
     else:
-        publication = TemporaryAtomicPublicationStore(destination)
+        publication = TemporaryAtomicPublicationStore(
+            destination, support_destination
+        )
     application = RetirementsApplication(
         scope_source=_FixedScopeSource(scenario.scope),
         catalog_source=_CatalogSource(catalog),
@@ -341,6 +463,7 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         resource_graph_source=ScriptedResourceGraphSource(
             tuple(live_subscription_rows)
         ),
+        committee_yaml_path=committee_yaml_path,
     )
     try:
         application.run(
@@ -353,16 +476,35 @@ def run_scenario(scenario: Scenario, destination: Path) -> ScenarioResult:
         exit_status = 0
     except (ApplicationError, AcquisitionIntegrityError, ValueError) as exc:
         exit_status = 1
+        destination.mkdir(parents=True, exist_ok=True)
         (destination / "stderr.jsonl").write_bytes(_diagnostic_jsonl(exc, scenario))
     current_tree = {}
     if monthly_bundle.exists():
         current_tree = read_monthly_tree(destination, scenario.as_of_date)
+    support_bundle = (
+        (
+            support_destination
+            or destination.with_name(f"{destination.name}-support")
+        )
+        / f"{scenario.as_of_date.year:04d}"
+        / f"{scenario.as_of_date.month:02d}"
+    )
+    support_tree = (
+        {
+            path.relative_to(support_bundle).as_posix(): path.read_bytes()
+            for path in sorted(support_bundle.rglob("*"))
+            if path.is_file()
+        }
+        if support_bundle.exists()
+        else {}
+    )
     return ScenarioResult(
         exit_status=exit_status,
         stderr_jsonl=(destination / "stderr.jsonl").read_bytes()
         if exit_status
         else (scenario.fixture_dir / "expected" / "stderr.jsonl").read_bytes(),
         current_tree=current_tree,
+        support_tree=support_tree,
         slide_selection=(
             publication.candidates[0].slide_selection.excluded_by_reason
             if publication.candidates and publication.candidates[0].slide_selection

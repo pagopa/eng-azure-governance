@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
+    assert_matches_fixture_publication,
     load_scenario,
     run_scenario,
 )
@@ -24,26 +25,15 @@ def test_positive_publication_scenarios_match_complete_golden_trees(
     fixture = FIXTURES / name
     result = run_scenario(load_scenario(fixture), tmp_path)
 
-    expected = {
-        relative_path: (fixture / "expected" / "current" / relative_path).read_bytes()
-        for relative_path in sorted(
-            path.name for path in (fixture / "expected" / "current").iterdir()
-        )
-    }
     assert result.exit_status == 0
     assert result.stderr_jsonl == b""
-    assert result.current_tree == expected
+    assert_matches_fixture_publication(result, fixture)
     aggregate_rows = (
         result.current_tree["02_azure_retirements_aggregate.tsv"].decode().splitlines()
     )
     if name == "s01_explicitly_correlated":
         assert aggregate_rows[1].split("\t")[4] == "single_source"
-        slide_row = (
-            result.current_tree["03_azure_retirements_slide.tsv"]
-            .decode()
-            .splitlines()[1]
-        )
-        assert not slide_row.endswith("\t")
+        assert "03_azure_retirements_slide.tsv" not in result.current_tree
     elif name == "s04_ambiguous_correlation":
         assert len(aggregate_rows) == 4
         assert all(row.split("\t")[4] == "single_source" for row in aggregate_rows[1:])
@@ -56,5 +46,10 @@ def test_positive_publication_scenarios_match_complete_golden_trees(
             )
             == 2
         )
-        manifest = result.current_tree["publication-manifest.json"].decode()
+        manifest = (
+            tmp_path.with_name(f"{tmp_path.name}-support")
+            / "2026"
+            / "07"
+            / "publication-manifest.json"
+        ).read_text(encoding="utf-8")
         assert '"pages":2,"source_records":1' in manifest

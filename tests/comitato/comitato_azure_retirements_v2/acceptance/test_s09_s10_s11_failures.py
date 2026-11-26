@@ -4,10 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
 )
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
+    assert_matches_fixture_publication,
     load_scenario,
     run_scenario,
 )
@@ -81,10 +82,4 @@ def test_s03_explicit_global_raw_evidence_has_no_subscription_fallback(tmp_path)
     assert values["record_type"] == "service_health_event_global"
     assert values["subscription_id"] == ""
     assert values["subscription_evidence_source"] == "explicit_global"
-    expected = {
-        relative_path: (fixture / "expected" / "current" / relative_path).read_bytes()
-        for relative_path in sorted(
-            path.name for path in (fixture / "expected" / "current").iterdir()
-        )
-    }
-    assert result.current_tree == expected
+    assert_matches_fixture_publication(result, fixture)

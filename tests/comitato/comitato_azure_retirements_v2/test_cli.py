@@ -1,28 +1,30 @@
-import csv
-import io
 import json
 from dataclasses import dataclass, field
 from datetime import date
 from hashlib import sha256
+from pathlib import Path
 from typing import Any
 
 import pytest
-
-from src.comitato.comitato_azure_retirements_v2.retirements import cli
-from src.comitato.comitato_azure_retirements_v2.retirements.application import replay
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
+import src.comitato.comitato_azure_retirements_v2.src.config as runtime_config
+from src.comitato.comitato_azure_retirements_v2.src import cli
+from src.comitato.comitato_azure_retirements_v2.src.application import replay
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.config import (
+from src.comitato.comitato_azure_retirements_v2.src.config import (
     RuntimeConfig,
     parse_config,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
     RunRequest,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
+)
+from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
+    read_workbook_rows,
 )
 
 
@@ -53,6 +55,12 @@ class FakeReporter:
 
     def close(self) -> None:
         self.closed = True
+
+
+def _workbook_records(data: bytes) -> list[dict[str, str]]:
+    values = read_workbook_rows(data)
+    header, *rows = values
+    return [dict(zip(header, row, strict=True)) for row in rows]
 
 
 def _replay_slide_fixture(title: str) -> tuple[dict[str, Any], str]:
@@ -226,12 +234,8 @@ def test_refresh_committee_replays_all_reports_without_changing_other_artifacts(
     original_artifacts = {
         item.logical_path: item.data for item in baseline_store.candidate.artifacts
     }
-    slide_path = "03_azure_retirements_slide.tsv"
-    original_rows = list(
-        csv.DictReader(
-            io.StringIO(original_artifacts[slide_path].decode()), delimiter="\t"
-        )
-    )
+    slide_path = "03_azure_retirements_slide.xlsx"
+    original_rows = _workbook_records(original_artifacts[slide_path])
     assert len(original_rows) == 1
     row = original_rows[0]
     committee_path = tmp_path / "committee.yaml"
@@ -258,9 +262,7 @@ def test_refresh_committee_replays_all_reports_without_changing_other_artifacts(
     store = Store()
     result = replay.run_replay(config, _replay_application(store))
     artifacts = {item.logical_path: item.data for item in store.candidate.artifacts}
-    refreshed_rows = list(
-        csv.DictReader(io.StringIO(artifacts[slide_path].decode()), delimiter="\t")
-    )
+    refreshed_rows = _workbook_records(artifacts[slide_path])
     assert result.context.as_of_date == date(2026, 9, 22)
     assert artifacts.keys() == original_artifacts.keys()
     assert all(
@@ -676,8 +678,8 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
         {
             "report_catalog": DEFAULT_REPORT_CATALOG,
             "publication_store": store,
-            "_validate_catalog_coverage": RetirementsApplication._validate_catalog_coverage,
-            "_empty_artifacts": RetirementsApplication._empty_artifacts,
+            "validate_catalog_coverage": RetirementsApplication.validate_catalog_coverage,
+            "prepare_artifacts": RetirementsApplication.prepare_artifacts,
         },
     )()
     config = RuntimeConfig.from_request(
@@ -690,6 +692,83 @@ def test_replay_recomputes_empty_advisor_from_saved_inputs_without_live_sources(
     assert result.exit_status == 0
     assert store.candidate.artifacts[0].data.startswith(b"schema_version\trun_id\t")
     assert store.candidate.saved_inputs == manifest["saved_inputs"]
+
+
+def _external_replay_bundle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> tuple[Path, Path, Path, RuntimeConfig]:
+    output_root = tmp_path / "exports"
+    replay_bundle = output_root / "2026" / "09"
+    support_root = tmp_path / "support"
+    support_bundle = support_root / "2026" / "09"
+    support_bundle.mkdir(parents=True)
+    replay_bundle.mkdir(parents=True)
+    monkeypatch.setattr(
+        runtime_config,
+        "resolve_replay_support_bundle",
+        lambda output, bundle: support_root / bundle.relative_to(output),
+    )
+    manifest, _ = _replay_slide_fixture("Saved title")
+    saved_inputs = manifest.pop("saved_inputs")
+    manifest["manifest_schema_version"] = 2
+    manifest["saved_inputs_path"] = "saved-acquisition-inputs.json"
+    manifest_path = support_bundle / "publication-manifest.json"
+    saved_inputs_path = support_bundle / "saved-acquisition-inputs.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    saved_inputs_path.write_text(
+        json.dumps(
+            saved_inputs,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    config = RuntimeConfig.from_request(
+        RunRequest(ReportSelector.SLIDES, as_of_date=date(2026, 9, 22)),
+        replay_bundle_path=replay_bundle,
+        output_path=output_root,
+    )
+    return replay_bundle, manifest_path, saved_inputs_path, config
+
+
+def test_replay_resolves_current_export_month_to_relocated_support(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, manifest_path, _, config = _external_replay_bundle(tmp_path, monkeypatch)
+
+    class Store:
+        def publish(self, candidate):
+            self.candidate = candidate
+            return type(
+                "Receipt", (), {"generation": "2026/09", "current_reference": "2026/09"}
+            )()
+
+    store = Store()
+    result = replay.run_replay(config, _replay_application(store))
+
+    assert result.exit_status == 0
+    assert manifest_path.is_file()
+    assert store.candidate.artifacts[0].logical_path == (
+        "03_azure_retirements_slide.xlsx"
+    )
+
+
+@pytest.mark.parametrize("damage", ("missing", "altered"))
+def test_replay_rejects_missing_or_altered_relocated_inputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, damage: str
+) -> None:
+    _, _, saved_inputs_path, config = _external_replay_bundle(tmp_path, monkeypatch)
+    if damage == "missing":
+        saved_inputs_path.unlink()
+    else:
+        payload = json.loads(saved_inputs_path.read_text(encoding="utf-8"))
+        payload["schema_version"] = 2
+        saved_inputs_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="replay bundle is invalid or incomplete"):
+        replay.run_replay(config, _replay_application(object()))
 
 
 def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None:
@@ -721,7 +800,7 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     slide = next(
         item
         for item in store.candidate.artifacts
-        if item.logical_path == "03_azure_retirements_slide.tsv"
+        if item.logical_path == "03_azure_retirements_slide.xlsx"
     )
     assert result.exit_status == 0
     assert b"Old title" not in slide.data
@@ -749,10 +828,14 @@ def test_replay_slides_ignores_legacy_editorial_sidecar_inputs(tmp_path) -> None
     changed_slide = next(
         item
         for item in changed_store.candidate.artifacts
-        if item.logical_path == "03_azure_retirements_slide.tsv"
+        if item.logical_path == "03_azure_retirements_slide.xlsx"
     )
-    assert changed_slide.data == slide.data
-    assert b"Old title" not in changed_slide.data
+    assert _workbook_records(changed_slide.data) == _workbook_records(slide.data)
+    assert all(
+        "Old title" not in value
+        for row in _workbook_records(slide.data)
+        for value in row.values()
+    )
     assert all(
         item.logical_path != "comitato_editoriale.yaml"
         for item in changed_store.candidate.artifacts

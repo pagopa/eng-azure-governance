@@ -18,14 +18,15 @@ selected contract and its complete dependency closure.
 
 Run `bash src/comitato/comitato_azure_retirements_v2/run.sh --help` to inspect
 the CLI before a live run. The component root keeps `data/` and `exports/`
-beside the canonical `retirements/` package; its sole Python entry script is
+beside the canonical `src/` package; its sole Python entry script is
 `comitato-azure-retirements-v2.py`.
 
 Use the canonical import namespace
-`src.comitato.comitato_azure_retirements_v2.retirements`; do not import a
-top-level `retirements` package. Default output paths are unchanged: component
+`src.comitato.comitato_azure_retirements_v2.src`; do not import a
+top-level `retirements` package. Default output paths are: component
 `exports/YYYY/MM`, component `data/comitato_editoriale.yaml`, and repository
-`tmp/comitato/comitato_azure_retirements_v2/exports` for debug logs.
+`tmp/comitato/comitato_azure_retirements_v2` for diagnostics, replay support,
+and the acquisition cache.
 
 Required access is read access to the selected subscription scope for Azure
 Advisor, Resource Health events, Resource Graph enrichment, and subscription
@@ -68,10 +69,12 @@ for the same month replaces that entire monthly directory, including files
 left by an earlier selector or run. Runs for other months keep their existing
 bundles.
 
-Replacing an existing month deletes the superseded bundle after the new bundle
-becomes current. Save a copy elsewhere before replacing a bundle that may need
-to be replayed later. New publication and replay use the hashed `saved_inputs`
-in `publication-manifest.json`. A live slide run merges committee values from
+Replacing an existing month deletes the superseded bundle after the new export
+and support generations become current. Publication writes source-labelled
+JSONL evidence, `publication-manifest.json`, and
+`saved-acquisition-inputs.json` outside the export under
+`tmp/comitato/comitato_azure_retirements_v2/publications/`. The manifest
+integrity-checks the separate saved inputs. A live slide run merges committee values from
 `comitato_editoriale.yaml` into the slide before encoding and writes the YAML
 and its sibling `comitato_editoriale.tsv` only after publication succeeds. A
 changed original description clears `comitato_descrizione`, its editorial
@@ -116,11 +119,13 @@ bash src/comitato/comitato_azure_retirements_v2/run.sh \
   --output-format json
 ```
 
+The runtime resolves the monthly export path to its local support directory.
 The manifest supplies the original report selector, date, subscription scope,
-and saved inputs. All reports selected by that manifest are republished; only
+and saved-input location. All reports selected by that manifest are republished; only
 the slide's committee fields are enriched. The editorial YAML is read but not
 rewritten, so entries for other months remain intact. The bundle must contain
-saved inputs and publish slides, and the YAML must exist. Ordinary replay
+or resolve month-specific support with saved inputs and must publish slides;
+the YAML must exist. Ordinary replay
 continues to ignore editorial YAML unless `--refresh-committee` is explicit.
 The existing original-description match rule still applies: stale descriptions
 are not reused. Run from the repository root and use explicit paths to avoid
@@ -160,8 +165,9 @@ and the remaining batch count distinguish the end of one query from the end of
 the whole lookup, including when responses come from cache.
 
 Successful Azure response objects are saved atomically under
-`<output-path>/.acquisition-cache/` (by default
-`src/comitato/comitato_azure_retirements_v2/exports/.acquisition-cache/`).
+`tmp/comitato/comitato_azure_retirements_v2/acquisition-cache/`. The cache is
+namespaced by the configured output root so separate output destinations do
+not share entries accidentally.
 The cache includes Advisor recommendations, Service Health events, Advisor
 metadata, and Resource Graph enrichment responses. It is independent of monthly
 publication and survives failed runs and replacement of a monthly bundle.
@@ -178,7 +184,8 @@ This is a saved snapshot, not an automatic refresh. New Azure notices and
 updates are invisible until the relevant cache entries are removed. A cache-hit
 event shows the original download timestamp on the human console and in the
 debug log. To refresh, stop active runs and delete
-`<output-path>/.acquisition-cache/`, or delete individual JSON entries to
+the relevant output namespace below
+`tmp/comitato/comitato_azure_retirements_v2/acquisition-cache/`, or delete individual JSON entries to
 download only those requests again. Changing `--as-of-date` alone does not
 refresh Azure data. A resumed run can combine older completed responses with
 newly downloaded ones; clear the cache for a wholly fresh acquisition.
@@ -201,16 +208,26 @@ previous monthly bundle unchanged and keeps completed cached responses.
 
 ## Published Artifacts
 
-The `all` artifact set contains both raw TSV/JSONL evidence pairs, the
-aggregate TSV, the slide-preparation TSV, and `publication-manifest.json`.
-Single selectors publish only their selected set; upstream dependencies remain
-run-local. A private same-filesystem bundle is staged, reread, hashed, and
-validated before it replaces the target month. Failed runs return a non-zero
-status and emit sorted JSONL diagnostics on stderr without changing the
-existing monthly bundle.
+The `all` export set contains exactly:
+
+- `01_azure_advisor_retirements_raw.tsv`
+- `01_azure_service_health_advisories_raw.tsv`
+- `02_azure_retirements_aggregate.tsv`
+- `03_azure_retirements_slide.xlsx`
+
+The two source-labelled JSONL evidence companions and the publication
+manifest remain outside the export as support files. The manifest points to a
+separate integrity-checked `saved-acquisition-inputs.json`.
+Single selectors publish only their selected TSV or XLSX; upstream
+dependencies remain run-local. Private same-filesystem export and support
+generations are staged, reread, hashed, and validated before they replace the
+target month. Failed runs return a non-zero status and emit sorted JSONL
+diagnostics on stderr without changing the existing monthly export or replay
+support.
 
 The complete aggregate retains source membership independently of the
-committee view. The slide artifact has exactly these 19 columns, in order:
+committee view. The slide workbook has one worksheet with exactly these 19
+headers, in order:
 `id_elemento`, `titolo_breve`, `descrizione_breve`, `comitato_piattaforme`,
 `comitato_priorità`, `impatto_microsoft`, `comitato_descrizione`,
 `descrizione_originale_completa`, `comitato_retirement_date`,
@@ -239,8 +256,8 @@ independent from the published monthly bundle. Priority remains an external
 decision. `ambito_impatto` records platform, subscription, resource,
 environment, service, and region counts;
 `risorse_json` is compact and groups resource names by platform, subscription,
-and resource group. Cells longer than the Excel limit of 32,767 characters are
-not truncated by this projection contract.
+and resource group. Workbook cells remain text, including Unicode, leading
+zeros, blanks, date labels, and formula-like values.
 
 ## Operator Output And Logging
 

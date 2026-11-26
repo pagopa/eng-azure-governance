@@ -13,6 +13,7 @@ from ... import __version__
 from ...contracts.codecs import canonical_json
 from ...contracts.model import EncodedArtifact
 from ...domain.diagnostics import Diagnostic, sort_diagnostics
+from ...paths import artifact_destination
 from ...publication.model import (
     PublicationCandidate,
     PublicationError,
@@ -27,8 +28,9 @@ from ...reports.model import StagedDecodeFailure
 
 
 @dataclass(frozen=True, slots=True)
-class _ValidatedStagedGeneration:
+class ValidatedStagedGeneration:
     generation_dir: Path
+    support_generation_dir: Path
     manifest: dict[str, Any]
     artifacts: tuple[EncodedArtifact, ...]
 
@@ -162,6 +164,7 @@ def _manifest(
     artifact_entries = [
         {
             "bytes": len(artifact.data),
+            "destination": artifact_destination(artifact.logical_path),
             "media_type": artifact.media_type,
             "path": artifact.logical_path,
             "report": candidate.report_closure.owner_of(artifact.logical_path).name,
@@ -211,7 +214,7 @@ def _manifest(
             },
             "created_at": context.created_at.isoformat().replace("+00:00", "Z"),
             "dependency_closure": list(context.dependency_plan.stages),
-            "manifest_schema_version": 1,
+            "manifest_schema_version": 2,
             "run_id": context.run_id,
             "scope": {
                 "mode": context.scope.mode,
@@ -286,10 +289,11 @@ def _saved_acquisition(acquisition: Any) -> dict[str, Any]:
 def stage_candidate(
     candidate: PublicationCandidate,
     destination: Path,
+    support_destination: Path | None = None,
     *,
     staged_byte_mutator: Any = None,
     fault_injector: Any = None,
-) -> _ValidatedStagedGeneration:
+) -> ValidatedStagedGeneration:
     path_diagnostics = validate_candidate_paths(candidate)
     if path_diagnostics:
         raise PublicationError(path_diagnostics[0])
@@ -308,11 +312,30 @@ def stage_candidate(
                 message=f"{acquisition.receipt.source} acquisition is incomplete",
             )
     destination.mkdir(parents=True, exist_ok=True)
+    support_destination = (
+        support_destination
+        if support_destination is not None
+        else destination.with_name(f"{destination.name}-support")
+    )
+    if support_destination.resolve() == destination.resolve():
+        raise _error(
+            "support_destination_collides_with_exports",
+            candidate,
+            message="support destination must be separate from publication exports",
+        )
     staging_root = destination / ".staging"
     staging_root.mkdir(parents=True, exist_ok=True)
+    support_staging_root = support_destination / ".staging"
+    support_staging_root.mkdir(parents=True, exist_ok=True)
     generation_dir = Path(
         tempfile.mkdtemp(prefix=f"{candidate.context.run_id}-", dir=staging_root)
     )
+    support_generation_dir = Path(
+        tempfile.mkdtemp(
+            prefix=generation_dir.name + "-", dir=support_staging_root
+        )
+    )
+    support_generation_dir.rmdir()
     try:
         for artifact in candidate.artifacts:
             target = generation_dir / PurePosixPath(artifact.logical_path)
@@ -342,17 +365,40 @@ def stage_candidate(
             raise PublicationError(
                 "publication manifest validation failed", manifest_diagnostics
             )
+        saved_inputs = dict(manifest.pop("saved_inputs"))
+        manifest["saved_inputs_path"] = "saved-acquisition-inputs.json"
+        saved_inputs_bytes = (
+            canonical_json(saved_inputs) + "\n"
+        ).encode("utf-8")
+        support_generation_dir.mkdir()
+        for artifact in candidate.artifacts:
+            if artifact_destination(artifact.logical_path) != "support":
+                continue
+            source = generation_dir / PurePosixPath(artifact.logical_path)
+            target = support_generation_dir / PurePosixPath(artifact.logical_path)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(source, target)
         _fsync_file(
-            generation_dir / "publication-manifest.json",
-            PublicationManifest(manifest).to_bytes(),
+            support_generation_dir / "saved-acquisition-inputs.json",
+            saved_inputs_bytes,
+            fault_injector,
+            "saved-acquisition-inputs.json",
         )
-        return _ValidatedStagedGeneration(
+        _fsync_file(
+            support_generation_dir / "publication-manifest.json",
+            PublicationManifest(manifest).to_bytes(),
+            fault_injector,
+            "publication-manifest.json",
+        )
+        return ValidatedStagedGeneration(
             generation_dir=generation_dir,
+            support_generation_dir=support_generation_dir,
             manifest=manifest,
             artifacts=measured,
         )
     except Exception as exc:
         shutil.rmtree(generation_dir, ignore_errors=True)
+        shutil.rmtree(support_generation_dir, ignore_errors=True)
         if isinstance(exc, PublicationError):
             raise
         raise _error("staging_failure", candidate) from exc

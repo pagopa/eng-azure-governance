@@ -4,6 +4,7 @@ import json
 from collections.abc import Mapping
 from datetime import date, datetime
 from hashlib import sha256
+from pathlib import PurePosixPath
 from typing import Any
 
 from ..config import RuntimeConfig
@@ -29,20 +30,29 @@ from .saved_inputs import (
 
 
 def run_replay(config: RuntimeConfig, application: Any) -> RunResult:
-    bundle = config.replay_bundle_path
+    bundle = config.replay_support_bundle_path
     if bundle is None:
         raise ValueError("replay bundle is required")
     try:
         manifest = json.loads(
             (bundle / "publication-manifest.json").read_text(encoding="utf-8")
         )
-        if not isinstance(manifest.get("saved_inputs"), Mapping):
+        saved_inputs_path = manifest.get("saved_inputs_path")
+        if saved_inputs_path is not None:
+            relative_path = PurePosixPath(str(saved_inputs_path))
+            if relative_path.is_absolute() or ".." in relative_path.parts:
+                raise ValueError("replay bundle has an unsafe saved inputs path")
+            saved_inputs = json.loads(
+                (bundle / relative_path).read_text(encoding="utf-8")
+            )
+        else:
+            saved_inputs = manifest.get("saved_inputs")
+        if not isinstance(saved_inputs, Mapping):
             if manifest.get("manifest_schema_version") == 1:
                 raise ValueError(
                     "legacy schema-1 replay is unsupported because saved input evidence is absent"
                 )
             raise ValueError("replay bundle requires saved inputs")
-        saved_inputs = manifest["saved_inputs"]
         expected_saved_inputs_hash = str(manifest.get("saved_inputs_sha256", ""))
         actual_saved_inputs_hash = sha256(
             canonical_json(saved_inputs).encode("utf-8")
@@ -109,14 +119,14 @@ def run_replay(config: RuntimeConfig, application: Any) -> RunResult:
             for selector in (ReportSelector.ADVISOR, ReportSelector.SERVICE_HEALTH)
             if selector in prepared_by_selector
         ]
-        RetirementsApplication._validate_catalog_coverage(
+        RetirementsApplication.validate_catalog_coverage(
             context.scope.subscription_ids,
             selected_acquisitions,
             catalog,
             report=selector.value,
             run_id=context.run_id,
         )
-        artifacts, slide_selection = RetirementsApplication._empty_artifacts(
+        artifacts, slide_selection = RetirementsApplication.prepare_artifacts(
             context,
             selected_acquisitions,
             prepared_by_selector,

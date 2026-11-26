@@ -1,9 +1,10 @@
 import csv
 import json
+import os
 import re
 from pathlib import Path
 
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.committee_yaml import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.committee_yaml import (
     load,
     write,
 )
@@ -89,6 +90,32 @@ def test_write_creates_a_tsv_version_of_the_full_document(tmp_path: Path) -> Non
     assert json.loads(rows[1]["retirement_date"]) == document["item-2"][
         "retirement_date"
     ]
+
+
+def test_write_failure_preserves_both_previous_sidecar_files(
+    tmp_path: Path, monkeypatch
+) -> None:
+    path = tmp_path / "committee.yaml"
+    path.write_bytes(b"previous-yaml")
+    path.with_suffix(".tsv").write_bytes(b"previous-tsv")
+    real_replace = os.replace
+
+    def fail_new_yaml(source, target):
+        if Path(source).name == "committee.yaml" and Path(target) == path:
+            raise OSError("disk unavailable")
+        real_replace(source, target)
+
+    monkeypatch.setattr(os, "replace", fail_new_yaml)
+
+    try:
+        write(path, {"item": {"comitato_descrizione": "new"}})
+    except OSError:
+        pass
+    else:
+        raise AssertionError("expected sidecar publication failure")
+
+    assert path.read_bytes() == b"previous-yaml"
+    assert path.with_suffix(".tsv").read_bytes() == b"previous-tsv"
 
 
 def test_editorial_inventory_separates_plain_text_from_reference_metadata() -> None:

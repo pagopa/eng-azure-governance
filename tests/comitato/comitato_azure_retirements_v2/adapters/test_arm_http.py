@@ -5,15 +5,15 @@ from dataclasses import dataclass
 import pytest
 import requests
 
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.arm_http import (
     ArmHttpClient,
     ArmHttpError,
     RepeatedContinuationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.azure_auth import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.azure_auth import (
     AzureCliTokenProvider,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.src.ports import RuntimeEvent
 
 
 @dataclass

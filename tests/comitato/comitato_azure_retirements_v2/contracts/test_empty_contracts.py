@@ -1,12 +1,15 @@
 from datetime import date, datetime, timezone
 
-import pytest
+from io import BytesIO
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts import (
+import pytest
+from openpyxl import load_workbook
+
+from src.comitato.comitato_azure_retirements_v2.src.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -14,10 +17,10 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution imp
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.advisor.normalize import (
     ADVISOR_REPORT,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
 )
 
@@ -28,12 +31,12 @@ EXPECTED_HEADERS = {
     "slides": "id_elemento\ttitolo_breve\tdescrizione_breve\tcomitato_piattaforme\tcomitato_priorità\timpatto_microsoft\tcomitato_descrizione\tdescrizione_originale_completa\tcomitato_retirement_date\tretirement_date\tstato_data\tgiorni_ritardo\tazione_originale\tfonti\tlink_fonti\tambito_impatto\tid_advisor\tid_service_health\trisorse_json",
 }
 
-ALL_V1_CONTRACTS = (
+TSV_V1_CONTRACTS = (
     ADVISOR_REPORT.contract,
     SERVICE_HEALTH_REPORT.contract,
     AGGREGATE_V1,
-    SLIDES_V1,
 )
+ALL_V1_CONTRACTS = (*TSV_V1_CONTRACTS, SLIDES_V1)
 RAW_V1_CONTRACTS = (ADVISOR_REPORT.contract, SERVICE_HEALTH_REPORT.contract)
 
 
@@ -50,13 +53,24 @@ def run_context() -> RunContext:
     )
 
 
-@pytest.mark.parametrize("contract", ALL_V1_CONTRACTS, ids=lambda item: item.name)
+@pytest.mark.parametrize("contract", TSV_V1_CONTRACTS, ids=lambda item: item.name)
 def test_empty_tsv_is_exact_header_plus_lf(contract, run_context: RunContext) -> None:
     artifact = contract.empty_artifact(run_context)
 
     encoded = contract.encode(artifact)
 
     assert encoded.data == (EXPECTED_HEADERS[contract.name] + "\n").encode("utf-8")
+    assert encoded.rows == 0
+
+
+def test_empty_slides_is_valid_header_only_xlsx(run_context: RunContext) -> None:
+    encoded = SLIDES_V1.encode(SLIDES_V1.empty_artifact(run_context))
+
+    workbook = load_workbook(BytesIO(encoded.data), read_only=True)
+    try:
+        assert tuple(workbook.active.values) == (SLIDES_V1.header,)
+    finally:
+        workbook.close()
     assert encoded.rows == 0
 
 

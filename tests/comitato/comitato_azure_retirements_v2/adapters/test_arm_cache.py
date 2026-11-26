@@ -9,24 +9,25 @@ from types import SimpleNamespace
 import pytest
 import requests
 
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.progress import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.progress import (
     download_context,
     download_scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.arm_http import (
     ArmHttpError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.azure_auth import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.azure_auth import (
     AzureCliTokenProvider,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.composition import (
+from src.comitato.comitato_azure_retirements_v2.src.application.composition import (
     build_application,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.config import (
+import src.comitato.comitato_azure_retirements_v2.src.config as runtime_config
+from src.comitato.comitato_azure_retirements_v2.src.config import (
     HttpPolicy,
     RuntimeConfig,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -34,12 +35,12 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution imp
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
     SubscriptionId,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.src.ports import RuntimeEvent
 
 URL = "https://management.azure.com/subscriptions/sub-a/providers/Microsoft.ResourceHealth/events"
 
@@ -77,6 +78,11 @@ class Observer:
 @pytest.fixture
 def application_factory(tmp_path, monkeypatch):
     monkeypatch.setattr(AzureCliTokenProvider, "get_token", lambda _: "test-token")
+    monkeypatch.setattr(
+        runtime_config,
+        "acquisition_cache_root",
+        lambda _: tmp_path / ".acquisition-cache",
+    )
 
     def build(responses, observer=None):
         session = ScriptedSession(responses)

@@ -1,9 +1,9 @@
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.model import (
     EncodedArtifact,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -11,10 +11,10 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution imp
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.publication.validation import (
+from src.comitato.comitato_azure_retirements_v2.src.publication.validation import (
     validate_selected_set,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
 
@@ -25,7 +25,7 @@ EXPECTED_PATHS = {
         "01_azure_service_health_advisories_raw.tsv",
         "01_azure_service_health_advisories_raw.jsonl",
         "02_azure_retirements_aggregate.tsv",
-        "03_azure_retirements_slide.tsv",
+        "03_azure_retirements_slide.xlsx",
     ),
     ReportSelector.ADVISOR: (
         "01_azure_advisor_retirements_raw.tsv",
@@ -36,7 +36,7 @@ EXPECTED_PATHS = {
         "01_azure_service_health_advisories_raw.jsonl",
     ),
     ReportSelector.AGGREGATE: ("02_azure_retirements_aggregate.tsv",),
-    ReportSelector.SLIDES: ("03_azure_retirements_slide.tsv",),
+    ReportSelector.SLIDES: ("03_azure_retirements_slide.xlsx",),
 }
 
 
@@ -71,7 +71,7 @@ def _artifact(
 
 def test_selected_set_uses_catalog_publication_paths():
     plan = DEFAULT_REPORT_CATALOG.plan(ReportSelector.SLIDES)
-    assert plan.expected_paths == ("03_azure_retirements_slide.tsv",)
+    assert plan.expected_paths == ("03_azure_retirements_slide.xlsx",)
 
 
 def test_selected_set_rejects_mixed_run_ids_and_evaluation_dates() -> None:

@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.dates import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.dates import (
     SlideEligibility,
 )
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
+    assert_matches_fixture_publication,
     load_scenario,
     run_scenario,
 )
@@ -22,10 +23,4 @@ def test_s02_selects_only_inclusive_boundaries_and_reports_exact_exclusions(
         SlideEligibility.BEYOND_COMMITTEE_WINDOW.value,
     }
     assert all(len(ids) == 1 for ids in result.slide_selection.values())  # type: ignore[attr-defined]
-    expected = {
-        relative_path: (FIXTURE / "expected" / "current" / relative_path).read_bytes()
-        for relative_path in sorted(
-            path.name for path in (FIXTURE / "expected" / "current").iterdir()
-        )
-    }
-    assert result.current_tree == expected
+    assert_matches_fixture_publication(result, FIXTURE)

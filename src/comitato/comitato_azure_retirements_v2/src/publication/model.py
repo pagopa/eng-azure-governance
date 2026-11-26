@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 from ..contracts.model import EncodedArtifact
 from ..domain.diagnostics import Diagnostic
@@ -19,6 +19,7 @@ class PublicationCandidate:
     slide_selection: Any = None
     manifest_metadata: Mapping[str, Any] | None = None
     saved_inputs: Mapping[str, Any] | None = None
+    after_switch: Callable[[], None] | None = None
 
 
 @dataclass(frozen=True, slots=True)

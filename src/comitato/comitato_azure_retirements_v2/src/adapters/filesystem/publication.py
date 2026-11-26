@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import shutil
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -12,9 +13,26 @@ from ...publication.model import (
     PublicationError,
     PublicationReceipt,
 )
-from .staging import _ValidatedStagedGeneration, stage_candidate
+from .staging import ValidatedStagedGeneration, stage_candidate
 
-_COMMIT_FAULTS = {"before_switch", "durable_marker"}
+_COMMIT_FAULTS = {
+    "before_switch",
+    "after_export_backup",
+    "after_export_switch",
+    "after_support_backup",
+    "after_support_switch",
+    "durable_marker",
+}
+
+
+@dataclass(slots=True)
+class PublicationReplacement:
+    staged: Path
+    destination: Path
+    backup: Path
+    root: Path
+    previous_moved: bool = False
+    new_moved: bool = False
 
 
 class FilesystemAtomicPublicationStore:
@@ -23,11 +41,17 @@ class FilesystemAtomicPublicationStore:
     def __init__(
         self,
         destination: Path,
+        support_destination: Path | None = None,
         *,
         fail_before_switch: bool = False,
         observer: RunObserver | None = None,
     ) -> None:
         self.destination = destination.resolve()
+        self.support_destination = (
+            support_destination.resolve()
+            if support_destination is not None
+            else destination.with_name(f"{destination.name}-support").resolve()
+        )
         self.fail_before_switch = fail_before_switch
         self._warnings: list[str] = []
         self._observer = observer or NullRunObserver()
@@ -44,14 +68,19 @@ class FilesystemAtomicPublicationStore:
             self._discard_unpublished(generation)
             raise
 
-    def _discard_unpublished(self, generation: _ValidatedStagedGeneration) -> None:
-        generation_dir = Path(generation.generation_dir)
-        staging_root = self.destination / ".staging"
-        try:
-            generation_dir.relative_to(staging_root)
-        except ValueError:
-            return
-        shutil.rmtree(generation_dir, ignore_errors=True)
+    def _discard_unpublished(self, generation: ValidatedStagedGeneration) -> None:
+        for generation_dir, staging_root in (
+            (Path(generation.generation_dir), self.destination / ".staging"),
+            (
+                Path(generation.support_generation_dir),
+                self.support_destination / ".staging",
+            ),
+        ):
+            try:
+                generation_dir.relative_to(staging_root)
+            except ValueError:
+                continue
+            shutil.rmtree(generation_dir, ignore_errors=True)
 
     def _preflight(self) -> None:
         candidate = getattr(self, "_candidate", None)
@@ -68,10 +97,16 @@ class FilesystemAtomicPublicationStore:
             self.destination.mkdir(parents=True, exist_ok=True)
             if not self.destination.is_dir():
                 raise OSError("destination is not a directory")
-            staging_root = self.destination / ".staging"
-            staging_root.mkdir(exist_ok=True)
-            if staging_root.stat().st_dev != self.destination.stat().st_dev:
-                raise OSError("staging is on a different filesystem")
+            self.support_destination.mkdir(parents=True, exist_ok=True)
+            if not self.support_destination.is_dir():
+                raise OSError("support destination is not a directory")
+            if self.support_destination == self.destination:
+                raise OSError("support destination collides with publication destination")
+            for root in (self.destination, self.support_destination):
+                staging_root = root / ".staging"
+                staging_root.mkdir(exist_ok=True)
+                if staging_root.stat().st_dev != root.stat().st_dev:
+                    raise OSError("staging is on a different filesystem")
         except OSError as exc:
             diagnostic = Diagnostic(
                 severity="error",
@@ -83,7 +118,7 @@ class FilesystemAtomicPublicationStore:
             )
             raise PublicationError(diagnostic) from exc
 
-    def _stage(self, candidate: PublicationCandidate) -> _ValidatedStagedGeneration:
+    def _stage(self, candidate: PublicationCandidate) -> ValidatedStagedGeneration:
         self._candidate = candidate
         self._observer.emit(
             RuntimeEvent(
@@ -95,7 +130,9 @@ class FilesystemAtomicPublicationStore:
             )
         )
         self._preflight()
-        generation = stage_candidate(candidate, self.destination)
+        generation = stage_candidate(
+            candidate, self.destination, self.support_destination
+        )
         self._observer.emit(
             RuntimeEvent(
                 "INFO",
@@ -110,37 +147,13 @@ class FilesystemAtomicPublicationStore:
         )
         return generation
 
-    def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
+    def _inject_commit_fault(self, point: str) -> None:
+        return None
+
+    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
         self._preflight()
         if self.fail_before_switch:
             raise PublicationError("fault injected before monthly publication switch")
-        generation_dir = Path(generation.generation_dir)
-        staging_root = self.destination / ".staging"
-        try:
-            generation_dir.relative_to(staging_root)
-        except ValueError as exc:
-            raise PublicationError(
-                Diagnostic(
-                    "error",
-                    "unsafe_staged_generation",
-                    "commit",
-                    "",
-                    "",
-                    message="staged generation is outside the private staging area",
-                )
-            ) from exc
-        if generation_dir.stat().st_dev != self.destination.stat().st_dev:
-            raise PublicationError(
-                Diagnostic(
-                    "error",
-                    "cross_device_publication",
-                    "commit",
-                    "",
-                    "",
-                    message="publication generation is not on the destination filesystem",
-                )
-            )
-
         candidate = getattr(self, "_candidate", None)
         if candidate is None:
             raise PublicationError(
@@ -155,11 +168,54 @@ class FilesystemAtomicPublicationStore:
             )
         month_reference = f"{candidate.context.as_of_date.year:04d}/{candidate.context.as_of_date.month:02d}"
         monthly_bundle = self.destination / month_reference
-        backup_bundle = (
-            self.destination / ".staging" / f"{generation_dir.name}-previous"
+        monthly_support = self.support_destination / month_reference
+        replacements = (
+            PublicationReplacement(
+                staged=Path(generation.generation_dir),
+                destination=monthly_bundle,
+                backup=self.destination
+                / ".staging"
+                / f"{Path(generation.generation_dir).name}-previous",
+                root=self.destination,
+            ),
+            PublicationReplacement(
+                staged=Path(generation.support_generation_dir),
+                destination=monthly_support,
+                backup=self.support_destination
+                / ".staging"
+                / f"{Path(generation.support_generation_dir).name}-previous",
+                root=self.support_destination,
+            ),
         )
-        previous_bundle_moved = False
-        new_bundle_moved = False
+        for replacement in replacements:
+            staged = replacement.staged
+            root = replacement.root
+            try:
+                staged.relative_to(root / ".staging")
+            except ValueError as exc:
+                raise PublicationError(
+                    Diagnostic(
+                        "error",
+                        "unsafe_staged_generation",
+                        "commit",
+                        "",
+                        "",
+                        message="staged generation is outside the private staging area",
+                    )
+                ) from exc
+            if staged.stat().st_dev != root.stat().st_dev:
+                raise PublicationError(
+                    Diagnostic(
+                        "error",
+                        "cross_device_publication",
+                        "commit",
+                        "",
+                        "",
+                        message=(
+                            "publication generation is not on the destination filesystem"
+                        ),
+                    )
+                )
         try:
             self._observer.emit(
                 RuntimeEvent(
@@ -170,27 +226,46 @@ class FilesystemAtomicPublicationStore:
                     {"current_reference": month_reference},
                 )
             )
-            monthly_bundle.parent.mkdir(parents=True, exist_ok=True)
-            if monthly_bundle.exists() and not monthly_bundle.is_dir():
-                raise OSError("monthly publication path is not a directory")
-            if backup_bundle.exists():
-                raise OSError("monthly publication backup already exists")
-            if monthly_bundle.exists():
-                os.replace(monthly_bundle, backup_bundle)
-                previous_bundle_moved = True
-            os.replace(generation_dir, monthly_bundle)
-            new_bundle_moved = True
-        except OSError as exc:
-            if new_bundle_moved:
-                shutil.rmtree(monthly_bundle, ignore_errors=True)
-            if previous_bundle_moved and backup_bundle.exists():
-                try:
-                    os.replace(backup_bundle, monthly_bundle)
-                except OSError:
-                    self._warnings.append(
-                        "superseded monthly bundle restoration failed"
-                    )
-            shutil.rmtree(generation_dir, ignore_errors=True)
+            for index, replacement in enumerate(replacements):
+                destination = replacement.destination
+                backup = replacement.backup
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                if destination.exists() and not destination.is_dir():
+                    raise OSError("monthly publication path is not a directory")
+                if backup.exists():
+                    raise OSError("monthly publication backup already exists")
+                if destination.exists():
+                    os.replace(destination, backup)
+                    replacement.previous_moved = True
+                self._inject_commit_fault(
+                    "after_export_backup" if index == 0 else "after_support_backup"
+                )
+            for index, replacement in enumerate(replacements):
+                os.replace(replacement.staged, replacement.destination)
+                replacement.new_moved = True
+                self._inject_commit_fault(
+                    "after_export_switch" if index == 0 else "after_support_switch"
+                )
+            self._inject_commit_fault("durable_marker")
+            if candidate.after_switch is not None:
+                candidate.after_switch()
+        except (OSError, PublicationError) as exc:
+            for replacement in reversed(replacements):
+                if replacement.new_moved:
+                    shutil.rmtree(replacement.destination, ignore_errors=True)
+                if (
+                    replacement.previous_moved
+                    and replacement.backup.exists()
+                ):
+                    try:
+                        os.replace(replacement.backup, replacement.destination)
+                    except OSError:
+                        self._warnings.append(
+                            "superseded monthly bundle restoration failed"
+                        )
+                shutil.rmtree(replacement.staged, ignore_errors=True)
+            if isinstance(exc, PublicationError):
+                raise
             raise PublicationError(
                 Diagnostic(
                     "error",
@@ -202,19 +277,20 @@ class FilesystemAtomicPublicationStore:
                 )
             ) from exc
 
-        if previous_bundle_moved:
-            try:
-                shutil.rmtree(backup_bundle)
-            except OSError:
-                self._warnings.append("superseded monthly bundle cleanup failed")
-                self._observer.emit(
-                    RuntimeEvent(
-                        "WARNING",
-                        "publication_cleanup_warning",
-                        "Superseded monthly bundle cleanup failed",
-                        candidate.context.run_id,
+        for replacement in replacements:
+            if replacement.previous_moved:
+                try:
+                    shutil.rmtree(replacement.backup)
+                except OSError:
+                    self._warnings.append("superseded monthly bundle cleanup failed")
+                    self._observer.emit(
+                        RuntimeEvent(
+                            "WARNING",
+                            "publication_cleanup_warning",
+                            "Superseded monthly bundle cleanup failed",
+                            candidate.context.run_id,
+                        )
                     )
-                )
         receipt = PublicationReceipt(
             generation=month_reference,
             current_reference=month_reference,
@@ -237,11 +313,14 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
     def __init__(
         self,
         destination: Path,
+        support_destination: Path | None = None,
         *,
         fault: str,
         observer: RunObserver | None = None,
     ) -> None:
-        super().__init__(destination, observer=observer)
+        super().__init__(
+            destination, support_destination, observer=observer
+        )
         self.fault = fault
         self.candidates: list[Any] = []
 
@@ -273,7 +352,12 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
                     )
                 )
 
-        generation = stage_candidate(candidate, self.destination, fault_injector=inject)
+        generation = stage_candidate(
+            candidate,
+            self.destination,
+            self.support_destination,
+            fault_injector=inject,
+        )
         self._observer.emit(
             RuntimeEvent(
                 "INFO",
@@ -288,8 +372,8 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
         )
         return generation
 
-    def _commit(self, generation: _ValidatedStagedGeneration) -> PublicationReceipt:
-        if self.fault in _COMMIT_FAULTS:
+    def _commit(self, generation: ValidatedStagedGeneration) -> PublicationReceipt:
+        if self.fault == "before_switch":
             candidate = getattr(self, "_candidate", None)
             report = getattr(getattr(candidate, "context", None), "request", None)
             report_name = (
@@ -328,3 +412,26 @@ class FaultInjectingPublicationStore(FilesystemAtomicPublicationStore):
                 )
             return receipt
         return super()._commit(generation)
+
+    def _inject_commit_fault(self, point: str) -> None:
+        if point not in _COMMIT_FAULTS or point != self.fault:
+            return
+        candidate = getattr(self, "_candidate", None)
+        report = getattr(getattr(candidate, "context", None), "request", None)
+        report_name = (
+            getattr(report, "selector", "").value
+            if getattr(report, "selector", None)
+            else ""
+        )
+        run_id = getattr(getattr(candidate, "context", None), "run_id", "")
+        raise PublicationError(
+            Diagnostic(
+                severity="error",
+                code=f"filesystem_{point}_failure",
+                stage="commit",
+                report=report_name,
+                run_id=run_id,
+                artifact="publication-manifest.json",
+                message=f"filesystem {point} failed during publication switch",
+            )
+        )

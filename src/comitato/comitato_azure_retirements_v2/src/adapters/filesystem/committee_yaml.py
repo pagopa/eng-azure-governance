@@ -5,6 +5,9 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
+import shutil
+import tempfile
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -51,7 +54,7 @@ def _tsv_cell(value: Any) -> str:
     return str(value).replace("\t", " ").replace("\r", " ").replace("\n", " ")
 
 
-def write_tsv(path: Path, value: Mapping[str, Any]) -> None:
+def _tsv_bytes(value: Mapping[str, Any]) -> bytes:
     entries = [
         (item_id, entry if isinstance(entry, Mapping) else {})
         for item_id, entry in value.items()
@@ -64,20 +67,58 @@ def write_tsv(path: Path, value: Mapping[str, Any]) -> None:
         writer.writerow(
             (str(item_id), *(_tsv_cell(entry.get(field, "")) for field in fields))
         )
+    return stream.getvalue().encode("utf-8")
+
+
+def write_tsv(path: Path, value: Mapping[str, Any]) -> None:
     tsv_path = path.with_suffix(".tsv")
     tsv_path.parent.mkdir(parents=True, exist_ok=True)
-    tsv_path.write_text(stream.getvalue(), encoding="utf-8")
+    tsv_path.write_bytes(_tsv_bytes(value))
+
+
+def _stage_file(path: Path, data: bytes) -> None:
+    with path.open("wb") as handle:
+        handle.write(data)
+        handle.flush()
+        os.fsync(handle.fileno())
 
 
 def write(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        yaml.dump(
+    try:
+        yaml_bytes = yaml.dump(
             dict(value), Dumper=_CommitteeDumper, allow_unicode=True, width=_WRAP_WIDTH
-        ),
-        encoding="utf-8",
+        ).encode("utf-8")
+    except yaml.YAMLError as exc:
+        raise OSError("committee YAML cannot be serialized") from exc
+    staged_root = Path(tempfile.mkdtemp(prefix=f".{path.name}-", dir=path.parent))
+    tsv_path = path.with_suffix(".tsv")
+    pairs = (
+        (staged_root / "committee.yaml", path, staged_root / "committee.yaml.previous"),
+        (staged_root / "committee.tsv", tsv_path, staged_root / "committee.tsv.previous"),
     )
-    write_tsv(path, value)
+    state = [(False, False) for _ in pairs]
+    try:
+        _stage_file(pairs[0][0], yaml_bytes)
+        _stage_file(pairs[1][0], _tsv_bytes(value))
+        for index, (_, target, backup) in enumerate(pairs):
+            if target.exists():
+                os.replace(target, backup)
+                state[index] = (True, False)
+        for index, (staged, target, _) in enumerate(pairs):
+            os.replace(staged, target)
+            state[index] = (state[index][0], True)
+    except OSError as exc:
+        for index in reversed(range(len(pairs))):
+            _, target, backup = pairs[index]
+            previous_moved, new_moved = state[index]
+            if new_moved:
+                target.unlink(missing_ok=True)
+            if previous_moved and backup.exists():
+                os.replace(backup, target)
+        raise OSError("committee YAML and TSV publication failed") from exc
+    finally:
+        shutil.rmtree(staged_root, ignore_errors=True)
 
 
 __all__ = ["load", "write", "write_tsv"]

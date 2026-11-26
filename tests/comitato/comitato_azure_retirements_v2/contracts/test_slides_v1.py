@@ -1,21 +1,24 @@
 import json
+from io import BytesIO
 from datetime import date, datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
+from openpyxl import load_workbook
+
+from src.comitato.comitato_azure_retirements_v2.src.contracts.aggregate_v1 import (
     HEADER as AGGREGATE_HEADER,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.model import (
     Artifact,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.slides_projection import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.slides_projection import (
     project_slides,
     select_slides,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.slides_v1 import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.slides_v1 import (
     HEADER,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -98,7 +101,7 @@ def aggregate_row(
 
 
 def aggregate_artifact(*rows: dict[str, str]) -> Artifact:
-    from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
+    from src.comitato.comitato_azure_retirements_v2.src.contracts.aggregate_v1 import (
         AggregateRecord,
     )
 
@@ -132,9 +135,14 @@ def test_slides_v1_has_exact_utf8_header_and_empty_artifact() -> None:
         "id_service_health",
         "risorse_json",
     )
-    assert SLIDES_V1.encode(SLIDES_V1.empty_artifact(context())).data == (
-        "\t".join(HEADER) + "\n"
-    ).encode("utf-8")
+    workbook = load_workbook(
+        BytesIO(SLIDES_V1.encode(SLIDES_V1.empty_artifact(context())).data),
+        read_only=True,
+    )
+    try:
+        assert tuple(workbook.active.values) == (HEADER,)
+    finally:
+        workbook.close()
 
 
 def test_project_slides_emits_committee_projection_and_leaves_external_fields_empty() -> (

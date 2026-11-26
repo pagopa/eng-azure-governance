@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.committee import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.committee import (
     merge,
 )
 
