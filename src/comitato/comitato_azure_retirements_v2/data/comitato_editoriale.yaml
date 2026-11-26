@@ -3,8 +3,8 @@ azure-retirement:v2:0089cddc8ed93a6ece34b9683b0a1c64a6a1d451b029f48b9b3950f12748
     Azure Key Vault – le API di gestione precedenti alla versione 2026-02-01 sono in ritiro
 
 
-    Suggerimento: aggiornare gli strumenti di gestione, come Terraform, alle API 2026-02-01 o
-    successive per mantenere la compatibilità; l'accesso applicativo ai segreti non è coinvolto.
+    Suggerimento: aggiornare gli strumenti di gestione, come Terraform, alle API 2026-02-01 o successive
+    per mantenere la compatibilità; l'accesso applicativo ai segreti non è coinvolto.
   comitato_fonti:
   - titolo: Aggiornare la versione API di Key Vault | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/key-vault/general/migrate-api-version
@@ -19,10 +19,10 @@ azure-retirement:v2:0089cddc8ed93a6ece34b9683b0a1c64a6a1d451b029f48b9b3950f12748
   link_fonti:
   - https://learn.microsoft.com/azure/key-vault/general/access-control-default?tabs=azure-cli
   retirement_date:
-  - data: '2026-07-10'
+  - data: '2026-11-13'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-08-31'
+  - data: '2026-11-26'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
   - data: '2027-02-27'
@@ -33,8 +33,8 @@ azure-retirement:v2:04ac569d8e9372c200ec5dfdde5da134d7ee6a3129bb194d130e6a7b6870
     Azure Public IP – gli IP pubblici con SKU Basic sono in ritiro
 
 
-    Suggerimento: pianificare il passaggio degli IP pubblici da Basic a Standard per mantenere
-    supporto e garanzie di servizio.
+    Suggerimento: pianificare il passaggio degli IP pubblici da Basic a Standard per mantenere supporto
+    e garanzie di servizio.
   comitato_fonti:
   - titolo: Aggiornare gli IP pubblici Basic a Standard | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/public-ip-basic-upgrade-guidance
@@ -58,84 +58,23 @@ azure-retirement:v2:04ac569d8e9372c200ec5dfdde5da134d7ee6a3129bb194d130e6a7b6870
   - data: '2026-04-26'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-05-14'
+  - data: '2026-11-05'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
-azure-retirement:v2:0dda532f9277a67d20d5882550f858d605002e5611be1bb62c261b6e25a8ce5a:
-  comitato_descrizione: >-
-    Azure Cosmos DB – si consiglia di aggiornare gli SDK obsoleti
-
-
-    Suggerimento: aggiornare le librerie di connessione a Cosmos DB (SDK) a versioni supportate
-    per beneficiare delle correzioni e dei miglioramenti disponibili.
-  comitato_fonti:
-  - titolo: Documentazione Cosmos DB
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/
-  - titolo: SDK .NET v3
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/sdk-dotnet-v3
-  - titolo: SDK Java v4
-    url: https://learn.microsoft.com/en-us/azure/cosmos-db/sdk-java-v4
-  comitato_retirement_date: Consultare la documentazione Microsoft.
-  descrizione_originale_completa: >-
-    Advisor: An Azure Cosmos DB account using an old version of the SDK lacks the latest fixes and improvements.
-    Your Azure Cosmos DB account is using an old version of the SDK. For the latest fixes, performance
-    improvements, and new feature capabilities, upgrade to the latest version.
-
-
-    Upgrade old Azure Cosmos DB SDK to the latest version
-  link_fonti:
-  - https://docs.microsoft.com/azure/cosmos-db
-  - https://docs.microsoft.com/azure/cosmos-db/nosql/sdk-dotnet-v3
-  - https://docs.microsoft.com/azure/cosmos-db/nosql/sdk-java-v4
-  retirement_date:
-  - data: '2026-10-19'
-    fonte: Azure Advisor
-    tipo: aggiornamento_meno_recente
-  - data: '2026-10-27'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-azure-retirement:v2:194d85400e8dee189beccb5882d05b8d85806b15ebe7d824e38cd0837eb2ae7f:
-  comitato_descrizione: >-
-    Azure Network Watcher – i flow log degli NSG sono in ritiro
-
-
-    Suggerimento: migrare dai log dei gruppi di sicurezza di rete (NSG) ai Virtual Network flow
-    logs per mantenere la visibilità sul traffico.
-  comitato_fonti:
-  - titolo: Ritiro dei flow log NSG | Microsoft Azure
-    url: https://azure.microsoft.com/updates/v2/Azure-NSG-flow-logs-Retirement
-  - titolo: Panoramica dei flow log NSG | Microsoft Learn
-    url: https://learn.microsoft.com/azure/network-watcher/nsg-flow-logs-overview
-  comitato_retirement_date: 09/30/2027 — Ritiro dei flow log NSG (Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Migrate to virtual network flow logs
-
-
-    Network security group (NSG) flow logs in Azure Network Watcher is retiring. As part of this retirement,
-    customers will no longer be able to create new NSG flow logs. Migrate to virtual network flow logs
-    in Network Watcher.
-  link_fonti:
-  - https://azure.microsoft.com/updates/v2/Azure-NSG-flow-logs-Retirement
-  retirement_date:
-  - data: '2026-04-16'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-  - data: '2027-09-30'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
 azure-retirement:v2:20be56f25f50b996cf7007a6b4e3d41d7e8ecb4a4e8ea167fad952589fa3a611:
   comitato_descrizione: >-
     Azure CDN Standard from Microsoft (classic): ritiro del servizio
 
 
-    Suggerimento: pianificare la migrazione ad Azure Front Door Standard o Premium per evitare
-    interruzioni nella distribuzione dei contenuti.
+    Suggerimento: pianificare la migrazione ad Azure Front Door Standard o Premium per evitare interruzioni
+    nella distribuzione dei contenuti.
   comitato_fonti:
   - titolo: Ritiro di Azure CDN Standard from Microsoft (classic) | Microsoft Azure
     url: https://azure.microsoft.com/updates?id=Azure-CDN-Standard-from-Microsoft-classic-will-be-retired-on-30-September-2027
   - titolo: Confronto tra Azure Front Door e Azure CDN | Microsoft Learn
     url: https://learn.microsoft.com/azure/frontdoor/front-door-cdn-comparison
-  comitato_retirement_date: 09/30/2027 — Ritiro di Azure CDN Standard from Microsoft (classic) (Microsoft Learn)
+  comitato_retirement_date: 09/30/2027 — Ritiro di Azure CDN Standard from Microsoft (classic) (Microsoft
+    Learn)
   descrizione_originale_completa: >-
     Advisor: Azure CDN Standard from Microsoft (classic) is being retired.
 
@@ -155,8 +94,8 @@ azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d2398
     Azure Kubernetes Service (AKS) – Kubernetes 1.35: fine del supporto
 
 
-    Suggerimento: pianificare l'aggiornamento dei cluster AKS da Kubernetes 1.35 a una versione
-    supportata per mantenere assistenza e garanzie di servizio.
+    Suggerimento: pianificare l'aggiornamento dei cluster AKS da Kubernetes 1.35 a una versione supportata
+    per mantenere assistenza e garanzie di servizio.
   comitato_fonti:
   - titolo: Versioni Kubernetes supportate | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions
@@ -174,7 +113,7 @@ azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d2398
   - data: '2026-09-22'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-10-16'
+  - data: '2026-11-11'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
   - data: '2027-03-01'
@@ -186,50 +125,20 @@ azure-retirement:v2:270d403f284213e58f70737ff206adb89b9feff2336aa8e61747245d2398
   - data: '2027-03-31'
     fonte: Azure Advisor (metadati)
     tipo: ritiro
-azure-retirement:v2:3b670db69306eabb869bd4cb4b5a5de0e6e230faee1932cff194a922ab735cdc:
-  comitato_descrizione: >-
-    Azure Kubernetes Service (AKS) – Kubernetes 1.32: supporto standard terminato
-
-
-    Suggerimento: dare priorità all'aggiornamento dei cluster AKS ancora su Kubernetes 1.32
-    per tornare a una versione con supporto standard.
-  comitato_fonti:
-  - titolo: Versioni Kubernetes supportate | Microsoft Learn
-    url: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions
-  comitato_retirement_date: 03/31/2026 [SCADUTA] — Fine del supporto standard (Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Azure Kubernetes Service retires 1.32 Kubernetes Official version. To stay within supported
-    versions and service-level agreements (SLA), upgrade to a supported version within 30 days after Azure
-    removes version 1.32 Kubernetes Official version
-
-
-    Upgrade your AKS cluster from 1.32 Kubernetes Official version
-  link_fonti:
-  - https://learn.microsoft.com/azure/aks/supported-kubernetes-versions?branch=main&branchFallbackFrom=pr-en-us-3520&tabs=azure-cli
-  retirement_date:
-  - data: '2026-03-01'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
-  - data: '2026-03-31'
-    fonte: Azure Advisor (metadati)
-    tipo: ritiro
-  - data: '2026-08-21'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
 azure-retirement:v2:49eb67e4f9deba19056157a19c44ee7dd201f4f204bb63fa2ddecbb94d074b64:
   comitato_descrizione: >-
     Azure Kubernetes Service (AKS) – metriche per pod: ritiro del dettaglio nelle metriche di piattaforma
 
 
-    Suggerimento: passare ad Azure Monitor Managed Prometheus per mantenere il monitoraggio e
-    gli allarmi che richiedono il dettaglio dei singoli pod.
+    Suggerimento: passare ad Azure Monitor Managed Prometheus per mantenere il monitoraggio e gli allarmi
+    che richiedono il dettaglio dei singoli pod.
   comitato_fonti:
   - titolo: Azure Monitor Managed Prometheus | Microsoft Learn
     url: https://learn.microsoft.com/azure/azure-monitor/metrics/prometheus-metrics-overview
   - titolo: Riferimento delle metriche di AKS | Microsoft Learn
     url: https://learn.microsoft.com/azure/aks/monitor-aks-reference
-  comitato_retirement_date: 09/30/2027 — Ritiro del dettaglio per pod nelle metriche di piattaforma
-    interessate (Microsoft Learn)
+  comitato_retirement_date: 09/30/2027 — Ritiro del dettaglio per pod nelle metriche di piattaforma interessate
+    (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: AKS Pod name dimension within kube_pod_status_phase and kube_pod_status_ready platform metrics
     is retiring. To continue using the pod name dimension switch to Azure Monitor Managed Prometheus.
@@ -240,6 +149,9 @@ azure-retirement:v2:49eb67e4f9deba19056157a19c44ee7dd201f4f204bb63fa2ddecbb94d07
   - https://learn.microsoft.com/azure/azure-monitor/metrics/prometheus-metrics-overview
   retirement_date:
   - data: '2026-10-21'
+    fonte: Azure Advisor
+    tipo: aggiornamento_meno_recente
+  - data: '2026-11-03'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
   - data: '2027-09-30'
@@ -291,8 +203,8 @@ azure-retirement:v2:59ced2da515de40b75bfeab0c46921c7045f23c27c09316c3cd8ecd18fbb
     Azure Functions – .NET 8: supporto terminato
 
 
-    Suggerimento: dare priorità alla migrazione da .NET 8 a .NET 10 con il modello isolato per
-    ripristinare il supporto. Per le app su Linux Consumption serve un piano compatibile.
+    Suggerimento: dare priorità alla migrazione da .NET 8 a .NET 10 con il modello isolato per ripristinare
+    il supporto. Per le app su Linux Consumption serve un piano compatibile.
   comitato_fonti:
   - titolo: Aggiornare le versioni del linguaggio in Azure Functions | Microsoft Learn
     url: https://learn.microsoft.com/azure/azure-functions/update-language-versions?tabs=azure-portal%2Cwindows&pivots=programming-language-csharp
@@ -311,53 +223,22 @@ azure-retirement:v2:59ced2da515de40b75bfeab0c46921c7045f23c27c09316c3cd8ecd18fbb
   link_fonti:
   - https://learn.microsoft.com/azure/azure-functions/update-language-versions?tabs=azure-portal%2Cwindows&pivots=programming-language-csharp
   retirement_date:
-  - data: '2026-10-25'
+  - data: '2026-11-09'
     fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
+    tipo: aggiornamento_meno_recente
   - data: '2026-11-10'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:5c49ee8a23eb422df6c10e9d1cc50dd3b0437a68b8d8b50f8a109f26dd256a38:
-  comitato_descrizione: >-
-    Azure Storage – account GPv1: ritiro e passaggio a GPv2
-
-
-    Suggerimento: aggiornare a GPv2 gli account ancora su GPv1 e valutare l'impatto sui costi.
-    Microsoft converte automaticamente gli account residui.
-  comitato_fonti:
-  - titolo: Azure Updates | Microsoft Azure
-    url: https://azure.microsoft.com/updates/?id=496964
-  - titolo: Ritiro GPv1 | Microsoft Learn
-    url: https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-overview
-  - titolo: Domande frequenti sul ritiro GPv1 | Microsoft Learn
-    url: https://learn.microsoft.com/azure/storage/common/general-purpose-version-1-account-migration-frequently-asked-questions
-  comitato_retirement_date: 10/13/2026 [SCADUTA] — Ritiro degli account GPv1 (Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Migrate to general-purpose v2 storage account or specialized alternatives based on workload
-    requirements, such as BlockBlobStorage or FileStorage.
-
-
-    Upgrade general-purpose v1 storage accounts
-  link_fonti:
-  - https://azure.microsoft.com/updates/?id=496964
-  retirement_date:
-  - data: '2026-04-28'
-    fonte: Azure Advisor
-    tipo: aggiornamento_meno_recente
-  - data: '2026-05-21'
+  - data: '2026-11-26'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
-  - data: '2026-10-13'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
 azure-retirement:v2:71b5a8485939b6fe2cf31e7d3e985b015093b80b02819b6a4f699b89d2cb5279:
   comitato_descrizione: >-
-    Azure Managed Disks – dischi Standard: valutare il passaggio a Premium SSD per incrementare
-    la disponibilità
+    Azure Managed Disks – dischi Standard: valutare il passaggio a Premium SSD per incrementare la disponibilità
 
 
-    Suggerimento: valutare Premium SSD per aumentare la disponibilità dei servizi su singole
-    macchine virtuali, confrontando benefici e costi; non si tratta di un ritiro.
+    Suggerimento: valutare Premium SSD per aumentare la disponibilità dei servizi su singole macchine
+    virtuali, confrontando benefici e costi; non si tratta di un ritiro.
   comitato_fonti:
   - titolo: Alta disponibilità per VM e dischi Azure | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/virtual-machines/disks-high-availability
@@ -375,71 +256,16 @@ azure-retirement:v2:71b5a8485939b6fe2cf31e7d3e985b015093b80b02819b6a4f699b89d2cb
   - data: '2026-05-22'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-10-27'
+  - data: '2026-11-06'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
-azure-retirement:v2:7212de1ba3c64dc372630196d2ed51ba344e4e465247bfa430bf3f3bcc899002:
-  comitato_descrizione: >-
-    Azure Monitor Container Insights – autenticazione: passaggio a Managed Identity
-
-
-    Suggerimento: completare il passaggio a Managed Identity, il modello di identità gestita da
-    Azure, per mantenere supporto e continuità del monitoraggio.
-  comitato_fonti:
-  - titolo: Autenticazione legacy di Container Insights | Microsoft Learn
-    url: https://learn.microsoft.com/en-us/azure/azure-monitor/containers/container-insights-authentication
-  comitato_retirement_date: 09/30/2026 [SCADUTA] — Ritiro dell'autenticazione legacy; i cluster non migrati
-    non sono più supportati (Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Migrate to Container insights managed identity authentication
-
-
-    Migrate to Container insights managed identity authentication before the retirement date to maintain
-    access and retain functionality.
-  link_fonti:
-  - https://azure.microsoft.com/updates/?id=500853
-  retirement_date:
-  - data: '2026-04-16'
-    fonte: Azure Advisor
-    tipo: aggiornamento_meno_recente
-  - data: '2026-09-24'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-  - data: '2026-09-30'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
-azure-retirement:v2:72a0c69fc81859280532f3a4237b0778bfd241259a2f14c05ee13f36204d7f19:
-  comitato_descrizione: >-
-    Azure Application Gateway WAF v2 – la configurazione legacy è in ritiro
-
-
-    Suggerimento: migrare a WAF Policy per mantenere la protezione delle applicazioni web.
-  comitato_fonti:
-  - titolo: Upgrade a WAF Policy | Microsoft Learn
-    url: https://learn.microsoft.com/en-us/azure/web-application-firewall/ag/upgrade-ag-waf-policy#upgrade-waf-v2-with-legacy-waf-configuration-to-waf-policy
-  comitato_retirement_date: Entro il 03/15/2027 — Migrare a WAF Policy (guida di migrazione Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Application Gateway Web Application Firewall v2 configuration is retiring
-
-
-    To continue using the service, migrate to Application Gateway WAF v2 Policy before the retirement
-    date.
-  link_fonti:
-  - https://learn.microsoft.com/azure/web-application-firewall/ag/upgrade-ag-waf-policy?tabs=portal#upgrade-waf-v2-with-legacy-waf-configuration-to-waf-policy
-  retirement_date:
-  - data: '2026-04-16'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-  - data: '2027-03-31'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
 azure-retirement:v2:72b9ef0d1abdf4f11ff115ddc0676135169df16a59ca39b52885f8e85a391b2c:
   comitato_descrizione: >-
     Azure Virtual Machines – serie A/B: valutare alternative per i servizi di produzione
 
 
-    Suggerimento: valutare il passaggio a VM D-series o superiori per i servizi di produzione,
-    confrontando prestazioni e costi; non è indicata una scadenza di ritiro.
+    Suggerimento: valutare il passaggio a VM D-series o superiori per i servizi di produzione, confrontando
+    prestazioni e costi; non è indicata una scadenza di ritiro.
   comitato_fonti:
   - titolo: Migrazione a VM ad alte prestazioni | Microsoft Azure
     url: https://aka.ms/MigrateToHighPerfVMs
@@ -456,7 +282,7 @@ azure-retirement:v2:72b9ef0d1abdf4f11ff115ddc0676135169df16a59ca39b52885f8e85a39
   - data: '2026-04-16'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-10-27'
+  - data: '2026-11-13'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:87efceb5d18bd4d08a13e37b0db211edfcc3ca75a86566ce01084f8e0337fd13:
@@ -464,8 +290,8 @@ azure-retirement:v2:87efceb5d18bd4d08a13e37b0db211edfcc3ca75a86566ce01084f8e0337
     Azure Virtual Machines – VM singole: valutare VM Scale Sets Flex
 
 
-    Suggerimento: valutare VM Scale Sets Flex per distribuire i servizi su più macchine e
-    migliorarne la resilienza, bilanciando benefici, complessità e costi.
+    Suggerimento: valutare VM Scale Sets Flex per distribuire i servizi su più macchine e migliorarne
+    la resilienza, bilanciando benefici, complessità e costi.
   comitato_fonti:
   - titolo: Modalità di orchestrazione VM Scale Sets | Microsoft Learn
     url: https://learn.microsoft.com/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-orchestration-modes#what-has-changed-with-flexible-orchestration-mode
@@ -482,33 +308,7 @@ azure-retirement:v2:87efceb5d18bd4d08a13e37b0db211edfcc3ca75a86566ce01084f8e0337
   - data: '2026-04-16'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-10-27'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-azure-retirement:v2:914d8a5b4a90d8ebb7be9b891aff11a1005ce1b20a62249de752f8c75f36ad94:
-  comitato_descrizione: >-
-    Azure App Service – Node.js 18 LTS: supporto esteso terminato
-
-
-    Suggerimento: aggiornare le app da Node.js 18 a una versione LTS supportata; continuano a
-    funzionare, ma Node.js 18 non riceve più aggiornamenti di sicurezza su App Service.
-  comitato_fonti:
-  - titolo: Azure Updates | Microsoft Azure
-    url: https://azure.microsoft.com/updates?id=action-required-upgrade-your-app-service-apps-to-node-20-lts-by-30-april-2025
-  comitato_retirement_date: 04/30/2025 [SCADUTA] — Fine del supporto esteso Node.js 18 (Azure Updates)
-  descrizione_originale_completa: >-
-    Advisor: Extended support for Node 18 LTS is ending
-
-
-    Extended support for Node 18 LTS is ending. Apps hosted on App Service continue to run. Future security
-    updates are no longer available. The platform no longer provides customer service for Node 18 LTS.
-  link_fonti:
-  - https://azure.microsoft.com/updates?id=action-required-upgrade-your-app-service-apps-to-node-20-lts-by-30-april-2025
-  retirement_date:
-  - data: '2025-04-30'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
-  - data: '2026-05-01'
+  - data: '2026-11-25'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
 azure-retirement:v2:92f47f99e370643a10ada40ae9aff1be53257b855c9d34f96c5c773dace7cea6:
@@ -516,8 +316,8 @@ azure-retirement:v2:92f47f99e370643a10ada40ae9aff1be53257b855c9d34f96c5c773dace7
     Azure Virtual Machine Scale Sets – le immagini di base sono in ritiro
 
 
-    Suggerimento: aggiornare le immagini di base dei VM Scale Sets per evitare il blocco
-    dell'aggiunta di nuove macchine.
+    Suggerimento: aggiornare le immagini di base dei VM Scale Sets per evitare il blocco dell'aggiunta
+    di nuove macchine.
   comitato_fonti:
   - titolo: FAQ immagini Azure Marketplace deprecate | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/virtual-machines/deprecated-images
@@ -538,40 +338,13 @@ azure-retirement:v2:92f47f99e370643a10ada40ae9aff1be53257b855c9d34f96c5c773dace7
   - data: '2026-04-22'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
-azure-retirement:v2:95ffbdf8b76ff7ac6b9f5dd0ee7b77c74b22907ee064e6fc7d813a20dd618fa2:
-  comitato_descrizione: >-
-    Azure Data Factory – cambia l'accesso a Storage e Key Vault per migliorare la sicurezza
-
-
-    Suggerimento: abilitare Modern trusted service, il nuovo modello di accesso sicuro a
-    Storage e Key Vault, per potenziare la sicurezza.
-  comitato_fonti:
-  - titolo: Modern trusted service | Microsoft Learn
-    url: https://learn.microsoft.com/azure/data-factory/modern-trusted-service
-  comitato_retirement_date: 08/2027 — Ritiro della modalità Legacy di Trusted service (Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Azure Data Factory Modern trusted service setting isn’t enabled for secure access to Azure
-    Storage and Azure Key Vault. Enable it to simplify secure connectivity to protected resources and
-    align your factory with current security standards.
-
-
-    Enable Modern trusted service access for Azure Data Factory to strengthen network security
-  link_fonti:
-  - https://learn.microsoft.com/azure/data-factory/modern-trusted-service
-  retirement_date:
-  - data: '2026-08-04'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-  - data: '2027-08-01'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
 azure-retirement:v2:9e799bfca2d5f2e6b3b27a610bb5a56e57025c2f8aeef2e79e5e9c7ca3bce933:
   comitato_descrizione: >-
     Azure App Service – Java 8, 11 e 17: fine del supporto
 
 
-    Suggerimento: pianificare la migrazione delle app da Java 8, 11 e 17 a Java 25 per mantenere
-    supporto e aggiornamenti di sicurezza su App Service.
+    Suggerimento: pianificare la migrazione delle app da Java 8, 11 e 17 a Java 25 per mantenere supporto
+    e aggiornamenti di sicurezza su App Service.
   comitato_fonti:
   - titolo: Fine del supporto Java 8, 11 e 17 in App Service | Microsoft Azure
     url: https://aka.ms/appservicejava81117
@@ -591,36 +364,6 @@ azure-retirement:v2:9e799bfca2d5f2e6b3b27a610bb5a56e57025c2f8aeef2e79e5e9c7ca3bc
   - data: '2027-09-01'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:a3e9f8083bd392c8f56048687f0f91191c3282e90f862cf14f98dc3f8a185e02:
-  comitato_descrizione: >-
-    Azure Cosmos DB – si consiglia di aggiornare gli SDK obsoleti
-
-
-    Suggerimento: aggiornare le librerie di connessione a Cosmos DB (SDK) a versioni supportate
-    per beneficiare delle correzioni e dei miglioramenti disponibili.
-  comitato_fonti:
-  - titolo: Cosmos DB
-    url: https://docs.microsoft.com/azure/cosmos-db
-  - titolo: SDK .NET v3
-    url: https://docs.microsoft.com/azure/cosmos-db/nosql/sdk-dotnet-v3
-  comitato_retirement_date: Consultare la documentazione Microsoft.
-  descrizione_originale_completa: >-
-    Advisor: An Azure Cosmos DB account using an old version of the SDK lacks the latest fixes and improvements.
-    Your Azure Cosmos DB account is using an outdated version of the SDK. We recommend upgrading to the
-    latest version for the latest fixes, performance improvements, and new feature capabilities.
-
-
-    Upgrade outdated Azure Cosmos DB SDK to the latest version
-  link_fonti:
-  - https://docs.microsoft.com/azure/cosmos-db
-  - https://docs.microsoft.com/azure/cosmos-db/nosql/sdk-dotnet-v3
-  retirement_date:
-  - data: '2024-10-01'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
-  - data: '2026-10-25'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
 azure-retirement:v2:ab5ff4ca2273207b838f6f982561b3e6e12f6d213f0a0c5e5170259820326232:
   comitato_descrizione: >-
     Azure Functions - Node.js 22: fine del supporto
@@ -655,8 +398,8 @@ azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07
     Azure Functions – connessioni TLS 1.0 e 1.1: ritiro
 
 
-    Suggerimento: aggiornare le applicazioni che si collegano a Functions a TLS 1.2 o successivo;
-    le connessioni con i protocolli precedenti non saranno più accettate.
+    Suggerimento: aggiornare le applicazioni che si collegano a Functions a TLS 1.2 o successivo; le connessioni
+    con i protocolli precedenti non saranno più accettate.
   comitato_fonti:
   - titolo: Ritiro TLS 1.0/1.1 in App Service e Functions | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/app-service/tls-minimum-version
@@ -677,38 +420,12 @@ azure-retirement:v2:ac5acd8a799c49afdecf4de1122f42b7d463a83387959c37a2af09b33d07
   - data: '2027-05-31'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:af57e9232ec93e0ad205c79a07a1b6475ce60752502d510d56aa0b08245a9f28:
-  comitato_descrizione: >-
-    Azure Synapse Analytics – Apache Spark 3.4: fine del supporto
-
-
-    Suggerimento: migrare con priorità gli ambienti di analisi da Spark 3.4 a Spark 3.5,
-    verificando la compatibilità delle elaborazioni.
-  comitato_fonti:
-  - titolo: Supporto versioni Apache Spark | Microsoft Learn
-    url: https://learn.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-version-support
-  comitato_retirement_date: 03/31/2026 [SCADUTA] — Fine del supporto effettiva (Microsoft Learn)
-  descrizione_originale_completa: >-
-    Advisor: Azure Synapse runtime for Apache Spark 3.4 is being retired and disabled.
-
-
-    Azure Synapse runtime for Apache Spark 3.4 is being retired.
-  link_fonti:
-  - https://azure.microsoft.com/updates/?id=490042
-  retirement_date:
-  - data: '2026-03-31'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
-  - data: '2026-04-17'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
 azure-retirement:v2:b2a19387c78607b7c48cdb2390b4865448806965282b0261d1766cea63636a75:
   comitato_descrizione: >-
     Azure Virtual Machines – le immagini di base sono in ritiro
 
 
-    Suggerimento: aggiornare le immagini di base interessate per poter continuare a creare
-    nuove VM.
+    Suggerimento: aggiornare le immagini di base interessate per poter continuare a creare nuove VM.
   comitato_fonti:
   - titolo: FAQ immagini Azure Marketplace deprecate | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/virtual-machines/deprecated-images
@@ -723,9 +440,12 @@ azure-retirement:v2:b2a19387c78607b7c48cdb2390b4865448806965282b0261d1766cea6363
   link_fonti:
   - https://aka.ms/DeprecatedImagesFAQ
   retirement_date:
-  - data: '2026-10-27'
+  - data: '2026-11-25'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
+  - data: '2027-01-12'
+    fonte: Azure Advisor
+    tipo: rimozione_immagine
   - data: '2027-01-15'
     fonte: Azure Advisor
     tipo: rimozione_immagine
@@ -734,8 +454,8 @@ azure-retirement:v2:ba6214607cd8293bcb2a02b8685550bdd9e626491ff2abd81fef6dbfa183
     Azure Storage – TLS 1.0 e 1.1: supporto terminato
 
 
-    Suggerimento: verificare che le applicazioni usino TLS 1.2 per accedere a Storage:
-    i protocolli precedenti non sono più accettati.
+    Suggerimento: verificare che le applicazioni usino TLS 1.2 per accedere a Storage: i protocolli precedenti
+    non sono più accettati.
   comitato_fonti:
   - titolo: Azure Storage Blog
     url: https://techcommunity.microsoft.com/blog/azurestorageblog/tls-1-0-and-1-1-support-will-be-removed-for-new--existing-azure-storage-accounts/4026181
@@ -754,7 +474,7 @@ azure-retirement:v2:ba6214607cd8293bcb2a02b8685550bdd9e626491ff2abd81fef6dbfa183
   - data: '2026-02-03'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-  - data: '2026-04-16'
+  - data: '2026-04-18'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
   - data: '2026-10-15'
@@ -765,13 +485,12 @@ azure-retirement:v2:bd402fdf56128f709d3f49aa4a376d29f3b5fb3c5fc0303c3326578c1347
     Azure Monitor Application Insights – test di disponibilità URL ping: ritiro
 
 
-    Suggerimento: sostituire i test URL ping con i test standard per mantenere il controllo
-    della disponibilità, prevedendo l'adeguamento degli allarmi e l'impatto sui costi.
+    Suggerimento: sostituire i test URL ping con i test standard per mantenere il controllo della disponibilità,
+    prevedendo l'adeguamento degli allarmi e l'impatto sui costi.
   comitato_fonti:
   - titolo: Test di disponibilità di Application Insights | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/azure-monitor/app/availability
-  comitato_retirement_date: 09/30/2028 — Ritiro e rimozione dei test URL ping esistenti (Microsoft
-    Learn)
+  comitato_retirement_date: 09/30/2028 — Ritiro e rimozione dei test URL ping esistenti (Microsoft Learn)
   descrizione_originale_completa: >-
     Advisor: The URL ping test capability of the application insights feature for Azure Monitor is being
     retired.
@@ -823,45 +542,13 @@ azure-retirement:v2:c1f681bc080e1505d9f1449774feabdead8dd8e7d7a90adcbf7c460e50ff
   - data: '2027-09-01'
     fonte: Azure Advisor (raccomandazione)
     tipo: ritiro
-azure-retirement:v2:e505206ada85e3679d8b5a971c35d0904498361c7d88d0aa54c7fa0f4d85619c:
-  comitato_descrizione: >-
-    Azure Kubernetes Service (AKS) – Ubuntu 22.04: fine del supporto
-
-
-    Suggerimento: pianificare il passaggio a Ubuntu 24.04 o successivo per mantenere gli
-    aggiornamenti di sicurezza e la capacità operativa dei cluster AKS.
-  comitato_fonti:
-  - titolo: Aggiornare la versione OS nei cluster AKS | Microsoft Learn
-    url: https://learn.microsoft.com/en-us/azure/aks/upgrade-os-version
-  - titolo: Annuncio AKS | GitHub
-    url: https://github.com/Azure/AKS/issues/5701
-  comitato_retirement_date: '06/30/2027 — Fine del supporto e delle patch di sicurezza; stop a nuovi node
-    pool (Microsoft Learn)
-
-    04/30/2028 — Rimozione delle immagini Ubuntu 22.04; possibili errori di scale e remediation (Azure/AKS
-    #5701)'
-  descrizione_originale_completa: >-
-    Advisor: Azure Kubernetes Service support for Ubuntu 22.04 is retiring, transition to Ubuntu 24.04+
-    or a supported alternative.
-
-
-    Migrate to Ubuntu 24.04 or later versions
-  link_fonti:
-  - https://azure.microsoft.com/updates/?id=557928
-  retirement_date:
-  - data: '2026-05-07'
-    fonte: Azure Advisor
-    tipo: ultimo_aggiornamento
-  - data: '2027-06-30'
-    fonte: Azure Advisor (raccomandazione)
-    tipo: ritiro
 azure-retirement:v2:ec4229f9a6745cfa8690af126ea8150fc9dd643b1915c79a80f68863365c3ae6:
   comitato_descrizione: >-
     Azure Kubernetes Service (AKS) – Kubernetes 1.34: fine del supporto
 
 
-    Suggerimento: pianificare l'aggiornamento dei cluster AKS da Kubernetes 1.34 a una versione
-    supportata entro la scadenza per mantenere assistenza e garanzie di servizio.
+    Suggerimento: pianificare l'aggiornamento dei cluster AKS da Kubernetes 1.34 a una versione supportata
+    entro la scadenza per mantenere assistenza e garanzie di servizio.
   comitato_fonti:
   - titolo: Versioni Kubernetes supportate | Microsoft Learn
     url: https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions
@@ -890,14 +577,15 @@ azure-retirement:v2:f4641c02fc1a2f9e58145433a27555d236b4d59522a196d574b801080a71
     Azure Monitor – HTTP Data Collector API: fine del supporto
 
 
-    Suggerimento: migrare con priorità alla Logs ingestion API, la soluzione sostitutiva per
-    l'invio dei log, per preservare la continuità del monitoraggio.
+    Suggerimento: migrare con priorità alla Logs ingestion API, la soluzione sostitutiva per l'invio dei
+    log, per preservare la continuità del monitoraggio.
   comitato_fonti:
   - titolo: Migrare alla Logs ingestion API | Microsoft Learn
     url: https://learn.microsoft.com/azure/azure-monitor/logs/custom-logs-migrate
   - titolo: HTTP Data Collector API | Microsoft Learn
     url: https://learn.microsoft.com/previous-versions/azure/azure-monitor/logs/data-collector-api
-  comitato_retirement_date: 09/14/2026 [SCADUTA] — Fine del supporto per HTTP Data Collector API (Microsoft Learn)
+  comitato_retirement_date: 09/14/2026 [SCADUTA] — Fine del supporto per HTTP Data Collector API (Microsoft
+    Learn)
   descrizione_originale_completa: >-
     Advisor: HTTP Data Collector API support is ending. Migrate to the Logs ingestion API which provides
     more processing power and flexibility in ingesting logs and managing tables.
@@ -913,6 +601,6 @@ azure-retirement:v2:f4641c02fc1a2f9e58145433a27555d236b4d59522a196d574b801080a71
   - data: '2026-10-14'
     fonte: Azure Advisor
     tipo: aggiornamento_meno_recente
-  - data: '2026-10-21'
+  - data: '2026-11-25'
     fonte: Azure Advisor
     tipo: ultimo_aggiornamento
