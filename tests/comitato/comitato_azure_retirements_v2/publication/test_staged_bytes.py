@@ -10,11 +10,11 @@ from src.comitato.comitato_azure_retirements_v2.src.contracts.codecs import (
     decode_tsv,
     encode_tsv,
 )
-from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
-    PublicationError,
-)
 from src.comitato.comitato_azure_retirements_v2.src.paths import (
     artifact_destination,
+)
+from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
+    PublicationError,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publication import (
     empty_candidate,
@@ -22,8 +22,8 @@ from tests.comitato.comitato_azure_retirements_v2.publication.test_empty_publica
 
 
 def _mutate(path: str, mutation):
-    def apply(generation: Path) -> None:
-        target = generation / path
+    def apply(exports: Path, support: Path) -> None:
+        target = (support if path.endswith(".jsonl") else exports) / path
         target.write_bytes(mutation(target.read_bytes()))
 
     return apply
@@ -66,14 +66,14 @@ def test_stage_rereads_and_validates_mutated_tsv_header(tmp_path: Path) -> None:
 def test_stage_rejects_missing_and_extra_payload_files(tmp_path: Path) -> None:
     candidate = empty_candidate()
 
-    def remove_payload(generation: Path) -> None:
-        (generation / candidate.artifacts[0].logical_path).unlink()
+    def remove_payload(exports: Path, _support: Path) -> None:
+        (exports / candidate.artifacts[0].logical_path).unlink()
 
     with pytest.raises(PublicationError):
         stage_candidate(candidate, tmp_path, staged_byte_mutator=remove_payload)
 
-    def add_payload(generation: Path) -> None:
-        (generation / "undeclared.tsv").write_bytes(b"unexpected")
+    def add_payload(exports: Path, _support: Path) -> None:
+        (exports / "undeclared.tsv").write_bytes(b"unexpected")
 
     with pytest.raises(PublicationError):
         stage_candidate(candidate, tmp_path, staged_byte_mutator=add_payload)
@@ -84,13 +84,15 @@ def test_stage_rejects_mutated_jsonl_reference_and_changed_measured_hash(
 ) -> None:
     candidate = empty_candidate()
 
-    def mutate_reference(generation: Path) -> None:
-        (generation / "01_azure_advisor_retirements_raw.jsonl").write_bytes(
-            b'{"raw_record_ref":"unpaired"}\n'
-        )
-
     with pytest.raises(PublicationError) as raised:
-        stage_candidate(candidate, tmp_path, staged_byte_mutator=mutate_reference)
+        stage_candidate(
+            candidate,
+            tmp_path,
+            staged_byte_mutator=_mutate(
+                "01_azure_advisor_retirements_raw.jsonl",
+                lambda _: b'{"raw_record_ref":"unpaired"}\n',
+            ),
+        )
 
     codes = {item.code for item in raised.value.diagnostics}
     assert "staged_bytes_changed" in codes

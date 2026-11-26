@@ -82,7 +82,7 @@ needed before filling this value.
 
 ## Consumers and validation
 
-The runtime reads and validates the catalog through `src/comitato/comitato_azure_retirements_v2/retirements/adapters/filesystem/platform_catalog_yaml.py`.
+The runtime reads and validates the catalog through `src/comitato/comitato_azure_retirements_v2/src/adapters/filesystem/platform_catalog_yaml.py`.
 
 Run the focused catalog tests after changing either the schema reader or the catalog:
 
