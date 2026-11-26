@@ -1,13 +1,24 @@
 ---
 name: local-azure-retirements-enrich
-description: "Use when enriching Azure retirement committee YAML with director-friendly, service-first Italian wording, presenting the saved changes for review, and refreshing the selected month's slide XLSX through run.sh only after explicit user approval."
+description: "Edit Azure retirement committee notes or apply reviewed notes to an existing monthly slide XLSX. Report generation or a request to run the launcher alone does not activate this skill."
 ---
 
 # Azure Retirements Committee Enrichment
 
 Save committee editorial changes, present them in chat, and wait for explicit
-approval before applying them to an existing monthly slide report. This
-workflow does not acquire Azure data or generate a new retirement inventory.
+approval before applying them to an existing monthly slide report.
+
+## Routing
+
+Separate report generation from editorial slide refresh.
+
+- **Generation only:** Run the requested launcher directly. Creating a fresh
+  bundle or requesting the slide XLSX as an output is not editorial work.
+- **Editorial only:** Use this workflow to edit committee notes or apply
+  reviewed notes to an existing monthly slide workbook.
+- **Mixed request:** Finish report generation before editorial preflight. Use
+  the resulting bundle for the editorial workflow; its approval gate applies
+  only to the later slide refresh.
 
 ## Inputs
 
@@ -191,9 +202,10 @@ editorial wording earlier, or asking generally to refresh is not this approval.
 - **Skipped, empty, unavailable, timed-out, or ambiguous reply:** leave approval
   pending and stop. Never choose a default or treat silence as consent.
 
-Until approval, do not run the launcher, publication entrypoints, or any
-report-writing script, even against a temporary output root. A pending or
-  declined review must leave all exports and monthly support files unchanged.
+  During the editorial stage, do not run the launcher, publication entrypoints,
+  or any report-writing script before approval, even against a temporary output
+  root. A pending or declined review must leave all exports and monthly support
+  files unchanged by that stage.
 If the YAML, selected month, or source bundle changes after review, invalidate
 the approval and present the new changes for approval before execution.
 Do not mark an approval-pending workflow as fully published.

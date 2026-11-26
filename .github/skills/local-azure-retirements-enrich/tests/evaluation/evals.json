@@ -2,6 +2,7 @@
   "schema": "skill-eval-pack/v1",
   "skill": "local-azure-retirements-enrich",
   "requirements": [
+    {"id": "R-ROUTING", "text": "Route generation-only requests directly to the launcher. Activate editorial enrichment only for explicit committee-text work or applying reviewed text to existing slides. In mixed requests, finish generation before editorial review and gate only the subsequent slide refresh.", "source": "SKILL.md#Routing; SKILL.md#Approval Gate"},
     {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
     {"id": "R-EDITORIAL", "text": "Use plain Italian for directors. Name the affected service and component or version first, then state what is happening or what to evaluate using direct wording rather than a fixed title formula. Give one concise, concrete Suggerimento with the target and decision-relevant impact when known. Keep only description and suggestion in comitato_descrizione; store editorial reference titles and URLs in separate comitato_fonti mappings without adding monthly slide columns.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-PRESERVE", "text": "Fill only empty committee text fields and missing or empty comitato_fonti lists without altering source metadata, existing text, meaningful date labels, non-empty editorial references or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
@@ -16,7 +17,7 @@
       "id": "C-REVIEW-BEFORE-LAUNCH",
       "family": "editorial review and approval",
       "kind": "rubric",
-      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL"],
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL", "R-ROUTING"],
       "prompt": "Prepara le note del comitato per ottobre 2026 e fammi vedere cosa hai sistemato prima di aggiornare le slide.",
       "initial_state": "The selected bundle exists. Two entries have missing descriptions, one also lacks a date, and one date is Advisor-only. The user has supplied year/month but no publication approval.",
       "expected_output": "YAML and editorial TSV are saved and validated. The Advisor-only date is replaced by the generic Microsoft documentation pointer if not independently verified. Chat shows two distinct changed entries, field counts, service-first before/after rows, the reason for omitting the date and file links, explicitly stating the monthly slide is unchanged; an unselected approval form follows.",
@@ -179,6 +180,42 @@
       "held_out": true
     },
     {
+      "id": "C-GENERATE-ONLY",
+      "family": "routing",
+      "kind": "rubric",
+      "requirement_ids": ["R-ROUTING"],
+      "prompt": "Esegui run.sh e ricrea tutti i report Azure da zero per novembre 2026.",
+      "initial_state": "The launcher is available, and the selected export does not exist. Capture tool calls without contacting Azure or writing reports.",
+      "expected_output": "The request stays with the launcher. Any clarification is limited to unresolved options that affect the run.",
+      "files": [],
+      "assertions": [
+        {"id": "A-NO-TRIGGER", "text": "The editorial skill is not loaded for a fresh monthly generation, even though the full bundle includes slide XLSX.", "critical": true},
+        {"id": "A-LAUNCHER", "text": "The launcher handles generation without editorial preflight or review approval.", "critical": true}
+      ],
+      "forbidden_actions": ["Start editorial preflight", "Ask for editorial publication approval"],
+      "rubric": {"pass": ["Routes the request directly to the launcher and keeps any preflight tied to generation."], "fail": ["Activates editorial enrichment or applies its approval gate to the initial generation."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-GENERATE-THEN-EDIT",
+      "family": "routing",
+      "kind": "rubric",
+      "requirement_ids": ["R-ROUTING", "R-REVIEW", "R-APPROVAL"],
+      "prompt": "Fammi il report di marzo 2027 con dati nuovi da Azure, poi completa i testi mancanti per il comitato.",
+      "initial_state": "The month has no export. Simulate a successful launcher run producing a valid bundle with missing editorial fields. No approval has been given for a slide refresh.",
+      "expected_output": "The live generation completes first. The editorial stage reviews the resulting bundle, saves the updates and requests approval before refreshing the slides.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-ORDER", "text": "The launcher generates the requested bundle before editorial preflight, without waiting for editorial approval.", "critical": true},
+        {"id": "A-GATE", "text": "The saved editorial changes are presented for explicit approval; the initial slide workbook is unchanged by the editorial stage until then.", "critical": true}
+      ],
+      "forbidden_actions": ["Require an existing export before initial generation", "Treat initial generation as approval to refresh the slides"],
+      "rubric": {"pass": ["Completes generation first and applies the editorial approval gate only to the later refresh."], "fail": ["Blocks initial generation on editorial preflight or refreshes the slides without post-review approval."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
       "id": "C-BLOCKED-INPUT",
       "family": "fail closed",
       "kind": "rubric",
@@ -201,6 +238,10 @@
       {"id": "Q-DATES", "query": "Mancano descrizioni e scadenze editoriali nel report Azure del mese scorso.", "should_trigger": true, "split": "train"},
       {"id": "Q-REFRESH", "query": "Ho finito il file editoriale: riporta i testi nel TSV delle slide di agosto 2026.", "should_trigger": true, "split": "held-out"},
       {"id": "Q-ACQUIRE", "query": "Scarica da Azure tutte le nuove raccomandazioni Advisor per le sottoscrizioni.", "should_trigger": false, "split": "train"},
+      {"id": "Q-GENERATE-ONLY", "query": "Usa run.sh per rifare da zero il bundle dei ritiri Azure di novembre 2026, incluso il foglio delle slide.", "should_trigger": false, "split": "train"},
+      {"id": "Q-GENERATE-WITH-XLSX", "query": "Lancia il report Azure di aprile 2027 e dimmi dove trovo l'XLSX.", "should_trigger": false, "split": "held-out"},
+      {"id": "Q-EDIT-EXISTING-XLSX", "query": "Nel report Azure di aprile 2027 mancano le note per i direttori. Sistemamele e fammele leggere prima di aggiornare il foglio.", "should_trigger": true, "split": "held-out"},
+      {"id": "Q-MIXED", "query": "Prima genera il pacchetto dei ritiri Azure di maggio, poi fammi rivedere le descrizioni del comitato che mancano.", "should_trigger": true, "split": "held-out"},
       {"id": "Q-PROJECT", "query": "Converti soltanto il report aggregato mensile nel TSV canonico delle slide.", "should_trigger": false, "split": "held-out", "competing_owner": "local-azure-retirements"},
       {"id": "Q-POLICY", "query": "Crea una policy Azure per impedire l'uso degli IP Basic.", "should_trigger": false, "split": "train", "competing_owner": "internal-cloud-policy"},
       {"id": "Q-DECK", "query": "Disegna una presentazione PowerPoint sui costi Azure.", "should_trigger": false, "split": "held-out", "competing_owner": "anthropic-pptx"}
