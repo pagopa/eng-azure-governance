@@ -219,11 +219,12 @@ The two source-labelled JSONL evidence companions and the publication
 manifest remain outside the export as support files. The manifest points to a
 separate integrity-checked `saved-acquisition-inputs.json`.
 Single selectors publish only their selected TSV or XLSX; upstream
-dependencies remain run-local. Private same-filesystem export and support
-generations are staged, reread, hashed, and validated before they replace the
-target month. Failed runs return a non-zero status and emit sorted JSONL
-diagnostics on stderr without changing the existing monthly export or replay
-support.
+dependencies remain run-local. Each file is staged directly on its destination
+filesystem. The runtime validates the payloads and verifies that the staged
+files still match the validated bytes before replacing the month. If a failure
+or Ctrl+C interrupts the replacement before it completes, the runtime restores
+the previous export and replay support. Publication errors return a non-zero
+status and emit sorted JSONL diagnostics on stderr.
 
 The complete aggregate retains source membership independently of the
 committee view. The slide workbook has one worksheet with exactly these 19
