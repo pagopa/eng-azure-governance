@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
 )
 from tests.comitato.comitato_azure_retirements_v2.acceptance.harness import (
+    assert_matches_fixture_publication,
     load_scenario,
     run_scenario,
 )
@@ -33,9 +34,4 @@ def test_s06_complete_empty_matches_reviewed_expected_publication(
 
     assert result.exit_status == 0
     assert result.stderr_jsonl == (FIXTURE / "expected" / "stderr.jsonl").read_bytes()
-    assert result.current_tree == {
-        relative_path: (FIXTURE / "expected" / "current" / relative_path).read_bytes()
-        for relative_path in sorted(
-            path.name for path in (FIXTURE / "expected" / "current").iterdir()
-        )
-    }
+    assert_matches_fixture_publication(result, FIXTURE)

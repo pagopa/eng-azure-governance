@@ -1,21 +1,24 @@
 import json
 from datetime import date, datetime, timezone
+from io import BytesIO
 
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
+from openpyxl import load_workbook
+
+from src.comitato.comitato_azure_retirements_v2.src.contracts.aggregate_v1 import (
     HEADER as AGGREGATE_HEADER,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.model import (
     Artifact,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.slides_projection import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.slides_projection import (
     project_slides,
     select_slides,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.slides_v1 import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.slides_v1 import (
     HEADER,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -98,7 +101,7 @@ def aggregate_row(
 
 
 def aggregate_artifact(*rows: dict[str, str]) -> Artifact:
-    from src.comitato.comitato_azure_retirements_v2.retirements.contracts.aggregate_v1 import (
+    from src.comitato.comitato_azure_retirements_v2.src.contracts.aggregate_v1 import (
         AggregateRecord,
     )
 
@@ -115,15 +118,15 @@ def test_slides_v1_has_exact_utf8_header_and_empty_artifact() -> None:
         "id_elemento",
         "titolo_breve",
         "descrizione_breve",
+        "comitato_piattaforme",
         "comitato_priorità",
         "impatto_microsoft",
         "comitato_descrizione",
+        "descrizione_originale_completa",
         "comitato_retirement_date",
-        "comitato_piattaforme",
         "retirement_date",
         "stato_data",
         "giorni_ritardo",
-        "descrizione_originale_completa",
         "azione_originale",
         "fonti",
         "link_fonti",
@@ -132,9 +135,14 @@ def test_slides_v1_has_exact_utf8_header_and_empty_artifact() -> None:
         "id_service_health",
         "risorse_json",
     )
-    assert SLIDES_V1.encode(SLIDES_V1.empty_artifact(context())).data == (
-        "\t".join(HEADER) + "\n"
-    ).encode("utf-8")
+    workbook = load_workbook(
+        BytesIO(SLIDES_V1.encode(SLIDES_V1.empty_artifact(context())).data),
+        read_only=True,
+    )
+    try:
+        assert tuple(workbook.active.values) == (HEADER,)
+    finally:
+        workbook.close()
 
 
 def test_project_slides_emits_committee_projection_and_leaves_external_fields_empty() -> (
@@ -153,7 +161,7 @@ def test_project_slides_emits_committee_projection_and_leaves_external_fields_em
     assert slide["comitato_priorità"] == ""
     assert slide["comitato_descrizione"] == ""
     assert slide["comitato_retirement_date"] == ""
-    assert slide["retirement_date"] == "2027-01-01 — Data di ritiro (Azure Advisor)"
+    assert slide["retirement_date"] == "01/01/2027 — Data di ritiro (Azure Advisor)"
     assert slide["stato_data"] == "In scadenza"
     assert slide["giorni_ritardo"] == ""
     assert slide["fonti"] == "Azure Advisor"
@@ -398,8 +406,8 @@ def test_metadata_date_that_differs_from_recommendation_is_a_conflict() -> None:
     assert slide["stato_data"] == "Date discordanti"
     assert slide["giorni_ritardo"] == ""
     assert slide["retirement_date"] == (
-        "2026-03-01 — Data di ritiro (Azure Advisor)\n"
-        "2026-03-31 — Data di ritiro (metadati Azure Advisor)"
+        "01/03/2026 — Data di ritiro (Azure Advisor)\n"
+        "31/03/2026 — Data di ritiro (metadati Azure Advisor)"
     )
 
 
@@ -420,8 +428,8 @@ def test_image_removal_dates_use_the_nearest_without_conflict() -> None:
     assert slide["stato_data"] == "Scaduta"
     assert slide["giorni_ritardo"] == "10"
     assert slide["retirement_date"] == (
-        "2026-07-20 — Rimozione immagine (Azure Advisor)\n"
-        "2027-01-12 — Rimozione immagine (Azure Advisor)"
+        "20/07/2026 — Rimozione immagine (Azure Advisor)\n"
+        "12/01/2027 — Rimozione immagine (Azure Advisor)"
     )
 
 
@@ -440,8 +448,8 @@ def test_updates_keep_only_oldest_and_latest_per_source_and_do_not_drive_status(
 
     assert slide["stato_data"] == "Data non disponibile"
     assert slide["retirement_date"] == (
-        "2026-05-01 — Aggiornamento meno recente osservato (Azure Advisor)\n"
-        "2026-05-20 — Ultimo aggiornamento (Azure Advisor)"
+        "01/05/2026 — Aggiornamento meno recente osservato (Azure Advisor)\n"
+        "20/05/2026 — Ultimo aggiornamento (Azure Advisor)"
     )
 
 
@@ -459,8 +467,8 @@ def test_slides_order_by_deadline_not_by_first_listed_date() -> None:
     records = project_slides(aggregate_artifact(later, sooner), context()).value.records
 
     assert [row["retirement_date"][:10] for row in records] == [
-        "2026-12-01",
-        "2026-01-01",
+        "01/12/2026",
+        "01/01/2026",
     ]
 
 

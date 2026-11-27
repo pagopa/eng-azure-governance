@@ -48,7 +48,7 @@ def build_application(
             retry_attempts=config.http.retry_attempts,
             backoff_seconds=config.http.backoff_seconds,
             observer=runtime_observer,
-            cache=ArmResponseCache(config.output_path / ".acquisition-cache"),
+            cache=ArmResponseCache(config.acquisition_cache_path),
         ),
     )
     resource_graph_source = overrides.get(
@@ -95,6 +95,7 @@ def build_application(
             "publication_store",
             FilesystemAtomicPublicationStore(
                 config.output_path,
+                support_destination=config.publication_support_path,
                 observer=runtime_observer,
             ),
         ),

@@ -135,7 +135,7 @@ def test_project_root_contains_only_entry_layout() -> None:
     assert {name for name in entries if (PROJECT / name).is_dir()} == {
         "data",
         "exports",
-        "retirements",
+        "src",
     }
 
 
@@ -168,7 +168,7 @@ def test_script_uses_canonical_module_path() -> None:
         f"import runpy, sys; sys.argv = [{str(SCRIPT)!r}, '--help']\n"
         "try:\n    runpy.run_path(sys.argv[0], run_name='__main__')\n"
         "except SystemExit:\n    pass\n"
-        "print('CANON=' + str('src.comitato.comitato_azure_retirements_v2.retirements.config' in sys.modules))\n"
+        "print('CANON=' + str('src.comitato.comitato_azure_retirements_v2.src.config' in sys.modules))\n"
         "print('SHADOW=' + str(any(m == 'retirements' or m.startswith('retirements.') for m in sys.modules)))"
     )
     environment = os.environ.copy()
@@ -230,8 +230,8 @@ def test_copied_layout_launcher_help_needs_no_venv(tmp_path: Path) -> None:
     shutil.copy2(PROJECT / "run.sh", copied_project / "run.sh")
     shutil.copy2(SCRIPT, copied_project / SCRIPT.name)
     shutil.copytree(
-        PROJECT / "retirements",
-        copied_project / "retirements",
+        PROJECT / "src",
+        copied_project / "src",
         ignore=shutil.ignore_patterns("__pycache__", ".venv"),
     )
     launcher = copied_project / "run.sh"

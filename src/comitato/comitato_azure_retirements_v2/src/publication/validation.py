@@ -6,6 +6,7 @@ from pathlib import PurePosixPath
 from ..contracts.model import EncodedArtifact
 from ..domain.diagnostics import Diagnostic, sort_diagnostics
 from ..domain.execution import ReportSelector, RunContext
+from ..paths import artifact_destination
 from ..reports.catalog import SelectedReportClosure
 from .model import PublicationCandidate
 
@@ -33,6 +34,8 @@ def validate_candidate_paths(candidate: PublicationCandidate) -> tuple[Diagnosti
 
 def _field_values(artifact: EncodedArtifact, field: str) -> set[str]:
     values: set[str] = set()
+    if not artifact.logical_path.endswith((".tsv", ".jsonl")):
+        return values
     text = artifact.data.decode("utf-8")
     lines = text.splitlines()
     if artifact.logical_path.endswith(".tsv") and lines:
@@ -171,6 +174,7 @@ def validate_manifest(
             continue
         expected = {
             "path": artifact.logical_path,
+            "destination": artifact_destination(artifact.logical_path),
             "rows": artifact.rows,
             "bytes": len(artifact.data),
             "sha256": artifact.digest,

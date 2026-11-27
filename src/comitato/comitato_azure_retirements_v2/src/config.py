@@ -10,16 +10,21 @@ from datetime import date
 from pathlib import Path
 
 from .domain.execution import ReportSelector, RunRequest
-
-REPOSITORY_ROOT: Path = Path(__file__).resolve().parents[4]
-PROJECT_ROOT: Path = REPOSITORY_ROOT / "src/comitato/comitato_azure_retirements_v2"
-RUNTIME_LOG_ROOT: Path = (
-    REPOSITORY_ROOT / "tmp/comitato/comitato_azure_retirements_v2/exports"
+from .paths import (
+    COMPONENT_TMP_ROOT,
+    DEFAULT_OUTPUT_ROOT,
+    PROJECT_ROOT,
+    REPOSITORY_ROOT,
+    acquisition_cache_root,
+    publication_support_root,
+    resolve_replay_support_bundle,
 )
+
+RUNTIME_LOG_ROOT: Path = COMPONENT_TMP_ROOT / "exports"
 _DEFAULT_CATALOG_PATH = (
     REPOSITORY_ROOT / "src/_source_of_truth/eng-finops-platforms.yaml"
 )
-_DEFAULT_OUTPUT_PATH = PROJECT_ROOT / "exports"
+_DEFAULT_OUTPUT_PATH = DEFAULT_OUTPUT_ROOT
 _DEFAULT_COMMITTEE_YAML_PATH = PROJECT_ROOT / "data" / "comitato_editoriale.yaml"
 
 LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
@@ -82,6 +87,20 @@ class RuntimeConfig:
         if self.request.as_of_date is None:
             raise RuntimeError("RuntimeConfig requires an as-of date")
         return self.request.as_of_date
+
+    @property
+    def acquisition_cache_path(self) -> Path:
+        return acquisition_cache_root(self.output_path)
+
+    @property
+    def publication_support_path(self) -> Path:
+        return publication_support_root(self.output_path)
+
+    @property
+    def replay_support_bundle_path(self) -> Path | None:
+        if self.replay_bundle_path is None:
+            return None
+        return resolve_replay_support_bundle(self.output_path, self.replay_bundle_path)
 
     @classmethod
     def from_request(

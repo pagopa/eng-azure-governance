@@ -5,34 +5,34 @@ from time import perf_counter, sleep
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.advisor_enrichment import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.advisor_enrichment import (
     AdvisorEnrichmentError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.evidence import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.evidence import (
     AdvisorEnrichments,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     ReportSelector,
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
-from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.src.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
     PublicationCandidate,
     PublicationReceipt,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
 
@@ -263,7 +263,7 @@ def test_complete_empty_all_acquires_each_source_once_and_publishes_six_artifact
         "01_azure_service_health_advisories_raw.tsv",
         "01_azure_service_health_advisories_raw.jsonl",
         "02_azure_retirements_aggregate.tsv",
-        "03_azure_retirements_slide.tsv",
+        "03_azure_retirements_slide.xlsx",
     ]
     assert len(publication.published) == 1
     assert result.publication_receipt.current_reference == "2026/07"

@@ -3,14 +3,17 @@ from pathlib import Path
 
 import pytest
 
-import src.comitato.comitato_azure_retirements_v2.retirements.config as config
-from src.comitato.comitato_azure_retirements_v2.retirements.config import (
+import src.comitato.comitato_azure_retirements_v2.src.config as config
+from src.comitato.comitato_azure_retirements_v2.src.config import (
     RuntimeConfig,
     parse_config,
     parse_run_request,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
+)
+from src.comitato.comitato_azure_retirements_v2.src.paths import (
+    publication_support_root,
 )
 
 
@@ -49,6 +52,62 @@ def test_runtime_paths_are_anchored_to_repository_root() -> None:
     )
     assert getattr(config, "RUNTIME_LOG_ROOT", None) == (
         repository_root / "tmp/comitato/comitato_azure_retirements_v2/exports"
+    )
+    runtime = parse_config([])
+    assert runtime.publication_support_path == (
+        repository_root
+        / "tmp/comitato/comitato_azure_retirements_v2/publications/default"
+    )
+    assert runtime.acquisition_cache_path == (
+        repository_root
+        / "tmp/comitato/comitato_azure_retirements_v2/acquisition-cache/default"
+    )
+
+
+def test_separate_output_roots_get_separate_support_and_cache_paths(
+    tmp_path: Path,
+) -> None:
+    first = parse_config(["--output-path", str(tmp_path / "exports-a")])
+    second = parse_config(["--output-path", str(tmp_path / "exports-b")])
+
+    assert first.publication_support_path != second.publication_support_path
+    assert first.acquisition_cache_path != second.acquisition_cache_path
+    assert (
+        first.publication_support_path.parent == second.publication_support_path.parent
+    )
+    assert first.acquisition_cache_path.parent == second.acquisition_cache_path.parent
+
+
+def test_replay_support_resolves_from_source_when_preview_output_differs(
+    tmp_path: Path,
+) -> None:
+    source_bundle = config.PROJECT_ROOT / "exports" / "2026" / "11"
+    runtime = parse_config(
+        [
+            "--replay-bundle",
+            str(source_bundle),
+            "--output-path",
+            str(tmp_path / "preview-exports"),
+        ]
+    )
+
+    assert runtime.replay_support_bundle_path == (
+        config.REPOSITORY_ROOT
+        / "tmp/comitato/comitato_azure_retirements_v2/publications/default/2026/11"
+    )
+
+    custom_source = tmp_path / "custom-exports"
+    custom_bundle = custom_source / "2026" / "11"
+    custom_runtime = parse_config(
+        [
+            "--replay-bundle",
+            str(custom_bundle),
+            "--output-path",
+            str(tmp_path / "preview-exports"),
+        ]
+    )
+    assert custom_runtime.replay_support_bundle_path == (
+        publication_support_root(custom_source) / "2026" / "11"
     )
 
 

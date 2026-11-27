@@ -5,21 +5,21 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.publication import (
     FilesystemAtomicPublicationStore,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.staging import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.staging import (
     stage_candidate,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts import (
     AGGREGATE_V1,
     SLIDES_V1,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -27,20 +27,21 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution imp
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
     PublicationCandidate,
     PublicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.advisor.normalize import (
     ADVISOR_REPORT,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.catalog import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.catalog import (
     DEFAULT_REPORT_CATALOG,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.service_health.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.service_health.normalize import (
     SERVICE_HEALTH_REPORT,
 )
 from tests.comitato.comitato_azure_retirements_v2.publication.filesystem_support import (
+    read_monthly_support_tree,
     read_monthly_tree,
 )
 
@@ -116,14 +117,17 @@ def test_publish_manifest_uses_reread_bytes_and_exact_artifact_closure(
 
     receipt = store.publish(candidate)
     tree = read_monthly_tree(tmp_path, candidate.context.as_of_date)
-    manifest = json.loads(tree["publication-manifest.json"])
+    support = read_monthly_support_tree(tmp_path, candidate.context.as_of_date)
+    manifest = json.loads(support["publication-manifest.json"])
 
     assert receipt.current_reference == "2026/07"
     assert [item["path"] for item in manifest["artifacts"]] == [
         artifact.logical_path for artifact in candidate.artifacts
     ]
     for item, artifact in zip(manifest["artifacts"], candidate.artifacts, strict=True):
-        written = tree[artifact.logical_path]
+        written = (support if item["destination"] == "support" else tree)[
+            artifact.logical_path
+        ]
         assert written == artifact.data
         assert item["bytes"] == len(written)
         assert item["sha256"] == artifact.digest
@@ -142,9 +146,13 @@ def test_publish_omits_editorial_sidecar_and_saved_inputs(tmp_path: Path) -> Non
     FilesystemAtomicPublicationStore(tmp_path).publish(candidate)
 
     tree = read_monthly_tree(tmp_path, candidate.context.as_of_date)
-    manifest = json.loads(tree["publication-manifest.json"])
+    support = read_monthly_support_tree(tmp_path, candidate.context.as_of_date)
+    manifest = json.loads(support["publication-manifest.json"])
+    saved_inputs = json.loads(support["saved-acquisition-inputs.json"])
     assert "comitato_editoriale.yaml" not in tree
-    assert "editorial_catalog" not in manifest["saved_inputs"]
+    assert "editorial_catalog" not in saved_inputs
+    assert "saved_inputs" not in manifest
+    assert manifest["saved_inputs_path"] == "saved-acquisition-inputs.json"
     assert "editorial_catalog" not in manifest
     assert "editorial_work_list" not in manifest
 
@@ -160,7 +168,7 @@ def test_staging_uses_candidate_closure_for_manifest_ownership(tmp_path: Path) -
     reports = {item["path"]: item["report"] for item in staged.manifest["artifacts"]}
 
     assert reports["01_azure_advisor_retirements_raw.tsv"] == "custom-advisor"
-    assert reports["03_azure_retirements_slide.tsv"] == "custom-slides"
+    assert reports["03_azure_retirements_slide.xlsx"] == "custom-slides"
     assert tuple(reports) == candidate.report_closure.expected_paths
 
 

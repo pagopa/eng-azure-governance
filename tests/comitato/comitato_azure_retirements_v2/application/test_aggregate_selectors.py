@@ -1,24 +1,24 @@
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.platforms import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.platforms import (
     PlatformAssignment,
     PlatformCatalogSnapshot,
     SubscriptionId,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
     PublicationCandidate,
     PublicationReceipt,
 )

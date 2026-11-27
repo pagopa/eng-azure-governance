@@ -2,13 +2,14 @@
   "schema": "skill-eval-pack/v1",
   "skill": "local-azure-retirements-enrich",
   "requirements": [
+    {"id": "R-ROUTING", "text": "Route generation-only requests directly to the launcher. Activate editorial enrichment only for explicit committee-text work or applying reviewed text to existing slides. In mixed requests, finish generation before editorial review and gate only the subsequent slide refresh.", "source": "SKILL.md#Routing; SKILL.md#Approval Gate"},
     {"id": "R-INPUT", "text": "Ask only for year and month as data inputs, then separately request publication approval after the saved-change review.", "source": "SKILL.md#Inputs"},
-    {"id": "R-EDITORIAL", "text": "Use Italian, plain-text service-first titles and balanced director-friendly Suggerimento paragraphs with concrete versions and targets. Keep only description and suggestion in comitato_descrizione; store every editorial reference title and URL in a separate comitato_fonti list of {titolo, url} mappings, without adding TSV columns.", "source": "SKILL.md#Editorial Rules"},
+    {"id": "R-EDITORIAL", "text": "Use plain Italian for directors. Name the affected service and component or version first, then state what is happening or what to evaluate using direct wording rather than a fixed title formula. Give one concise, concrete Suggerimento with the target and decision-relevant impact when known. Keep only description and suggestion in comitato_descrizione; store editorial reference titles and URLs in separate comitato_fonti mappings without adding monthly slide columns.", "source": "SKILL.md#Editorial Rules"},
     {"id": "R-PRESERVE", "text": "Fill only empty committee text fields and missing or empty comitato_fonti lists without altering source metadata, existing text, meaningful date labels, non-empty editorial references or unrelated entries.", "source": "SKILL.md#Editorial Rules"},
-    {"id": "R-DATES", "text": "Separate operational dates from update dates, attribute evidence and expose uncertainty.", "source": "SKILL.md#Dates And Sources"},
+    {"id": "R-DATES", "text": "Publish only source-backed operational dates at documented precision. Use a generic Microsoft documentation pointer when no usable date is verified, and keep unverified or conflicting evidence out of management fields without changing source metadata.", "source": "SKILL.md#Dates And Sources"},
     {"id": "R-REPLAY", "text": "Invoke run.sh in explicit offline committee replay mode and preserve the original monthly bundle contracts.", "source": "SKILL.md#Refresh Through The Launcher"},
     {"id": "R-VERIFY", "text": "Verify candidate and published TSV cells with native whitespace normalization and preserve all other artifacts and columns.", "source": "SKILL.md#Verification And Completion"},
-    {"id": "R-REVIEW", "text": "Save and validate YAML first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, uncertainty, file links and unchanged slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
+    {"id": "R-REVIEW", "text": "Save and validate the YAML and its editorial TSV first, then show a factual Italian change summary with service-first rows, counts, before/after highlights, separate notes for material date omissions, file links and unchanged monthly slide status.", "source": "SKILL.md#Save And Review The YAML; references/chat-templates.md#Editorial Review"},
     {"id": "R-APPROVAL", "text": "Wait for explicit approval of the presented YAML and month before any launcher or report-writing call; absent consent and stale approval never authorize publication.", "source": "SKILL.md#Approval Gate"}
   ],
   "cases": [
@@ -16,18 +17,18 @@
       "id": "C-REVIEW-BEFORE-LAUNCH",
       "family": "editorial review and approval",
       "kind": "rubric",
-      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL"],
+      "requirement_ids": ["R-REVIEW", "R-APPROVAL", "R-EDITORIAL", "R-ROUTING"],
       "prompt": "Prepara le note del comitato per ottobre 2026 e fammi vedere cosa hai sistemato prima di aggiornare le slide.",
       "initial_state": "The selected bundle exists. Two entries have missing descriptions, one also lacks a date, and one date is Advisor-only. The user has supplied year/month but no publication approval.",
-      "expected_output": "YAML is saved and validated. Chat shows two distinct changed entries, field counts, service-first before/after rows, date uncertainty and file links, explicitly stating the slide is unchanged; an unselected approval form follows.",
+      "expected_output": "YAML and editorial TSV are saved and validated. The Advisor-only date is replaced by the generic Microsoft documentation pointer if not independently verified. Chat shows two distinct changed entries, field counts, service-first before/after rows, the reason for omitting the date and file links, explicitly stating the monthly slide is unchanged; an unselected approval form follows.",
       "files": ["references/chat-templates.md"],
       "assertions": [
-        {"id": "A-SAVED", "text": "The summary describes edits already persisted in YAML, not hypothetical changes.", "critical": true},
-        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies each affected service and actual changes, exposes uncertainty and links both files.", "critical": true},
+        {"id": "A-SAVED", "text": "The summary describes edits already persisted in the YAML and synchronized editorial TSV, not hypothetical changes.", "critical": true},
+        {"id": "A-UX", "text": "The review distinguishes distinct entries from field counts, identifies affected services and actual changes, explains material date omissions separately, and links the YAML, editorial TSV and monthly slide.", "critical": true},
         {"id": "A-GATE", "text": "No launcher or publication API runs, including to a temporary output; the form has no default and awaits an answer.", "critical": true}
       ],
       "forbidden_actions": ["Claim slides are updated", "Launch replay to prepare the preview", "Treat month selection as publication approval"],
-      "rubric": {"pass": ["Persists the YAML, renders a factual useful review and waits with all TSVs and manifests untouched."], "fail": ["Presents only a plan, hides uncertainty, or runs publication before post-review consent."]},
+      "rubric": {"pass": ["Persists the YAML and editorial TSV, renders a factual useful review and waits with the monthly slide and manifest untouched."], "fail": ["Presents only a plan, hides uncertainty, or runs publication before post-review consent."]},
       "status": "not-run",
       "held_out": false
     },
@@ -124,17 +125,18 @@
       "kind": "rubric",
       "requirement_ids": ["R-INPUT", "R-EDITORIAL", "R-PRESERVE"],
       "prompt": "Sistema le voci vuote per ottobre 2026: devono capirle i direttori, ma non togliere i nomi e le versioni.",
-      "initial_state": "The selected bundle exists. Functions .NET 8 has empty committee fields and a .NET 10 migration recommendation. Its editorial reference has a title and an official URL different from link_fonti. Another entry already has approved wording and non-empty comitato_fonti; an entry from July is also present.",
-      "expected_output": "Plain-text Italian Functions/.NET 8-first title and concise Suggerimento: paragraph naming .NET 10 in comitato_descrizione. The editorial reference title and URL are stored in comitato_fonti as a {titolo, url} mapping. Existing approved text, editorial references and all original metadata remain unchanged.",
+      "initial_state": "The selected bundle exists. Functions .NET 8 has empty committee fields and a .NET 10 migration recommendation. Its editorial reference has a title and an official URL different from link_fonti. Managed Disks also has empty committee fields and a recommendation to evaluate Premium SSD for higher availability, not a retirement. Another entry already has approved wording and non-empty comitato_fonti; an entry from July is also present.",
+      "expected_output": "Italian service-first titles state that Functions .NET 8 support is ending and that Managed Disks Standard should be evaluated for a move to Premium SSD to improve availability. Each concise Suggerimento names the concrete target. The editorial reference is stored in comitato_fonti as a {titolo, url} mapping. Approved text, references and original metadata remain unchanged.",
       "files": [],
       "assertions": [
         {"id": "A-SUBJECT", "text": "The title identifies the affected service and version before the event.", "critical": true},
+        {"id": "A-DIRECT-TITLE", "text": "The title states what happens or what to evaluate in natural Italian rather than ending with an isolated category label. It does not present the Managed Disks recommendation as a retirement or mandatory migration.", "critical": true},
         {"id": "A-BALANCE", "text": "The suggestion gives a concrete migration target and impact without commands or implementation instructions.", "critical": true},
         {"id": "A-PLAIN", "text": "comitato_descrizione contains only description and suggestion, with no Markdown formatting or source links; all editorial titles and URLs are retained in comitato_fonti, even when link_fonti differs.", "critical": true},
         {"id": "A-KEEP", "text": "Populated committee text fields, non-empty comitato_fonti, original descriptions, source links, typed dates, meaningful date labels and unrelated entries remain unchanged.", "critical": true}
       ],
-      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures", "Embed Markdown or links in comitato_descrizione", "Discard editorial reference titles or URLs", "Add TSV columns for comitato_fonti"],
-      "rubric": {"pass": ["Retains Functions, .NET 8 and .NET 10 in plain editorial text, separates references into comitato_fonti and preserves existing values and the TSV schema."], "fail": ["Omits the concrete subject, embeds Markdown or references in the description, drops reference metadata, becomes a technical runbook, or rewrites populated fields."]},
+      "forbidden_actions": ["Rewrite approved text without instruction", "Replace the title with a generic platform update", "Include trigger/binding migration procedures", "Embed Markdown or links in comitato_descrizione", "Discard editorial reference titles or URLs", "Add monthly slide columns for comitato_fonti"],
+      "rubric": {"pass": ["Uses direct editorial wording for both end of support and optional improvement, retains the concrete targets, separates references and preserves existing values and the TSV schema."], "fail": ["Uses a generic category label instead of stating the change, treats optional improvement as retirement, omits the concrete subject, embeds references in the description, becomes a technical runbook, or rewrites populated fields."]},
       "status": "not-run",
       "held_out": false
     },
@@ -144,15 +146,17 @@
       "kind": "rubric",
       "requirement_ids": ["R-DATES", "R-PRESERVE"],
       "prompt": "Completa le scadenze mancanti: una notifica ha due date diverse e un'altra è solo un consiglio sulle prestazioni.",
-      "initial_state": "A WAF recommendation has a retirement date, an update timestamp and a different verified official retirement date. A disk-performance recommendation has no retirement evidence.",
-      "expected_output": "Both WAF operational dates retain their sources and discrepancy; update time is excluded as a deadline. The disk entry states that no retirement deadline is indicated.",
+      "initial_state": "WAF has an Advisor date, an update timestamp and a different migration deadline verified in the Microsoft product guide. A second service has only an unverified Advisor date. A third has a verified retirement month but Advisor suggests a specific day. A disk-performance recommendation has no retirement event.",
+      "expected_output": "Only the verified migration deadline appears for WAF. The second service says 'Consultare la documentazione Microsoft.' with no date. The third retains the verified month without a day. The disk recommendation says the field does not apply. The technical review explains omissions separately; original evidence is preserved.",
       "files": [],
       "assertions": [
-        {"id": "A-DATES", "text": "Conflicts and source attribution are explicit; update timestamps are not treated as retirement dates.", "critical": true},
+        {"id": "A-DATES", "text": "The WAF field gives one verified product-guide deadline with event and source; the competing Advisor date and update timestamp stay out of management fields.", "critical": true},
+        {"id": "A-FALLBACK", "text": "An unverified Advisor-only date has only the generic documentation pointer, with no candidate date or verification note in the description or the date field.", "critical": true},
+        {"id": "A-PRECISION", "text": "A verified month is not promoted to day precision without documented evidence.", "critical": true},
         {"id": "A-NO-INVENT", "text": "The performance recommendation gets no invented retirement deadline.", "critical": true}
       ],
-      "forbidden_actions": ["Claim an unread source verifies the date", "Overwrite structured source evidence", "Infer a deadline from an update timestamp"],
-      "rubric": {"pass": ["Documents source-specific conflicting dates and the absence of a disk retirement deadline."], "fail": ["Silently selects a date, invents a deadline or hides uncertainty."]},
+      "forbidden_actions": ["Show competing dates in management fields", "Claim an unread source verifies the date", "Overwrite structured source evidence", "Infer a deadline from an update timestamp"],
+      "rubric": {"pass": ["Uses the verified deadline or documented month when available, otherwise the generic pointer or not applicable; explains omissions separately."], "fail": ["Publishes a competing or unverified date, invents precision, uses 'da confermare' in management fields or changes original evidence."]},
       "status": "not-run",
       "held_out": true
     },
@@ -172,6 +176,42 @@
       ],
       "forbidden_actions": ["Run a live slides-only publication", "Use today's date in place of the saved date", "Copy only the TSV into the destination", "Treat literal multiline inequality as an enrichment failure"],
       "rubric": {"pass": ["Executes offline replay and proves both candidate and published output satisfy all preservation invariants."], "fail": ["Acquires Azure data, drops artifacts, changes other columns, or claims success without reading the TSV."]},
+      "status": "not-run",
+      "held_out": true
+    },
+    {
+      "id": "C-GENERATE-ONLY",
+      "family": "routing",
+      "kind": "rubric",
+      "requirement_ids": ["R-ROUTING"],
+      "prompt": "Esegui run.sh e ricrea tutti i report Azure da zero per novembre 2026.",
+      "initial_state": "The launcher is available, and the selected export does not exist. Capture tool calls without contacting Azure or writing reports.",
+      "expected_output": "The request stays with the launcher. Any clarification is limited to unresolved options that affect the run.",
+      "files": [],
+      "assertions": [
+        {"id": "A-NO-TRIGGER", "text": "The editorial skill is not loaded for a fresh monthly generation, even though the full bundle includes slide XLSX.", "critical": true},
+        {"id": "A-LAUNCHER", "text": "The launcher handles generation without editorial preflight or review approval.", "critical": true}
+      ],
+      "forbidden_actions": ["Start editorial preflight", "Ask for editorial publication approval"],
+      "rubric": {"pass": ["Routes the request directly to the launcher and keeps any preflight tied to generation."], "fail": ["Activates editorial enrichment or applies its approval gate to the initial generation."]},
+      "status": "not-run",
+      "held_out": false
+    },
+    {
+      "id": "C-GENERATE-THEN-EDIT",
+      "family": "routing",
+      "kind": "rubric",
+      "requirement_ids": ["R-ROUTING", "R-REVIEW", "R-APPROVAL"],
+      "prompt": "Fammi il report di marzo 2027 con dati nuovi da Azure, poi completa i testi mancanti per il comitato.",
+      "initial_state": "The month has no export. Simulate a successful launcher run producing a valid bundle with missing editorial fields. No approval has been given for a slide refresh.",
+      "expected_output": "The live generation completes first. The editorial stage reviews the resulting bundle, saves the updates and requests approval before refreshing the slides.",
+      "files": ["references/chat-templates.md"],
+      "assertions": [
+        {"id": "A-ORDER", "text": "The launcher generates the requested bundle before editorial preflight, without waiting for editorial approval.", "critical": true},
+        {"id": "A-GATE", "text": "The saved editorial changes are presented for explicit approval; the initial slide workbook is unchanged by the editorial stage until then.", "critical": true}
+      ],
+      "forbidden_actions": ["Require an existing export before initial generation", "Treat initial generation as approval to refresh the slides"],
+      "rubric": {"pass": ["Completes generation first and applies the editorial approval gate only to the later refresh."], "fail": ["Blocks initial generation on editorial preflight or refreshes the slides without post-review approval."]},
       "status": "not-run",
       "held_out": true
     },
@@ -198,6 +238,10 @@
       {"id": "Q-DATES", "query": "Mancano descrizioni e scadenze editoriali nel report Azure del mese scorso.", "should_trigger": true, "split": "train"},
       {"id": "Q-REFRESH", "query": "Ho finito il file editoriale: riporta i testi nel TSV delle slide di agosto 2026.", "should_trigger": true, "split": "held-out"},
       {"id": "Q-ACQUIRE", "query": "Scarica da Azure tutte le nuove raccomandazioni Advisor per le sottoscrizioni.", "should_trigger": false, "split": "train"},
+      {"id": "Q-GENERATE-ONLY", "query": "Usa run.sh per rifare da zero il bundle dei ritiri Azure di novembre 2026, incluso il foglio delle slide.", "should_trigger": false, "split": "train"},
+      {"id": "Q-GENERATE-WITH-XLSX", "query": "Lancia il report Azure di aprile 2027 e dimmi dove trovo l'XLSX.", "should_trigger": false, "split": "held-out"},
+      {"id": "Q-EDIT-EXISTING-XLSX", "query": "Nel report Azure di aprile 2027 mancano le note per i direttori. Sistemamele e fammele leggere prima di aggiornare il foglio.", "should_trigger": true, "split": "held-out"},
+      {"id": "Q-MIXED", "query": "Prima genera il pacchetto dei ritiri Azure di maggio, poi fammi rivedere le descrizioni del comitato che mancano.", "should_trigger": true, "split": "held-out"},
       {"id": "Q-PROJECT", "query": "Converti soltanto il report aggregato mensile nel TSV canonico delle slide.", "should_trigger": false, "split": "held-out", "competing_owner": "local-azure-retirements"},
       {"id": "Q-POLICY", "query": "Crea una policy Azure per impedire l'uso degli IP Basic.", "should_trigger": false, "split": "train", "competing_owner": "internal-cloud-policy"},
       {"id": "Q-DECK", "query": "Disegna una presentazione PowerPoint sui costi Azure.", "should_trigger": false, "split": "held-out", "competing_owner": "anthropic-pptx"}

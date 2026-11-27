@@ -11,8 +11,9 @@ publication approval. Counts refer to distinct entry IDs; field counts may
 overlap. Include one compact row per changed entry, labeling changes outside
 the selected month. Summarize wording in the table rather than pasting long
 descriptions. Show an actual before/after excerpt for material wording changes;
-use `vuoto` for a previously empty field. Keep all date conflicts and
-unverified deadlines visible.
+use `vuoto` for a previously empty field. In the date column, show the saved
+management wording only. Explain material omissions in a separate technical
+note without presenting candidate dates as deadlines.
 Count changes to `comitato_fonti` separately and summarize the reference titles
 and URLs retained there. Do not append them to `comitato_descrizione`; Markdown
 in this chat presentation does not authorize Markdown in editorial YAML text.
@@ -20,7 +21,7 @@ in this chat presentation does not authorize Markdown in editorial YAML text.
 ```markdown
 ## Comitato Azure · <YYYY/MM>
 
-**✅ YAML salvato · ⏸ Slide non aggiornate**
+**✅ YAML e TSV editoriale salvati · ⏸ Slide non aggiornate**
 
 **<N> voci modificate** · <D> descrizioni · <S> scadenze · <F> fonti editoriali · <I> nuove voci
 
@@ -28,20 +29,20 @@ in this chat presentation does not authorize Markdown in editorial YAML text.
 
 | Servizio / tecnologia | Modifica | Prima → Dopo | Scadenza / fonte |
 |---|---|---|---|
-| <servizio e versione> | <descrizione, data, fonti editoriali o nuova voce> | <sintesi del cambiamento reale> | <data, fonte e stato di verifica> |
+| <servizio e versione> | <descrizione, data, fonti editoriali o nuova voce> | <sintesi del cambiamento reale> | <data verificata e fonte, rinvio alla documentazione o non applicabile> |
 
-### Da tenere presente
+### Nota tecnica
 
-- <eventuale data discordante, fonte non verificata o limite residuo>
+- <motivo per cui una scadenza rilevante non è stata riportata>
 
 ### Controlli
 
 - <esito effettivo della validazione YAML e della completezza>
 - <esito del confronto: dati originali e testi già approvati preservati>
 - <esito del controllo: descrizioni senza Markdown e riferimenti in comitato_fonti>
-- TSV e manifest mensile non modificati.
+- TSV editoriale sincronizzato; slide XLSX ed export/support mensili non modificati.
 
-**File:** [YAML editoriale](<absolute-yaml-path>) · [Slide da aggiornare](<absolute-tsv-path>)
+**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide da aggiornare](<absolute-slide-xlsx-path>)
 
 **Passo successivo:** serve la tua conferma nel modulo per applicare questi
 contenuti alle slide di <YYYY/MM>.
@@ -93,10 +94,10 @@ changed YAML entries and total slide rows explicit.
 | Controllo | Esito |
 |---|---|
 | Launcher locale | <exit status e risultato JSON osservati> |
-| Testi e scadenze nel TSV | <esito del confronto con il YAML> |
+| Testi e scadenze nell'XLSX | <esito del confronto con il YAML> |
 | Altri report e dati originali | <esito effettivo del confronto> |
 
-**Da tenere presente:** <eventuali incertezze residue sulle fonti/date>
+**Nota tecnica:** <eventuali motivi per cui non sono state pubblicate alcune date>
 
-**File:** [YAML editoriale](<absolute-yaml-path>) · [Slide aggiornate](<absolute-tsv-path>)
+**File:** [YAML editoriale](<absolute-yaml-path>) · [TSV editoriale](<absolute-editorial-tsv-path>) · [Slide aggiornate](<absolute-slide-xlsx-path>)
 ```

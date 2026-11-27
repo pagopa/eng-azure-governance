@@ -17,7 +17,7 @@ The normalized TSV that groups retirement evidence and retains source and tracea
 _Avoid_: raw artifact, publication
 
 **Slide artifact**:
-The ordered committee-facing TSV projection of the aggregate artifact.
+The ordered committee-facing XLSX workbook projection of the aggregate artifact.
 _Avoid_: PowerPoint, executive merged table
 
 **Publication window**:
@@ -39,4 +39,5 @@ The validated set of retirement artifacts published for one month; a later publi
 The committee-maintained editorial values that are merged into the slide artifact and kept outside the published monthly bundle.
 
 **Replay**:
-A republication of a monthly bundle from its saved acquisition inputs, without a new Azure acquisition.
+A republication of a monthly bundle from its external saved acquisition inputs,
+without a new Azure acquisition.

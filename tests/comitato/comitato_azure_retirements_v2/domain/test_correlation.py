@@ -1,8 +1,8 @@
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.correlation import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.correlation import (
     CorrelationEdge,
     correlate_source_events,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.retirements import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.retirements import (
     SourceEvent,
 )
 

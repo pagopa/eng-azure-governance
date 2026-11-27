@@ -182,7 +182,7 @@ class RetirementsApplication:
             "Validating platform coverage",
             context.run_id,
         )
-        self._validate_catalog_coverage(
+        self.validate_catalog_coverage(
             scope.subscription_ids,
             acquisitions,
             catalog,
@@ -202,7 +202,7 @@ class RetirementsApplication:
             "Preparing publication artifacts",
             context.run_id,
         )
-        artifacts, slide_selection = self._empty_artifacts(
+        artifacts, slide_selection = self.prepare_artifacts(
             context,
             acquisitions,
             prepared_by_selector,
@@ -219,6 +219,20 @@ class RetirementsApplication:
             rows=sum(artifact.rows for artifact in artifacts),
             bytes=sum(artifact.bytes for artifact in artifacts),
         )
+        committee_write_completed = False
+
+        def write_committee_sidecar() -> None:
+            nonlocal committee_write_completed
+            if (
+                self.committee_yaml_path is not None
+                and slide_selection is not None
+                and slide_selection.committee_document is not None
+            ):
+                committee_yaml.write(
+                    self.committee_yaml_path, slide_selection.committee_document
+                )
+                committee_write_completed = True
+
         candidate = PublicationCandidate(
             context=context,
             report_closure=report_closure,
@@ -226,6 +240,7 @@ class RetirementsApplication:
             acquisitions=tuple(acquisitions),
             slide_selection=slide_selection,
             saved_inputs=saved_inputs,
+            after_switch=write_committee_sidecar,
         )
         try:
             self._emit(
@@ -244,14 +259,8 @@ class RetirementsApplication:
                 context,
                 stage=diagnostic_stage,
             ) from exc
-        if (
-            self.committee_yaml_path is not None
-            and slide_selection is not None
-            and slide_selection.committee_document is not None
-        ):
-            committee_yaml.write(
-                self.committee_yaml_path, slide_selection.committee_document
-            )
+        if not committee_write_completed:
+            write_committee_sidecar()
         self._emit(
             "INFO",
             "publication_completed",
@@ -321,7 +330,7 @@ class RetirementsApplication:
                     continue
                 lookup = getattr(catalog, "lookup", None)
                 assignment = lookup(subscription_id) if callable(lookup) else None
-                if not assignment or len(assignment) < 2:
+                if not isinstance(assignment, tuple) or len(assignment) != 2:
                     raise ApplicationError(
                         f"service-health subscription name unavailable: {subscription_id}"
                     )
@@ -616,7 +625,7 @@ class RetirementsApplication:
         return identity
 
     @staticmethod
-    def _validate_catalog_coverage(
+    def validate_catalog_coverage(
         subscription_ids: tuple[str, ...],
         acquisitions: list[SourceAcquisition],
         catalog: Any,
@@ -658,7 +667,7 @@ class RetirementsApplication:
             )
 
     @staticmethod
-    def _empty_artifacts(
+    def prepare_artifacts(
         context: RunContext,
         acquisitions: list[SourceAcquisition],
         prepared_by_selector: dict[ReportSelector, PreparedRawReport],

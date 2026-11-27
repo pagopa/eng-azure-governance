@@ -4,24 +4,32 @@ import json
 import re
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
+from io import BytesIO
 from typing import Any
 
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
+
 from ..domain.diagnostics import Diagnostic, ValidationResult
-from ._base import TsvContract
+from .date_presentation import (
+    detect_slash_date_style,
+    format_italian_date_text,
+)
+from .model import Artifact, EncodedArtifact
 
 HEADER = (
     "id_elemento",
     "titolo_breve",
     "descrizione_breve",
+    "comitato_piattaforme",
     "comitato_priorità",
     "impatto_microsoft",
     "comitato_descrizione",
+    "descrizione_originale_completa",
     "comitato_retirement_date",
-    "comitato_piattaforme",
     "retirement_date",
     "stato_data",
     "giorni_ritardo",
-    "descrizione_originale_completa",
     "azione_originale",
     "fonti",
     "link_fonti",
@@ -33,6 +41,7 @@ HEADER = (
 
 ADVISOR_TYPE_LINK = "https://portal.azure.com/#view/Microsoft_Azure_Expert/RecommendationListBlade/recommendationTypeId/"
 SERVICE_HEALTH_LINK = "https://app.azure.com/h/"
+EXCEL_CELL_TEXT_LIMIT = 32_767
 
 # (source, kind) -> (slide meaning, YAML tipo, YAML fonte)
 DATE_KINDS = {
@@ -178,7 +187,10 @@ def _dates(rows: tuple[Mapping[str, str], ...]) -> list[dict[str, str]]:
         if len(update_dates) > 1:
             values.add((min(update_dates), _DATE_MEANINGS[(source, "oldest_update")]))
     return [
-        {"date": date_value, "meaning": meaning}
+        {
+            "date": format_italian_date_text(date_value),
+            "meaning": meaning,
+        }
         for date_value, meaning in sorted(values)
     ]
 
@@ -400,9 +412,100 @@ class SlideRecord(Mapping[str, str]):
         return len(self.values)
 
 
-class SlidesV1Contract(TsvContract[SlideRecord]):
+class SlidesV1Contract:
+    name = "slides"
+    header = HEADER
+    path = "03_azure_retirements_slide.xlsx"
+    companion_path = None
+    schema_version = 1
+
+    def empty_artifact(self, context) -> Artifact[SlideRecord]:
+        return Artifact(
+            contract=self.name,
+            schema_version=self.schema_version,
+            run_id=context.run_id,
+        )
+
+    def encode(self, artifact: Artifact[SlideRecord]) -> EncodedArtifact:
+        workbook = Workbook()
+        output = BytesIO()
+        try:
+            worksheet = workbook.active
+            worksheet.title = "Azure Retirements"
+            worksheet.append(self.header)
+            committee_date_style = detect_slash_date_style(
+                row["comitato_retirement_date"] for row in artifact.records
+            )
+            for row_index, row in enumerate(artifact.records, start=2):
+                for column_index, column in enumerate(self.header, start=1):
+                    value = row[column]
+                    if column == "comitato_retirement_date":
+                        value = format_italian_date_text(
+                            value, slash_style=committee_date_style
+                        )
+                    elif column == "retirement_date":
+                        value = format_italian_date_text(value)
+                    if len(value) > EXCEL_CELL_TEXT_LIMIT:
+                        raise ValueError(
+                            f"slide cell {column} exceeds the Excel text limit "
+                            f"of {EXCEL_CELL_TEXT_LIMIT} characters"
+                        )
+                    worksheet.cell(row_index, column_index, value).data_type = "s"
+            workbook.save(output)
+        finally:
+            workbook.close()
+        return EncodedArtifact(
+            logical_path=self.path,
+            data=output.getvalue(),
+            rows=len(artifact.records),
+            media_type=(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            ),
+            schema_version=self.schema_version,
+            run_id=artifact.run_id,
+        )
+
+    def decode(self, data: bytes) -> Artifact[Mapping[str, str]]:
+        try:
+            workbook = load_workbook(BytesIO(data), read_only=True, data_only=False)
+        except (InvalidFileException, OSError, ValueError) as exc:
+            raise ValueError("invalid slide workbook") from exc
+        try:
+            if len(workbook.worksheets) != 1:
+                raise ValueError("slide workbook must contain one worksheet")
+            rows = iter(workbook.active.iter_rows(values_only=True))
+            header = tuple("" if value is None else str(value) for value in next(rows))
+            if header != self.header:
+                raise ValueError("invalid slide workbook header")
+            records = tuple(
+                dict(
+                    zip(
+                        self.header,
+                        ("" if value is None else str(value) for value in row),
+                        strict=True,
+                    )
+                )
+                for row in rows
+            )
+        except StopIteration as exc:
+            raise ValueError("invalid slide workbook header") from exc
+        finally:
+            workbook.close()
+        return Artifact(
+            contract=self.name,
+            schema_version=self.schema_version,
+            run_id="",
+            records=records,
+        )
+
     def validate(self, artifact, context):
-        base = super().validate(artifact, context)
+        if (
+            artifact.contract != self.name
+            or artifact.schema_version != self.schema_version
+        ):
+            raise ValueError("artifact does not belong to this contract")
+        if artifact.run_id != context.run_id:
+            raise ValueError("artifact run_id does not match context")
         diagnostics: list[Diagnostic] = []
         seen: set[str] = set()
         for row in artifact.records:
@@ -442,12 +545,10 @@ class SlidesV1Contract(TsvContract[SlideRecord]):
                 )
         if diagnostics:
             return ValidationResult.invalid(tuple(diagnostics))
-        return base
+        return ValidationResult.valid(artifact)
 
 
-SLIDES_V1 = SlidesV1Contract(
-    name="slides", header=HEADER, path="03_azure_retirements_slide.tsv"
-)
+SLIDES_V1 = SlidesV1Contract()
 
 
 def encode(artifact):

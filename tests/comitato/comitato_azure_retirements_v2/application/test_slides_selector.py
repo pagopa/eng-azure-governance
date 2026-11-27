@@ -2,17 +2,17 @@ from pathlib import Path
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration import (
     RetirementsApplication,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     ReportSelector,
     RunRequest,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.publication.model import (
+from src.comitato.comitato_azure_retirements_v2.src.publication.model import (
     PublicationError,
 )
 from tests.comitato.comitato_azure_retirements_v2.application.test_aggregate_selectors import (
@@ -43,7 +43,7 @@ def test_slides_selector_publishes_only_slide_target_while_using_run_local_aggre
     app.run(RunRequest(ReportSelector.SLIDES, (SUBSCRIPTION,)))
 
     assert [artifact.logical_path for artifact in publication.staged[0].artifacts] == [
-        "03_azure_retirements_slide.tsv",
+        "03_azure_retirements_slide.xlsx",
     ]
 
 
@@ -95,7 +95,7 @@ def test_application_without_committee_path_does_not_access_yaml(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem import (
+    from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem import (
         committee_yaml,
     )
 

@@ -1,25 +1,25 @@
 from pathlib import Path
 
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.arm_http import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.arm_http import (
     ArmHttpClient,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.azure.resource_graph_api import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.azure.resource_graph_api import (
     ResourceGraphApiSource,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.platform_catalog_yaml import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.platform_catalog_yaml import (
     YamlPlatformCatalogSource,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.adapters.filesystem.publication import (
+from src.comitato.comitato_azure_retirements_v2.src.adapters.filesystem.publication import (
     FilesystemAtomicPublicationStore,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.composition import (
+from src.comitato.comitato_azure_retirements_v2.src.application.composition import (
     build_application,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.config import (
+from src.comitato.comitato_azure_retirements_v2.src.config import (
     RuntimeConfig,
     parse_run_request,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.ports import RuntimeEvent
+from src.comitato.comitato_azure_retirements_v2.src.ports import RuntimeEvent
 
 
 class RecordingObserver:

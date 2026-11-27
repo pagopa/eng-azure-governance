@@ -3,20 +3,20 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from src.comitato.comitato_azure_retirements_v2.retirements.acquisition.model import (
+from src.comitato.comitato_azure_retirements_v2.src.acquisition.model import (
     AcquisitionReceipt,
     SourceAcquisition,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.application.orchestration_errors import (
+from src.comitato.comitato_azure_retirements_v2.src.application.orchestration_errors import (
     ApplicationError,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.contracts.model import (
+from src.comitato.comitato_azure_retirements_v2.src.contracts.model import (
     Artifact,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.evidence import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.evidence import (
     AdvisorEnrichments,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution import (
+from src.comitato.comitato_azure_retirements_v2.src.domain.execution import (
     CatalogIdentity,
     DependencyPlan,
     ReportSelector,
@@ -24,7 +24,7 @@ from src.comitato.comitato_azure_retirements_v2.retirements.domain.execution imp
     RunRequest,
     Scope,
 )
-from src.comitato.comitato_azure_retirements_v2.retirements.reports.advisor.normalize import (
+from src.comitato.comitato_azure_retirements_v2.src.reports.advisor.normalize import (
     ADVISOR_REPORT,
     normalize_advisor,
     prepare_advisor_report,

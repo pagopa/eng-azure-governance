@@ -9,3 +9,13 @@ def read_monthly_tree(destination: Path, as_of_date: date) -> dict[str, bytes]:
         for path in sorted(current.rglob("*"))
         if path.is_file()
     }
+
+
+def read_monthly_support_tree(destination: Path, as_of_date: date) -> dict[str, bytes]:
+    support = destination.with_name(f"{destination.name}-support")
+    current = support / f"{as_of_date.year:04d}" / f"{as_of_date.month:02d}"
+    return {
+        path.relative_to(current).as_posix(): path.read_bytes()
+        for path in sorted(current.rglob("*"))
+        if path.is_file()
+    }
